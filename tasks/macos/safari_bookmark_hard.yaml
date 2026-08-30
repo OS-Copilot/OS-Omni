@@ -1,0 +1,76 @@
+task_id: macos.safari.bookmark_hard
+platform: macos
+instruction: >
+  Open Safari. In the address bar, type "https://www.wikipedia.org" and
+  press Enter to navigate to Wikipedia.
+  Wait for the page to load completely.
+  Click on the "English" link to go to the English Wikipedia.
+  Once on the English Wikipedia page, go to Bookmarks → Add Bookmark.
+  In the bookmark dialog, name the bookmark "Wikipedia English" and
+  choose "Favorites" as the location. Click "Add".
+  Then open a new tab by pressing Cmd+T.
+  In the new tab, type "https://www.github.com" in the address bar and
+  press Enter.
+  Wait for the page to load.
+  Go to Bookmarks → Add Bookmark. Name it "GitHub" and add it to
+  "Favorites". Click "Add".
+  Finish after both bookmarks are added.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Safari >/dev/null 2>&1 || true
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a Safari
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import sqlite3
+
+      # Check if Safari bookmarks file exists
+      bookmarks_path = os.path.expanduser("~/Library/Safari/Bookmarks.plist")
+      if not os.path.exists(bookmarks_path):
+          # Try alternative location
+          bookmarks_path = os.path.expanduser("~/Library/Safari/Bookmarks.db")
+          if not os.path.exists(bookmarks_path):
+              raise SystemExit("SAFARI_BOOKMARKS_NOT_FOUND")
+
+      # Check if the bookmarks file contains our bookmarks
+      with open(bookmarks_path, 'r', errors='ignore') as f:
+          content = f.read()
+
+      if "Wikipedia English" not in content:
+          raise SystemExit("WIKIPEDIA_BOOKMARK_NOT_FOUND")
+
+      if "GitHub" not in content:
+          raise SystemExit("GITHUB_BOOKMARK_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - safari
+  - browser
+  - bookmarks
+  - hard
+  app_name: safari
+  difficulty: hard
+  description: Add bookmarks to Safari favorites.

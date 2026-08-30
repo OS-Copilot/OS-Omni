@@ -1,0 +1,162 @@
+task_id: linux.cross_app.gimp_calc_image_metadata_hard
+platform: linux
+instruction: >
+  Open the seeded image /tmp/helloworld_gimp/input.png in GIMP.
+  Use the scroll wheel to zoom out until you can see the entire image.
+  Note the current image dimensions shown in the title bar.
+  Then use Image → Scale Image to resize the image to exactly 800×600 pixels.
+  Click Scale to confirm.
+  Then use Image → Canvas Size to set the canvas to 1024×768. Click the
+  "Center" button to center the image on the new canvas. Click Resize.
+  Then use File → Export As to export the result to
+  /home/user/Documents/resized_image.png as a PNG file. In the export dialog,
+  click Export to confirm.
+  Then switch to the already-open LibreOffice Calc window. Create a new
+  spreadsheet. In cell A1 type "Property", in B1 type "Value".
+  In row 2, enter "Original Size" and "from title bar". In row 3, enter
+  "Scaled Size" and "800x600". In row 4, enter "Canvas Size" and "1024x768".
+  In row 5, enter "Output File" and "resized_image.png".
+  Save the spreadsheet as /home/user/Documents/image_metadata.ods.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        pkill -f gimp || true
+        pkill -f soffice.bin || true
+        mkdir -p /tmp/helloworld_gimp /home/user/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/gimp/045bf3ff-9077-4b86-b483-a1040a949cff/gate.jpeg"
+        out = Path("/tmp/helloworld_gimp/input.png")
+        out.write_bytes(urlopen(url).read())
+        PY
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f gimp /tmp/helloworld_gimp/input.png >/dev/null 2>&1
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f libreoffice --calc >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Check GIMP output
+      img_path = os.path.expanduser("~/Documents/resized_image.png")
+      if not os.path.exists(img_path):
+          raise SystemExit("GIMP_OUTPUT_NOT_FOUND")
+
+      # Check Calc spreadsheet
+      ods_path = os.path.expanduser("~/Documents/image_metadata.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for val in ["Scaled Size", "800x600", "Canvas Size", "1024x768"]:
+          if val not in content:
+              raise SystemExit(f"MISSING_VALUE_{val}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - gimp
+  - calc
+  - image
+  - metadata
+  - hard
+  app_name: gimp + libreoffice_calc
+  difficulty: hard
+  description: Scale an image and resize canvas in GIMP, export as PNG, then create
+    an image metadata spreadsheet in Calc with size and dimension information.

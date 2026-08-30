@@ -1,0 +1,80 @@
+task_id: linux.wireshark.export_protocol_bundle
+platform: linux
+instruction: >
+  In Wireshark, use the seeded retail capture to prepare a compact checkout
+  incident handoff. Export the bench.local DNS lookup traffic to
+  /tmp/helloworld_wireshark/dns_bench_lookup.pcapng. Export the HTTP checkout
+  request and its 200 response to /tmp/helloworld_wireshark/checkout_http_pair.pcapng.
+  Export the initial client TCP SYN packets where SYN is set and ACK is not set
+  to /tmp/helloworld_wireshark/client_syn_attempts.pcapng. Export the local link
+  health packets, ARP plus ICMP, to /tmp/helloworld_wireshark/link_health_icmp_arp.pcapng.
+  Save every export as pcapng. Then create
+  /tmp/helloworld_wireshark/protocol_incident_note.txt with exactly these six
+  lines: incident=checkout ready trace, dns=bench.local lookups exported,
+  http=/checkout request and 200 response exported, handshake=client syn attempts
+  saved, link=arp and icmp health saved, status=handoff ready.
+init:
+  initializer_id: initializers.linux.wireshark:WiresharkInitializer
+  params:
+    app_command: wireshark
+    workspace_root: /tmp/helloworld_wireshark
+    capture_name: retail_mix.pcapng
+    capture_template: retail_mix
+evaluation:
+  evaluator_id: evaluators.linux.wireshark:WiresharkArtifactEvaluator
+  params:
+    artifacts:
+      - kind: pcap
+        path: /tmp/helloworld_wireshark/dns_bench_lookup.pcapng
+        packet_count: 4
+        all_match_filter: dns && dns.qry.name contains "bench.local"
+        field_values:
+          - field: dns.qry.name
+            contains:
+              - api.bench.local
+              - login.bench.local
+      - kind: pcap
+        path: /tmp/helloworld_wireshark/checkout_http_pair.pcapng
+        packet_count: 2
+        all_match_filter: http
+        field_values:
+          - field: http.request.uri
+            contains:
+              - /checkout
+          - field: http.response.code
+            contains:
+              - '200'
+      - kind: pcap
+        path: /tmp/helloworld_wireshark/client_syn_attempts.pcapng
+        packet_count: 2
+        all_match_filter: tcp.flags.syn == 1 && tcp.flags.ack == 0
+      - kind: pcap
+        path: /tmp/helloworld_wireshark/link_health_icmp_arp.pcapng
+        packet_count: 4
+        all_match_filter: icmp || arp
+      - kind: text
+        path: /tmp/helloworld_wireshark/protocol_incident_note.txt
+        equals: |
+          incident=checkout ready trace
+          dns=bench.local lookups exported
+          http=/checkout request and 200 response exported
+          handshake=client syn attempts saved
+          link=arp and icmp health saved
+          status=handoff ready
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+    - linux
+    - gui
+    - wireshark
+    - network
+    - filter
+    - export
+    - hard
+  app: Wireshark
+  difficulty: hard
+  description: Export a small set of incident-focused Wireshark slices and write a concise analyst handoff note.
+  oracle_task: tasks/linux/oracle/wireshark_export_protocol_bundle_oracle.yaml
+  oracle_model: linux_wireshark_oracle

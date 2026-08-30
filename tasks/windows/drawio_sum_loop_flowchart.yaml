@@ -1,0 +1,162 @@
+task_id: windows.drawio.sum_loop_flowchart
+platform: windows
+instruction: 'In the draw.io desktop app, use the blank diagram that is already opened from C:\Users\User\Documents\drawio_sum_loop_flowchart.drawio
+  and draw a flowchart using these exact node texts: "Start", "S=0", "k=1", "S=S+k", "k=k+3", "k<10", "Output S", and "End".
+  Use these shape rules: Start and End must be ovals. Input or Output must be a parallelogram. Process steps must be rectangles.
+  The Decision step must be a diamond. Every connection must be a flow-line arrow. Connect the nodes with flow-line arrows
+  in this exact order: Start -> S=0 -> k=1 -> S=S+k -> k=k+3 -> k<10. The node "k<10" is the decision node: if Yes, connect
+  it back to "S=S+k" and label that flow line "Yes"; if No, connect it to "Output S" and label that flow line "No". Then connect
+  "Output S" to "End". Save the currently opened diagram and leave the finished file open.
+
+  Additional primary hard-mode requirement: Also make the Yes loop-back arrow dashed while keeping its label exactly "Yes".
+  Also create these hard-plus verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.drawio.sum_loop_flowchart\tlinux.drawio.relabel_incident_sync\thard-plus-ready\napp\tdraw.io\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_dependency_index.txt with exactly
+  this content: ''primary_task=windows.drawio.sum_loop_flowchart\nlinux_peer=linux.drawio.relabel_incident_sync\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_review_matrix.csv with exactly
+  this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use the target application for the visual work and create required verification files directly at the specified paths using
+  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nGet-Process \"draw.io\" -ErrorAction SilentlyContinue |\n  Stop-Process\
+        \ -Force -ErrorAction SilentlyContinue\nStart-Sleep -Milliseconds 800\n\n$drawioPath = @(\n  \"C:\\Program Files\\\
+        draw.io\\draw.io.exe\",\n  \"$env:LOCALAPPDATA\\Programs\\draw.io\\draw.io.exe\"\n) | Where-Object { Test-Path $_\
+        \ } | Select-Object -First 1\n\nif (-not $drawioPath) {\n  throw \"draw.io executable not found\"\n}\n\n$documentPath\
+        \ = \"C:\\Users\\User\\Documents\\drawio_sum_loop_flowchart.drawio\"\n$documentDir = Split-Path -Parent $documentPath\n\
+        New-Item -ItemType Directory -Path $documentDir -Force | Out-Null\n\nforeach ($path in @(\n  $documentPath,\n  \"\
+        $documentPath.bak\",\n  \"$documentPath.tmp\"\n)) {\n  if (Test-Path $path) {\n    Remove-Item -LiteralPath $path\
+        \ -Force -ErrorAction SilentlyContinue\n  }\n}\n\n# Clear persisted Electron/browser state so draw.io does not reopen\n\
+        # the previous unsaved canvas from Local Storage / IndexedDB.\n$drawioAppData = Join-Path $env:APPDATA \"draw.io\"\
+        \nif (Test-Path $drawioAppData) {\n  foreach ($name in @(\n    \"Local Storage\",\n    \"IndexedDB\",\n    \"Session\
+        \ Storage\",\n    \"blob_storage\",\n    \"Cache\",\n    \"Code Cache\",\n    \"GPUCache\",\n    \"DawnCache\",\n\
+        \    \"Service Worker\"\n  )) {\n    $target = Join-Path $drawioAppData $name\n    if (Test-Path $target) {\n    \
+        \  Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction SilentlyContinue\n    }\n  }\n}\n\n# Also remove\
+        \ hidden draft temp files that draw.io may leave next to\n# prior files in Documents.\nGet-ChildItem -Path $documentDir\
+        \ -Force -ErrorAction SilentlyContinue |\n  Where-Object {\n    $_.Name -like '.$*.dtmp' -or $_.Name -like '~$*.dtmp'\n\
+        \  } |\n  Remove-Item -Force -ErrorAction SilentlyContinue\n\n$blankDiagram = [string]::Join([Environment]::NewLine,\
+        \ @(\n  '<mxfile host=\"Electron\" type=\"device\">',\n  '  <diagram id=\"blank\" name=\"Page-1\">',\n  '    <mxGraphModel\
+        \ dx=\"1000\" dy=\"1000\" grid=\"1\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"1\" arrows=\"1\" fold=\"\
+        1\" page=\"1\" pageScale=\"1\" pageWidth=\"850\" pageHeight=\"1100\" math=\"0\" shadow=\"0\">',\n  '      <root>',\n\
+        \  '        <mxCell id=\"0\"/>',\n  '        <mxCell id=\"1\" parent=\"0\"/>',\n  '      </root>',\n  '    </mxGraphModel>',\n\
+        \  '  </diagram>',\n  '</mxfile>'\n)) + [Environment]::NewLine\nSet-Content -LiteralPath $documentPath -Value $blankDiagram\
+        \ -Encoding UTF8\n\n"
+      timeout: 70
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\n$drawioPath = @(\n  \"C:\\Program Files\\draw.io\\draw.io.exe\",\n  \"\
+        $env:LOCALAPPDATA\\Programs\\draw.io\\draw.io.exe\"\n) | Where-Object { Test-Path $_ } | Select-Object -First 1\n\n\
+        if (-not $drawioPath) {\n  throw \"draw.io executable not found\"\n}\n\n$documentPath = \"C:\\Users\\User\\Documents\\\
+        drawio_sum_loop_flowchart.drawio\"\nStart-Process -FilePath $drawioPath -ArgumentList @($documentPath) -WindowStyle\
+        \ Maximized | Out-Null\n"
+      timeout: 70
+    - type: wait
+      ms: 30000
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nAdd-Type -AssemblyName Microsoft.VisualBasic\nAdd-Type -AssemblyName System.Windows.Forms\n\
+        Add-Type @\"\nusing System;\nusing System.Runtime.InteropServices;\npublic static class User32 {\n  [DllImport(\"\
+        user32.dll\")]\n  public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);\n  [DllImport(\"user32.dll\")]\n\
+        \  public static extern bool SetForegroundWindow(IntPtr hWnd);\n  [DllImport(\"user32.dll\")]\n  public static extern\
+        \ bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);\n}\n\"@\n\n$drawioProc = $null\n\
+        for ($i = 0; $i -lt 90; $i++) {\n  $drawioProc = Get-Process \"draw.io\" -ErrorAction SilentlyContinue |\n    Where-Object\
+        \ { $_.MainWindowHandle -ne 0 } |\n    Select-Object -First 1\n  if ($null -ne $drawioProc) {\n    break\n  }\n  Start-Sleep\
+        \ -Milliseconds 500\n}\n\nif ($null -eq $drawioProc) {\n  Write-Output \"DRAWIO_WINDOW_WARN=Could not find a visible\
+        \ draw.io main window after launch\"; exit 0\n}\n\nGet-Process -ErrorAction SilentlyContinue |\n  Where-Object {\n\
+        \    $_.MainWindowHandle -ne 0 -and\n    $_.Id -ne $drawioProc.Id -and\n    ($_.ProcessName -in @(\"WindowsTerminal\"\
+        , \"powershell\", \"pwsh\", \"cmd\", \"notepad\"))\n  } |\n  ForEach-Object {\n    [void][User32]::ShowWindow($_.MainWindowHandle,\
+        \ 6)\n  }\n\n$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea\n[void][User32]::MoveWindow(\n\
+        \  $drawioProc.MainWindowHandle,\n  $workingArea.X,\n  $workingArea.Y,\n  $workingArea.Width,\n  $workingArea.Height,\n\
+        \  $true\n)\nStart-Sleep -Milliseconds 200\n[void][User32]::ShowWindow($drawioProc.MainWindowHandle, 9)\nStart-Sleep\
+        \ -Milliseconds 200\n[void][Microsoft.VisualBasic.Interaction]::AppActivate($drawioProc.Id)\nStart-Sleep -Milliseconds\
+        \ 300\n[void][User32]::SetForegroundWindow($drawioProc.MainWindowHandle)\nStart-Sleep -Milliseconds 300\n[System.Windows.Forms.SendKeys]::SendWait(\"\
+        % \")\nStart-Sleep -Milliseconds 200\n[System.Windows.Forms.SendKeys]::SendWait(\"x\")\n"
+      timeout: 70
+    - type: wait
+      ms: 2000
+evaluation:
+  evaluator_id: evaluators.windows.drawio:DrawIOEvaluator
+  params:
+    check_id: drawio_sum_loop_flowchart
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    supplemental_checks:
+      powershell:
+      - label: primary_hard_mode
+        script: '$path = "C:\Users\User\Documents\drawio_sum_loop_flowchart.drawio"
+
+          if (-not (Test-Path -LiteralPath $path)) { Write-Output "EVAL_RESULT:FAIL drawio file missing"; exit 1 }
+
+          $raw = Get-Content -LiteralPath $path -Raw
+
+          if ($raw -notlike "*dashed=1*") { Write-Output "EVAL_RESULT:FAIL drawio missing dashed=1"; exit 1 }
+
+          if ($raw -notlike "*Yes*") { Write-Output "EVAL_RESULT:FAIL drawio missing Yes"; exit 1 }
+
+          Write-Output "EVAL_RESULT:PASS drawio primary style hardening found"'
+        stdout_contains: EVAL_RESULT:PASS
+        timeout: 90
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.drawio.sum_loop_flowchart\tlinux.drawio.relabel_incident_sync\t\
+          hard-plus-ready\napp\tdraw.io\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.drawio.sum_loop_flowchart
+
+          linux_peer=linux.drawio.relabel_incident_sync
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_sum_loop_flowchart\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - drawio
+  - flowchart
+  - arrows
+  - decision
+  - shengyang
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  app: draw.io
+  app_name: draw.io
+  human_steps: 86
+  description: 'Open the desktop draw.io app, build a typed flowchart with a looping Yes branch and a No branch, and save
+    it to a fixed .drawio path for deterministic XML-based evaluation.
+
+    '
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator or supplemental checks
+  linux_peer: linux.drawio.relabel_incident_sync
+  linux_peer_file: tasks/linux/drawio_relabel_incident_sync_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

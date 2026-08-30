@@ -1,0 +1,81 @@
+task_id: macos.cross_app.safari_writer_research_hard
+platform: macos
+instruction: >
+  Open Safari. In the address bar, type "https://www.wikipedia.org" and
+  press Enter to navigate to Wikipedia.
+  Wait for the page to load completely.
+  Click on the "English" link to go to the English Wikipedia.
+  In the search bar on Wikipedia, type "Artificial Intelligence" and
+  press Enter.
+  Read the first paragraph of the article about Artificial Intelligence.
+  Then switch to the already-open LibreOffice Writer window.
+  Create a new document with the heading "Research Notes: Artificial Intelligence".
+  Below the heading, write a summary of what you learned from the Wikipedia
+  article. Include at least 3 key points about AI.
+  Save the Writer document as /Users/bench/Documents/ai_research.odt.
+  Finish after the document is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Safari >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a Safari
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Check Writer document
+      odt_path = os.path.expanduser("~/Documents/ai_research.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "Research Notes: Artificial Intelligence" not in content:
+          raise SystemExit("MISSING_HEADING")
+
+      # Check that the document has some content (not just the heading)
+      if len(content) < 500:
+          raise SystemExit("DOCUMENT_TOO_SHORT")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - safari
+  - writer
+  - research
+  - hard
+  app_name: safari + libreoffice_writer
+  difficulty: hard
+  description: Research a topic on Wikipedia and create a summary document in Writer.

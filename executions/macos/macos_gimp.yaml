@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/gimp_rotate_export_png.yaml
+  - tasks/macos/gimp_transform_pipeline_export.yaml
+  - tasks/macos/gimp_overlay_layer_opacity_export.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS GIMP tasks (1 easy, 2 hard)

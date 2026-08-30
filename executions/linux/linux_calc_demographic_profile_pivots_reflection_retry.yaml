@@ -1,0 +1,10 @@
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 5
+max_steps: 100
+tasks:
+  - tasks/linux/calc_demographic_profile_pivots_hard.yaml
+metadata:
+  description: Retry calc_demographic_profile_pivots after parser whitelist fixes.

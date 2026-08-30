@@ -1,0 +1,122 @@
+task_id: linux.blender.oracle.set_preview_resolution
+platform: linux
+instruction: Oracle sanity task for linux.blender.set_preview_resolution. The initializer
+  already seeds the expected Blender scene state. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.blender:BlenderInitializer
+  params:
+    app_command: blender
+    workspace_name: blender_preview_resolution
+    scene_name: product_stage.blend
+    scene_template: product_stage
+    scene_spec:
+      render:
+        resolution_x: 1280
+        resolution_y: 720
+        fps: 24
+        frame_start: 1
+        frame_end: 120
+        engine: BLENDER_EEVEE
+        film_transparent: false
+        file_format: PNG
+        color_mode: RGBA
+      objects:
+      - type: CAMERA
+        name: Camera
+        location:
+        - 6.8
+        - -6.6
+        - 5.4
+        rotation_degrees:
+        - 63.0
+        - 0.0
+        - 43.0
+      - type: LIGHT
+        light_type: SUN
+        name: FillLight
+        location:
+        - 2.5
+        - -2.5
+        - 6.0
+        rotation_degrees:
+        - 55.0
+        - 0.0
+        - 20.0
+      - type: MESH_PLANE
+        name: BackdropPlane
+        location:
+        - 0.0
+        - 0.0
+        - 0.0
+        rotation_degrees:
+        - 0.0
+        - 0.0
+        - 0.0
+        scale:
+        - 5.5
+        - 5.5
+        - 1.0
+      - type: MESH_CUBE
+        name: FeatureCube
+        location:
+        - 0.0
+        - 0.0
+        - 1.0
+        rotation_degrees:
+        - 0.0
+        - 0.0
+        - 0.0
+        scale:
+        - 1.0
+        - 1.0
+        - 1.0
+      - type: MESH_CYLINDER
+        name: AccentCylinder
+        location:
+        - -2.0
+        - 1.6
+        - 1.0
+        rotation_degrees:
+        - 0.0
+        - 0.0
+        - 0.0
+        scale:
+        - 0.6
+        - 0.6
+        - 1.2
+      - type: MESH_UV_SPHERE
+        name: HeroSphere
+        location:
+        - 2.2
+        - 1.5
+        - 1.0
+        rotation_degrees:
+        - 0.0
+        - 0.0
+        - 0.0
+        scale:
+        - 0.8
+        - 0.8
+        - 0.8
+evaluation:
+  evaluator_id: evaluators.linux.blender:BlenderSceneEvaluator
+  params:
+    blend_path: /tmp/helloworld_blender_workspace/blender_preview_resolution/product_stage.blend
+    render:
+      resolution_x: 1280
+      resolution_y: 720
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Blender
+  difficulty: easy
+  tags:
+  - linux
+  - gui
+  - blender
+  - scene
+  - easy
+  - oracle
+  description: Oracle sanity task for linux.blender.set_preview_resolution
+  oracle_for: linux.blender.set_preview_resolution

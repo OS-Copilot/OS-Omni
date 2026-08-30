@@ -1,0 +1,8 @@
+{
+  "pageBackupOnLag": true,
+  "queueLagThresholdMinutes": 12,
+  "bridgeLagThresholdMinutes": 20,
+  "handoffOwner": "Night Watch",
+  "severity": "SEV2",
+  "handoffState": "ready"
+}

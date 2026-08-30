@@ -1,0 +1,13 @@
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
+  - tasks/windows/deltachat_send_message_project_updates.yaml
+  - tasks/windows/deltachat_share_sync_time_with_avery_and_project_updates.yaml
+metadata:
+  description: Rerun the Windows DeltaChat tasks that failed when GreenMail was down.
+  source_execution: executions/windows/pyautogui/windows_single_app_all_reflection_pyautogui_from7.yaml

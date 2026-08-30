@@ -1,0 +1,104 @@
+task_id: ios.contacts.reconcile_seeded_contacts
+platform: ios
+instruction: >
+  Reconcile the existing contacts list. There are two Bench Catering cards: keep the one whose
+  note says canonical record - keep this card, copy the company, phone number, and email address
+  from the Bench Catering card whose note says May update - copy details then remove onto the
+  canonical Bench Catering card, and then remove the May update card. Replace the stale Bench
+  Venue record with a current Bench Venue contact using company Bay Hall, the phone number
+  currently listed on Bench Shuttle, email venue@bench-example.test, and note South lobby desk.
+  Delete Bench Shuttle after using its phone number. Leave Bench Office unchanged.
+init:
+  initializer_id: initializers.ios.contacts_seed_open_app:ContactsSeedOpenAppInitializer
+  params:
+    bundle_id: com.apple.MobileAddressBook
+    purge_all_contacts: true
+    seed_contacts:
+      - first_name: "Bench"
+        last_name: "Catering"
+        organization: "Bench Catering Old"
+        phones: ["555-010-3000"]
+        emails: ["catering-old@bench-example.test"]
+        note: "canonical record - keep this card"
+      - first_name: "Bench"
+        last_name: "Catering"
+        organization: "Bench Catering Team"
+        phones: ["555-010-3888"]
+        emails: ["catering@bench-example.test"]
+        note: "May update - copy details then remove"
+      - first_name: "Bench"
+        last_name: "Venue"
+        organization: "Bay Hall Old"
+        phones: ["555-010-3990"]
+        emails: ["venue-old@bench-example.test"]
+        note: "stale venue record - remove"
+      - first_name: "Bench"
+        last_name: "Shuttle"
+        organization: "Bench Transport"
+        phones: ["555-010-3999"]
+        emails: ["shuttle@bench-example.test"]
+        note: "temporary shuttle record"
+      - first_name: "Bench"
+        last_name: "Office"
+        organization: "Bench HQ"
+        phones: ["555-010-3222"]
+        emails: ["office@bench-example.test"]
+        note: "Leave unchanged."
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.contacts_state:ContactsStateEvaluator
+  params:
+    exact_count: 3
+    present_contacts:
+      - first_name: "Bench"
+        last_name: "Catering"
+        organization: "Bench Catering Team"
+        phones: ["555-010-3888"]
+        emails: ["catering@bench-example.test"]
+        note: "canonical record - keep this card"
+      - first_name: "Bench"
+        last_name: "Office"
+        organization: "Bench HQ"
+        phones: ["555-010-3222"]
+        emails: ["office@bench-example.test"]
+        note: "Leave unchanged."
+      - first_name: "Bench"
+        last_name: "Venue"
+        organization: "Bay Hall"
+        phones: ["555-010-3999"]
+        emails: ["venue@bench-example.test"]
+        note: "South lobby desk"
+    absent_contacts:
+      - first_name: "Bench"
+        last_name: "Shuttle"
+      - first_name: "Bench"
+        last_name: "Catering"
+        note: "May update - copy details then remove"
+      - first_name: "Bench"
+        last_name: "Catering"
+        phones: ["555-010-3000"]
+      - first_name: "Bench"
+        last_name: "Catering"
+        emails: ["catering-old@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Venue"
+        organization: "Bay Hall Old"
+      - first_name: "Bench"
+        last_name: "Venue"
+        phones: ["555-010-3990"]
+      - first_name: "Bench"
+        last_name: "Venue"
+        emails: ["venue-old@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Venue"
+        note: "stale venue record - remove"
+    timeout_seconds: 8
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [contacts, ios, native, create, edit, delete, hard, benchmark]
+  app: Contacts
+  app_bundle_id: com.apple.MobileAddressBook
+  description: "Reconcile a seeded contact list by disambiguating duplicate cards, migrating details, deleting stale records, and preserving an unchanged contact."

@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/cross_app_writer_thunderbird_export_pdf_attach_draft_easy.yaml
+  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: linux cross-app Writer and Thunderbird benchmark with 1 easy and 2 hard tasks

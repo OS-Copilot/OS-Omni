@@ -1,0 +1,88 @@
+task_id: macos.textedit.rtf_hard
+platform: macos
+instruction: >
+  Open TextEdit. Create a new document by pressing Cmd+N.
+  Type the following text:
+
+  "Project Status Report"
+
+  Then select the text you just typed and make it bold by pressing Cmd+B.
+  Press Enter twice to create a new paragraph.
+  Type the following:
+
+  "Date: June 16, 2026
+  Status: On Track
+  Progress: 75%"
+
+  Select all the text you just typed (the date, status, and progress lines).
+  Go to Format → Text → Make Underlined (or press Cmd+U).
+  Press Enter twice to create another paragraph.
+  Type:
+
+  "Next Steps:
+  1. Complete testing phase
+  2. Prepare documentation
+  3. Schedule review meeting"
+
+  Save the document as /Users/bench/Documents/status_report.rtf
+  by pressing Cmd+S. In the save dialog, navigate to /Users/bench/Documents/,
+  type "status_report.rtf" as the filename, and click Save.
+  Finish after the file is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall TextEdit >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a TextEdit
+    - type: wait
+      ms: 3000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+
+      # Check if the RTF file exists
+      rtf_path = os.path.expanduser("~/Documents/status_report.rtf")
+      if not os.path.exists(rtf_path):
+          raise SystemExit("RTF_FILE_NOT_FOUND")
+
+      # Check the file content
+      with open(rtf_path, 'r', errors='ignore') as f:
+          content = f.read()
+
+      # Check for expected content
+      if "Project Status Report" not in content:
+          raise SystemExit("MISSING_TITLE")
+      if "On Track" not in content:
+          raise SystemExit("MISSING_STATUS")
+      if "75%" not in content:
+          raise SystemExit("MISSING_PROGRESS")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - textedit
+  - rtf
+  - formatting
+  - hard
+  app_name: textedit
+  difficulty: hard
+  description: Create a formatted RTF document with bold, underlined text in TextEdit.

@@ -1,0 +1,97 @@
+task_id: macos.thunderbird.create_filter_hard
+platform: macos
+instruction: >
+  Open Thunderbird. Go to Tools → Message Filters.
+  In the Message Filters window, click "New" to create a new filter.
+  In the Filter dialog, enter the following settings:
+  - Filter Name: "Important Emails"
+  - Apply filter when: "Checking Mail" and "Manually Run"
+  - Match all of the following:
+    - "Subject" "contains" "urgent"
+  - Perform these actions:
+    - "Move to folder" "Local Folders/Important"
+  Click "OK" to save the filter.
+  Then create a second filter:
+  - Filter Name: "Newsletter"
+  - Apply filter when: "Checking Mail" and "Manually Run"
+  - Match all of the following:
+    - "From" "contains" "newsletter"
+  - Perform these actions:
+    - "Move to folder" "Local Folders/Newsletters"
+  Click "OK" to save the filter.
+  Close the Message Filters window.
+  Finish after both filters are created.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Thunderbird >/dev/null 2>&1 || true
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a Thunderbird
+    - type: wait
+      ms: 8000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import sqlite3
+
+      # Check if Thunderbird profile exists
+      thunderbird_dir = os.path.expanduser("~/Library/Thunderbird")
+      if not os.path.exists(thunderbird_dir):
+          raise SystemExit("THUNDERBIRD_DIR_NOT_FOUND")
+
+      # Look for message filters in the Thunderbird profile
+      import glob
+      filter_found = False
+      for profile_dir in glob.glob(os.path.join(thunderbird_dir, "Profiles", "*.default*")):
+          # Check for msgFilterRules.dat file
+          filter_file = os.path.join(profile_dir, "msgFilterRules.dat")
+          if os.path.exists(filter_file):
+              with open(filter_file, 'r') as f:
+                  content = f.read()
+                  if "Important Emails" in content and "Newsletter" in content:
+                      filter_found = True
+                      break
+
+          # Also check for Mail folder
+          mail_dir = os.path.join(profile_dir, "Mail")
+          if os.path.exists(mail_dir):
+              for local_dir in glob.glob(os.path.join(mail_dir, "Local Folders")):
+                  filter_file = os.path.join(local_dir, "msgFilterRules.dat")
+                  if os.path.exists(filter_file):
+                      with open(filter_file, 'r') as f:
+                          content = f.read()
+                          if "Important Emails" in content and "Newsletter" in content:
+                              filter_found = True
+                              break
+
+      if not filter_found:
+          raise SystemExit("FILTERS_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - thunderbird
+  - filter
+  - email
+  - hard
+  app_name: thunderbird
+  difficulty: hard
+  description: Create email filters in Thunderbird to automatically move messages.

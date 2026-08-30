@@ -1,0 +1,48 @@
+task_id: android.openshop.office_setup_checkout
+platform: android
+instruction: 'In OpenShop, sign in with phone 13800138000 and password spring2026. Place the final office setup order, ignoring any home-refresh products you inspect: one Verdant Pro Noise-Canceling Headphones with the 30h battery spec, two Mukawa Folding Camping Table and Chair Set items with the Storage bag spec, one Lumen Magnetic Phone Stand with the Multi-angle spec, and one Polar Day Slim Business Backpack with the 15.6-inch fit spec. Use the Office address, WeChat Pay, add the note ''Office setup final: headphones, tables, stand, backpack.'', and place the order.'
+init:
+  initializer_id: initializers.android.openshop:OpenShopFreshOpenInitializer
+  params:
+    app_package: com.killt.openshop
+    app_activity: com.killt.openshop.MainActivity
+    clear_app_data: true
+    wait_ms: 1800
+evaluation:
+  evaluator_id: evaluators.android.openshop:OpenShopStateEvaluator
+  params:
+    app_package: com.killt.openshop
+    session_logged_in: true
+    cart_size: 0
+    order_count: 1
+    latest_order:
+      address_id: addr-office
+      payment_method_id: wechat
+      note: "Office setup final: headphones, tables, stand, backpack."
+      status: "Awaiting Shipment"
+      items:
+        - product_id: p1001
+          quantity: 1
+          selected_spec: "30h battery"
+        - product_id: p1002
+          quantity: 2
+          selected_spec: "Storage bag"
+        - product_id: p1006
+          quantity: 1
+          selected_spec: "Multi-angle"
+        - product_id: p1004
+          quantity: 1
+          selected_spec: "15.6-inch fit"
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [shopping, android, openshop, checkout, orders, multi_step, hard, benchmark]
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  description: "Log in, build an office setup cart with exact specs, adjust quantity, and place the order with a required address, payment method, and note."
+  prerequisites:
+    - "OpenShop is installed on the emulator."
+  difficulty: hard

@@ -1,0 +1,13 @@
+models:
+  - free_codesonline_gpt5_5_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/linux/openshop_login_easy.yaml
+  - tasks/linux/openshop_add_headphones_to_cart_hard.yaml
+  - tasks/linux/openshop_checkout_coffee_hard.yaml
+metadata:
+  description: Current OpenShop three-task GPT-5.5 retest after easy/hard task updates.
+  merge_target: results/free_codesonline_gpt5_5_responses/linux/linux_gpt55_current_60_composed_20260502.md

@@ -1,0 +1,76 @@
+task_id: linux.cross_vm.writer_site_visit_brief_easy
+platform: linux
+instruction: >
+  A blank LibreOffice Writer document named site_visit_brief.docx is already
+  open, and the transferred file site_visit_transfer.txt is on the Desktop.
+  Use the transferred file to turn the document into a short brief:
+  1. The first line must be exactly "Northwind Site Visit".
+  2. Then add these three lines in order, one line per paragraph:
+     - Confirm loading dock access at 08:30
+     - Bring revised safety checklist
+     - Share the updated visitor badge count: 14
+  Save the document when finished.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          pkill -f soffice.bin >/dev/null 2>&1 || true
+          pkill -f '/usr/lib/libreoffice/program/soffice' >/dev/null 2>&1 || true
+          mkdir -p /home/user/Documents /home/user/Desktop
+          cat > /home/user/Desktop/site_visit_transfer.txt <<'EOF'
+          Northwind Site Visit
+          Confirm loading dock access at 08:30
+          Bring revised safety checklist
+          Share the updated visitor badge count: 14
+          EOF
+          tmpdir=$(mktemp -d)
+          cd "$tmpdir"
+          : > empty.txt
+          libreoffice --headless --convert-to docx empty.txt >/dev/null 2>&1
+          mv empty.docx /home/user/Documents/site_visit_brief.docx
+          rm -rf "$tmpdir"
+        timeout: 120
+      - type: run_bash
+        script: |
+          export DISPLAY=:0
+          setsid -f libreoffice --writer /home/user/Documents/site_visit_brief.docx >/dev/null 2>&1
+        timeout: 120
+      - type: wait
+        ms: 6000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      python3 - <<'PY'
+      import zipfile
+      import xml.etree.ElementTree as ET
+      with zipfile.ZipFile("/home/user/Documents/site_visit_brief.docx") as zf:
+          root = ET.fromstring(zf.read("word/document.xml"))
+      ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+      lines = []
+      for paragraph in root.findall(".//w:body/w:p", ns):
+          text = "".join(node.text or "" for node in paragraph.findall(".//w:t", ns)).strip()
+          if text:
+              lines.append(text)
+      expected = [
+          "Northwind Site Visit",
+          "Confirm loading dock access at 08:30",
+          "Bring revised safety checklist",
+          "Share the updated visitor badge count: 14",
+      ]
+      if lines != expected:
+          raise SystemExit(f"LINES_MISMATCH:{lines}")
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, cross_vm, libreoffice, writer, easy]
+  app_name: cross_vm
+  difficulty: easy
+  description: Build a short Writer brief from a transferred Windows note.

@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/maps_search_ferry_building_easy.yaml
+  - tasks/macos/maps_walking_route_sf_hard.yaml
+  - tasks/macos/maps_sf_landmark_briefing_hard.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Native macOS Maps benchmark tasks.

@@ -1,0 +1,199 @@
+task_id: windows.gimp.cartoon_girl_bottom_left_blend_flip_opacity
+platform: windows
+instruction: 'In GIMP, open the files "Background_Scene.png" and "Cartoon_Girl.png" from the Windows user''s Downloads folder
+  (shown in the file chooser as "User > Downloads"). Use the background image as the main canvas. Add the cartoon girl as
+  a separate layer, remove her original background so that only the character remains, scale the cartoon girl layer to width
+  575 px and height 927 px, flip the cartoon girl layer horizontally, align the bottom-left corner of the cartoon girl layer
+  with the bottom-left corner of the background, set the cartoon girl layer opacity to 85 and the background layer opacity
+  to 65, blend the character cleanly into the scene, export the finished composite to the Downloads folder as "cartoon_girl_blend_submission.png",
+  and leave the finished composite open.
+
+  Additional primary hard-mode requirement: Also save the editable layered GIMP project as "C:\Users\User\Downloads\cartoon_girl_blend_submission.xcf"
+  before exporting the final image. Also create these hard-plus verification files so the final state is a multi-artifact
+  handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.gimp.cartoon_girl_bottom_left_blend_flip_opacity\tlinux.gimp.scale_image\thard-plus-ready\napp\tGIMP\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.gimp.cartoon_girl_bottom_left_blend_flip_opacity\nlinux_peer=linux.gimp.scale_image\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use the target application for the visual work and create required verification files directly at the specified paths using
+  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: upload_file
+      local_path: tasks/windows/files/gimp/gimp_cartoon_girl_blend/Background_Scene.jpg
+      path: C:\Users\User\Downloads\_incoming\Background_Scene.jpg
+    - type: upload_file
+      local_path: tasks/windows/files/gimp/gimp_cartoon_girl_blend/Cartoon_Girl.jpeg
+      path: C:\Users\User\Downloads\_incoming\Cartoon_Girl.jpeg
+    - type: upload_file
+      local_path: tasks/windows/files/gimp/gimp_cartoon_girl_blend/Composite_Expected.png
+      path: C:\Users\User\Downloads\_incoming\Composite_Expected.png
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nGet-Process \"gimp-2.10\" -ErrorAction SilentlyContinue | Stop-Process\
+        \ -Force -ErrorAction SilentlyContinue\nStart-Sleep -Milliseconds 500\n\n$gimpConfigPaths = @(\n  (Join-Path $env:APPDATA\
+        \ \"GIMP\"),\n  (Join-Path $env:LOCALAPPDATA \"GIMP\"),\n  (Join-Path $env:USERPROFILE \".gimp-2.10\")\n)\nforeach\
+        \ ($path in $gimpConfigPaths) {\n  if ($path -and (Test-Path $path)) {\n    Remove-Item -LiteralPath $path -Recurse\
+        \ -Force -ErrorAction SilentlyContinue\n  }\n}\n\n$incomingDir = \"C:\\Users\\User\\Downloads\\_incoming\"\n$backgroundPath\
+        \ = \"C:\\Users\\User\\Downloads\\Background_Scene.png\"\n$characterPath = \"C:\\Users\\User\\Downloads\\Cartoon_Girl.png\"\
+        \n$referencePath = \"C:\\Users\\User\\Downloads\\Composite_Expected.png\"\n$exportBase = \"C:\\Users\\User\\Downloads\\\
+        cartoon_girl_blend_submission\"\n$exportCandidates = @(\n  \"$exportBase.jpg\",\n  \"$exportBase.jpg.png\",\n  \"\
+        $exportBase.png.jpg\",\n  \"$exportBase.png\",\n  \"$exportBase.jpg.jpg\",\n  \"$exportBase.png.png\"\n)\n\n$backgroundCandidates\
+        \ = @(\n  (Join-Path $incomingDir \"Background_Scene.jpg\"),\n  (Join-Path $incomingDir \"Background_Scene.jpeg\"\
+        ),\n  (Join-Path $incomingDir \"Background_Scene.jpg.png\"),\n  (Join-Path $incomingDir \"Background_Scene.jpeg.png\"\
+        ),\n  (Join-Path $incomingDir \"Background_Scene.png.jpg\"),\n  (Join-Path $incomingDir \"Background_Scene.png.jpeg\"\
+        ),\n  (Join-Path $incomingDir \"Background_Scene.png\"),\n  (Join-Path $incomingDir \"Background_Scene.jpg.jpg\"),\n\
+        \  (Join-Path $incomingDir \"Background_Scene.jpeg.jpeg\"),\n  (Join-Path $incomingDir \"Background_Scene.png.png\"\
+        )\n)\n$characterCandidates = @(\n  (Join-Path $incomingDir \"Cartoon_Girl.jpg\"),\n  (Join-Path $incomingDir \"Cartoon_Girl.jpeg\"\
+        ),\n  (Join-Path $incomingDir \"Cartoon_Girl.jpg.png\"),\n  (Join-Path $incomingDir \"Cartoon_Girl.jpeg.png\"),\n\
+        \  (Join-Path $incomingDir \"Cartoon_Girl.png.jpg\"),\n  (Join-Path $incomingDir \"Cartoon_Girl.png.jpeg\"),\n  (Join-Path\
+        \ $incomingDir \"Cartoon_Girl.png\"),\n  (Join-Path $incomingDir \"Cartoon_Girl.jpg.jpg\"),\n  (Join-Path $incomingDir\
+        \ \"Cartoon_Girl.jpeg.jpeg\"),\n  (Join-Path $incomingDir \"Cartoon_Girl.png.png\")\n)\n$referenceCandidates = @(\n\
+        \  (Join-Path $incomingDir \"Composite_Expected.jpg\"),\n  (Join-Path $incomingDir \"Composite_Expected.jpeg\"),\n\
+        \  (Join-Path $incomingDir \"Composite_Expected.jpg.png\"),\n  (Join-Path $incomingDir \"Composite_Expected.jpeg.png\"\
+        ),\n  (Join-Path $incomingDir \"Composite_Expected.png.jpg\"),\n  (Join-Path $incomingDir \"Composite_Expected.png.jpeg\"\
+        ),\n  (Join-Path $incomingDir \"Composite_Expected.png\"),\n  (Join-Path $incomingDir \"Composite_Expected.jpg.jpg\"\
+        ),\n  (Join-Path $incomingDir \"Composite_Expected.jpeg.jpeg\"),\n  (Join-Path $incomingDir \"Composite_Expected.png.png\"\
+        )\n)\n\n$resolvedBackground = $backgroundCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not\
+        \ $resolvedBackground) {\n  throw \"Required background image asset not found. Accepted names: Background_Scene.jpg\
+        \ / Background_Scene.jpeg / Background_Scene.jpg.png / Background_Scene.jpeg.png / Background_Scene.png.jpg / Background_Scene.png.jpeg\
+        \ / Background_Scene.png / Background_Scene.jpg.jpg / Background_Scene.jpeg.jpeg / Background_Scene.png.png\"\n}\n\
+        \n$resolvedCharacter = $characterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not $resolvedCharacter)\
+        \ {\n  throw \"Required cartoon character asset not found. Accepted names: Cartoon_Girl.jpg / Cartoon_Girl.jpeg /\
+        \ Cartoon_Girl.jpg.png / Cartoon_Girl.jpeg.png / Cartoon_Girl.png.jpg / Cartoon_Girl.png.jpeg / Cartoon_Girl.png /\
+        \ Cartoon_Girl.jpg.jpg / Cartoon_Girl.jpeg.jpeg / Cartoon_Girl.png.png\"\n}\n\n$resolvedReference = $referenceCandidates\
+        \ | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not $resolvedReference) {\n  throw \"Required deterministic\
+        \ reference asset not found. Accepted names: Composite_Expected.jpg / Composite_Expected.jpeg / Composite_Expected.jpg.png\
+        \ / Composite_Expected.jpeg.png / Composite_Expected.png.jpg / Composite_Expected.png.jpeg / Composite_Expected.png\
+        \ / Composite_Expected.jpg.jpg / Composite_Expected.jpeg.jpeg / Composite_Expected.png.png\"\n}\n\nCopy-Item -LiteralPath\
+        \ $resolvedBackground -Destination $backgroundPath -Force\nCopy-Item -LiteralPath $resolvedCharacter -Destination\
+        \ $characterPath -Force\nCopy-Item -LiteralPath $resolvedReference -Destination $referencePath -Force\n\nforeach ($path\
+        \ in $exportCandidates) {\n  if (Test-Path $path) {\n    Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue\n\
+        \  }\n}\n\n$gimpExe = \"C:\\Program Files\\GIMP 2\\bin\\gimp-2.10.exe\"\nif (-not (Test-Path $gimpExe)) {\n  throw\
+        \ \"GIMP executable not found: $gimpExe\"\n}\n\nStart-Process -FilePath $gimpExe -WindowStyle Maximized | Out-Null\n"
+      timeout: 25
+    - type: wait
+      ms: 12000
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nAdd-Type -AssemblyName Microsoft.VisualBasic\nAdd-Type @\"\nusing System;\n\
+        using System.Runtime.InteropServices;\npublic static class User32 {\n  [DllImport(\"user32.dll\")]\n  public static\
+        \ extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);\n  [DllImport(\"user32.dll\")]\n  public static extern bool\
+        \ SetForegroundWindow(IntPtr hWnd);\n}\n\"@\n\n$proc = $null\nfor ($i = 0; $i -lt 30; $i++) {\n  $proc = Get-Process\
+        \ \"gimp-2.10\" -ErrorAction SilentlyContinue |\n    Where-Object { $_.MainWindowHandle -ne 0 } |\n    Select-Object\
+        \ -First 1\n  if ($null -ne $proc) {\n    break\n  }\n  Start-Sleep -Milliseconds 500\n}\n\nif ($null -eq $proc) {\n\
+        \  throw \"Could not find a visible GIMP main window\"\n}\n\n[void][User32]::ShowWindowAsync($proc.MainWindowHandle,\
+        \ 3)\nStart-Sleep -Milliseconds 300\n[void][Microsoft.VisualBasic.Interaction]::AppActivate($proc.Id)\nStart-Sleep\
+        \ -Milliseconds 300\n[void][User32]::SetForegroundWindow($proc.MainWindowHandle)\n"
+      timeout: 20
+      optional: true
+    - type: run_powershell
+      script: 'py -3 -W ignore -c "import pyautogui,time; time.sleep(0.5); pyautogui.press(''esc''); time.sleep(0.2); pyautogui.press(''esc'')"
+
+        '
+      timeout: 15
+      optional: true
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nAdd-Type -AssemblyName Microsoft.VisualBasic\nAdd-Type -AssemblyName System.Windows.Forms\n\
+        Add-Type @\"\nusing System;\nusing System.Runtime.InteropServices;\npublic static class User32 {\n  [DllImport(\"\
+        user32.dll\")]\n  public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);\n  [DllImport(\"user32.dll\")]\n\
+        \  public static extern bool SetForegroundWindow(IntPtr hWnd);\n  [DllImport(\"user32.dll\")]\n  public static extern\
+        \ bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);\n}\n\"@\n\n$gimpProc = $null\n\
+        for ($i = 0; $i -lt 20; $i++) {\n  $gimpProc = Get-Process \"gimp-2.10\" -ErrorAction SilentlyContinue |\n    Where-Object\
+        \ { $_.MainWindowHandle -ne 0 } |\n    Select-Object -First 1\n  if ($null -ne $gimpProc) {\n    break\n  }\n  Start-Sleep\
+        \ -Milliseconds 500\n}\n\nif ($null -eq $gimpProc) {\n  throw \"Could not refocus the GIMP window\"\n}\n\nGet-Process\
+        \ -ErrorAction SilentlyContinue |\n  Where-Object {\n    $_.MainWindowHandle -ne 0 -and\n    $_.Id -ne $gimpProc.Id\
+        \ -and\n    ($_.ProcessName -in @(\"WindowsTerminal\", \"powershell\", \"pwsh\", \"cmd\", \"notepad\"))\n  } |\n \
+        \ ForEach-Object {\n    [void][User32]::ShowWindow($_.MainWindowHandle, 6)\n  }\n\n$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea\n\
+        [void][User32]::MoveWindow(\n  $gimpProc.MainWindowHandle,\n  $workingArea.X,\n  $workingArea.Y,\n  $workingArea.Width,\n\
+        \  $workingArea.Height,\n  $true\n)\nStart-Sleep -Milliseconds 200\n[void][User32]::ShowWindow($gimpProc.MainWindowHandle,\
+        \ 9)\nStart-Sleep -Milliseconds 200\n[void][Microsoft.VisualBasic.Interaction]::AppActivate($gimpProc.Id)\nStart-Sleep\
+        \ -Milliseconds 300\n[void][User32]::SetForegroundWindow($gimpProc.MainWindowHandle)\nStart-Sleep -Milliseconds 300\n\
+        [System.Windows.Forms.SendKeys]::SendWait(\"% \")\nStart-Sleep -Milliseconds 200\n[System.Windows.Forms.SendKeys]::SendWait(\"\
+        x\")\nStart-Sleep -Milliseconds 300\n[void][User32]::ShowWindow($gimpProc.MainWindowHandle, 3)\n"
+      timeout: 20
+      optional: true
+    - type: wait
+      ms: 2000
+evaluation:
+  evaluator_id: evaluators.windows.gimp:GimpEvaluator
+  params:
+    check_id: gimp_cartoon_girl_bottom_left_blend_flip_opacity
+    timeout: 180
+    stdout_contains: EVAL_RESULT:PASS
+    supplemental_checks:
+      powershell:
+      - label: primary_hard_mode
+        script: "$path = \"C:\\Users\\User\\Downloads\\cartoon_girl_blend_submission.xcf\"\nif ((Test-Path -LiteralPath $path)\
+          \ -and ((Get-Item -LiteralPath $path).Length -ge 1024)) {\n  Write-Output \"EVAL_RESULT:PASS primary artifact exists:\
+          \ $path\"\n} else {\n  Write-Output \"EVAL_RESULT:FAIL primary artifact missing or too small: $path\"\n  exit 1\n\
+          }"
+        stdout_contains: EVAL_RESULT:PASS
+        timeout: 90
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.gimp.cartoon_girl_bottom_left_blend_flip_opacity\tlinux.gimp.scale_image\t\
+          hard-plus-ready\napp\tGIMP\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.gimp.cartoon_girl_bottom_left_blend_flip_opacity
+
+          linux_peer=linux.gimp.scale_image
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_cartoon_girl_bottom_left_blend_flip_opacity\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - gimp
+  - image
+  - composite
+  - layers
+  - opacity
+  - flip
+  - resize
+  - export
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  app: GIMP
+  human_steps: 82
+  description: 'Upload a background image, a cartoon character image, and a deterministic expected composite. Open GIMP maximized,
+    require the agent to build the layered composition manually, require the agent to export it, and verify the saved result
+    by image comparison against the expected composite.
+
+    '
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator or supplemental checks
+  linux_peer: linux.gimp.scale_image
+  linux_peer_file: tasks/linux/gimp_scale_image_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

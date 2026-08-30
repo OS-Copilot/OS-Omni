@@ -1,0 +1,163 @@
+task_id: linux.oracle.thunderbird_calendar_plan_next_week_reviews_hard
+platform: linux
+instruction: Oracle sanity task for linux.thunderbird_calendar.plan_next_week_reviews_hard.
+  The initializer already seeds the expected Thunderbird Calendar state. Wait
+  briefly and finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          pkill -f thunderbird || true
+          mkdir -p /home/user/Desktop
+          cat > /home/user/Desktop/review_schedule_request.txt <<'EOF'
+          Next-week review calendar request:
+          - Design Review: Monday 10:00, 60 minutes
+          - Backlog Triage: Tuesday 09:15, 45 minutes, reminder 15 minutes before
+          - Sprint Planning: Wednesday 13:30, 60 minutes
+          - Launch Debrief: Thursday 16:15, 30 minutes, reminder 10 minutes before
+          - Retrospective: Friday 14:30, 60 minutes, reminder 30 minutes before
+          EOF
+        timeout: 120
+      - type: wait
+        ms: 1200
+      - type: download
+        url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/dd84e895-72fd-4023-a336-97689ded257c/thunderbird-profile.tar.gz
+        path: /home/user/thunderbird-profile.tar.gz
+      - type: run_bash
+        script: tar -xzv --recursive-unlink -f /home/user/thunderbird-profile.tar.gz -C /home/user/
+        timeout: 120
+      - type: run_bash
+        script: |
+          for _ in $(seq 1 10); do
+            if ! pgrep -x thunderbird >/dev/null 2>&1; then
+              break
+            fi
+            pkill -TERM -x thunderbird || true
+            sleep 0.5
+          done
+          pkill -KILL -x thunderbird || true
+          sleep 1
+          python3 - <<'PY'
+          import sqlite3
+          from datetime import datetime, time as dt_time, timedelta, timezone
+          from pathlib import Path
+
+          profile_dir = Path("/home/user/.thunderbird/t5q2a5hp.default-release")
+          db_path = profile_dir / "calendar-data" / "local.sqlite"
+          conn = sqlite3.connect(db_path)
+          cur = conn.cursor()
+          cur.execute("DELETE FROM cal_alarms")
+          cur.execute("DELETE FROM cal_recurrence")
+          cur.execute("DELETE FROM cal_events")
+
+          now_local = datetime.now().astimezone()
+          local_tz = now_local.tzinfo
+          tz_name = str(local_tz or "")
+          created = int(round(now_local.astimezone(timezone.utc).timestamp() * 1000000))
+          next_monday = now_local.date() - timedelta(days=now_local.date().weekday()) + timedelta(days=7)
+
+          def to_micros(dt_value):
+              return int(round(dt_value.astimezone(timezone.utc).timestamp() * 1000000))
+
+          def insert_event(item_id, title, day_offset, hour, minute, duration_minutes, alarm_minutes=None):
+              start_local = datetime.combine(
+                  next_monday + timedelta(days=day_offset),
+                  dt_time(hour=hour, minute=minute),
+                  tzinfo=local_tz,
+              )
+              end_local = start_local + timedelta(minutes=duration_minutes)
+              cur.execute(
+                  """
+                  INSERT INTO cal_events (
+                      cal_id, id, time_created, last_modified, title, priority, privacy, ical_status,
+                      flags, event_start, event_end, event_stamp, event_start_tz, event_end_tz,
+                      recurrence_id, recurrence_id_tz, alarm_last_ack, offline_journal
+                  ) VALUES (?, ?, ?, ?, ?, 0, '', '', 0, ?, ?, ?, ?, ?, NULL, '', NULL, 0)
+                  """,
+                  (
+                      "home",
+                      item_id,
+                      created,
+                      created,
+                      title,
+                      to_micros(start_local),
+                      to_micros(end_local),
+                      created,
+                      tz_name,
+                      tz_name,
+                  ),
+              )
+              if alarm_minutes is not None:
+                  cur.execute(
+                      "INSERT INTO cal_alarms (cal_id, item_id, recurrence_id, recurrence_id_tz, icalString) VALUES (?, ?, NULL, '', ?)",
+                      (
+                          "home",
+                          item_id,
+                          f"BEGIN:VALARM\\nTRIGGER:-PT{int(alarm_minutes)}M\\nACTION:DISPLAY\\nEND:VALARM",
+                      ),
+                  )
+
+          insert_event("design-review", "Design Review", 0, 10, 0, 60)
+          insert_event("backlog-triage", "Backlog Triage", 1, 9, 15, 45, alarm_minutes=15)
+          insert_event("sprint-planning", "Sprint Planning", 2, 13, 30, 60)
+          insert_event("launch-debrief", "Launch Debrief", 3, 16, 15, 30, alarm_minutes=10)
+          insert_event("retrospective", "Retrospective", 4, 14, 30, 60, alarm_minutes=30)
+
+          conn.commit()
+          conn.close()
+          print("THUNDERBIRD_CALENDAR_READY")
+          PY
+        timeout: 120
+evaluation:
+  evaluator_id: evaluators.linux.thunderbird_calendar:ThunderbirdCalendarEvaluator
+  params:
+    profile_dir: /home/user/.thunderbird/t5q2a5hp.default-release
+    required_titles:
+      - Design Review
+      - Backlog Triage
+      - Sprint Planning
+      - Launch Debrief
+      - Retrospective
+    event_expectations:
+      Design Review:
+        relative_day: next_week
+        weekday: monday
+        start_time: "10:00"
+        duration_minutes: 60
+      Backlog Triage:
+        relative_day: next_week
+        weekday: tuesday
+        start_time: "09:15"
+        duration_minutes: 45
+        alarm_keywords:
+          - -pt15m
+      Sprint Planning:
+        relative_day: next_week
+        weekday: wednesday
+        start_time: "13:30"
+        duration_minutes: 60
+      Launch Debrief:
+        relative_day: next_week
+        weekday: thursday
+        start_time: "16:15"
+        duration_minutes: 30
+        alarm_keywords:
+          - -pt10m
+      Retrospective:
+        relative_day: next_week
+        weekday: friday
+        start_time: "14:30"
+        duration_minutes: 60
+        alarm_keywords:
+          - -pt30m
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, thunderbird, calendar, hard, oracle]
+  app: Thunderbird Calendar
+  difficulty: hard
+  description: Oracle sanity task for linux.thunderbird_calendar.plan_next_week_reviews_hard.
+  oracle_for: linux.thunderbird_calendar.plan_next_week_reviews_hard

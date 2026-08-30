@@ -1,0 +1,37 @@
+task_id: macos.oracle.thunderbird.calendar.create_recurring_event
+platform: macos
+instruction: Oracle sanity task for macos.thunderbird.calendar.create_recurring_event. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.thunderbird_profile:ThunderbirdProfileInitializer
+  params:
+    open_calendar: true
+    wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.thunderbird_calendar:ThunderbirdCalendarEvaluator
+  params:
+    required_titles:
+    - Weekly Standup
+    recurrence_checks:
+      Weekly Standup:
+      - rrule
+      - freq=weekly
+      - weekly
+    event_expectations:
+      Weekly Standup:
+        start_time: "09:00"
+        duration_minutes: 60
+        recurrence_keywords:
+        - rrule
+        - freq=weekly
+        - byday=mo
+        alarm_keywords:
+        - -pt15m
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.thunderbird.calendar.create_recurring_event
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

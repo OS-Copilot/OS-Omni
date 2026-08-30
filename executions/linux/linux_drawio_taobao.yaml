@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/drawio_launch_badge_easy.yaml
+  - tasks/linux/drawio_refresh_release_flow_hard.yaml
+  - tasks/linux/drawio_relabel_incident_sync_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: draw.io desktop benchmark tasks via taobao gpt-5

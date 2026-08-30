@@ -1,0 +1,33 @@
+task_id: ios.maily.send_email
+platform: ios
+instruction: "Use Maily to send an email to benchrecv@example.test with subject HelloWorldBenchIOS and body maily_ios_message."
+init:
+  initializer_id: initializers.ios.greenmail_open_app:GreenMailOpenAppInitializer
+  params:
+    bundle_id: de.enough.maily
+    api_base_url: "http://127.0.0.1:8081"
+    purge_greenmail: true
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.maily_send_email:MailySendEmailEvaluator
+  params:
+    api_base_url: "http://127.0.0.1:8081"
+    sender_email: "benchsender@example.test"
+    recipient_email: "benchrecv@example.test"
+    subject: "HelloWorldBenchIOS"
+    body: "maily_ios_message"
+    mailbox: "INBOX"
+    timeout_seconds: 20
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [email, maily, greenmail, communication, medium, benchmark]
+  app: Maily
+  app_bundle_id: de.enough.maily
+  description: "Send a fixed email through a preconfigured Maily account and verify delivery through GreenMail."
+  prerequisites:
+    - "Maily is installed on the simulator."
+    - "The benchsender@example.test account is already configured in Maily."
+    - "GreenMail is running on the host and reachable at http://127.0.0.1:8081."

@@ -1,0 +1,45 @@
+task_id: windows.oracle.actual_budget.create_account
+platform: windows
+instruction: >
+  Oracle sanity check for windows.actual_budget.create_account.
+
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          $ErrorActionPreference = "Stop"
+          $py = @'
+          import os, shutil, sqlite3
+          base = os.path.join(os.environ["USERPROFILE"], "Documents", "Actual", "oracle-budget")
+          if os.path.exists(base):
+              shutil.rmtree(base, ignore_errors=True)
+          os.makedirs(base, exist_ok=True)
+          db_path = os.path.join(base, "db.sqlite")
+          conn = sqlite3.connect(db_path)
+          conn.execute("create table entries (kind text, name text, memo text, amount text)")
+          conn.execute("insert into entries values (?, ?, ?, ?)", ("account", "Checking Account", "opening balance", "5000.00"))
+          conn.commit()
+          conn.close()
+          print("ORACLE_ACTUAL_BUDGET_READY", db_path)
+          '@
+          $tmp = Join-Path $env:TEMP "actual_budget_create_account_oracle.py"
+          Set-Content -LiteralPath $tmp -Value $py -Encoding UTF8
+          py -3 -W ignore $tmp
+        timeout: 30
+
+evaluation:
+  evaluator_id: evaluators.windows.actual_budget:ActualBudgetEvaluator
+  params:
+    check_id: budget_create_account
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 45
+
+limits:
+  max_steps: 100
+  step_timeout_seconds: 180
+
+metadata:
+  tags: [oracle, windows, actual_budget]
+  oracle_for: windows.actual_budget.create_account

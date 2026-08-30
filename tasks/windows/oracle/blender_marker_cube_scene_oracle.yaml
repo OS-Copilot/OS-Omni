@@ -1,0 +1,56 @@
+task_id: windows.oracle.blender.marker_cube_scene
+platform: windows
+instruction: >
+  Oracle sanity check for windows.blender.marker_cube_scene.
+
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          $ErrorActionPreference = "Stop"
+          Get-Process blender -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $sceneDir = "C:\Users\User\Documents\blender_tasks"
+          New-Item -ItemType Directory -Force -Path $sceneDir | Out-Null
+          $blenderExeCandidates = @(
+            "C:\Tools\Blender279b\blender-2.79b-windows64\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 2.79\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender\blender.exe",
+            "$env:LOCALAPPDATA\Programs\Blender Foundation\Blender\blender.exe"
+          )
+          $blenderExe = $blenderExeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $blenderExe) {
+            $cmd = Get-Command blender.exe -ErrorAction SilentlyContinue
+            if ($cmd) { $blenderExe = $cmd.Source }
+          }
+          if (-not $blenderExe) { throw "Blender executable not found" }
+          $py = @'
+          import bpy, os
+          bpy.ops.object.select_all(action="SELECT")
+          bpy.ops.object.delete()
+          bpy.ops.mesh.primitive_cube_add(location=(2, -1, 1))
+          cube = bpy.context.object
+          cube.name = "MarkerCube"
+          os.makedirs(r"C:\Users\User\Documents\blender_tasks", exist_ok=True)
+          bpy.ops.wm.save_as_mainfile(filepath=r"C:\Users\User\Documents\blender_tasks\marker_cube_scene.blend")
+          '@
+          $tmp = Join-Path $env:TEMP "blender_marker_cube_scene_oracle.py"
+          Set-Content -LiteralPath $tmp -Value $py -Encoding UTF8
+          & $blenderExe --background --factory-startup --python $tmp
+        timeout: 60
+
+evaluation:
+  evaluator_id: evaluators.windows.blender:BlenderEvaluator
+  params:
+    check_id: blender_marker_cube_scene
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 45
+
+limits:
+  max_steps: 100
+  step_timeout_seconds: 180
+
+metadata:
+  tags: [oracle, windows, blender]
+  oracle_for: windows.blender.marker_cube_scene

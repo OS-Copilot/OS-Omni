@@ -1,0 +1,66 @@
+task_id: macos.blender.create_cube_hard
+platform: macos
+instruction: >
+  Open Blender. You will see a default cube in the 3D viewport.
+  First, delete the default cube by pressing X and then clicking "Delete".
+  Now create a new cube by pressing Shift+A and selecting "Mesh" → "Cube".
+  Move the cube to position X=2, Y=0, Z=0 by pressing N to open the
+  properties panel, then changing the Location values.
+  Scale the cube to X=1.5, Y=1.5, Z=1.5 by changing the Scale values
+  in the properties panel.
+  Rotate the cube by 45 degrees on the Z axis by changing the Rotation
+  Z value to 45°.
+  Save the file as /Users/bench/Documents/cube.blend by pressing Cmd+S.
+  In the save dialog, navigate to /Users/bench/Documents/, type "cube.blend"
+  as the filename, and click "Save Blender File".
+  Finish after the file is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Blender >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a Blender
+    - type: wait
+      ms: 10000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+
+      # Check if the Blender file exists
+      blend_path = os.path.expanduser("~/Documents/cube.blend")
+      if not os.path.exists(blend_path):
+          raise SystemExit("BLEND_FILE_NOT_FOUND")
+
+      # Check file size (should be > 0)
+      if os.path.getsize(blend_path) == 0:
+          raise SystemExit("BLEND_FILE_EMPTY")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - blender
+  - 3d
+  - cube
+  - hard
+  app_name: blender
+  difficulty: hard
+  description: Create and transform a 3D cube in Blender.

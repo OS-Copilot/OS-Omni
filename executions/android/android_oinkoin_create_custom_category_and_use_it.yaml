@@ -1,0 +1,9 @@
+tasks:
+  - tasks/android/oinkoin_create_custom_category_and_use_it.yaml
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 4
+metadata:
+  description: Android single-task validation for Oinkoin custom category creation plus record persistence

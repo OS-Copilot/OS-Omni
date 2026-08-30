@@ -1,0 +1,46 @@
+tasks:
+- tasks/ios/calendar_create_today_event.yaml
+- tasks/ios/calendar_finalize_schedule_with_two_followups.yaml
+- tasks/ios/calendar_reminders_add_followup_easy.yaml
+- tasks/ios/calendar_reminders_finalize_briefing.yaml
+- tasks/ios/calendar_reminders_finalize_launch_plan.yaml
+- tasks/ios/calendar_update_and_create_followup.yaml
+- tasks/ios/contacts_add_contact_card.yaml
+- tasks/ios/contacts_reconcile_multi_field_directory.yaml
+- tasks/ios/contacts_reconcile_seeded_contacts.yaml
+- tasks/ios/deltachat_create_contact_forward_and_notify.yaml
+- tasks/ios/deltachat_create_two_contacts_forward_and_escalate.yaml
+- tasks/ios/deltachat_send_message.yaml
+- tasks/ios/flow_add_expense_transaction.yaml
+- tasks/ios/flow_rework_budget_with_transfer_and_income.yaml
+- tasks/ios/flow_transfer_and_cash_expense.yaml
+- tasks/ios/fsnotes_archive_note_and_create_followup.yaml
+- tasks/ios/fsnotes_create_markdown_note.yaml
+- tasks/ios/fsnotes_move_rename_and_update_note.yaml
+- tasks/ios/habit_add_new_habit.yaml
+- tasks/ios/habit_manage_seeded_habits.yaml
+- tasks/ios/habit_rework_seeded_routine.yaml
+- tasks/ios/maily_forward_delete_and_send_followup.yaml
+- tasks/ios/maily_forward_delete_and_send_launch_notice.yaml
+- tasks/ios/maily_send_email.yaml
+- tasks/ios/openshop_add_coffee_to_cart.yaml
+- tasks/ios/openshop_adjust_cart_and_checkout.yaml
+- tasks/ios/openshop_checkout_two_items.yaml
+- tasks/ios/openshop_flow_adjust_checkout_and_log_order.yaml
+- tasks/ios/openshop_flow_checkout_and_record_order.yaml
+- tasks/ios/openshop_flow_record_cart_reserve_easy.yaml
+- tasks/ios/reminders_create_single_reminder.yaml
+- tasks/ios/reminders_manage_seeded_list.yaml
+- tasks/ios/reminders_rework_seeded_agenda.yaml
+- tasks/ios/safari_build_two_reading_folders.yaml
+- tasks/ios/safari_open_target_page.yaml
+- tasks/ios/safari_organize_tabs_and_bookmarks.yaml
+models:
+- free_codesonline_gpt5_4_high
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Full 36-task iOS benchmark batch using the Codez OpenAI-compatible
+    endpoint with gpt-5.4 Responses API at high reasoning effort and reflection_pyautogui
+    action mode.

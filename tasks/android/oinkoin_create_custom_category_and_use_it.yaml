@@ -1,0 +1,104 @@
+task_id: android.oinkoin.create_custom_category_and_use_it
+platform: android
+instruction: In Oinkoin, keep the seeded Food, Transport, and BenchCafeOps-DRAFT-774 records unchanged. Create a new expense category named BenchCafeOps-BLUE-774, not BenchCafeOps-DRAFT-774 or BenchCafeOps-BLUE-747. Use the new category for one draft expense of 21.50 titled Special Coffee with note bench_custom_category_note_initial route=draft. Reopen that same record, do not leave the draft version behind, and edit it so the final saved version is 27.40 titled Special Coffee Beans - Ethiopia Batch 7 [final] with the exact three-line note bench_custom_category_note_final / route=blue; tax=incl; owner=Mei / keep=category BenchCafeOps-BLUE-774; checksum=ETH-2740. Then create a second expense in the same new category for 8.75 titled Counter tip - final blue with note bench_counter_tip_final route=blue checksum=TIP-875. Do not create any extra records or use the seeded draft category.
+init:
+  initializer_id: initializers.android.oinkoin_additional:OinkoinCreateCustomCategoryAndUseItInitializer
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    app_activity: "com.example.piggybank.MainActivity"
+    clear_app_data: true
+    seed_categories:
+      - name: "Food"
+        category_type: 0
+        color: "green"
+        sort_order: 1
+      - name: "Transport"
+        category_type: 0
+        color: "amber"
+        sort_order: 2
+      - name: "BenchCafeOps-DRAFT-774"
+        category_type: 0
+        color: "gray"
+        sort_order: 3
+      - name: "BenchCafeOps-BLUE-747"
+        category_type: 0
+        color: "red"
+        sort_order: 4
+    seed_records:
+      - title: "Seeded Groceries - keep"
+        note: "seed_food_keep checksum=F-101"
+        category_name: "Food"
+        category_type: 0
+        amount: 13.10
+      - title: "Seeded Metro - keep"
+        note: "seed_transport_keep checksum=T-202"
+        category_name: "Transport"
+        category_type: 0
+        amount: 4.20
+      - title: "Draft Cafe Category Sample - keep"
+        note: "seed_draft_category_keep checksum=D-303"
+        category_name: "BenchCafeOps-DRAFT-774"
+        category_type: 0
+        amount: 6.30
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.android.oinkoin_additional:OinkoinCreateCustomCategoryAndUseItEvaluator
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    database_path: "/data/user/0/com.github.emavgl.piggybankpro/databases/movements.db"
+    category_name: "BenchCafeOps-BLUE-774"
+    initial_title: "Special Coffee"
+    initial_note: "bench_custom_category_note_initial route=draft"
+    initial_amount: 21.50
+    final_title: "Special Coffee Beans - Ethiopia Batch 7 [final]"
+    final_note: |-
+      bench_custom_category_note_final
+      route=blue; tax=incl; owner=Mei
+      keep=category BenchCafeOps-BLUE-774; checksum=ETH-2740
+    final_amount: 27.40
+    category_type: 0
+    expected_category_names: ["Food", "Transport", "BenchCafeOps-DRAFT-774", "BenchCafeOps-BLUE-747", "BenchCafeOps-BLUE-774"]
+    expected_records:
+      - title: "Seeded Groceries - keep"
+        note: "seed_food_keep checksum=F-101"
+        category_name: "Food"
+        category_type: 0
+        amount: 13.10
+      - title: "Seeded Metro - keep"
+        note: "seed_transport_keep checksum=T-202"
+        category_name: "Transport"
+        category_type: 0
+        amount: 4.20
+      - title: "Draft Cafe Category Sample - keep"
+        note: "seed_draft_category_keep checksum=D-303"
+        category_name: "BenchCafeOps-DRAFT-774"
+        category_type: 0
+        amount: 6.30
+      - title: "Special Coffee Beans - Ethiopia Batch 7 [final]"
+        note: |-
+          bench_custom_category_note_final
+          route=blue; tax=incl; owner=Mei
+          keep=category BenchCafeOps-BLUE-774; checksum=ETH-2740
+        category_name: "BenchCafeOps-BLUE-774"
+        category_type: 0
+        amount: 27.40
+      - title: "Counter tip - final blue"
+        note: "bench_counter_tip_final route=blue checksum=TIP-875"
+        category_name: "BenchCafeOps-BLUE-774"
+        category_type: 0
+        amount: 8.75
+    forbidden_category_names: []
+    timeout_seconds: 15
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [finance, accounting, oinkoin, sqlite, local_db, custom_category, hard, benchmark]
+  app: "Oinkoin"
+  app_bundle_id: com.github.emavgl.piggybankpro
+  difficulty: hard
+  description: "Preserve seeded Oinkoin records and decoy categories, create a precise custom expense category, edit one draft record into a final multiline record, create a second final record, and verify the exact final SQLite state."
+  prerequisites:
+    - "Oinkoin PRO is installed on the emulator."
+    - "The Android emulator supports adb root so the evaluator can inspect the app database."

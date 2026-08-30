@@ -1,0 +1,10 @@
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/windows/blender_marker_cube_scene.yaml
+metadata:
+  description: Blender Windows task - marker cube scene with code_adapter mode.

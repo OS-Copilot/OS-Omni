@@ -1,0 +1,12 @@
+tasks:
+- tasks/linux/oracle/gimp_convert_grayscale_oracle.yaml
+- tasks/linux/oracle/gimp_crop_center_oracle.yaml
+- tasks/linux/oracle/gimp_scale_image_oracle.yaml
+models:
+- gimp_oracle
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Curated GIMP oracle sanity run.

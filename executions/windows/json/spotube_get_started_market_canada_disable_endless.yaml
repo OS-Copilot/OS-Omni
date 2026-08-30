@@ -1,0 +1,9 @@
+tasks:
+- tasks/windows/spotube_get_started_market_canada_disable_endless.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Spotube Windows task - onboarding to Canada with endless playback off

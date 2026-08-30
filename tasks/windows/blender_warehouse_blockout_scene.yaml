@@ -1,0 +1,215 @@
+task_id: windows.blender.warehouse_blockout_scene
+platform: windows
+instruction: 'In Blender, product_stage.blend is already open. Build the Linux-style restage product delivery, but make the
+  Windows version harder by producing an eleven-file multi-blend dependency network. First update and save the primary scene
+  as C:\Users\User\Documents\blender_tasks\blender_restage_product\product_stage.blend: set product_stage.blend render resolution
+  to 1536 by 1080 at 90 percent scale, set FPS to 24, set the frame range to start at 15 and end at 180, set the output path
+  to //renders/restage_layout.png. Apply the primary scene object changes one by one using explicit X, Y, and Z values: Set
+  or create FeatureCube, move FeatureCube to X 2, Y -1, Z 1.5, rotate FeatureCube to X 0, Y 12, Z -16 degrees, scale FeatureCube
+  to X 1.4, Y 0.8, Z 1.9, set FeatureCube diffuse material RGB to 0.78, 0.22, 0.14. Set or create AccentCylinder, move AccentCylinder
+  to X -2.3, Y 1.2, Z 0.9, rotate AccentCylinder to X 4, Y 0, Z 14 degrees, scale AccentCylinder to X 0.6, Y 0.6, Z 2.2, set
+  AccentCylinder diffuse material RGB to 0.12, 0.52, 0.7. Set or create HeroSphere, move HeroSphere to X 2.9, Y 2.1, Z 1.35,
+  rotate HeroSphere to X 18, Y 0, Z -24 degrees, scale HeroSphere to X 1.15, Y 1.15, Z 1.15, set HeroSphere diffuse material
+  RGB to 0.96, 0.78, 0.22. Set or create BackdropPlane, move BackdropPlane to X -0.15, Y 0.25, Z -0.05, rotate BackdropPlane
+  to X 1, Y -1.5, Z 7 degrees, scale BackdropPlane to X 6.0, Y 4.5, Z 1.0, set BackdropPlane diffuse material RGB to 0.04,
+  0.05, 0.06. Set or create ScaleMarker, move ScaleMarker to X 0.4, Y -2.2, Z 0.65, rotate ScaleMarker to X 0, Y 0, Z 32 degrees,
+  scale ScaleMarker to X 0.35, Y 0.35, Z 1.1, set ScaleMarker diffuse material RGB to 0.22, 0.86, 0.38. Set or create BalancePuck,
+  move BalancePuck to X -2.8, Y -1.4, Z 0.45, rotate BalancePuck to X 9, Y 0, Z -22 degrees, scale BalancePuck to X 0.55,
+  Y 0.55, Z 0.25, set BalancePuck diffuse material RGB to 0.82, 0.82, 0.18. Set or create DepthRail, move DepthRail to X 1.2,
+  Y 2.7, Z 0.25, rotate DepthRail to X 0, Y 0, Z -8 degrees, scale DepthRail to X 2.4, Y 0.18, Z 0.28, set DepthRail diffuse
+  material RGB to 0.18, 0.62, 0.88. Set or create FocusDot, move FocusDot to X -1.3, Y 2.4, Z 0.42, rotate FocusDot to X 0,
+  Y 0, Z 14 degrees, scale FocusDot to X 0.22, Y 0.22, Z 0.22, set FocusDot diffuse material RGB to 0.95, 0.32, 0.74. Set
+  or create BacklineStrip, move BacklineStrip to X -0.55, Y 3.1, Z 0.03, rotate BacklineStrip to X 0, Y 0, Z 18 degrees, scale
+  BacklineStrip to X 3.1, Y 0.16, Z 1.0, set BacklineStrip diffuse material RGB to 0.14, 0.28, 0.92. Set or create OrbitMarker,
+  move OrbitMarker to X 3.25, Y 0.55, Z 0.72, rotate OrbitMarker to X 0, Y 0, Z -38 degrees, scale OrbitMarker to X 0.24,
+  Y 0.24, Z 0.78, set OrbitMarker diffuse material RGB to 0.9, 0.48, 0.12. Set or create AnchorCube, move AnchorCube to X
+  -3.25, Y 0.85, Z 0.3, rotate AnchorCube to X 0, Y 0, Z 26 degrees, scale AnchorCube to X 0.42, Y 0.42, Z 0.36, set AnchorCube
+  diffuse material RGB to 0.62, 0.18, 0.96. Set or create TensionSphere, move TensionSphere to X 0.1, Y 2.1, Z 0.52, rotate
+  TensionSphere to X 7, Y 0, Z -11 degrees, scale TensionSphere to X 0.28, Y 0.28, Z 0.28, set TensionSphere diffuse material
+  RGB to 0.12, 0.92, 0.92. Set or create ShelfPlane, move ShelfPlane to X -2.2, Y 2.9, Z 0.05, rotate ShelfPlane to X 0, Y
+  0, Z -14 degrees, scale ShelfPlane to X 1.6, Y 0.2, Z 1.0, set ShelfPlane diffuse material RGB to 0.74, 0.74, 0.2. Set or
+  create ReviewPost, move ReviewPost to X 2.75, Y -2.2, Z 0.9, rotate ReviewPost to X 0, Y 0, Z 41 degrees, scale ReviewPost
+  to X 0.2, Y 0.2, Z 1.25, set ReviewPost diffuse material RGB to 0.95, 0.18, 0.18. Set or create LabelCube, move LabelCube
+  to X -0.35, Y -3.05, Z 0.24, rotate LabelCube to X 0, Y 0, Z 5 degrees, scale LabelCube to X 0.55, Y 0.18, Z 0.28, set LabelCube
+  diffuse material RGB to 0.2, 0.95, 0.52. Set or create ReviewFlag, move ReviewFlag to X 1.85, Y -3.25, Z 0.06, rotate ReviewFlag
+  to X 0, Y 0, Z 12 degrees, scale ReviewFlag to X 1.2, Y 0.16, Z 1.0, set ReviewFlag diffuse material RGB to 0.88, 0.88,
+  0.32. Set or create VariancePin, move VariancePin to X -3.35, Y -0.85, Z 0.46, rotate VariancePin to X 0, Y 0, Z -17 degrees,
+  scale VariancePin to X 0.18, Y 0.18, Z 0.18, set VariancePin diffuse material RGB to 0.32, 0.88, 0.95. Set or create BaselineRail,
+  move BaselineRail to X 0.75, Y 3.35, Z 0.2, rotate BaselineRail to X 0, Y 0, Z 3 degrees, scale BaselineRail to X 2.2, Y
+  0.1, Z 0.24, set BaselineRail diffuse material RGB to 0.95, 0.42, 0.2. Set or create Camera, move Camera to X 7.8, Y -7.0,
+  Z 6.2, rotate Camera to X 60, Y 0, Z 48 degrees. Set or create FillLight, move FillLight to X 1.4, Y -3.6, Z 7.0, rotate
+  FillLight to X 50, Y 0, Z 35 degrees, scale FillLight to X 1.25, Y 1.25, Z 1.25. After saving the primary scene, create
+  ten separate Blender delivery files from that scene. Each file must be saved as its own .blend file, and each one has its
+  own render setup and object adjustments: Delivery file 1: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_review_closeup.blend;
+  set closeup render resolution to 1280 by 960 at 100 percent scale, set the frame range to start at 30 and end at 120, set
+  the output path to //renders/restage_review_closeup.png. In closeup, adjust Camera, move Camera to X 5.2, Y -5.1, Z 4.4,
+  rotate Camera to X 61, Y 0, Z 44 degrees. In closeup, adjust FeatureCube, move FeatureCube to X 1.75, Y -0.65, Z 1.7, scale
+  FeatureCube to X 1.55, Y 0.9, Z 2.05. In closeup, adjust VariancePin, move VariancePin to X -2.95, Y -0.55, Z 0.55. Delivery
+  file 2: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_archive_wide.blend; set archive render
+  resolution to 2048 by 1152 at 90 percent scale, set the frame range to start at 1 and end at 180, set the output path to
+  //renders/restage_archive_wide.png. In archive, adjust Camera, move Camera to X 8.8, Y -8.0, Z 6.8, rotate Camera to X 57,
+  Y 0, Z 52 degrees. In archive, adjust BackdropPlane, scale BackdropPlane to X 6.8, Y 5.0, Z 1.0. In archive, adjust BaselineRail,
+  move BaselineRail to X 0.95, Y 3.55, Z 0.22. Delivery file 3: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_qa_isolation.blend;
+  set qa render resolution to 1440 by 1440 at 100 percent scale, set the frame range to start at 60 and end at 150, set the
+  output path to //renders/restage_qa_isolation.png. In qa, adjust Camera, move Camera to X 4.6, Y -6.2, Z 5.1, rotate Camera
+  to X 62, Y 0, Z 39 degrees. In qa, adjust ReviewPost, move ReviewPost to X 2.35, Y -2.55, Z 1.05, scale ReviewPost to X
+  0.18, Y 0.18, Z 1.45. In qa, adjust FocusDot, move FocusDot to X -1.05, Y 2.65, Z 0.52. Delivery file 4: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_dependency_audit.blend;
+  set dependency render resolution to 1920 by 1080 at 100 percent scale, set the frame range to start at 45 and end at 135,
+  set the output path to //renders/restage_dependency_audit.png. In dependency, adjust Camera, move Camera to X 6.4, Y -6.6,
+  Z 5.6, rotate Camera to X 60, Y 0, Z 45 degrees. In dependency, adjust TensionSphere, move TensionSphere to X 0.35, Y 2.35,
+  Z 0.62. In dependency, adjust BaselineRail, scale BaselineRail to X 2.45, Y 0.12, Z 0.28. Delivery file 5: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_colorway_variant.blend;
+  set colorway_variant render resolution to 1500 by 1000 at 100 percent scale, set FPS to 24, set the frame range to start
+  at 20 and end at 110, set the output path to //renders/restage_colorway_variant.png. In colorway_variant, adjust Camera,
+  move Camera to X 6.2, Y -5.9, Z 4.9, rotate Camera to X 60, Y 0, Z 43 degrees. In colorway_variant, adjust FeatureCube,
+  set FeatureCube diffuse material RGB to 0.18, 0.56, 0.96. In colorway_variant, adjust HeroSphere, set HeroSphere diffuse
+  material RGB to 0.98, 0.38, 0.18. Delivery file 6: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_shadow_pass.blend;
+  set shadow_pass render resolution to 1680 by 1050 at 100 percent scale, set FPS to 24, set the frame range to start at 35
+  and end at 150, set the output path to //renders/restage_shadow_pass.png. In shadow_pass, adjust Camera, move Camera to
+  X 8.2, Y -7.2, Z 6.0, rotate Camera to X 58, Y 0, Z 50 degrees. In shadow_pass, adjust BackdropPlane, scale BackdropPlane
+  to X 7.1, Y 5.25, Z 1.0. In shadow_pass, adjust ShelfPlane, move ShelfPlane to X -2.45, Y 3.1, Z 0.08, scale ShelfPlane
+  to X 1.95, Y 0.24, Z 1.0. Delivery file 7: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_label_closeup.blend;
+  set label_closeup render resolution to 1100 by 1100 at 100 percent scale, set FPS to 24, set the frame range to start at
+  70 and end at 132, set the output path to //renders/restage_label_closeup.png. In label_closeup, adjust Camera, move Camera
+  to X 4.0, Y -4.3, Z 3.8, rotate Camera to X 60, Y 0, Z 37 degrees. In label_closeup, adjust LabelCube, move LabelCube to
+  X -0.15, Y -3.2, Z 0.32, scale LabelCube to X 0.7, Y 0.22, Z 0.36. In label_closeup, adjust ReviewFlag, move ReviewFlag
+  to X 2.1, Y -3.45, Z 0.1, scale ReviewFlag to X 1.45, Y 0.2, Z 1.0. Delivery file 8: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_depth_review.blend;
+  set depth_review render resolution to 1800 by 1200 at 100 percent scale, set FPS to 24, set the frame range to start at
+  90 and end at 165, set the output path to //renders/restage_depth_review.png. In depth_review, adjust DepthRail, move DepthRail
+  to X 1.45, Y 2.95, Z 0.36, scale DepthRail to X 2.9, Y 0.22, Z 0.34. In depth_review, adjust OrbitMarker, move OrbitMarker
+  to X 3.4, Y 0.75, Z 0.9, scale OrbitMarker to X 0.3, Y 0.3, Z 0.95. In depth_review, adjust AnchorCube, move AnchorCube
+  to X -3.45, Y 1.0, Z 0.42, scale AnchorCube to X 0.52, Y 0.52, Z 0.46. Delivery file 9: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_composite_board.blend;
+  set composite_board render resolution to 2400 by 1350 at 100 percent scale, set FPS to 24, set the frame range to start
+  at 1 and end at 180, set the output path to //renders/restage_composite_board.png. In composite_board, adjust Camera, move
+  Camera to X 9.3, Y -8.4, Z 6.5, rotate Camera to X 57, Y 0, Z 51 degrees. In composite_board, adjust FeatureCube, move FeatureCube
+  to X 1.65, Y -0.8, Z 1.82, scale FeatureCube to X 1.62, Y 0.95, Z 2.1. In composite_board, adjust BaselineRail, move BaselineRail
+  to X 1.1, Y 3.72, Z 0.26, scale BaselineRail to X 2.65, Y 0.14, Z 0.32. In composite_board, adjust TensionSphere, move TensionSphere
+  to X 0.52, Y 2.52, Z 0.72, scale TensionSphere to X 0.34, Y 0.34, Z 0.34. Delivery file 10: save C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_final_audit_stack.blend;
+  set final_audit_stack render resolution to 2560 by 1440 at 100 percent scale, set FPS to 24, set the frame range to start
+  at 120 and end at 180, set the output path to //renders/restage_final_audit_stack.png. In final_audit_stack, adjust Camera,
+  move Camera to X 7.0, Y -6.9, Z 5.9, rotate Camera to X 60, Y 0, Z 46 degrees. In final_audit_stack, adjust FillLight, move
+  FillLight to X 1.9, Y -4.0, Z 7.4, scale FillLight to X 1.48, Y 1.48, Z 1.48. In final_audit_stack, adjust ReviewPost, move
+  ReviewPost to X 2.55, Y -2.85, Z 1.22, scale ReviewPost to X 0.22, Y 0.22, Z 1.62. In final_audit_stack, adjust FocusDot,
+  move FocusDot to X -0.78, Y 2.85, Z 0.66, scale FocusDot to X 0.28, Y 0.28, Z 0.28. The final two blend files are composite/audit
+  files. Treat them as downstream products that depend on earlier blend files, and make sure the dependency graph and orchestration
+  files below record those links exactly. Create or overwrite these exact dependency and handoff text artifacts: C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_delivery_crosswalk.tsv
+  with exactly this content: ''file\trole\tresolution\tlinked_object\nproduct_stage.blend\tprimary\t1536x1080\tFeatureCube\nrestage_review_closeup.blend\tcloseup\t1280x960\tVariancePin\nrestage_archive_wide.blend\tarchive\t2048x1152\tBaselineRail\nrestage_qa_isolation.blend\tqa\t1440x1440\tReviewPost\nrestage_dependency_audit.blend\tdependency\t1920x1080\tTensionSphere\nrestage_colorway_variant.blend\tcolorway\t1500x1000\tHeroSphere\nrestage_shadow_pass.blend\tshadow\t1680x1050\tShelfPlane\nrestage_label_closeup.blend\tlabel\t1100x1100\tLabelCube\nrestage_depth_review.blend\tdepth\t1800x1200\tDepthRail\nrestage_composite_board.blend\tcomposite\t2400x1350\tBaselineRail\nrestage_final_audit_stack.blend\tfinal-audit\t2560x1440\tReviewPost''.
+  C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_render_bundle_index.txt with exactly this content:
+  ''primary=product_stage.blend\nderivatives=restage_review_closeup.blend|restage_archive_wide.blend|restage_qa_isolation.blend|restage_dependency_audit.blend|restage_colorway_variant.blend|restage_shadow_pass.blend|restage_label_closeup.blend|restage_depth_review.blend|restage_composite_board.blend|restage_final_audit_stack.blend\nshared_workspace=blender_restage_product\nblend_file_count=11\nmulti_blend_dependency=restage_composite_board.blend->restage_final_audit_stack.blend\nhandoff_status=extreme-ready''.
+  C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_blend_dependency_graph.tsv with exactly this content:
+  ''blend\tdepends_on\tpurpose\nrestage_review_closeup.blend\tproduct_stage.blend\tcloseup-proof\nrestage_archive_wide.blend\tproduct_stage.blend\tarchive-context\nrestage_qa_isolation.blend\tproduct_stage.blend\tqa-isolation\nrestage_dependency_audit.blend\trestage_review_closeup.blend|restage_qa_isolation.blend\tcross-file-audit\nrestage_colorway_variant.blend\trestage_review_closeup.blend|restage_archive_wide.blend\tpalette-reconcile\nrestage_shadow_pass.blend\tproduct_stage.blend|restage_archive_wide.blend\tshadow-reconcile\nrestage_label_closeup.blend\trestage_qa_isolation.blend|restage_colorway_variant.blend\tlabel-proof\nrestage_depth_review.blend\trestage_archive_wide.blend|restage_shadow_pass.blend\tdepth-proof\nrestage_composite_board.blend\trestage_label_closeup.blend|restage_depth_review.blend|restage_dependency_audit.blend\tcomposite-board\nrestage_final_audit_stack.blend\trestage_composite_board.blend|restage_dependency_audit.blend\tfinal-audit''.
+  C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_blend_orchestration_index.txt with exactly this content:
+  ''primary=product_stage.blend\nblend_file_count=11\nstage_1=restage_review_closeup.blend|restage_archive_wide.blend|restage_qa_isolation.blend\nstage_2=restage_dependency_audit.blend|restage_colorway_variant.blend|restage_shadow_pass.blend|restage_label_closeup.blend|restage_depth_review.blend\nstage_3=restage_composite_board.blend|restage_final_audit_stack.blend\nrequired_dependency=restage_final_audit_stack.blend\nhandoff_status=extreme-hard-plus-ready''.
+  C:\Users\User\Documents\blender_tasks\blender_restage_product\restage_extreme_review_matrix.csv with exactly this content:
+  ''check,source_blends,status\npalette,restage_review_closeup.blend|restage_archive_wide.blend,ready\nlabel,restage_qa_isolation.blend|restage_label_closeup.blend,ready\ndepth,restage_archive_wide.blend|restage_depth_review.blend,ready\nfinal,restage_composite_board.blend|restage_final_audit_stack.blend,locked''.
+  Also create these hard-plus verification files exactly: C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.blender.warehouse_blockout_scene\tlinux.blender.restage_product_objects\thard-plus-ready\napp\tblender\tevaluator-checked''.
+  C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_dependency_index.txt with
+  exactly this content: ''primary_task=windows.blender.warehouse_blockout_scene\nlinux_peer=linux.blender.restage_product_objects\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt''.
+  C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_review_matrix.csv with exactly
+  this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Do not finish until all eleven .blend files, all dependency text artifacts, and all hard-plus verification files exist.
+  This Windows task intentionally exceeds linux.blender.restage_product_objects while using the same explicit X/Y/Z coordinate
+  style. Use Blender for scene work and Blender/automation file-writing for dependency text artifacts; do not open Notepad
+  or another text editor to create any .txt, .tsv, or .csv artifact.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\nGet-Process blender -ErrorAction SilentlyContinue | Stop-Process -Force\
+        \ -ErrorAction SilentlyContinue\nStart-Sleep -Seconds 1\n$workspace = \"C:\\Users\\User\\Documents\\blender_tasks\\\
+        blender_restage_product\"\nNew-Item -ItemType Directory -Force -Path $workspace | Out-Null\nGet-ChildItem -LiteralPath\
+        \ $workspace -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue\n$blenderExeCandidates\
+        \ = @(\n  \"C:\\Tools\\Blender279b\\blender-2.79b-windows64\\blender.exe\",\n  \"C:\\Program Files\\Blender Foundation\\\
+        Blender 2.79\\blender.exe\",\n  \"C:\\Program Files\\Blender Foundation\\Blender\\blender.exe\",\n  \"$env:LOCALAPPDATA\\\
+        Programs\\Blender Foundation\\Blender\\blender.exe\"\n)\n$blenderExe = $blenderExeCandidates | Where-Object { Test-Path\
+        \ $_ } | Select-Object -First 1\nif (-not $blenderExe) {\n  $cmd = Get-Command blender.exe -ErrorAction SilentlyContinue\n\
+        \  if ($cmd) { $blenderExe = $cmd.Source }\n}\nif (-not $blenderExe -or -not (Test-Path $blenderExe)) { throw \"Blender\
+        \ executable not found\" }\n$prepareScript = Join-Path $env:TEMP \"hw_prepare_blender_warehouse_blockout_scene.py\"\
+        \n$prepare = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(\"CmltcG9ydCBicHksIG9zCndvcmtzcGFjZSA9IG9zLmVudmlyb25bIkhXX0JMRU5ERVJfV09SS1NQQUNFIl0Kb3MubWFrZWRpcnMod29ya3NwYWNlLCBleGlzdF9vaz1UcnVlKQpkZWYgY2xlYXIoKToKICAgIGJweS5vcHMub2JqZWN0LnNlbGVjdF9hbGwoYWN0aW9uPSJTRUxFQ1QiKQogICAgYnB5Lm9wcy5vYmplY3QuZGVsZXRlKCkKZGVmIG1hdChuYW1lLCBjb2xvcik6CiAgICBtID0gYnB5LmRhdGEubWF0ZXJpYWxzLmdldChuYW1lKSBvciBicHkuZGF0YS5tYXRlcmlhbHMubmV3KG5hbWUpCiAgICBtLmRpZmZ1c2VfY29sb3IgPSBjb2xvcgogICAgcmV0dXJuIG0KZGVmIGN1YmUobmFtZSwgbG9jLCBzY2FsZSwgY29sb3IpOgogICAgYnB5Lm9wcy5tZXNoLnByaW1pdGl2ZV9jdWJlX2FkZChsb2NhdGlvbj1sb2MpCiAgICBvPWJweS5jb250ZXh0Lm9iamVjdDsgby5uYW1lPW5hbWU7IG8uc2NhbGU9c2NhbGU7IG8uZGF0YS5tYXRlcmlhbHMuYXBwZW5kKG1hdChuYW1lKyJfbWF0IiwgY29sb3IpKTsgcmV0dXJuIG8KZGVmIGN5bChuYW1lLCBsb2MsIHNjYWxlLCBjb2xvcik6CiAgICBicHkub3BzLm1lc2gucHJpbWl0aXZlX2N5bGluZGVyX2FkZCh2ZXJ0aWNlcz0zMiwgbG9jYXRpb249bG9jKQogICAgbz1icHkuY29udGV4dC5vYmplY3Q7IG8ubmFtZT1uYW1lOyBvLnNjYWxlPXNjYWxlOyBvLmRhdGEubWF0ZXJpYWxzLmFwcGVuZChtYXQobmFtZSsiX21hdCIsIGNvbG9yKSk7IHJldHVybiBvCmRlZiBzcGhlcmUobmFtZSwgbG9jLCBzY2FsZSwgY29sb3IpOgogICAgYnB5Lm9wcy5tZXNoLnByaW1pdGl2ZV91dl9zcGhlcmVfYWRkKHNlZ21lbnRzPTMyLCByaW5nX2NvdW50PTE2LCBsb2NhdGlvbj1sb2MpCiAgICBvPWJweS5jb250ZXh0Lm9iamVjdDsgby5uYW1lPW5hbWU7IG8uc2NhbGU9c2NhbGU7IG8uZGF0YS5tYXRlcmlhbHMuYXBwZW5kKG1hdChuYW1lKyJfbWF0IiwgY29sb3IpKTsgcmV0dXJuIG8KZGVmIHBsYW5lKG5hbWUsIGxvYywgc2NhbGUsIGNvbG9yKToKICAgIGJweS5vcHMubWVzaC5wcmltaXRpdmVfcGxhbmVfYWRkKGxvY2F0aW9uPWxvYykKICAgIG89YnB5LmNvbnRleHQub2JqZWN0OyBvLm5hbWU9bmFtZTsgby5zY2FsZT1zY2FsZTsgby5kYXRhLm1hdGVyaWFscy5hcHBlbmQobWF0KG5hbWUrIl9tYXQiLCBjb2xvcikpOyByZXR1cm4gbwpjbGVhcigpCmN1YmUoIkZlYXR1cmVDdWJlIiwgKDAsMCwxKSwgKDEsMSwxKSwgKDAuNywwLjIsMC4yKSkKY3lsKCJBY2NlbnRDeWxpbmRlciIsICgtMS41LDEsMSksICgwLjYsMC42LDEpLCAoMC4xLDAuNCwwLjcpKQpzcGhlcmUoIkhlcm9TcGhlcmUiLCAoMiwxLDEpLCAoMC44LDAuOCwwLjgpLCAoMC4yLDAuNywwLjYpKQpwbGFuZSgiQmFja2Ryb3BQbGFuZSIsICgwLDAsMCksICg0LDMsMSksICgwLjA1LDAuMDUsMC4wNikpCmJweS5vcHMub2JqZWN0LmxhbXBfYWRkKHR5cGU9IkFSRUEiLCBsb2NhdGlvbj0oMSwtMyw1KSk7IGJweS5jb250ZXh0Lm9iamVjdC5uYW1lPSJGaWxsTGlnaHQiCmJweS5vcHMub2JqZWN0LmNhbWVyYV9hZGQobG9jYXRpb249KDYsLTcsNSksIHJvdGF0aW9uPSgxLjAsMCwwLjcpKTsgYnB5LmNvbnRleHQuc2NlbmUuY2FtZXJhPWJweS5jb250ZXh0Lm9iamVjdApicHkub3BzLndtLnNhdmVfYXNfbWFpbmZpbGUoZmlsZXBhdGg9b3MucGF0aC5qb2luKHdvcmtzcGFjZSwgInByb2R1Y3Rfc3RhZ2UuYmxlbmQiKSkK\"\
+        ))\nSet-Content -LiteralPath $prepareScript -Encoding UTF8 -Value $prepare\n$env:HW_BLENDER_WORKSPACE = $workspace\n\
+        & $blenderExe --background --factory-startup --python $prepareScript | Out-String | Write-Output\nif ($LASTEXITCODE\
+        \ -ne 0) { throw \"Failed to create baseline Blender scene\" }\nStart-Process -FilePath $blenderExe -ArgumentList\
+        \ @((Join-Path $workspace \"product_stage.blend\"))\n"
+      timeout: 60
+    - type: wait
+      ms: 12000
+evaluation:
+  evaluator_id: evaluators.windows.blender:BlenderEvaluator
+  params:
+    check_id: blender_warehouse_blockout_scene
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 90
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.blender.warehouse_blockout_scene\tlinux.blender.restage_product_objects\t\
+          hard-plus-ready\napp\tblender\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.blender.warehouse_blockout_scene
+
+          linux_peer=linux.blender.restage_product_objects
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_blender_warehouse_blockout_scene\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 220
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - blender
+  - scene_edit
+  - multi_blend_delivery
+  - render_settings
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  - extreme-hard
+  - multi_blend_network
+  - eleven_blend_files
+  difficulty: hard
+  app_name: blender
+  human_steps: 320
+  estimated_min_steps: 290
+  description: 'Linux-aligned Blender product restaging task with primary scene, three derivative blend files, and exact delivery
+    manifests.
+
+    '
+  hardness: hard-evaluable
+  evaluation_standard: primary blend render settings, object transforms, material colors, derivative blend files, and exact
+    text deliverables are evaluator checked
+  linux_peer: linux.blender.restage_product_objects
+  linux_peer_file: tasks/linux/blender_restage_product_objects_hard.yaml
+  alignment_status: direct_with_version_constraints
+  alignment_note: Windows uses Blender 2.79b, so EEVEE-specific Linux settings are represented through render/output and multi-blend
+    checks.
+  hard_plus_blender_requirement: primary scene plus ten derivative/composite/audit blend files; dependency graph and orchestration
+    files must link second-stage and final audit blend files back to earlier blend files
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle
+  difficulty_alignment: exceeds Linux Blender hard task by requiring an eleven-file multi-blend dependency network

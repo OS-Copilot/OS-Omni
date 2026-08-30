@@ -1,0 +1,12 @@
+tasks:
+- tasks/linux/oracle/deltachat_support_escalation_oracle.yaml
+- tasks/linux/oracle/deltachat_coordination_roundup_oracle.yaml
+- tasks/linux/oracle/deltachat_end_of_day_wrap_oracle.yaml
+models:
+- deltachat_oracle
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Curated Delta Chat oracle sanity run.

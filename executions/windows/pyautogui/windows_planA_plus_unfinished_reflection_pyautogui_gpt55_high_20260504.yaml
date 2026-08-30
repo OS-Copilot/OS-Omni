@@ -1,0 +1,28 @@
+models:
+  - gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+  - tasks/windows/vscode_ops_handoff_workspace.yaml
+  - tasks/windows/cross_app_writer_thunderbird_attach_source_and_pdf_send_hard.yaml
+  - tasks/windows/cross_app_writer_thunderbird_save_copy_export_attach_send_hard.yaml
+  - tasks/windows/cross_vm_writer_site_visit_brief_easy.yaml
+  - tasks/windows/cross_vm_writer_launch_review_minutes_hard.yaml
+  - tasks/windows/cross_vm_calc_budget_review_hard.yaml
+metadata:
+  description: Rerun Plan A tasks after removing Notepad-inducing text artifacts, plus the Windows tasks that were not completed in the previous 35-task run.
+  scope:
+    total_tasks: 6
+    includes:
+      - plan_a
+      - unfinished_from_windows_35_from3_20260503
+  model:
+    repo_model_id: gpt5_5
+    model_name: gpt-5.5
+    api_mode: responses
+    reasoning_effort: high
+    reasoning_summary: detailed
+    text_verbosity: medium

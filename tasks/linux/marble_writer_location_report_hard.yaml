@@ -1,0 +1,145 @@
+task_id: linux.cross_app.marble_writer_location_report_hard
+platform: linux
+instruction: >
+  Open Marble. Use the search bar at the top to search for "Nairobi". Click
+  on the search result to center the map on Nairobi. Use the scroll wheel or
+  zoom slider to zoom in until you can see the city label "Nairobi" on the
+  map. Click on the city label to open an info card. Note the coordinates
+  shown in the card (format: latitude, longitude like "1.17S, 36.49E").
+  Then search for "Kampala", zoom in, click the label, and note its
+  coordinates.
+  Then search for "Kigali", zoom in, click the label, and note its
+  coordinates.
+  Then switch to the already-open LibreOffice Writer window. Create a new
+  document with the heading "East Africa Location Report" and include the
+  coordinates you noted for each city in the format:
+  "Nairobi: [coordinates]
+  Kampala: [coordinates]
+  Kigali: [coordinates]"
+  Save the Writer document as /home/user/Documents/location_report.odt.
+  Finish after the document is saved.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        pkill -f marble || true
+        pkill -f soffice.bin || true
+        mkdir -p /home/user/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f marble >/dev/null 2>&1
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f libreoffice --writer >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Expected coordinates (degrees+minutes format from Marble)
+      expected_values = [
+          "Nairobi: 1.17S, 36.49E",
+          "Kampala: 0.18N, 32.34E",
+          "Kigali: 1.56S, 30.03E"
+      ]
+
+      # Check Writer document
+      odt_path = os.path.expanduser("~/Documents/location_report.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      # Parse ODT to verify content
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      # Check for expected values
+      for value in expected_values:
+          if value not in content:
+              raise SystemExit(f"MISSING_VALUE_{value}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - marble
+  - writer
+  - geography
+  - theme
+  - search
+  - hard
+  app_name: marble + libreoffice_writer
+  difficulty: hard
+  description: Search for 3 East African cities in Marble, note coordinates from
+    status bar, then create a location report in Writer with those exact coordinates.
+    report in Writer with those exact coordinates.
+  oracle_task: tasks/linux/oracle/cross_app_marble_writer_location_report_oracle.yaml
+  oracle_model: linux_oracle_wait

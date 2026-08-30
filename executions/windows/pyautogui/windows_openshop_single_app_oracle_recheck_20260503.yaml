@@ -1,0 +1,12 @@
+models:
+  - windows_oracle
+action_mode: code_adapter
+observation_mode: a11y_tree_only
+history_window: 3
+max_steps: 100
+timeout: 180
+tasks:
+  - tasks/windows/openshop_add_headphones_to_cart.yaml
+  - tasks/windows/openshop_checkout_two_items.yaml
+metadata:
+  description: Oracle recheck for the two Windows OpenShop hard single-app tasks.

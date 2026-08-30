@@ -1,0 +1,45 @@
+# Keep Unix line endings for shell scripts so they run from bash / WSL.
+*.sh text eol=lf
+# Windows-native scripts always want CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+# Large macOS benchmark bundles under apx_file must go through LFS for GitHub pushes.
+apx_file/macos/**/*.zip filter=lfs diff=lfs merge=lfs -text
+apx_file/macos/**/*.png filter=lfs diff=lfs merge=lfs -text
+apps/opendriver/**/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_android/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_ios/*.ipa filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_linux/*.AppImage filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_linux/*.deb filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_macos/*.dmg filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_web/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_windows/OpenShop/**/*.asar filter=lfs diff=lfs merge=lfs -text
+apps/openshop/openshop_windows/OpenShop/**/*.exe filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_android/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_ios/*.ipa filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_linux/*.AppImage filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_linux/*.deb filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_macos/*.dmg filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_macos/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_web/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_windows/OpenBank/**/*.asar filter=lfs diff=lfs merge=lfs -text
+apps/openbank/openbank_windows/OpenBank/**/*.exe filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_android/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_ios/*.ipa filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_linux/*.AppImage filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_linux/*.deb filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_macos/*.dmg filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_macos/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_web/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_windows/OpenNote/**/*.asar filter=lfs diff=lfs merge=lfs -text
+apps/openrednote/openrednote_windows/OpenNote/**/*.exe filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_android/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_ios/*.ipa filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_linux/*.AppImage filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_linux/*.deb filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_macos/*.dmg filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_macos/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_web/*.zip filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_windows/OpenTwitter/**/*.asar filter=lfs diff=lfs merge=lfs -text
+apps/opentwitter/opentwitter_windows/OpenTwitter/**/*.exe filter=lfs diff=lfs merge=lfs -text

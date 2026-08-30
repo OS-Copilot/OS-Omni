@@ -1,0 +1,109 @@
+task_id: linux.zotero.reading_queue_book
+platform: linux
+instruction: >
+  Open Zotero. Create a new collection named "Reading Queue" under My Library.
+  Inside that collection, create a new Book item titled "Clean Code". Save it
+  in the collection, and make sure "Clean Code" appears in the center item list
+  before you finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads"
+        pkill -x zotero >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            python3 - <<'PY'
+            from pathlib import Path
+            from urllib.request import urlopen
+            url = "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz"
+            out = Path("/home/user/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz")
+            out.write_bytes(urlopen(url).read())
+            PY
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=${DISPLAY:-:0}
+        wmctrl -a Zotero 2>/dev/null || true
+        wmctrl -r Zotero -b remove,maximized_vert,maximized_horz 2>/dev/null || true
+        wmctrl -r Zotero -e 0,80,80,1320,860 2>/dev/null || true
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.linux.zotero:ZoteroLibraryEvaluator
+  params:
+    db_path: /home/user/Zotero/zotero.sqlite
+    required_collections:
+    - Reading Queue
+    required_items:
+    - title: Clean Code
+      collections:
+      - Reading Queue
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - zotero
+  - collection
+  - book
+  - easy
+  app_name: zotero
+  description: Create a Reading Queue collection in Zotero and add a single book item.
+  oracle_task: tasks/linux/oracle/zotero_reading_queue_book_oracle.yaml
+  oracle_model: linux_oracle_wait
+  difficulty: easy

@@ -1,0 +1,27 @@
+task_id: macos.oracle.blender.set_preview_resolution
+platform: macos
+instruction: Oracle sanity task for macos.blender.set_preview_resolution. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: 'mkdir -p /Users/bench/Downloads/helloworld_blender_workspace/blender_preview_resolution
+
+        rm -f /Users/bench/Downloads/helloworld_blender_workspace/blender_preview_resolution/product_stage.oracle.json'
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.macos.textedit:TextEditFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/helloworld_blender_workspace/blender_preview_resolution/product_stage.oracle.json
+    expected_path: ../files/blender/oracle_expected/blender_set_preview_resolution_expected.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.blender.set_preview_resolution
+  human_steps: 10
+  tags:
+    - oracle
+  difficulty: easy

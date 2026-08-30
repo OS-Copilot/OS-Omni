@@ -1,0 +1,107 @@
+task_id: linux.spotube.oracle.import_city_weather_mix
+platform: linux
+instruction: Oracle sanity task for linux.spotube.import_city_weather_mix. The initializer
+  already seeds the expected Rhythmbox playback state. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.spotube:SpotubeInitializer
+  params:
+    app_command: rhythmbox
+    libraries:
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix
+      tracks:
+      - name: avenue_mist
+        frequency_hz: 260.0
+      - name: bus_window
+        frequency_hz: 290.0
+      - name: curbside_glow
+        frequency_hz: 320.0
+      - name: depot_hum
+        frequency_hz: 350.0
+      - name: city_rain
+        frequency_hz: 380.0
+      - name: city_rain_take2
+        frequency_hz: 395.0
+      - name: platform_echo
+        frequency_hz: 410.0
+      - name: signal_drift
+        frequency_hz: 440.0
+      - name: station_wind
+        frequency_hz: 470.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix
+      - Reference Takes
+      tracks:
+      - name: city_rain
+        frequency_hz: 485.0
+      - name: city_rain_take2
+        frequency_hz: 500.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix Backup
+      tracks:
+      - name: city_rain
+        frequency_hz: 505.0
+      - name: archive_signal
+        frequency_hz: 535.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - March Samples
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 565.0
+      - name: platform_echo
+        frequency_hz: 595.0
+    - root_segments:
+      - BenchVault
+      - Draft Shelf
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 520.0
+      - name: spare_signal
+        frequency_hz: 550.0
+    - root_segments:
+      - BenchVault
+      - Travel Shelf
+      - April Samples
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 610.0
+      - name: signal_detour
+        frequency_hz: 640.0
+    autoplay_track_name: city_rain
+evaluation:
+  evaluator_id: evaluators.linux.spotube:SpotubeStateEvaluator
+  params:
+    state:
+      playing: true
+      current_track_name: city_rain
+      current_track_path: /home/user/Music/BenchVault/Archive Shelf/April Samples/City Weather Mix/city_rain.wav
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Spotube
+  difficulty: hard
+  tags:
+  - linux
+  - gui
+  - music
+  - rhythmbox
+  - local-library
+  - hard
+  - oracle
+  description: Oracle sanity task for linux.spotube.import_city_weather_mix
+  oracle_for: linux.spotube.import_city_weather_mix

@@ -1,0 +1,91 @@
+task_id: macos.thunderbird.email.collect_st_club_progress_local
+platform: macos
+instruction: |
+  Open Thunderbird in Mail view. Compose and send three emails to
+  qa-local@example.com that summarize ST Club progress. The subjects and body
+  openings are intentionally similar, so send them one by one in the exact
+  order shown below. Send exactly three emails, do not resend any subject, and
+  keep the blank lines exactly as written.
+
+  Email 1
+  Subject: ST Club Progress: Room Booking
+  Body:
+  ST Club update:
+
+  - Room 202 is confirmed for next Tuesday.
+  - Facilities asked us to send the headcount by Monday.
+
+  Best,
+  Ben
+
+  Email 2
+  Subject: ST Club Progress: Charter Approval
+  Body:
+  ST Club update:
+
+  - Student affairs approved the charter draft this morning.
+  - We still need the faculty sponsor signature for filing.
+
+  Best,
+  Ben
+
+  Email 3
+  Subject: ST Club Progress: Budget Follow-up
+  Body:
+  ST Club update:
+
+  - The banner quote is $85 from the first vendor.
+  - Please compare it against one more quote before we order.
+
+  Best,
+  Ben
+init:
+  initializer_id: initializers.macos.thunderbird_profile:ThunderbirdProfileInitializer
+  params:
+    launch_mail: true
+    start_fake_smtp: true
+    wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.thunderbird_email:ThunderbirdEmailEvaluator
+  params:
+    mode: send_multiple_exact_bodies
+    expected_to: qa-local@example.com
+    expected_subject_order:
+    - "ST Club Progress: Room Booking"
+    - "ST Club Progress: Charter Approval"
+    - "ST Club Progress: Budget Follow-up"
+    exact_captured_message_count: 3
+    exact_sent_message_count: 3
+    expected_messages:
+    - subject: "ST Club Progress: Room Booking"
+      body: |
+        ST Club update:
+
+        - Room 202 is confirmed for next Tuesday.
+        - Facilities asked us to send the headcount by Monday.
+
+        Best,
+        Ben
+    - subject: "ST Club Progress: Charter Approval"
+      body: |
+        ST Club update:
+
+        - Student affairs approved the charter draft this morning.
+        - We still need the faculty sponsor signature for filing.
+
+        Best,
+        Ben
+    - subject: "ST Club Progress: Budget Follow-up"
+      body: |
+        ST Club update:
+
+        - The banner quote is $85 from the first vendor.
+        - Please compare it against one more quote before we order.
+
+        Best,
+        Ben
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

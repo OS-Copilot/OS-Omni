@@ -1,0 +1,15 @@
+tasks:
+- tasks/ios/fsnotes_archive_note_and_create_followup.yaml
+- tasks/ios/flow_rework_budget_with_transfer_and_income.yaml
+- tasks/ios/openshop_adjust_cart_and_checkout.yaml
+- tasks/ios/deltachat_create_two_contacts_forward_and_escalate.yaml
+- tasks/ios/maily_forward_delete_and_send_followup.yaml
+- tasks/ios/maily_forward_delete_and_send_launch_notice.yaml
+models:
+- free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_and_a11y_tree
+history_window: 3
+metadata:
+  description: iOS LLM batch for six retained hard tasks across FSNotes, Flow, OpenShop,
+    Delta Chat, and Maily, routed through Codez gpt-5.4.

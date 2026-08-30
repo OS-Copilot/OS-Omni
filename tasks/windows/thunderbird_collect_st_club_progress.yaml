@@ -1,0 +1,119 @@
+task_id: windows.thunderbird.collect_st_club_progress
+platform: windows
+instruction: 'In Thunderbird, create a local folder called "Promotions" and create an enabled message filter that moves Inbox
+  emails whose subject contains "discount" to the Promotions folder. Save the filter so it persists after the Message Filters
+  window is closed. Also create these hard-plus verification files so the final state is a multi-artifact handoff bundle:
+  C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_handoff.tsv with exactly
+  this content: ''task_id\tlinux_peer\tstatus\nwindows.thunderbird.collect_st_club_progress\tlinux.thunderbird.thunderbird_filter_discount_to_promotions\thard-plus-ready\napp\tthunderbird\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.thunderbird.collect_st_club_progress\nlinux_peer=linux.thunderbird.thunderbird_filter_discount_to_promotions\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_review_matrix.csv with
+  exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use Thunderbird for the mail workflow; create required hard-plus verification files directly at the specified paths using
+  the available automation/runtime file-writing method, not Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "\n$ErrorActionPreference = \"Stop\"\nGet-Process thunderbird -ErrorAction SilentlyContinue | Stop-Process -Force\
+        \ -ErrorAction SilentlyContinue\nStart-Sleep -Milliseconds 400\n\n$tbRoot = Join-Path $env:APPDATA \"Thunderbird\"\
+        \nif (Test-Path $tbRoot) { Remove-Item -LiteralPath $tbRoot -Recurse -Force }\nNew-Item -ItemType Directory -Force\
+        \ -Path $tbRoot | Out-Null\n$profileLeaf = \"t5q2a5hp.default-release\"\n$profileDir = Join-Path $tbRoot $profileLeaf\n\
+        New-Item -ItemType Directory -Force -Path $profileDir | Out-Null\nNew-Item -ItemType Directory -Force -Path (Join-Path\
+        \ $profileDir \"ImapMail\\outlook.office365.com\") | Out-Null\nNew-Item -ItemType Directory -Force -Path (Join-Path\
+        \ $profileDir \"Mail\\Local Folders\") | Out-Null\n\n@\"\n[Profile0]\nName=default-release\nIsRelative=1\nPath=$profileLeaf\n\
+        Default=1\n\n[General]\nStartWithLastProfile=1\nVersion=2\n\"@ | Set-Content -LiteralPath (Join-Path $tbRoot \"profiles.ini\"\
+        ) -Encoding ASCII\n\n@(\n  'user_pref(\"app.update.auto\", false);',\n  'user_pref(\"app.update.enabled\", false);',\n\
+        \  'user_pref(\"browser.shell.checkDefaultBrowser\", false);',\n  'user_pref(\"mail.account.account1.identities\"\
+        , \"id1\");',\n  'user_pref(\"mail.account.account1.server\", \"server1\");',\n  'user_pref(\"mail.account.account2.server\"\
+        , \"server2\");',\n  'user_pref(\"mail.account.lastKey\", 2);',\n  'user_pref(\"mail.accountmanager.accounts\", \"\
+        account1,account2\");',\n  'user_pref(\"mail.accountmanager.defaultaccount\", \"account1\");',\n  'user_pref(\"mail.accountmanager.localfoldersserver\"\
+        , \"server2\");',\n  'user_pref(\"mail.identity.id1.fullName\", \"Helloworld\");',\n  'user_pref(\"mail.identity.id1.useremail\"\
+        , \"Helloworld@outlook.com\");',\n  'user_pref(\"mail.identity.id1.valid\", true);',\n  'user_pref(\"mail.root.imap-rel\"\
+        , \"[ProfD]ImapMail\");',\n  'user_pref(\"mail.root.none-rel\", \"[ProfD]Mail\");',\n  'user_pref(\"mail.server.server1.check_new_mail\"\
+        , false);',\n  'user_pref(\"mail.server.server1.directory-rel\", \"[ProfD]ImapMail/outlook.office365.com\");',\n \
+        \ 'user_pref(\"mail.server.server1.hostname\", \"outlook.office365.com\");',\n  'user_pref(\"mail.server.server1.login_at_startup\"\
+        , false);',\n  'user_pref(\"mail.server.server1.name\", \"Helloworld@outlook.com\");',\n  'user_pref(\"mail.server.server1.storeContractID\"\
+        , \"@mozilla.org/msgstore/berkeleystore;1\");',\n  'user_pref(\"mail.server.server1.type\", \"imap\");',\n  'user_pref(\"\
+        mail.server.server1.userName\", \"Helloworld@outlook.com\");',\n  'user_pref(\"mail.server.server2.check_new_mail\"\
+        , false);',\n  'user_pref(\"mail.server.server2.directory-rel\", \"[ProfD]Mail/Local Folders\");',\n  'user_pref(\"\
+        mail.server.server2.hostname\", \"Local Folders\");',\n  'user_pref(\"mail.server.server2.name\", \"Local Folders\"\
+        );',\n  'user_pref(\"mail.server.server2.storeContractID\", \"@mozilla.org/msgstore/berkeleystore;1\");',\n  'user_pref(\"\
+        mail.server.server2.type\", \"none\");',\n  'user_pref(\"mail.server.server2.userName\", \"nobody\");',\n  'user_pref(\"\
+        mailnews.start_page.enabled\", false);'\n) | Set-Content -LiteralPath (Join-Path $profileDir \"prefs.js\") -Encoding\
+        \ ASCII\n\n$inbox = Join-Path $profileDir \"ImapMail\\outlook.office365.com\\Inbox\"\n@\"\nFrom - Mon Apr 14 09:00:00\
+        \ 2025\nX-Mozilla-Status: 0001\nX-Mozilla-Status2: 00000000\nMessage-ID: <promo-001@example.test>\nDate: Mon, 14 Apr\
+        \ 2025 09:00:00 -0500\nFrom: Store <store@example.test>\nTo: Helloworld@outlook.com\nSubject: spring discount code\n\
+        MIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\n\nDiscount offer for testing filters.\n\"@ | Set-Content\
+        \ -LiteralPath $inbox -Encoding ASCII\n\nStart-Process -FilePath \"thunderbird.exe\" -ArgumentList @(\"-profile\"\
+        , $profileDir, \"-mail\") | Out-Null\nStart-Sleep -Seconds 5\nWrite-Output \"INIT_OK:PROFILE=$profileDir\"\n"
+      timeout: 180
+    - type: wait
+      ms: 6000
+evaluation:
+  evaluator_id: evaluators.windows.thunderbird:ThunderbirdEvaluator
+  params:
+    check_id: thunderbird_filter_discount_to_promotions
+    timeout: 120
+    stdout_contains: EVAL_RESULT:PASS
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.thunderbird.collect_st_club_progress\tlinux.thunderbird.thunderbird_filter_discount_to_promotions\t\
+          hard-plus-ready\napp\tthunderbird\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.thunderbird.collect_st_club_progress
+
+          linux_peer=linux.thunderbird.thunderbird_filter_discount_to_promotions
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_thunderbird_collect_st_club_progress\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - thunderbird
+  - email
+  - filter
+  - local-folder
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  human_steps: 86
+  description: 'Linux-aligned Thunderbird task: create a Promotions folder and a persistent subject-based discount filter.'
+  hardness: hard-evaluable
+  evaluation_standard: msgFilterRules.dat must contain an enabled subject-contains-discount rule moving mail to Local Folders/Promotions
+  linux_peer: linux.thunderbird.thunderbird_filter_discount_to_promotions
+  linux_peer_file: tasks/linux/thunderbird_filter_discount_to_promotions_hard.yaml
+  alignment_status: direct
+  app_name: thunderbird
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

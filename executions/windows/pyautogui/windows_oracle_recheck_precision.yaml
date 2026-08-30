@@ -1,0 +1,21 @@
+models:
+  - windows_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+  - tasks/windows/calc_crosssheet_chart.yaml
+  - tasks/windows/calc_formulas_conditional.yaml
+  - tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
+  - tasks/windows/deltachat_send_message_project_updates.yaml
+  - tasks/windows/deltachat_share_sync_time_with_avery_and_project_updates.yaml
+  - tasks/windows/drawio_ellipse_vertical_divider_styled.yaml
+  - tasks/windows/drawio_square_center_helloworld.yaml
+  - tasks/windows/drawio_sum_loop_flowchart.yaml
+  - tasks/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+  - tasks/windows/gimp_cartoon_girl_bottom_left_blend_flip_opacity.yaml
+  - tasks/windows/gimp_center_helloworld.yaml
+metadata:
+  description: Windows oracle precision recheck for Calc, DeltaChat, Draw.io, and GIMP fixes.

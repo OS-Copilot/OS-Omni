@@ -1,0 +1,217 @@
+task_id: ios.flow.oracle.rework_budget_with_transfer_and_income
+platform: ios
+instruction: >
+  In Flow, find the transaction titled Bench Taxi Draft and edit it. Change the title to
+  Bench Taxi Receipt, change the amount to 16.20, change the category to Bench Transport,
+  and change the note to Late train replacement ride. Then create a transfer of 60.00 from
+  Bench Checking to Bench Cash titled Bench Cash Refill with the note Refill field wallet.
+  After that, create an income transaction on Bench Checking titled Bench Vendor Rebate for
+  95.00 in the Bench Income category with the note Vendor paid back snack budget.
+  Leave Bench Grocery Buffer unchanged.
+init:
+  initializer_id: initializers.ios.flow_seed_open_app:FlowSeedOpenAppInitializer
+  params:
+    bundle_id: mn.flow.flow
+    seed_spec:
+      accounts:
+        - name: "Bench Checking"
+          currency: "USD"
+          icon: "card"
+        - name: "Bench Cash"
+          currency: "USD"
+          icon: "cash"
+        - name: "Bench Savings"
+          currency: "USD"
+          icon: "savings"
+          exclude_from_total_balance: true
+      categories:
+        - name: "Bench Coffee"
+        - name: "Bench Transport"
+          icon: "transport"
+        - name: "Bench Groceries"
+          icon: "groceries"
+        - name: "Bench Income"
+          icon: "income"
+      opening_balances:
+        - account: "Bench Checking"
+          amount: 500.00
+          title: "Bench Checking Opening Balance"
+          day_offset: -2
+        - account: "Bench Cash"
+          amount: 80.00
+          title: "Bench Cash Opening Balance"
+          day_offset: -2
+        - account: "Bench Savings"
+          amount: 300.00
+          title: "Bench Savings Opening Balance"
+          day_offset: -2
+      transactions:
+        - kind: "expense"
+          account: "Bench Cash"
+          category: "Bench Coffee"
+          amount: 14.30
+          title: "Bench Taxi Draft"
+          description: "Placeholder ride note"
+          day_offset: -1
+        - kind: "expense"
+          account: "Bench Cash"
+          category: "Bench Groceries"
+          amount: 22.00
+          title: "Bench Grocery Buffer"
+          description: "Keep this one unchanged"
+          day_offset: -1
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.flow_state:FlowStateEvaluator
+  params:
+    assert_spec:
+      present_transactions:
+        - type: "expense"
+          title: "Bench Taxi Receipt"
+          description: "Late train replacement ride"
+          amount: -16.20
+          account: "Bench Cash"
+          category: "Bench Transport"
+        - type: "expense"
+          title: "Bench Grocery Buffer"
+          description: "Keep this one unchanged"
+          amount: -22.00
+          account: "Bench Cash"
+          category: "Bench Groceries"
+        - type: "transfer"
+          title: "Bench Cash Refill"
+          description: "Refill field wallet."
+          amount: -60.00
+          account: "Bench Checking"
+          from_account: "Bench Checking"
+          to_account: "Bench Cash"
+        - type: "transfer"
+          title: "Bench Cash Refill"
+          description: "Refill field wallet."
+          amount: 60.00
+          account: "Bench Cash"
+          from_account: "Bench Checking"
+          to_account: "Bench Cash"
+        - type: "income"
+          title: "Bench Vendor Rebate"
+          description: "Vendor paid back snack budget."
+          amount: 95.00
+          account: "Bench Checking"
+          category: "Bench Income"
+      absent_titles:
+        - "Bench Taxi Draft"
+      transaction_count: 8
+      account_balances:
+        Bench Checking: 535.00
+        Bench Cash: 101.80
+        Bench Savings: 300.00
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [finance, flow, ios, edit, transfer, income, hard, multi_step, benchmark, oracle]
+  app: Flow
+  app_bundle_id: mn.flow.flow
+  description: >-
+    Oracle state-seed task for ios.flow.rework_budget_with_transfer_and_income.
+  prerequisites:
+    - "Flow is installed on the simulator."
+  oracle_for: ios.flow.rework_budget_with_transfer_and_income
+  oracle_actions:
+    - type: seed_state
+      store: flow
+      params:
+        bundle_id: mn.flow.flow
+        seed_spec:
+          accounts:
+            - name: "Bench Checking"
+              currency: "USD"
+              icon: "card"
+            - name: "Bench Cash"
+              currency: "USD"
+              icon: "cash"
+            - name: "Bench Savings"
+              currency: "USD"
+              icon: "savings"
+              exclude_from_total_balance: true
+          categories:
+            - name: "Bench Coffee"
+            - name: "Bench Transport"
+              icon: "transport"
+            - name: "Bench Groceries"
+              icon: "groceries"
+            - name: "Bench Income"
+              icon: "income"
+          opening_balances:
+            - account: "Bench Checking"
+              amount: 500.00
+              title: "Bench Checking Opening Balance"
+              day_offset: -2
+            - account: "Bench Cash"
+              amount: 80.00
+              title: "Bench Cash Opening Balance"
+              day_offset: -2
+            - account: "Bench Savings"
+              amount: 300.00
+              title: "Bench Savings Opening Balance"
+              day_offset: -2
+          transactions:
+            - kind: "expense"
+              account: "Bench Cash"
+              category: "Bench Coffee"
+              amount: 14.30
+              title: "Bench Taxi Draft"
+              description: "Placeholder ride note"
+              day_offset: -1
+            - kind: "expense"
+              account: "Bench Cash"
+              category: "Bench Groceries"
+              amount: 22.00
+              title: "Bench Grocery Buffer"
+              description: "Keep this one unchanged"
+              day_offset: -1
+        assert_spec:
+          present_transactions:
+            - type: "expense"
+              title: "Bench Taxi Receipt"
+              description: "Late train replacement ride"
+              amount: -16.20
+              account: "Bench Cash"
+              category: "Bench Transport"
+            - type: "expense"
+              title: "Bench Grocery Buffer"
+              description: "Keep this one unchanged"
+              amount: -22.00
+              account: "Bench Cash"
+              category: "Bench Groceries"
+            - type: "transfer"
+              title: "Bench Cash Refill"
+              description: "Refill field wallet."
+              amount: -60.00
+              account: "Bench Checking"
+              from_account: "Bench Checking"
+              to_account: "Bench Cash"
+            - type: "transfer"
+              title: "Bench Cash Refill"
+              description: "Refill field wallet."
+              amount: 60.00
+              account: "Bench Cash"
+              from_account: "Bench Checking"
+              to_account: "Bench Cash"
+            - type: "income"
+              title: "Bench Vendor Rebate"
+              description: "Vendor paid back snack budget."
+              amount: 95.00
+              account: "Bench Checking"
+              category: "Bench Income"
+          absent_titles:
+            - "Bench Taxi Draft"
+          transaction_count: 8
+          account_balances:
+            Bench Checking: 535.00
+            Bench Cash: 101.80
+            Bench Savings: 300.00
+    - type: success
+      message: Oracle state seeded.

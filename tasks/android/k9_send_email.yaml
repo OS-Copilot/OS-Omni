@@ -1,0 +1,51 @@
+task_id: android.k9.send_email
+platform: android
+instruction: In K-9 Mail (not Gmail), read the inbox message titled BMK Compose Request - Final. It contains the recipient, subject, and body to send. Ignore any draft compose request, then send exactly the final requested email.
+init:
+  initializer_id: initializers.android.k9_seed_inbox_open:K9SeedInboxOpenInitializer
+  params:
+    api_base_url: "http://127.0.0.1:8081"
+    app_package: "com.fsck.k9"
+    app_activity: "net.thunderbird.app.common.MainActivity"
+    reset_app_data: true
+    purge_greenmail: true
+    seed_smtp_host: "127.0.0.1"
+    seed_smtp_port: 3025
+    auto_refresh_inbox: true
+    refresh_attempts: 3
+    refresh_pause_ms: 1500
+    default_recipient_email: "benchsender@example.test"
+    seed_messages:
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        subject: "BMK Compose Request - Draft"
+        body: "Ignore this draft. SUBJECT=HelloWorldBench-Route-Red BODY=draft_message_wrong"
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        subject: "BMK Compose Request - Final"
+        body: "TO=benchrecv@example.test\nSUBJECT=HelloWorldBench-Route-Blue\nBODY=greenmail_test_message route=blue eta=17:40 confirm=YES owner=Mei checksum=774"
+    wait_ms: 2500
+evaluation:
+  evaluator_id: evaluators.android.k9_send_email:K9SendEmailEvaluator
+  params:
+    api_base_url: "http://127.0.0.1:8081"
+    sender_email: "benchsender@example.test"
+    recipient_email: "benchrecv@example.test"
+    subject: "HelloWorldBench-Route-Blue"
+    body: "greenmail_test_message route=blue eta=17:40 confirm=YES owner=Mei checksum=774"
+    mailbox: "INBOX"
+    timeout_seconds: 15
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [email, k9, greenmail, communication, easy, benchmark]
+  app: "K-9 Mail"
+  app_bundle_id: com.fsck.k9
+  description: "Send a longer fixed email through a preconfigured K-9 account and verify delivery through GreenMail."
+  prerequisites:
+    - "K-9 Mail is installed on the emulator."
+    - "The benchsender@example.test account is already configured in K-9."
+    - "GreenMail is running on the host and reachable at http://127.0.0.1:8081."
+  difficulty: easy

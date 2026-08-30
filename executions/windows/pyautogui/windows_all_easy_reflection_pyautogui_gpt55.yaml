@@ -1,0 +1,32 @@
+models:
+- gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+- tasks/windows/actual_budget_create_account.yaml
+- tasks/windows/blender_marker_cube_scene.yaml
+- tasks/windows/calc_freeze_filter.yaml
+- tasks/windows/calendar_create_event.yaml
+- tasks/windows/cross_app_openshop_calendar_add_coffee_event_easy.yaml
+- tasks/windows/cross_app_writer_thunderbird_export_pdf_send_easy.yaml
+- tasks/windows/cross_vm_prepare_site_visit_transfer_easy.yaml
+- tasks/windows/cross_vm_writer_site_visit_brief_easy.yaml
+- tasks/windows/deltachat_send_message_project_updates.yaml
+- tasks/windows/drawio_square_center_helloworld.yaml
+- tasks/windows/gimp_center_helloworld.yaml
+- tasks/windows/impress_title_notes.yaml
+- tasks/windows/notepad_find_replace.yaml
+- tasks/windows/openshop_login.yaml
+- tasks/windows/spotube_get_started_market_canada_disable_endless.yaml
+- tasks/windows/thunderbird_create_contact_send_by_nickname.yaml
+- tasks/windows/vscode_disable_minimap_enable_autosave.yaml
+- tasks/windows/wireshark_open_and_filter.yaml
+- tasks/windows/writer_font_bold.yaml
+- tasks/windows/zotero_add_item_by_identifier.yaml
+metadata:
+  description: Windows easy-only run for gpt5_5 high with code_adapter mode.
+  difficulty_filter: easy
+  scope: windows_all_easy

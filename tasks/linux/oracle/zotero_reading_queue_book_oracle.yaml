@@ -1,0 +1,151 @@
+task_id: linux.zotero.oracle.reading_queue_book
+platform: linux
+instruction: >
+  Oracle sanity task for linux.zotero.reading_queue_book. The initializer opens
+  a clean Zotero library, and the oracle writes the expected library state
+  directly into Zotero's SQLite database.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads"
+        pkill -x zotero >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            python3 - <<'PY'
+            from pathlib import Path
+            from urllib.request import urlopen
+            url = "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz"
+            out = Path("/home/user/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz")
+            out.write_bytes(urlopen(url).read())
+            PY
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        pkill -x zotero >/dev/null 2>&1 || true
+        sleep 2
+        python3 - <<'PY'
+        import secrets
+        import shutil
+        import sqlite3
+        import string
+        import tempfile
+        from pathlib import Path
+
+        db_path = Path("/home/user/Zotero/zotero.sqlite")
+        journal_path = db_path.with_name(db_path.name + "-journal")
+
+        with tempfile.TemporaryDirectory(prefix="zotero-oracle-") as tmpdir:
+            tmp_root = Path(tmpdir)
+            local_db = tmp_root / "zotero.sqlite"
+            shutil.copy2(db_path, local_db)
+            conn = sqlite3.connect(local_db)
+            cur = conn.cursor()
+            alphabet = string.ascii_uppercase + string.digits
+
+            def randkey() -> str:
+                return "".join(secrets.choice(alphabet) for _ in range(8))
+
+            def scalar(sql: str, args: tuple = ()) -> object:
+                row = cur.execute(sql, args).fetchone()
+                return row[0] if row else None
+
+            def get_field_id(name: str) -> int:
+                value = scalar("SELECT fieldID FROM fieldsCombined WHERE fieldName = ?", (name,))
+                if value is None:
+                    raise RuntimeError(f"missing field: {name}")
+                return int(value)
+
+            def get_item_type_id(name: str) -> int:
+                value = scalar("SELECT itemTypeID FROM itemTypes WHERE typeName = ?", (name,))
+                if value is None:
+                    raise RuntimeError(f"missing item type: {name}")
+                return int(value)
+
+            def get_or_create_collection(name: str) -> int:
+                existing = scalar(
+                    "SELECT collectionID FROM collections WHERE libraryID = 1 AND collectionName = ?",
+                    (name,),
+                )
+                if existing is not None:
+                    return int(existing)
+                cur.execute(
+                    "INSERT INTO collections(collectionName, libraryID, key) VALUES(?, 1, ?)",
+                    (name, randkey()),
+                )
+                return int(cur.lastrowid)
+
+            def get_or_create_value(value: str) -> int:
+                existing = scalar("SELECT valueID FROM itemDataValues WHERE value = ?", (value,))
+                if existing is not None:
+                    return int(existing)
+                cur.execute("INSERT INTO itemDataValues(value) VALUES(?)", (value,))
+                return int(cur.lastrowid)
+
+            collection_id = get_or_create_collection("Reading Queue")
+            cur.execute(
+                "INSERT INTO items(itemTypeID, libraryID, key) VALUES(?, 1, ?)",
+                (get_item_type_id("book"), randkey()),
+            )
+            item_id = int(cur.lastrowid)
+            cur.execute(
+                "INSERT INTO itemData(itemID, fieldID, valueID) VALUES(?, ?, ?)",
+                (item_id, get_field_id("title"), get_or_create_value("Clean Code")),
+            )
+            cur.execute(
+                "INSERT OR IGNORE INTO collectionItems(collectionID, itemID, orderIndex) VALUES(?, ?, 0)",
+                (collection_id, item_id),
+            )
+            conn.commit()
+            conn.close()
+            shutil.move(local_db, db_path)
+
+        journal_path.unlink(missing_ok=True)
+        PY
+      wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.linux.zotero:ZoteroLibraryEvaluator
+  params:
+    db_path: /home/user/Zotero/zotero.sqlite
+    required_collections:
+    - Reading Queue
+    required_items:
+    - title: Clean Code
+      collections:
+      - Reading Queue
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Zotero
+  difficulty: null
+  tags:
+  - linux
+  - gui
+  - zotero
+  - collection
+  - book
+  - easy
+  - oracle
+  description: Oracle sanity task for linux.zotero.reading_queue_book.
+  oracle_for: linux.zotero.reading_queue_book

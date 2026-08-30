@@ -1,0 +1,65 @@
+task_id: windows.oracle.cross_vm.writer_site_visit_brief_easy
+platform: windows
+instruction: >
+  Oracle sanity task for windows.cross_vm.writer_site_visit_brief_easy. The
+  initializer already prepares the expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          @'
+          import os, subprocess, sys
+          try:
+              from docx import Document
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-docx', '-q'])
+              from docx import Document
+          path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'site_visit_brief.docx')
+          os.makedirs(os.path.dirname(path), exist_ok=True)
+          doc = Document()
+          for line in [
+              'Northwind Site Visit',
+              'Confirm loading dock access at 08:30',
+              'Bring revised safety checklist',
+              'Share the updated visitor badge count: 14',
+          ]:
+              doc.add_paragraph(line)
+          doc.save(path)
+          print('INIT_OK')
+          '@ | py -3 -W ignore -
+        timeout: 60
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 60
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      try:
+          from docx import Document
+      except ImportError:
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-docx', '-q'])
+          from docx import Document
+      path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'site_visit_brief.docx')
+      lines = [p.text.strip() for p in Document(path).paragraphs if p.text.strip()]
+      expected = [
+          'Northwind Site Visit',
+          'Confirm loading dock access at 08:30',
+          'Bring revised safety checklist',
+          'Share the updated visitor badge count: 14',
+      ]
+      if lines != expected:
+          print('LINES_MISMATCH:' + repr(lines))
+          raise SystemExit(1)
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+limits:
+  max_steps: 100
+  step_timeout_seconds: 90
+metadata:
+  tags: [windows, cross_vm, oracle, easy]
+  difficulty: easy
+  oracle_for: windows.cross_vm.writer_site_visit_brief_easy

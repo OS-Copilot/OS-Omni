@@ -1,0 +1,10 @@
+tasks:
+  - tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+models:
+  - linux_oracle_wait
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Recheck the cross-vm Writer launch review minutes oracle after switching to HTML-to-DOCX conversion.

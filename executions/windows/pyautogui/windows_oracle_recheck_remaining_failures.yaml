@@ -1,0 +1,24 @@
+models:
+  - windows_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+  - tasks/windows/gimp_cartoon_girl_bottom_left_blend_flip_opacity.yaml
+  - tasks/windows/impress_animation_transition.yaml
+  - tasks/windows/impress_slide_shape_bold.yaml
+  - tasks/windows/impress_title_notes.yaml
+  - tasks/windows/notepad_append_text.yaml
+  - tasks/windows/notepad_edit_config.yaml
+  - tasks/windows/notepad_find_replace.yaml
+  - tasks/windows/thunderbird_collect_st_club_progress.yaml
+  - tasks/windows/thunderbird_send_email_exact_body.yaml
+  - tasks/windows/vscode_ops_handoff_workspace.yaml
+  - tasks/windows/vscode_release_cleanup_workspace.yaml
+  - tasks/windows/wireshark_advanced_filter_export.yaml
+  - tasks/windows/wireshark_open_and_filter.yaml
+  - tasks/windows/wireshark_statistics_report.yaml
+metadata:
+  description: Windows oracle recheck for remaining full-run failures after precision fixes.

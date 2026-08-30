@@ -1,0 +1,27 @@
+models:
+  - free_codesonline_gpt5_5_responses
+tasks:
+  - tasks/linux/actual_budget_household_budget_setup_hard.yaml
+  - tasks/linux/actual_budget_operations_multi_account_hard.yaml
+  - tasks/linux/blender_prepare_social_render_hard.yaml
+  - tasks/linux/blender_restage_product_objects_hard.yaml
+  - tasks/linux/calc_freeze_header_range_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  - tasks/linux/cross_vm_calc_budget_review_hard.yaml
+  - tasks/linux/cross_vm_writer_launch_review_minutes_hard.yaml
+  - tasks/linux/impress_create_six_image_slides_hard.yaml
+  - tasks/linux/zotero_reference_library_buildout_hard.yaml
+  - tasks/linux/zotero_research_collection_with_notes_hard.yaml
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+metadata:
+  description: Round 10 Linux 12-task GPT-5.5 retest using CCH-backed Responses API with code_adapter actions.
+  source_execution: executions/linux_round9_12_gpt55_cch_responses_20260501.yaml
+  correction: round9 accidentally used tool_calling; this run uses Linux pyautogui mode.
+  model_setting: free_codesonline_gpt5_5_responses
+  api_base_url_env: FREE_CODESONLINE_BASE_URL
+  api_provider_note: FREE_CODESONLINE_* env vars point to CCH for this run.

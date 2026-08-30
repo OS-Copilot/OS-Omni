@@ -1,0 +1,17 @@
+task_id: cross_vm.oracle.windows_to_linux.launch_review_minutes_hard
+platform: cross_vm
+instruction: >
+  Oracle sanity task for cross_vm.windows_to_linux.launch_review_minutes_hard.
+  The Windows and Linux initializers already prepare the expected transfer file
+  and final LibreOffice result. Wait briefly and finish.
+windows_task: tasks/windows/oracle/cross_vm_prepare_launch_review_transfer_hard_oracle.yaml
+linux_task: tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\launch_review_transfer.txt
+  linux_guest_path: /home/user/Desktop/launch_review_transfer.txt
+  host_filename: launch_review_transfer.txt
+metadata:
+  tags: [cross_vm, windows_to_linux, libreoffice, writer, hard, oracle]
+  difficulty: hard
+  oracle_for: cross_vm.windows_to_linux.launch_review_minutes_hard
+  description: Oracle sanity task for the launch review minutes cross-VM flow.

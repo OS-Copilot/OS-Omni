@@ -1,0 +1,24 @@
+task_id: macos.gimp.rotate_flip_export
+platform: macos
+instruction: "GIMP is already open with `/Users/bench/Downloads/gimp_transform_input.png`.\n\nApply the following edits in this exact order:\n\n1. Rotate the image **90 degrees clockwise**.\n2. Rotate the image **90 degrees clockwise** again.\n3. Rotate the image **90 degrees clockwise** a third time.\n4. Rotate the image **90 degrees clockwise** a fourth time.\n5. Rotate the image **90 degrees clockwise** a fifth time.\n6. Rotate the image **90 degrees clockwise** a sixth time.\n7. **Invert** the image colors.\n8. Export the final result as a PNG file to:\n   `/Users/bench/Downloads/gimp_transform_input.png`\n\nIf GIMP asks whether to replace the existing file, choose **Replace**. Use\n**Export As** rather than Save. Stop immediately after the export succeeds.\n"
+init:
+  initializer_id: initializers.macos.gimp:GimpInitializer
+  params:
+    wait_ms: 18000
+    upload_files:
+    - local_path: tasks/macos/files/gimp/transform/start/gimp_transform_input.png
+      path: /Users/bench/Downloads/gimp_transform_input.png
+    open_file: /Users/bench/Downloads/gimp_transform_input.png
+evaluation:
+  evaluator_id: evaluators.macos.gimp:GimpFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/gimp_transform_input.png
+    expected_width: 960
+    expected_height: 720
+    expected_format: PNG
+    expected_image_path: tasks/macos/files/gimp/transform/expected/gimp_rotate_flip_output.png
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

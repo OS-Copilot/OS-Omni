@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/openshop_login_easy.yaml
+  - tasks/linux/openshop_add_headphones_to_cart_hard.yaml
+  - tasks/linux/openshop_checkout_coffee_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: OpenShop shopping app benchmark tasks via taobao gpt-5

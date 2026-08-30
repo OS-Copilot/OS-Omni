@@ -1,0 +1,98 @@
+task_id: linux.vscode.prepare_release_packet
+platform: linux
+instruction: In Gedit, use docs/release-brief.md as the source of truth. Update config/release-plan.json
+  so version is 2.7.4, owner is Priya Nair, qaStatus is Ready for verification, rolloutDate
+  is 2026-05-02, and featureFlags is exactly [\"fast-sync\", \"side-panel\", \"share-sheet\"].
+  Then update notes/release-summary.md so its first sentence is Release 2.7.4 is owned
+  by Priya Nair and rolls out on 2026-05-02 with fast-sync, side-panel, and share-sheet
+  enabled. Save both files.
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: vscode_release_packet
+    workspace_root: /tmp/helloworld_vscode_workspace
+    files:
+    - path: docs/release-brief.md
+      content: '# Release Brief
+
+
+        Release version: 2.7.4
+
+        Release owner: Priya Nair
+
+        QA status: Ready for verification
+
+        Rollout date: 2026-05-02
+
+
+        Feature flags:
+
+        - fast-sync
+
+        - side-panel
+
+        - share-sheet
+
+
+        Summary:
+
+        Release 2.7.4 is owned by Priya Nair and rolls out on 2026-05-02 with fast-sync,
+        side-panel, and share-sheet enabled.
+
+        '
+    - path: config/release-plan.json
+      content: "{\n  \"version\": \"0.0.0\",\n  \"owner\": \"\",\n  \"qaStatus\":\
+        \ \"pending\",\n  \"rolloutDate\": \"\",\n  \"featureFlags\": []\n}\n"
+    - path: notes/release-summary.md
+      content: 'Release summary goes here.
+
+
+        Keep this note under 2 sentences.
+
+        '
+    open_files:
+    - docs/release-brief.md
+    - config/release-plan.json
+    - notes/release-summary.md
+evaluation:
+  evaluator_id: evaluators.linux.vscode:VSCodeWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_vscode_workspace/vscode_release_packet
+    files:
+    - path: config/release-plan.json
+      json:
+        version: 2.7.4
+        owner: Priya Nair
+        qaStatus: Ready for verification
+        rolloutDate: '2026-05-02'
+        featureFlags:
+        - fast-sync
+        - side-panel
+        - share-sheet
+    - path: notes/release-summary.md
+      equals: 'Release 2.7.4 is owned by Priya Nair and rolls out on 2026-05-02 with
+        fast-sync, side-panel, and share-sheet enabled.
+
+
+        Keep this note under 2 sentences.
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - json
+  - markdown
+  - hard
+  app: vscode
+  difficulty: hard
+  description: Read a release brief in Gedit, update a JSON config file, and rewrite
+    the summary file with the exact approved sentence.
+  oracle_task: tasks/linux/oracle/vscode_prepare_release_packet_oracle.yaml
+  oracle_model: linux_oracle_wait

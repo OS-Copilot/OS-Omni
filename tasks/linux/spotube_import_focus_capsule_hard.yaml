@@ -1,0 +1,121 @@
+task_id: linux.spotube.import_focus_capsule
+platform: linux
+instruction: In Rhythmbox, import the folder Music > Workbench > Reference Sets >
+  Night Shift > Focus Capsule. Two similarly named distractor folders also exist
+  elsewhere in Music, and more than one of them contains a midnight_loop track.
+  The target folder also contains a Review Clips subfolder with its own midnight_loop
+  and midnight_loop_take2 files, plus nearby backup, Scratch Sets, Day Shift,
+  and Archive Shelf folders with the same midnight_loop_take2 track name. Open the imported Focus Capsule library from Night Shift,
+  use search to find midnight_loop_take2, and play the top-level midnight_loop_take2
+  track directly from the Reference Sets > Night Shift > Focus Capsule folder,
+  not a subfolder or backup folder.
+init:
+  initializer_id: initializers.linux.spotube:SpotubeInitializer
+  params:
+    app_command: rhythmbox
+    libraries:
+    - root_segments:
+      - Workbench
+      - Reference Sets
+      - Night Shift
+      - Focus Capsule
+      tracks:
+      - name: afterhours_note
+        frequency_hz: 255.0
+      - name: cable_hum
+        frequency_hz: 285.0
+      - name: control_room
+        frequency_hz: 315.0
+      - name: neon_steps
+        frequency_hz: 345.0
+      - name: midnight_loop
+        frequency_hz: 375.0
+      - name: midnight_loop_take2
+        frequency_hz: 390.0
+      - name: quiet_console
+        frequency_hz: 405.0
+      - name: signal_glass
+        frequency_hz: 435.0
+      - name: switchyard
+        frequency_hz: 465.0
+    - root_segments:
+      - Workbench
+      - Reference Sets
+      - Night Shift
+      - Focus Capsule
+      - Review Clips
+      tracks:
+      - name: midnight_loop
+        frequency_hz: 480.0
+      - name: midnight_loop_take2
+        frequency_hz: 495.0
+    - root_segments:
+      - Workbench
+      - Reference Sets
+      - Night Shift
+      - Focus Capsule Backup
+      tracks:
+      - name: midnight_loop
+        frequency_hz: 500.0
+      - name: midnight_loop_take2
+        frequency_hz: 505.0
+      - name: panel_reference
+        frequency_hz: 530.0
+    - root_segments:
+      - Workbench
+      - Scratch Sets
+      - Focus Capsule
+      tracks:
+      - name: midnight_loop
+        frequency_hz: 515.0
+      - name: midnight_loop_take2
+        frequency_hz: 520.0
+      - name: panel_buzz
+        frequency_hz: 545.0
+    - root_segments:
+      - Workbench
+      - Reference Sets
+      - Day Shift
+      - Focus Capsule
+      tracks:
+      - name: midnight_loop
+        frequency_hz: 605.0
+      - name: midnight_loop_take2
+        frequency_hz: 610.0
+      - name: noon_static
+        frequency_hz: 635.0
+    - root_segments:
+      - Workbench
+      - Archive Shelf
+      - Night Shift
+      - Focus Capsule
+      tracks:
+      - name: midnight_loop_take2
+        frequency_hz: 650.0
+      - name: archive_static
+        frequency_hz: 680.0
+evaluation:
+  evaluator_id: evaluators.linux.spotube:SpotubeStateEvaluator
+  params:
+    state:
+      playing: true
+      current_track_name: midnight_loop_take2
+      current_track_path: /home/user/Music/Workbench/Reference Sets/Night Shift/Focus Capsule/midnight_loop_take2.wav
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - music
+  - rhythmbox
+  - local-library
+  - hard
+  app: Rhythmbox
+  difficulty: hard
+  description: Import a nested Focus Capsule local library in Rhythmbox, avoid
+    multiple same-name and nested distractor libraries, search for midnight_loop_take2,
+    and play the correct top-level Reference Sets file.
+  oracle_task: tasks/linux/oracle/spotube_import_focus_capsule_oracle.yaml
+  oracle_model: linux_oracle_wait

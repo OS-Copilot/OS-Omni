@@ -1,0 +1,9 @@
+tasks:
+  - tasks/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows GIMP task - apply default Focus Blur, grayscale, rotate, Linear Invert, and export

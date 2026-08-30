@@ -1,0 +1,47 @@
+task_id: macos.maps.oracle.sf_landmark_briefing_hard
+platform: macos
+instruction: Oracle sanity task for macos.maps.sf_landmark_briefing_hard. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.maps:MapsInitializer
+  params:
+    final_wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.macos.maps:MapsStateEvaluator
+  params:
+    required_texts:
+      - Coit Tower
+    any_text_groups:
+      - - Recents
+        - Library
+      - - Ferry Building Marketplace
+        - Ferry Building
+      - - 3601 Lyon St
+        - 3601 Lyon Street
+        - Palace of Fine Arts
+      - - 1 Telegraph Hill Blvd
+        - Observation Deck
+metadata:
+  app: Maps
+  app_name: apple-maps
+  difficulty: hard
+  tags: [macos, gui, maps, native, hard, oracle]
+  human_steps: 56
+  oracle_for: macos.maps.sf_landmark_briefing_hard
+  oracle_model: macos_script_oracle
+  oracle_actions:
+    - type: run_bash_script
+      timeout: 90
+      script: |
+        /usr/bin/open "maps://?q=Ferry%20Building%20Marketplace%201%20Ferry%20Building%20San%20Francisco%20CA%2094111"
+        sleep 5
+        osascript -e 'tell application "System Events" to click at {765, 780}' >/dev/null 2>&1 || true
+        sleep 1
+        /usr/bin/open "maps://?q=Palace%20of%20Fine%20Arts%203601%20Lyon%20Street%20San%20Francisco"
+        sleep 5
+        /usr/bin/open "maps://?q=Coit%20Tower%20San%20Francisco"
+        sleep 6
+    - type: success
+      message: Maps landmark briefing oracle completed.
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120

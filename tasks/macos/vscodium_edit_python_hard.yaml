@@ -1,0 +1,87 @@
+task_id: macos.vscodium.edit_python_hard
+platform: macos
+instruction: >
+  Open VSCodium. Create a new file by pressing Cmd+N.
+  Type the following Python code:
+
+  def calculate_fibonacci(n):
+      if n <= 0:
+          return []
+      elif n == 1:
+          return [0]
+      elif n == 2:
+          return [0, 1]
+
+      fib = [0, 1]
+      for i in range(2, n):
+          fib.append(fib[i-1] + fib[i-2])
+      return fib
+
+  result = calculate_fibonacci(10)
+  print(result)
+
+  Save the file as /Users/bench/Documents/fibonacci.py by pressing Cmd+S.
+  In the save dialog, navigate to /Users/bench/Documents/, type "fibonacci.py"
+  as the filename, and click Save.
+
+  Then open the integrated terminal by pressing Cmd+` (backtick).
+  In the terminal, type: python3 fibonacci.py
+  Press Enter to run the script.
+
+  Finish after the script runs and shows the Fibonacci sequence.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall VSCodium >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a VSCodium
+    - type: wait
+      ms: 8000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+
+      # Check if the Python file exists
+      py_path = os.path.expanduser("~/Documents/fibonacci.py")
+      if not os.path.exists(py_path):
+          raise SystemExit("PYTHON_FILE_NOT_FOUND")
+
+      # Check the file content
+      with open(py_path, 'r') as f:
+          content = f.read()
+
+      # Check for expected function and output
+      if "calculate_fibonacci" not in content:
+          raise SystemExit("MISSING_FUNCTION")
+      if "print(result)" not in content:
+          raise SystemExit("MISSING_PRINT")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - vscodium
+  - python
+  - code
+  - hard
+  app_name: vscodium
+  difficulty: hard
+  description: Create and run a Python Fibonacci script in VSCodium.

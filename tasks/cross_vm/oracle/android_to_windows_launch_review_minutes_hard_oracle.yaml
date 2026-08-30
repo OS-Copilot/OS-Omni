@@ -1,0 +1,17 @@
+task_id: cross_vm.oracle.android_to_windows.launch_review_minutes_hard
+platform: cross_vm
+instruction: >
+  Oracle sanity task for cross_vm.android_to_windows.launch_review_minutes_hard.
+  The Android and Windows initializers already prepare the expected transfer
+  file and final LibreOffice result. Wait briefly and finish.
+android_task: tasks/android/oracle/cross_vm_prepare_launch_review_transfer_hard_oracle.yaml
+windows_task: tasks/windows/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+transfer:
+  android_guest_path: /sdcard/Documents/markor/launch_review_transfer.txt
+  windows_guest_path: C:\Users\User\Desktop\launch_review_transfer.txt
+  host_filename: launch_review_transfer.txt
+metadata:
+  tags: [cross_vm, android_to_windows, libreoffice, writer, hard, oracle]
+  difficulty: hard
+  oracle_for: cross_vm.android_to_windows.launch_review_minutes_hard
+  description: Oracle sanity task for the Android-to-Windows launch review flow.

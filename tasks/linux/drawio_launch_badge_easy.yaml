@@ -1,0 +1,35 @@
+task_id: linux.drawio.launch_badge
+platform: linux
+instruction: In draw.io, update the blue-green launch badge diagram so the large center
+  label reads Launch Ready instead of Draft Label. Save the diagram after making the
+  change.
+init:
+  initializer_id: initializers.linux.drawio:DrawIOInitializer
+  params:
+    app_command: drawio
+    workspace_name: drawio_launch_badge
+    diagram_name: launch_badge.drawio
+    diagram_template: launch_badge
+evaluation:
+  evaluator_id: evaluators.linux.drawio:DrawIOFileEvaluator
+  params:
+    diagram_path: /tmp/helloworld_drawio_workspace/drawio_launch_badge/launch_badge.drawio
+    cells:
+    - id: status_box
+      equals: Launch Ready
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - drawio
+  - diagram
+  - easy
+  app: draw.io
+  difficulty: easy
+  description: Edit one visible label in a pre-opened draw.io badge diagram and save
+    it.
+  oracle_task: tasks/linux/oracle/drawio_launch_badge_oracle.yaml
+  oracle_model: linux_oracle_wait

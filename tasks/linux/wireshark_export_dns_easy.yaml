@@ -1,0 +1,37 @@
+task_id: linux.wireshark.export_dns
+platform: linux
+instruction: In Wireshark, open the seeded retail capture and apply the display filter
+  dns. Export the displayed packets to /tmp/helloworld_wireshark/dns_only.pcapng as
+  a pcapng file. Stop after the export is saved.
+init:
+  initializer_id: initializers.linux.wireshark:WiresharkInitializer
+  params:
+    app_command: wireshark
+    workspace_root: /tmp/helloworld_wireshark
+    capture_name: retail_mix.pcapng
+    capture_template: retail_mix
+evaluation:
+  evaluator_id: evaluators.linux.wireshark:WiresharkArtifactEvaluator
+  params:
+    artifacts:
+    - kind: pcap
+      path: /tmp/helloworld_wireshark/dns_only.pcapng
+      packet_count: 4
+      all_match_filter: dns
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - wireshark
+  - network
+  - filter
+  - easy
+  app: Wireshark
+  difficulty: easy
+  description: Apply a single display filter in Wireshark and export the displayed
+    DNS packets.
+  oracle_task: tasks/linux/oracle/wireshark_export_dns_oracle.yaml
+  oracle_model: linux_wireshark_oracle

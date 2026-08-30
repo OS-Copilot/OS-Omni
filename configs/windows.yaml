@@ -1,0 +1,44 @@
+# Windows guest runtime IP or host for non-managed / legacy runs.
+# In VMware mode below, vm_use_provider_ip resolves the current guest IP via vmrun.
+vm_ip: ""
+
+# Guest runtime server port.
+runtime_port: 5000
+
+# Guest runtime bearer token.
+runtime_token: "windowsbench-runtime-token"
+
+# Optional: manage a real Windows VM through VMware before each task run.
+# Leave vm_provider empty to connect to an already-running runtime instead.
+# Supported providers today: vmware
+vm_provider: "vmware"
+
+# Path to the Windows VM .vmx file. Override with HELLOWORLD_WINDOWS_VM_PATH.
+vm_path: "D:\\Research\\HelloWorld\\wins\\Windows 11 x64.vmx"
+
+# VMware VM password, if the VM is encrypted or VMware prompts for one.
+vm_password: "password"
+
+# Snapshot name for the clean baseline used before every task run.
+# With vm_reset_between_tasks: true, this must be set to a clean baseline snapshot.
+vm_snapshot_name: "Final_Version"
+
+# Whether to start the VM without a visible VMware window.
+vm_headless: true
+
+# Whether OS-Omni should stop the VM after each task run it started finishes.
+vm_stop_on_exit: true
+
+# When true, use vmrun getGuestIPAddress instead of vm_ip above after VM boot.
+vm_use_provider_ip: true
+
+# When true, each task run reverts vm_snapshot_name before execution.
+vm_reset_between_tasks: true
+
+# When true, OS-Omni will use VMware guest commands to restart the Windows
+# runtime if the VM boots but /health is not ready.
+vm_bootstrap_runtime: true
+
+# VMware guest login used only for automatic runtime bootstrap fallback.
+vm_guest_username: "User"
+vm_guest_password: "password"

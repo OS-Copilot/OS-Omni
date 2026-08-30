@@ -1,0 +1,95 @@
+task_id: macos.textedit.config_rewrite
+platform: macos
+instruction: 'TextEdit is already open with `/Users/bench/Downloads/app.ini`.
+
+
+  Convert this production config into the QA canary version with these exact edits:
+
+
+  - Delete the entire second and third lines.
+
+  - Directly under `[Settings]`, insert `Environment=QA`.
+
+  - Directly under `Environment=QA`, insert `ReleaseTrack=Canary`.
+
+  - Directly under `ReleaseTrack=Canary`, insert `Region=West`.
+
+  - Change `Theme=Dark` to `Theme=Light`.
+
+  - Change `Timeout=30` to `Timeout=45`.
+
+  - Change `Mode=Production` to `Mode=Staging`.
+
+  - Change `Logging=Off` to `Logging=On`.
+
+  - Change `Retries=3` to `Retries=5`.
+
+  - Change `Cache=False` to `Cache=True`.
+
+  - Change `Host=localhost` to `Host=db.qa.internal`.
+
+  - Change `Port=5432` to `Port=6432`.
+
+  - Change `Replica=disabled` to `Replica=enabled`.
+
+  - Change `Pool=standard` to `Pool=burst`.
+
+  - Change `Owner=unassigned` to `Owner=ops_lead`.
+
+  - Change `Window=unset` to `Window=overnight`.
+
+  - Change `Queue=day` to `Queue=night`.
+
+  - Change `Alerts=Off` to `Alerts=Escalate`.
+
+  - Change `Export=Disabled` to `Export=Enabled`.
+
+  - Change `Escalation=disabled` to `Escalation=enabled`.
+
+  - Add `# Canary window starts at 22:00` as a new final line at the bottom.
+
+  - Add `# Ticket: TW-104` as the line after that.
+
+  - Add `# Notify qa-watch before rollout` as the last line.
+
+
+  Keep the remaining lines unchanged. Do not replace the whole document with a rewritten copy. Save when done.
+
+  '
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: 'set -e
+
+        killall TextEdit >/dev/null 2>&1 || true
+
+        rm -f /Users/bench/Downloads/app.ini
+
+        '
+    - type: upload_file
+      local_path: files/textedit/config_rewrite/start/app.ini
+      path: /Users/bench/Downloads/app.ini
+    - type: run_bash
+      script: 'set -e
+
+        open -a TextEdit /Users/bench/Downloads/app.ini
+
+        '
+    - type: wait
+      ms: 2500
+    - type: run_bash
+      script: "set -e\nosascript <<'APPLESCRIPT'\ntell application \"System Events\"\n  tell process \"TextEdit\"\n    set position of window 1 to {90, 90}\n    set size of window 1 to {1300, 860}\n  end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.macos.textedit:TextEditFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/app.ini
+    expected_path: files/textedit/config_rewrite/expected/app.ini
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

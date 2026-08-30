@@ -1,0 +1,126 @@
+task_id: windows.cross_app.writer_thunderbird_save_copy_export_attach_send_hard
+platform: windows
+instruction: 'In LibreOffice Writer, the document Vendor Review Notes is already open. Save a copy of it on the Desktop as
+  Bench_Supplier_Summary.docx. Export that saved copy to PDF so the exported file is named Bench_Supplier_Summary.pdf. Do
+  not open Notepad or any other text editor. Use LibreOffice Writer for every Bench_Supplier_* artifact document below, and
+  save each one on the Desktop as an OpenDocument Text file with the exact .odt filename specified. Create Bench_Supplier_Summary_Attachments.odt
+  with exactly these three non-empty lines in this order: Vendor_Review_Notes.docx, Bench_Supplier_Summary.docx, Bench_Supplier_Summary.pdf.
+  Create Bench_Supplier_Checklist.odt with exactly these two non-empty lines in this order: PDF exported from saved copy,
+  Original source included. Create Bench_Supplier_Routing.odt with exactly these two non-empty lines in this order: Review
+  owner: Finance Ops, Deadline: Friday 17:00. Create Bench_Supplier_Audit.odt with exactly these three non-empty lines in
+  this order: Attachment count: 29, PDF source: saved copy, Send status: sent. Create Bench_Supplier_Signoff.odt with exactly
+  these two non-empty lines in this order: Finance signoff pending, Supplier summary archived. Create Bench_Supplier_Review_Log.odt
+  with exactly these two non-empty lines in this order: Checked by: Procurement Desk, Archive path: supplier-review. Create
+  Bench_Supplier_Archive.odt with exactly these two non-empty lines in this order: Archive status: staged, Retention owner:
+  Finance Ops. Create Bench_Supplier_Risk.odt with exactly these two non-empty lines in this order: Risk owner: Finance Ops,
+  Escalation path: procurement-director. Create Bench_Supplier_Evidence.odt with exactly these two non-empty lines in this
+  order: Evidence index: summary-pdf-routing, Review packet: supplier-summary. Create Bench_Supplier_Delivery.odt with exactly
+  these two non-empty lines in this order: Delivery channel: Thunderbird sent mail, Send status: sent. Create Bench_Supplier_Compliance.odt
+  with exactly these two non-empty lines in this order: Compliance owner: Finance Ops, Evidence status: indexed. Create Bench_Supplier_Exceptions.odt
+  with exactly these two non-empty lines in this order: Exception count: 0, Escalation owner: Procurement Desk. Create Bench_Supplier_Recipients.odt
+  with exactly these two non-empty lines in this order: Primary recipient: bench-review@example.com, Send status: sent. Create
+  Bench_Supplier_Retention.odt with exactly these two non-empty lines in this order: Retention class: supplier-review, Retention
+  owner: Finance Ops. Create Bench_Supplier_Closeout.odt with exactly these two non-empty lines in this order: Closeout owner:
+  Finance Ops, Closeout status: pending. Create Bench_Supplier_QC.odt with exactly these two non-empty lines in this order:
+  QC owner: Procurement Desk, QC status: finance-review. Create Bench_Supplier_Packet_Index.odt with exactly these two non-empty
+  lines in this order: Packet index: 26-files-plus-mail, Index status: final. Create Bench_Supplier_Send_Gate.odt with exactly
+  these two non-empty lines in this order: Send gate: manual-review, Gate owner: Finance Ops. Create Bench_Supplier_Director_Packet.odt
+  with exactly these two non-empty lines in this order: Director packet: supplier-summary, Packet status: pending-review.
+  Create Bench_Supplier_Source_Check.odt with exactly these two non-empty lines in this order: Source check: original-and-copy,
+  PDF check: exported-from-copy. Create Bench_Supplier_Handoff_Roster.odt with exactly these two non-empty lines in this order:
+  Handoff roster: Finance Ops, Roster status: staged. Create Bench_Supplier_Archive_Index.odt with exactly these two non-empty
+  lines in this order: Archive index: supplier-final, Archive owner: Finance Ops. Create Bench_Supplier_Review_Gate.odt with
+  exactly these two non-empty lines in this order: Review gate: hold, Gate evidence: supplier-summary. Create Bench_Supplier_Transfer_Receipt.odt
+  with exactly these two non-empty lines in this order: Transfer receipt: supplier_review, Transfer status: staged. Create
+  Bench_Supplier_Attachment_Crosswalk.odt with exactly these four non-empty lines in this order: file depends_on status, Bench_Supplier_Audit.odt
+  depends_on Bench_Supplier_Summary_Attachments.odt status linked, Bench_Supplier_Packet_Index.odt depends_on Bench_Supplier_Audit.odt
+  status linked, Bench_Supplier_Transfer_Receipt.odt depends_on Bench_Supplier_Review_Gate.odt status linked. Create Bench_Supplier_Final_Bundle_Index.odt
+  with exactly these four non-empty lines in this order: root=Vendor_Review_Notes.docx, attachment_manifest=Bench_Supplier_Summary_Attachments.odt,
+  crosswalk=Bench_Supplier_Attachment_Crosswalk.odt, terminal=Bench_Supplier_Transfer_Receipt.odt. Then switch to the already-open
+  Thunderbird compose window with subject Bench Supplier Summary, attach Vendor_Review_Notes.docx, Bench_Supplier_Summary.docx,
+  Bench_Supplier_Summary.pdf, and every Bench_Supplier_*.odt file listed above, then send the email. Create the hard-plus
+  verification files directly at the specified paths without opening Notepad or any other text editor. Also create these hard-plus
+  verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.cross_app.writer_thunderbird_save_copy_export_attach_send_hard\tlinux.cross_app.writer_save_copy_export_attach_draft_hard\thard-plus-ready\napp\tthunderbird
+  + libreoffice_writer\tevaluator-checked''; C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.cross_app.writer_thunderbird_save_copy_export_attach_send_hard\nlinux_peer=linux.cross_app.writer_save_copy_export_attach_draft_hard\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.'
+init:
+  initializer_id: initializers.windows.cross_app:OfficeThunderbirdInitializer
+  params:
+    doc_name: Vendor_Review_Notes.docx
+    title: Vendor Review Notes
+    subject: Bench Supplier Summary
+    to: bench-review@example.com
+    body:
+    - Supplier notes for the benchmark review.
+    - Save a renamed copy before exporting the final PDF.
+evaluation:
+  evaluator_id: evaluators.windows.cross_app:CrossAppEvaluator
+  params:
+    check_id: cross_app_writer_thunderbird_save_copy_export_attach_send_hard
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 60
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.cross_app.writer_thunderbird_save_copy_export_attach_send_hard\t\
+          linux.cross_app.writer_save_copy_export_attach_draft_hard\thard-plus-ready\napp\tthunderbird + libreoffice_writer\t\
+          evaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.cross_app.writer_thunderbird_save_copy_export_attach_send_hard
+
+          linux_peer=linux.cross_app.writer_save_copy_export_attach_draft_hard
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_save_copy_export_attach_send_hard\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_app
+  - email
+  - office
+  - thunderbird
+  - libreoffice
+  - writer
+  - hard
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  app_name: thunderbird + libreoffice_writer
+  difficulty: hard
+  human_steps: 114
+  description: 'Linux-aligned supplier package task: save a renamed Writer copy, export PDF, create 26 checklist/routing/audit
+    files, attach the full 29-file bundle, and send it in Thunderbird.'
+  hardness: hard-evaluable
+  linux_peer: linux.cross_app.writer_save_copy_export_attach_draft_hard
+  linux_peer_file: tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

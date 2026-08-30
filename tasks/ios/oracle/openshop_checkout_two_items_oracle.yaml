@@ -1,0 +1,70 @@
+task_id: ios.openshop.oracle.checkout_two_items
+platform: ios
+instruction: >
+  In OpenShop, you are already signed in. The cart already contains Lumen Magnetic Phone Stand.
+  Remove that item from the cart. Then search for headphones and add Verdant Pro Noise-Canceling
+  Headphones to the cart. Search for coffee and add Mountain Isle Pour-Over Coffee 20 Pack to the
+  cart. Open the cart and increase the coffee quantity to 2. Then proceed to checkout, choose the
+  Office shipping address, choose WeChat Pay, enter the order note 'Leave it at reception before 6 PM.',
+  and place the order.
+init:
+  initializer_id: initializers.ios.openshop_seed_open_app:OpenShopSeedOpenAppInitializer
+  params:
+    bundle_id: com.killt.openshop
+    login_session: true
+    cart_items:
+      - product_id: p1006
+        quantity: 1
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.openshop_state:OpenShopStateEvaluator
+  params:
+    bundle_id: com.killt.openshop
+    session_logged_in: true
+    cart_size: 0
+    order_count: 1
+    latest_order:
+      address_id: addr-office
+      payment_method_id: wechat
+      note: "Leave it at reception before 6 PM."
+      status: "Awaiting Shipment"
+      items:
+        - product_id: p1001
+          quantity: 1
+        - product_id: p1005
+          quantity: 2
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [shopping, ios, openshop, checkout, orders, hard, multi_step, benchmark, oracle]
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  description: "Oracle state-seed task for ios.openshop.checkout_two_items."
+  prerequisites:
+    - "OpenShop is installed on the simulator."
+  oracle_for: ios.openshop.checkout_two_items
+  oracle_actions:
+    - type: seed_state
+      store: openshop
+      params:
+        bundle_id: com.killt.openshop
+        session_logged_in: true
+        cart_size: 0
+        order_count: 1
+        latest_order:
+          address_id: addr-office
+          payment_method_id: wechat
+          note: "Leave it at reception before 6 PM."
+          status: "Awaiting Shipment"
+          items:
+            - product_id: p1001
+              quantity: 1
+            - product_id: p1005
+              quantity: 2
+        timeout_seconds: 12
+        poll_interval_seconds: 0.5
+    - type: success
+      message: Oracle state seeded.

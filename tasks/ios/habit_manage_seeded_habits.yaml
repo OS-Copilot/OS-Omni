@@ -1,0 +1,77 @@
+task_id: ios.habit.manage_seeded_habits
+platform: ios
+instruction: >
+  In Habit, make these changes to the seeded habits. Rename Inbox Sweep to Desk Reset, change its
+  motivation to Clear the desk and inbox before leaving, and change its color to blue. Rename Read
+  20 Pages to Deep Reading, change its motivation to Finish one focused chapter before bed, and
+  change its color to purple. Rename Evening Walk to After Dinner Walk, change its motivation to
+  Walk the long loop after dinner, and change its color to red. Delete Drink Herbal Tea. Then add
+  a new habit named Plan Tomorrow with the motivation Write tomorrow's top three priorities and
+  set its color to green. Leave Water Plants unchanged.
+init:
+  initializer_id: initializers.ios.habit_seed_open_app:HabitSeedOpenAppInitializer
+  params:
+    bundle_id: co.nazariizomko.Habit
+    seed_spec:
+      habits:
+        - title: "Inbox Sweep"
+          motivation: "Clear email after lunch."
+          color: "orange"
+        - title: "Drink Herbal Tea"
+          motivation: "Switch to tea after dinner."
+          color: "yellow"
+        - title: "Read 20 Pages"
+          motivation: "Finish one chapter each night."
+          color: "green"
+        - title: "Water Plants"
+          motivation: "Check the kitchen plants after dinner."
+          color: "teal"
+        - title: "Evening Walk"
+          motivation: "Walk once around the block."
+          color: "yellow"
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.habit_state:HabitStateEvaluator
+  params:
+    bundle_id: co.nazariizomko.Habit
+    assert_spec:
+      present_habits:
+        - title: "Desk Reset"
+          motivation: "Clear the desk and inbox before leaving."
+          color: "blue"
+        - title: "Deep Reading"
+          motivation: "Finish one focused chapter before bed."
+          color: "purple"
+        - title: "Water Plants"
+          motivation: "Check the kitchen plants after dinner."
+          color: "teal"
+        - title: "After Dinner Walk"
+          motivation: "Walk the long loop after dinner."
+          color: "red"
+        - title: "Plan Tomorrow"
+          motivation: "Write tomorrow's top three priorities."
+          color: "green"
+      absent_titles:
+        - "Inbox Sweep"
+        - "Drink Herbal Tea"
+        - "Read 20 Pages"
+        - "Evening Walk"
+      exact_titles:
+        - "Desk Reset"
+        - "Deep Reading"
+        - "Water Plants"
+        - "After Dinner Walk"
+        - "Plan Tomorrow"
+      habit_count: 5
+    timeout_seconds: 10
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [habit, ios, edit, delete, create, hard, benchmark]
+  app: Habit
+  app_bundle_id: co.nazariizomko.Habit
+  description: "Complete a longer Habit workflow with three multi-field edits, one deletion, one creation, and one preserved seeded habit."
+  prerequisites:
+    - "Habit is installed on the simulator."

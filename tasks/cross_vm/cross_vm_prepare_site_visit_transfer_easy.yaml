@@ -1,0 +1,42 @@
+task_id: android.cross_vm.prepare_site_visit_transfer_easy
+platform: android
+instruction: >
+  The transfer note "site_visit_transfer.txt" is already open in Markor on
+  Android, but it is missing the final site visit detail. Edit the note so it
+  contains exactly these four lines, then save it and leave it ready to be
+  transferred to Windows: "Northwind Site Visit", "Confirm loading dock access
+  at 08:30", "Bring revised safety checklist", and "Share the updated visitor
+  badge count: 14".
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/site_visit_source.txt
+    transfer_path: /sdcard/Documents/markor/site_visit_transfer.txt
+    open_path: /sdcard/Documents/markor/site_visit_transfer.txt
+    source_text: |
+      Northwind Site Visit
+      Confirm loading dock access at 08:30
+      Bring revised safety checklist
+      Share the updated visitor badge count: 14
+    transfer_text: |
+      Northwind Site Visit
+      Confirm loading dock access at 08:30
+      Bring revised safety checklist
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/site_visit_transfer.txt
+    expected_text: |
+      Northwind Site Visit
+      Confirm loading dock access at 08:30
+      Bring revised safety checklist
+      Share the updated visitor badge count: 14
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [android, cross_vm, markor, easy]
+  app_name: Markor
+  app_bundle_id: net.gsantner.markor
+  difficulty: easy
+  description: Complete and save an Android transfer note before cross-device transfer.

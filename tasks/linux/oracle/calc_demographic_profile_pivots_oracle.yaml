@@ -1,0 +1,46 @@
+task_id: linux.calc.oracle.demographic_profile_pivots
+platform: linux
+instruction: Oracle sanity task for linux.calc.demographic_profile_pivots. The initializer already opens the expected workbook state. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.office_setup:LinuxOfficeSetupInitializer
+  params:
+    tool_source_dir: platforms/linux/office_tools
+    tool_names:
+    - libreoffice_writer.py
+    - libreoffice_calc.py
+    - libreoffice_impress.py
+    remote_tool_dir: "~"
+    uno_port: 2002
+    startup_wait_seconds: 6
+    seed_downloads:
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a/1_DemographicProfile_gt1.xlsx
+      path: /tmp/helloworld_office/calc_30e3e107_actual.xlsx
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_calc/30e3e107-1cfb-46ee-a755-2cd080d7ba6a/1_DemographicProfile_gt1.xlsx
+      path: /tmp/helloworld_office/calc_30e3e107_expected.xlsx
+    open_documents_after_download:
+    - /tmp/helloworld_office/calc_30e3e107_actual.xlsx
+    open_documents_wait_seconds: 5
+evaluation:
+  evaluator_id: evaluators.linux.xlsx_compare:XlsxCompareEvaluator
+  params:
+    actual_path: /tmp/helloworld_office/calc_30e3e107_actual.xlsx
+    expected_path: /tmp/helloworld_office/calc_30e3e107_expected.xlsx
+    sheet: Sheet2
+    numeric_tolerance: 1e-3
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - libreoffice
+  - calc
+  - xlsx
+  - pivot-table
+  - hard
+  - oracle
+  app: LibreOffice Calc
+  difficulty: hard
+  description: Oracle sanity task for linux.calc.demographic_profile_pivots.
+  oracle_for: linux.calc.demographic_profile_pivots

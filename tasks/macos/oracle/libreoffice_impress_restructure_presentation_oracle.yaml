@@ -1,0 +1,140 @@
+task_id: macos.oracle.libreoffice.impress.restructure_presentation
+platform: macos
+instruction: |-
+  Oracle sanity task for macos.libreoffice.impress.restructure_presentation. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        killall -9 soffice.bin >/dev/null 2>&1 || true
+        killall -9 LibreOffice >/dev/null 2>&1 || true
+        pkill -9 -f LibreOffice >/dev/null 2>&1 || true
+        rm -f "$HOME/Library/Application Support/LibreOffice/4/.lock" || true
+        rm -rf "$HOME/Library/Application Support/LibreOffice/4/user/temp"/* || true
+        rm -rf "$HOME/Library/Application Support/LibreOffice/4/user/backup"/* || true
+        python3 - <<'PY'
+        from pathlib import Path
+        import re
+
+        path = Path.home() / "Library/Application Support/LibreOffice/4/user/registrymodifications.xcu"
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        entry = '<item oor:path="/org.openoffice.Office.Common/Save/Document"><prop oor:name="WarnAlienFormat" oor:op="fuse"><value>false</value></prop></item>'
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+        else:
+            text = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<oor:items xmlns:oor="http://openoffice.org/2001/registry" '
+                'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+                'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
+                '</oor:items>\n'
+            )
+
+        pattern = re.compile(
+            r'<item oor:path="/org\.openoffice\.Office\.Common/Save/Document">.*?<prop oor:name="WarnAlienFormat" oor:op="fuse"><value>.*?</value></prop></item>',
+            re.DOTALL,
+        )
+        if pattern.search(text):
+            text = pattern.sub(entry, text, count=1)
+        elif entry not in text:
+            text = text.replace('</oor:items>', entry + '\n</oor:items>')
+
+        path.write_text(text, encoding="utf-8")
+        PY
+        sleep 2
+      timeout: 30
+    - type: upload_file
+      local_path: ../files/libreoffice/impress_restructure_presentation_template.pptx
+      path: ~/Downloads/impress_restructure_presentation_template.pptx
+    - type: run_bash
+      script: |
+        open -a "LibreOffice" "$HOME/Downloads/impress_restructure_presentation_template.pptx" >/dev/null 2>&1 &
+      timeout: 30
+    - type: wait
+      ms: 9000
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: Discard All
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: 'Yes'
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      action:
+        type: keyboard
+        action: escape
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.macos.libreoffice_impress:LibreOfficeImpressEvaluator
+  params:
+    remote_path: ~/Downloads/impress_restructure_presentation_template.pptx
+    save_before_eval: true
+    expected_slide_count: 5
+    expected_slide_titles:
+    - 2025 Training Program Rollout
+    - Launch Priorities
+    - Four-Week Plan
+    - Support Resources
+    - Summary
+    forbidden_slide_titles:
+    - Training Program
+    per_slide_required_text:
+      2025 Training Program Rollout:
+      - Field Enablement Cohort
+      Launch Priorities:
+      - Finalize manager nominations
+      - Confirm lab access
+      - Publish office-hours rota
+      Four-Week Plan:
+      - Week 1 - Orientation and systems access
+      - Week 2 - Core workflow drills
+      - Week 3 - Customer scenarios
+      - Week 4 - Certification review
+      Support Resources:
+      - 'Portal: https://train.company.com/field'
+      - 'Help desk: enablement-support@company.com'
+      - 'Office hours: Fridays 15:00-16:00'
+      Summary:
+      - Managers confirm attendance by Friday
+      - Learners submit blockers before kickoff
+    per_slide_required_bold_fragments:
+      Launch Priorities:
+      - Finalize manager nominations
+      - Confirm lab access
+      Support Resources:
+      - 'Portal: https://train.company.com/field'
+      - 'Help desk: enablement-support@company.com'
+    per_slide_required_plain_fragments:
+      Launch Priorities:
+      - Publish office-hours rota
+      Support Resources:
+      - 'Office hours: Fridays 15:00-16:00'
+    per_slide_forbidden_text:
+      Four-Week Plan:
+      - TBD - to be updated
+      Summary:
+      - Key takeaways and feedback form
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.libreoffice.impress.restructure_presentation
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

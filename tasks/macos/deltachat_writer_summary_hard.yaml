@@ -1,0 +1,87 @@
+task_id: macos.cross_app.deltachat_writer_summary_hard
+platform: macos
+instruction: >
+  Open DeltaChat. If this is the first time opening, skip the setup wizard.
+  Click on "New Chat" and select "Create Group".
+  Enter the group name "Meeting Notes" and click "Next" or "Create".
+  In the group chat, type the following messages one by one:
+  1. "Agenda: Project review and planning"
+  2. "Action items: Update documentation, fix bugs, prepare demo"
+  3. "Deadline: End of next week"
+  Send each message by pressing Enter.
+  Then switch to the already-open LibreOffice Writer window.
+  Create a new document with the heading "Meeting Summary".
+  Below the heading, include the information from the DeltaChat messages:
+  "Agenda: Project review and planning
+  Action items: Update documentation, fix bugs, prepare demo
+  Deadline: End of next week"
+  Save the Writer document as /Users/bench/Documents/meeting_summary.odt.
+  Finish after the document is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall DeltaChat >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a DeltaChat
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Check Writer document
+      odt_path = os.path.expanduser("~/Documents/meeting_summary.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "Meeting Summary" not in content:
+          raise SystemExit("MISSING_HEADING")
+      if "Project review" not in content:
+          raise SystemExit("MISSING_AGENDA")
+      if "Update documentation" not in content:
+          raise SystemExit("MISSING_ACTION_ITEMS")
+      if "End of next week" not in content:
+          raise SystemExit("MISSING_DEADLINE")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - deltachat
+  - writer
+  - messaging
+  - summary
+  - hard
+  app_name: deltachat + libreoffice_writer
+  difficulty: hard
+  description: Create a group chat in DeltaChat and summarize the messages in Writer.

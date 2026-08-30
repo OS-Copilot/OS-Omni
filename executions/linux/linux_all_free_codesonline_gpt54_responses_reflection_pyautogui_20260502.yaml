@@ -1,0 +1,69 @@
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/linux/actual_budget_create_checking_account_easy.yaml
+  - tasks/linux/actual_budget_household_budget_setup_hard.yaml
+  - tasks/linux/actual_budget_operations_multi_account_hard.yaml
+  - tasks/linux/blender_prepare_social_render_hard.yaml
+  - tasks/linux/blender_restage_product_objects_hard.yaml
+  - tasks/linux/blender_set_preview_resolution_easy.yaml
+  - tasks/linux/calc_demographic_profile_pivots_hard.yaml
+  - tasks/linux/calc_freeze_header_range_hard.yaml
+  - tasks/linux/calc_zoom_out_oversized_cells_easy.yaml
+  - tasks/linux/cross_app_thunderbird_calendar_add_coffee_cart_event_easy.yaml
+  - tasks/linux/cross_app_thunderbird_calendar_checkout_coffee_followup_hard.yaml
+  - tasks/linux/cross_app_thunderbird_calendar_dual_item_checkout_two_events_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_export_pdf_attach_draft_easy.yaml
+  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  - tasks/linux/cross_vm_calc_budget_review_hard.yaml
+  - tasks/linux/cross_vm_writer_launch_review_minutes_hard.yaml
+  - tasks/linux/cross_vm_writer_site_visit_brief_easy.yaml
+  - tasks/linux/deltachat_group_ops_sprint_hard.yaml
+  - tasks/linux/deltachat_reply_alice_hard.yaml
+  - tasks/linux/deltachat_reply_bob_easy.yaml
+  - tasks/linux/drawio_launch_badge_easy.yaml
+  - tasks/linux/drawio_refresh_release_flow_hard.yaml
+  - tasks/linux/drawio_relabel_incident_sync_hard.yaml
+  - tasks/linux/gimp_convert_grayscale_easy.yaml
+  - tasks/linux/gimp_crop_center_hard.yaml
+  - tasks/linux/gimp_scale_image_hard.yaml
+  - tasks/linux/impress_add_dissolve_transition_hard.yaml
+  - tasks/linux/impress_create_six_image_slides_hard.yaml
+  - tasks/linux/impress_set_green_background_easy.yaml
+  - tasks/linux/marble_bookmark_cairo_launch_point_easy.yaml
+  - tasks/linux/marble_east_africa_briefing_hard.yaml
+  - tasks/linux/marble_north_atlantic_survey_hard.yaml
+  - tasks/linux/notepadqq_prepare_release_packet_hard.yaml
+  - tasks/linux/notepadqq_sync_ops_bundle_hard.yaml
+  - tasks/linux/notepadqq_update_banner_easy.yaml
+  - tasks/linux/openshop_add_headphones_to_cart_hard.yaml
+  - tasks/linux/openshop_checkout_coffee_hard.yaml
+  - tasks/linux/openshop_login_easy.yaml
+  - tasks/linux/spotube_import_city_weather_mix_hard.yaml
+  - tasks/linux/spotube_import_focus_capsule_hard.yaml
+  - tasks/linux/spotube_set_market_algeria_easy.yaml
+  - tasks/linux/thunderbird_calendar_build_recurring_release_plan_hard.yaml
+  - tasks/linux/thunderbird_calendar_create_vendor_followup_easy.yaml
+  - tasks/linux/thunderbird_calendar_plan_next_week_reviews_hard.yaml
+  - tasks/linux/thunderbird_enable_dark_mode_easy.yaml
+  - tasks/linux/thunderbird_filter_discount_to_promotions_hard.yaml
+  - tasks/linux/thunderbird_unified_inbox_hard.yaml
+  - tasks/linux/vscode_apply_theme_ticket_hard.yaml
+  - tasks/linux/vscode_prepare_release_packet_hard.yaml
+  - tasks/linux/vscode_update_heading_easy.yaml
+  - tasks/linux/wireshark_export_dns_easy.yaml
+  - tasks/linux/wireshark_export_link_and_syn_bundle_hard.yaml
+  - tasks/linux/wireshark_export_protocol_bundle_hard.yaml
+  - tasks/linux/writer_add_reference_cross_reference_hard.yaml
+  - tasks/linux/writer_deduplicate_train_records_hard.yaml
+  - tasks/linux/writer_h2o_subscript_easy.yaml
+  - tasks/linux/zotero_reading_queue_book_easy.yaml
+  - tasks/linux/zotero_reference_library_buildout_hard.yaml
+  - tasks/linux/zotero_research_collection_with_notes_hard.yaml
+metadata:
+  description: Linux 60-task benchmark for free_codesonline_gpt5_4_responses with code_adapter mode, screenshot-only observations, image history, and high reasoning effort.

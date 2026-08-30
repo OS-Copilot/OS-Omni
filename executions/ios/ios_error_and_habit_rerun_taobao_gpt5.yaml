@@ -1,0 +1,15 @@
+tasks:
+- tasks/ios/openshop_add_coffee_to_cart.yaml
+- tasks/ios/openshop_checkout_two_items.yaml
+- tasks/ios/deltachat_create_contact_forward_and_notify.yaml
+- tasks/ios/habit_add_new_habit.yaml
+- tasks/ios/habit_manage_seeded_habits.yaml
+- tasks/ios/habit_rework_seeded_routine.yaml
+models:
+- taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_and_a11y_tree
+history_window: 3
+metadata:
+  description: Focused iOS rerun for retained OpenShop, Delta Chat, and Habit benchmark
+    tasks, routed through taobao_gpt_5.

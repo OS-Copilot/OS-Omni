@@ -1,0 +1,44 @@
+task_id: android.oinkoin.edit_expense
+platform: android
+instruction: In Oinkoin, open the existing Food expense titled Coffee. Its current note contains a dense instruction card with the exact final amount, title, and multiline note. Apply that card to the same record, keep it in Food, preserve the exact punctuation/case in the final title and note, and do not add a second expense.
+init:
+  initializer_id: initializers.android.oinkoin_additional:OinkoinEditExpenseInitializer
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    app_activity: "com.example.piggybank.MainActivity"
+    clear_app_data: true
+    wait_ms: 1500
+    seed_category_name: "Food"
+    seed_amount: 12.34
+    seed_title: "Coffee"
+    seed_note: "old_note FINAL_AMOUNT=19.77 FINAL_TITLE=Coffee Beans - Kenya Route Blue [BMK-774] FINAL_NOTE=bench_edit_note_reconciled\nowner=Mei; route=blue; receipt=774\nkeep category=Food; exclude draft pastry; checksum=KNY-19.77"
+evaluation:
+  evaluator_id: evaluators.android.oinkoin_additional:OinkoinEditExpenseEvaluator
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    database_path: "/data/user/0/com.github.emavgl.piggybankpro/databases/movements.db"
+    old_title: "Coffee"
+    old_note: "old_note FINAL_AMOUNT=19.77 FINAL_TITLE=Coffee Beans - Kenya Route Blue [BMK-774] FINAL_NOTE=bench_edit_note_reconciled\nowner=Mei; route=blue; receipt=774\nkeep category=Food; exclude draft pastry; checksum=KNY-19.77"
+    old_amount: 12.34
+    new_title: "Coffee Beans - Kenya Route Blue [BMK-774]"
+    new_note: |-
+      bench_edit_note_reconciled
+      owner=Mei; route=blue; receipt=774
+      keep category=Food; exclude draft pastry; checksum=KNY-19.77
+    new_amount: 19.77
+    category_name: "Food"
+    category_type: 0
+    timeout_seconds: 15
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [finance, accounting, oinkoin, sqlite, local_db, edit, easy, benchmark]
+  app: "Oinkoin"
+  app_bundle_id: com.github.emavgl.piggybankpro
+  difficulty: easy
+  description: "Edit an existing Food expense record in Oinkoin using an embedded instruction card, preserving exact title punctuation and multiline note text in SQLite."
+  prerequisites:
+    - "Oinkoin PRO is installed on the emulator."
+    - "The Android emulator supports adb root so the evaluator can inspect the app database."

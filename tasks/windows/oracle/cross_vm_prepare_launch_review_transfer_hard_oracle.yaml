@@ -1,0 +1,62 @@
+task_id: windows.oracle.cross_vm.prepare_launch_review_transfer_hard
+platform: windows
+instruction: >
+  Oracle sanity task for windows.cross_vm.prepare_launch_review_transfer_hard.
+  The initializer already prepares the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $targetPath = Join-Path $env:USERPROFILE "Desktop\launch_review_transfer.txt"
+          @'
+          Launch Readiness Review
+          Attendees:
+          Maya Chen
+          Jordan Lee
+          Priya Nair
+          Theo Martin
+          Action Items:
+          Confirm vendor staging access by Tuesday.
+          Send revised demo script to the field team.
+          Lock the final travel roster at 18 people.
+          '@ | Set-Content -Path $targetPath -Encoding UTF8
+        timeout: 30
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Launch Readiness Review
+      Attendees:
+      Maya Chen
+      Jordan Lee
+      Priya Nair
+      Theo Martin
+      Action Items:
+      Confirm vendor staging access by Tuesday.
+      Send revised demo script to the field team.
+      Lock the final travel roster at 18 people.
+      '@.Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\launch_review_transfer.txt"
+      if (-not (Test-Path $targetPath)) {
+        Write-Output "MISSING_FILE"
+        exit 1
+      }
+      $actual = (Get-Content -Path $targetPath -Raw).Trim()
+      if ($actual -ne $expected) {
+        Write-Output "CONTENT_MISMATCH"
+        exit 1
+      }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 90
+metadata:
+  tags: [windows, cross_vm, oracle, hard]
+  difficulty: hard
+  oracle_for: windows.cross_vm.prepare_launch_review_transfer_hard

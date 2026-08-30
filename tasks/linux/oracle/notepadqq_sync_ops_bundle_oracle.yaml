@@ -1,0 +1,76 @@
+task_id: linux.notepadqq.oracle.sync_ops_bundle
+platform: linux
+instruction: Oracle sanity task for linux.notepadqq.sync_ops_bundle. The initializer
+  already writes the expected workspace files. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: notepadqq_ops_bundle
+    workspace_root: /tmp/helloworld_notepadqq_workspace
+    files:
+    - path: config/ops.ini
+      content: '[ops]
+
+        owner=Samir Cole
+
+        region=eu-west
+
+        maintenance_window=23:30-01:00
+
+        escalation_channel=pager-eu
+
+        '
+    - path: notes/checklist.txt
+      content: '- Verify EU dashboards
+
+        - Confirm pager-eu coverage
+
+        - Archive the old rotation
+
+        '
+    open_files:
+    - config/ops.ini
+    - notes/checklist.txt
+evaluation:
+  evaluator_id: evaluators.linux.notepadqq:NotepadqqWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_notepadqq_workspace/notepadqq_ops_bundle
+    files:
+    - path: config/ops.ini
+      equals: '[ops]
+
+        owner=Samir Cole
+
+        region=eu-west
+
+        maintenance_window=23:30-01:00
+
+        escalation_channel=pager-eu
+
+        '
+    - path: notes/checklist.txt
+      equals: '- Verify EU dashboards
+
+        - Confirm pager-eu coverage
+
+        - Archive the old rotation
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Notepadqq
+  difficulty: hard
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - ini
+  - checklist
+  - hard
+  - oracle
+  description: Oracle sanity task for linux.notepadqq.sync_ops_bundle
+  oracle_for: linux.notepadqq.sync_ops_bundle
