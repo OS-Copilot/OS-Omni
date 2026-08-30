@@ -1,0 +1,97 @@
+task_id: macos.cross_app.gimp_writer_edit_insert_hard
+platform: macos
+instruction: >
+  Open the seeded image /Users/bench/Downloads/input.png in GIMP.
+  Use the scroll wheel to zoom out until you can see the entire image.
+  Then use Image → Scale Image to resize the image to exactly 1024×768 pixels.
+  Click Scale to confirm.
+  Then use Image → Crop to Content to auto-crop any transparent borders.
+  Then use Image → Mode → Grayscale to convert the image to grayscale.
+  Finally use File → Export As to export the result to
+  /Users/bench/Documents/processed.png as a PNG file. In the export dialog,
+  click Export to confirm.
+  Then switch to the already-open LibreOffice Writer window. Create a new
+  document. Type the heading "Processed Image" and then use Insert → Image
+  to insert the exported image /Users/bench/Documents/processed.png. In the
+  insert dialog, navigate to /Users/bench/Documents/, select processed.png,
+  and click Open. Save the Writer document as
+  /Users/bench/Documents/image_report.odt.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall gimp >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Downloads /Users/bench/Documents
+        python3 - <<'PY'
+from pathlib import Path
+from urllib.request import urlopen
+url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/gimp/3B327A6F-2C59-4F61-A256-E57920C6C839/test_image.png"
+out = Path("/Users/bench/Downloads/input.png")
+out.parent.mkdir(parents=True, exist_ok=True)
+out.write_bytes(urlopen(url).read())
+PY
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a GIMP /Users/bench/Downloads/input.png
+    - type: wait
+      ms: 18000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      img_path = os.path.expanduser("~/Documents/processed.png")
+      if not os.path.exists(img_path):
+          raise SystemExit("GIMP_OUTPUT_NOT_FOUND")
+
+      odt_path = os.path.expanduser("~/Documents/image_report.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "Processed Image" not in content:
+          raise SystemExit("MISSING_HEADING")
+      if "Pictures/" not in content and ".png" not in content:
+          raise SystemExit("MISSING_IMAGE_REFERENCE")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - gimp
+  - writer
+  - image
+  - scale
+  - grayscale
+  - hard
+  app_name: gimp + libreoffice_writer
+  difficulty: hard
+  description: Scale, crop, and convert an image to grayscale in GIMP via Image menu,
+    export via File → Export As dialog, then insert into Writer via Insert →
+    Image dialog.

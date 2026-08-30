@@ -1,0 +1,36 @@
+task_id: android.spotube.queue_naina_zara
+platform: android
+instruction: 'In Spotube, make Jiosaavn Audio the selected audio source, set Language to English and Marketplace Region to Austria, then build one queue in this exact order: Naina, Zara Zara, Tum Se Hi, Kesariya, Channa Mereya. Start Naina first, turn on repeat-one/single repeat, keep shuffle off, add the other four tracks to the queue without replacing the current queue, and leave the app on the Queue screen with all five requested track names listed in order. Do not stop after only Naina and Zara Zara, do not use a YouTube-only source, and do not leave the final screen on Search or Settings.'
+init:
+  initializer_id: initializers.android.spotube_open_clean_session:SpotubeOpenCleanSessionInitializer
+  params:
+    app_package: "oss.krtirtho.spotube"
+    app_activity: "com.ryanheise.audioservice.AudioServiceActivity"
+    clear_external_log: true
+    external_log_path: "/sdcard/Android/data/oss.krtirtho.spotube/files/.spotube_logs"
+    wait_ms: 2200
+evaluation:
+  evaluator_id: evaluators.android.spotube_queue_naina_zara:SpotubeQueueNainaZaraEvaluator
+  params:
+    app_package: "oss.krtirtho.spotube"
+    primary_track_query: "Naina"
+    queued_track_query: "Zara Zara"
+    required_track_queries: ["Naina", "Zara Zara", "Tum Se Hi", "Kesariya", "Channa Mereya"]
+    min_track_count: 5
+    exact_track_order: true
+    expected_loop_mode: "single"
+    expected_market: "AT"
+    expected_language_code: "en"
+    expected_audio_source: "Jiosaavn Audio"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [spotube, android, queue, search, playback, hard, benchmark]
+  app: Spotube
+  app_bundle_id: oss.krtirtho.spotube
+  difficulty: hard
+  description: "Configure Spotube source/language/region, build a five-track queue in exact order, require repeat-one state, and verify persisted queue/preferences via app state."
+  prerequisites:
+    - "Spotube is installed on the emulator."
+    - "Network access is available."

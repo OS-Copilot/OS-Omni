@@ -1,0 +1,55 @@
+task_id: android.calendar_shopping.add_calendar_item_easy
+platform: android
+instruction: Check the BMK Coffee Cart Reminder event in Fossify Calendar and do what it asks in OpenShop. Only place an order if the event explicitly tells you to.
+init:
+  initializer_id: initializers.android.calendar_shopping_cross_app:CalendarShoppingCrossAppInitializer
+  params:
+    app_package: "org.fossify.calendar"
+    database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+    timezone: "UTC"
+    clear_calendar_data: true
+    clear_openshop_data: true
+    seed_events:
+      - title: "BMK Coffee Cart Reminder"
+        start: "2026-05-04T09:00:00"
+        end: "2026-05-04T09:20:00"
+        location: "OpenShop"
+        description: "Add exactly one Mountain Isle Pour-Over Coffee 20 Pack to the OpenShop cart. Do not place an order."
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.android.calendar_shopping_cross_app:CalendarShoppingCrossAppEvaluator
+  params:
+    calendar:
+      database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+      timezone: "UTC"
+      expected_events:
+        - title: "BMK Coffee Cart Reminder"
+          start: "2026-05-04T09:00:00"
+          end: "2026-05-04T09:20:00"
+          location: "OpenShop"
+          description: "Add exactly one Mountain Isle Pour-Over Coffee 20 Pack to the OpenShop cart. Do not place an order."
+      strict_benchmark_titles: true
+      timeout_seconds: 10
+      poll_interval_seconds: 1
+    openshop:
+      app_package: com.killt.openshop
+      present_cart_items:
+        - product_id: p1005
+          quantity: 1
+      cart_size: 1
+      order_count: 0
+      session_logged_in: false
+      timeout_seconds: 12
+      poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [calendar, shopping, fossify_calendar, openshop, cross_app, easy, benchmark]
+  app: "Fossify Calendar + OpenShop"
+  app_bundle_id: org.fossify.calendar
+  description: "Read a calendar shopping reminder and add the requested OpenShop item to the cart."
+  difficulty_basis: "Human path is under 10 main actions when starting from the seeded reminder: read note, switch to OpenShop, find coffee, add one item."
+  prerequisites:
+    - "Fossify Calendar and OpenShop are installed on the emulator."
+  difficulty: easy

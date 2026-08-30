@@ -1,0 +1,77 @@
+task_id: ios.openshop.oracle.adjust_cart_and_checkout
+platform: ios
+instruction: >
+  In OpenShop, you are already signed in. Search for coffee and add Mountain Isle Pour-Over
+  Coffee 20 Pack to the cart. Then search for headphones and add Verdant Pro Noise-Canceling
+  Headphones to the cart. Open the cart, increase Polar Day Slim Business Backpack to quantity 2,
+  increase the coffee quantity to 2, remove Lumen Magnetic Phone Stand, proceed to checkout,
+  choose the Office shipping address, choose WeChat Pay, enter the order note
+  'Backpack plus coffee for the offsite setup.', and place the order.
+init:
+  initializer_id: initializers.ios.openshop_seed_open_app:OpenShopSeedOpenAppInitializer
+  params:
+    bundle_id: com.killt.openshop
+    login_session: true
+    cart_items:
+      - product_id: p1004
+        quantity: 1
+      - product_id: p1006
+        quantity: 1
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.openshop_state:OpenShopStateEvaluator
+  params:
+    bundle_id: com.killt.openshop
+    session_logged_in: true
+    cart_size: 0
+    order_count: 1
+    latest_order:
+      address_id: addr-office
+      payment_method_id: wechat
+      note: "Backpack plus coffee for the offsite setup."
+      status: "Awaiting Shipment"
+      items:
+        - product_id: p1004
+          quantity: 2
+        - product_id: p1005
+          quantity: 2
+        - product_id: p1001
+          quantity: 1
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [shopping, ios, openshop, cart, checkout, hard, multi_step, benchmark, oracle]
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  description: >-
+    Oracle state-seed task for ios.openshop.adjust_cart_and_checkout.
+  prerequisites:
+    - "OpenShop is installed on the simulator."
+  oracle_for: ios.openshop.adjust_cart_and_checkout
+  oracle_actions:
+    - type: seed_state
+      store: openshop
+      params:
+        bundle_id: com.killt.openshop
+        session_logged_in: true
+        cart_size: 0
+        order_count: 1
+        latest_order:
+          address_id: addr-office
+          payment_method_id: wechat
+          note: "Backpack plus coffee for the offsite setup."
+          status: "Awaiting Shipment"
+          items:
+            - product_id: p1004
+              quantity: 2
+            - product_id: p1005
+              quantity: 2
+            - product_id: p1001
+              quantity: 1
+        timeout_seconds: 12
+        poll_interval_seconds: 0.5
+    - type: success
+      message: Oracle state seeded.

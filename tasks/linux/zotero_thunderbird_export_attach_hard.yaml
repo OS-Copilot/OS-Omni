@@ -1,0 +1,221 @@
+task_id: linux.cross_app.zotero_thunderbird_export_attach_hard
+platform: linux
+instruction: >
+  Open Zotero. Create a new collection named "Reading List" under My Library.
+  Add three Journal Article items to this collection:
+  1. "Attention Is All You Need" by Ashish Vaswani
+  2. "BERT" by Jacob Devlin
+  3. "Longformer" by Iz Beltagy
+  Add the tag "transformer" to all three items. To add a tag, select an item,
+  then in the right panel click the Tags tab, click Add, and type "transformer".
+  Select the "Reading List" collection. Go to File → Export Collection. In the
+  export dialog, choose "BibTeX" format and save the file to
+  /home/user/Documents/reading_list.bib.
+  Then switch to the already-open Thunderbird compose window. The email should
+  have subject "Bench Reading List Export" and body "Please find attached the
+  exported bibliography." Click the Attach button in the compose toolbar,
+  navigate to /home/user/Documents/, select reading_list.bib, and click Open.
+  Leave the draft open without sending.
+  Finish after the attachment is added.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads" "$HOME/Documents"
+        pkill -x zotero >/dev/null 2>&1 || true
+        pkill -f thunderbird >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            python3 - <<'PY'
+            from pathlib import Path
+            from urllib.request import urlopen
+            url = "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz"
+            out = Path("/home/user/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz")
+            out.write_bytes(urlopen(url).read())
+            PY
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+    - type: download
+      url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/dd84e895-72fd-4023-a336-97689ded257c/thunderbird-profile.tar.gz
+      path: /home/user/thunderbird-profile.tar.gz
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PYtar -xzv --recursive-unlink -f /home/user/thunderbird-profile.tar.gz -C /home/user/
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=${DISPLAY:-:0}
+        wmctrl -a Zotero 2>/dev/null || true
+        wmctrl -r Zotero -b remove,maximized_vert,maximized_horz 2>/dev/null || true
+        wmctrl -r Zotero -e 0,80,80,1320,860 2>/dev/null || true
+    - type: wait
+      ms: 1000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f /usr/bin/thunderbird -compose "from='Anonym Tester <anonym-x2024@outlook.com>',to=assistant@outlook.com,subject='Bench Reading List Export',body='Please find attached the exported bibliography.'" >/dev/null 2>&1
+    - type: wait
+      ms: 4500
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import sqlite3
+      import os
+
+      # Check Zotero database
+      db_path = os.path.expanduser("~/Zotero/zotero.sqlite")
+      if not os.path.exists(db_path):
+          raise SystemExit("ZOTERO_DB_NOT_FOUND")
+
+      conn = sqlite3.connect(db_path)
+      cur = conn.cursor()
+
+      # Check collection exists
+      cur.execute("SELECT collectionName FROM collections WHERE collectionName='Reading List'")
+      if not cur.fetchone():
+          raise SystemExit("COLLECTION_NOT_FOUND")
+
+      # Check 3 journal articles exist
+      cur.execute("""
+          SELECT i.itemID, f.value FROM items i
+          JOIN itemData id ON i.itemID = id.itemID
+          JOIN fields f ON id.fieldID = f.fieldID
+          JOIN itemDataValues idv ON id.valueID = idv.valueID
+          WHERE f.fieldName = 'title'
+          AND idv.value IN ('Attention Is All You Need', 'BERT', 'Longformer')
+      """)
+      items = cur.fetchall()
+      if len(items) != 3:
+          raise SystemExit(f"EXPECTED_3_ITEMS_GOT_{len(items)}")
+
+      # Check tags exist
+      cur.execute("""
+          SELECT DISTINCT tag FROM tags
+          WHERE tag = 'transformer'
+      """)
+      if not cur.fetchone():
+          raise SystemExit("TAG_NOT_FOUND")
+
+      conn.close()
+
+      # Check BibTeX file exists
+      bib_path = os.path.expanduser("~/Documents/reading_list.bib")
+      if not os.path.exists(bib_path):
+          raise SystemExit("BIBTEX_FILE_NOT_FOUND")
+
+      # Check Thunderbird draft has attachment
+      import subprocess
+      result = subprocess.run(
+          ["grep", "-R", "-a", "-q", "reading_list.bib", os.path.expanduser("~/.thunderbird")],
+          capture_output=True
+      )
+      if result.returncode != 0:
+          raise SystemExit("ATTACHMENT_NOT_FOUND_IN_THUNDERBIRD")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - zotero
+  - thunderbird
+  - bibliography
+  - tags
+  - hard
+  app_name: zotero + thunderbird
+  difficulty: hard
+  description: Create a Zotero collection with 3 journal articles, add tags via Tags
+    panel, export as BibTeX via File menu dialog, then attach to Thunderbird
+    email via Attach button and file dialog.
+  oracle_task: tasks/linux/oracle/cross_app_zotero_thunderbird_export_attach_oracle.yaml
+  oracle_model: linux_oracle_wait

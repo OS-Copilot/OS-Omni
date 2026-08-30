@@ -1,0 +1,43 @@
+task_id: linux.spotube.oracle.set_market_algeria
+platform: linux
+instruction: Oracle sanity task for linux.spotube.set_market_algeria. The initializer
+  already seeds the expected Rhythmbox playback state. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.spotube:SpotubeInitializer
+  params:
+    app_command: rhythmbox
+    libraries:
+    - root_segments:
+      - BenchVault
+      - North Africa Sampler
+      - Sahara Set
+      tracks:
+      - name: atlas_night
+        frequency_hz: 265.0
+      - name: desert_bus
+        frequency_hz: 305.0
+      - name: sahara_dawn
+        frequency_hz: 345.0
+    autoplay_track_name: sahara_dawn
+evaluation:
+  evaluator_id: evaluators.linux.spotube:SpotubeStateEvaluator
+  params:
+    state:
+      playing: true
+      current_track_name: sahara_dawn
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Spotube
+  difficulty: easy
+  tags:
+  - linux
+  - gui
+  - music
+  - rhythmbox
+  - local-library
+  - easy
+  - oracle
+  description: Oracle sanity task for linux.spotube.set_market_algeria
+  oracle_for: linux.spotube.set_market_algeria

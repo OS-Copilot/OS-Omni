@@ -1,0 +1,14 @@
+models:
+- gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+- tasks/windows/calendar_create_recurring_event.yaml
+- tasks/windows/calendar_manage_multiple_events.yaml
+metadata:
+  description: Windows calendar hard-only run for gpt5_5 high with code_adapter mode.
+  difficulty_filter: hard
+  scope: single_app

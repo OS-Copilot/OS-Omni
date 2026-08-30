@@ -1,0 +1,38 @@
+task_id: windows.calendar.create_recurring_event
+platform: windows
+instruction: 'Please open Thunderbird and switch to the Calendar tab. Create a recurring event called "Weekly Release Triage"
+  every Tuesday starting next Tuesday at 9:15 AM for 45 minutes with a reminder 15 minutes before the event. Also create "QA
+  Sign-off" for next Thursday at 11:00 AM for 30 minutes and "Launch Readiness Review" for next Friday at 4:00 PM for 1 hour.
+  Save everything when finished.
+
+  '
+init:
+  initializer_id: initializers.windows.thunderbird_calendar:ThunderbirdCalendarInitializer
+evaluation:
+  evaluator_id: evaluators.windows.calendar:CalendarEvaluator
+  params:
+    check_id: calendar_create_recurring_event
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - thunderbird
+  - calendar
+  - event
+  - recurring
+  - reminder
+  - hard
+  - single_app
+  - evaluator_backed
+  difficulty: hard
+  app_name: thunderbird_calendar
+  human_steps: 68
+  description: Create a recurring release meeting and two additional planning events in Thunderbird Calendar.
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator
+  linux_peer: linux.thunderbird_calendar.build_recurring_release_plan_hard
+  linux_peer_file: tasks/linux/thunderbird_calendar_build_recurring_release_plan_hard.yaml
+  alignment_status: direct

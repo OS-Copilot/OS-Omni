@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/blender_set_preview_resolution_easy.yaml
+  - tasks/linux/blender_prepare_social_render_hard.yaml
+  - tasks/linux/blender_restage_product_objects_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Blender desktop benchmark tasks via taobao gpt-5

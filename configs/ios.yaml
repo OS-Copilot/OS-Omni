@@ -1,0 +1,8 @@
+# Host or IP of the Appium server used for iOS simulator control.
+appium_host: 127.0.0.1
+
+# Port of the Appium server used for iOS simulator control.
+appium_port: 4723
+
+# UDID of the baseline simulator used as the clone source for each run.
+source_simulator_udid: "9FF31490-F0FF-4ECA-9988-02C7253247CF"

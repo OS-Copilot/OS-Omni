@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/drawio_release_board_refresh.yaml
+  - tasks/macos/drawio_launch_matrix_sync.yaml
+  - tasks/macos/drawio_ops_plan_relabel.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS draw.io relabeling tasks (1 easy, 2 hard)

@@ -1,0 +1,188 @@
+task_id: linux.zotero_standalone_subcollection_hard
+platform: linux
+instruction: >
+  Open Zotero. Create a new collection named "Research Papers" under My Library.
+  Create three subcollections under "Research Papers":
+  1. "Machine Learning"
+  2. "Distributed Systems"
+  3. "Human-Computer Interaction"
+  To create a subcollection, right-click on "Research Papers" in the left
+  sidebar and select "New Subcollection". Type the name and press Enter.
+  Add two Journal Article items to "Machine Learning":
+  1. "Attention Is All You Need" by Ashish Vaswani
+  2. "BERT: Pre-training of Deep Bidirectional Transformers" by Jacob Devlin
+  Add two Book items to "Distributed Systems":
+  1. "Designing Data-Intensive Applications" by Martin Kleppmann
+  2. "Distributed Systems: Principles and Paradigms" by Andrew Tanenbaum
+  Add one Conference Paper item to "Human-Computer Interaction":
+  1. "The Humane Interface" by Jef Raskin
+  Add the tag "seminal" to all five items. Add the tag "pre-2020" to items
+  published before 2020 (Tanenbaum and Raskin).
+  Add a child note to "Attention Is All You Need" with text: "Introduces
+  the transformer architecture with self-attention mechanism."
+  Add a child note to "Designing Data-Intensive Applications" with text:
+  "Covers replication, partitioning, transactions, and consistency."
+  Select the "Research Papers" collection. Go to File → Export Collection.
+  In the export dialog, choose "BibTeX" format and export. The file will be
+  saved to /home/user/Documents/research_papers.bib.
+  Finish after the BibTeX file exists.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads" "$HOME/Documents"
+        pkill -x zotero >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            python3 - <<'PY'
+            from pathlib import Path
+            from urllib.request import urlopen
+            url = "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz"
+            out = Path("/home/user/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz")
+            out.write_bytes(urlopen(url).read())
+            PY
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=${DISPLAY:-:0}
+        wmctrl -a Zotero 2>/dev/null || true
+        wmctrl -r Zotero -b remove,maximized_vert,maximized_horz 2>/dev/null || true
+        wmctrl -r Zotero -e 0,80,80,1320,860 2>/dev/null || true
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import sqlite3
+      import os
+
+      db_path = os.path.expanduser("~/Zotero/zotero.sqlite")
+      if not os.path.exists(db_path):
+          raise SystemExit("ZOTERO_DB_NOT_FOUND")
+
+      conn = sqlite3.connect(db_path)
+      cur = conn.cursor()
+
+      # Check parent collection
+      cur.execute("SELECT collectionID FROM collections WHERE collectionName='Research Papers'")
+      if not cur.fetchone():
+          raise SystemExit("PARENT_COLLECTION_NOT_FOUND")
+
+      # Check subcollections
+      for name in ["Machine Learning", "Distributed Systems", "Human-Computer Interaction"]:
+          cur.execute("SELECT collectionName FROM collections WHERE collectionName=?", (name,))
+          if not cur.fetchone():
+              raise SystemExit(f"SUBCOLLECTION_{name.replace(' ', '_').upper()}_NOT_FOUND")
+
+      # Check 5 items
+      titles = [
+          'Attention Is All You Need',
+          'BERT: Pre-training of Deep Bidirectional Transformers',
+          'Designing Data-Intensive Applications',
+          'Distributed Systems: Principles and Paradigms',
+          'The Humane Interface'
+      ]
+      placeholders = ','.join(['?'] * len(titles))
+      cur.execute(f"""
+          SELECT DISTINCT idv.value FROM items i
+          JOIN itemData id ON i.itemID = id.itemID
+          JOIN fields f ON id.fieldID = f.fieldID
+          JOIN itemDataValues idv ON id.valueID = idv.valueID
+          WHERE f.fieldName = 'title'
+          AND idv.value IN ({placeholders})
+      """, titles)
+      items = cur.fetchall()
+      if len(items) != 5:
+          raise SystemExit(f"EXPECTED_5_ITEMS_GOT_{len(items)}")
+
+      # Check tags
+      cur.execute("SELECT DISTINCT name FROM tags WHERE name = 'seminal'")
+      if not cur.fetchone():
+          raise SystemExit("TAG_SEMINAL_NOT_FOUND")
+      cur.execute("SELECT DISTINCT name FROM tags WHERE name = 'pre-2020'")
+      if not cur.fetchone():
+          raise SystemExit("TAG_PRE2020_NOT_FOUND")
+
+      conn.close()
+
+      # Check BibTeX file
+      bib_path = os.path.expanduser("~/Documents/research_papers.bib")
+      if not os.path.exists(bib_path):
+          raise SystemExit("BIBTEX_FILE_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - zotero
+  - subcollection
+  - tags
+  - notes
+  - bibliography
+  - hard
+  app_name: zotero
+  difficulty: hard
+  description: Create a Zotero collection with 3 subcollections, add 5 items of
+    different types (journalArticle, book, conferencePaper) across subcollections,
+    add selective tags and child notes, then export as BibTeX.

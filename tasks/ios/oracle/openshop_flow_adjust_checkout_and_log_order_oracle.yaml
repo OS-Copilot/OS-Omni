@@ -1,0 +1,211 @@
+task_id: ios.openshop_flow.oracle.adjust_checkout_and_log_order
+platform: ios
+instruction: >
+  In OpenShop, you are already signed in. Search for coffee and add Mountain Isle
+  Pour-Over Coffee 20 Pack to the cart. Then search for headphones and add Verdant
+  Pro Noise-Canceling Headphones to the cart. Open the cart, increase Polar Day Slim
+  Business Backpack to quantity 2, increase the coffee quantity to 2, remove Lumen
+  Magnetic Phone Stand, proceed to checkout, choose the Office shipping address,
+  choose WeChat Pay, enter the order note Backpack plus coffee for the offsite setup.,
+  and place the order. Then open Flow and record the final order total as a new expense
+  on Bench Checking titled Bench Offsite Setup Order, in the Bench Equipment category,
+  with the note OpenShop order: backpack, headphones, and coffee for the offsite setup.
+  Leave the existing transaction Bench Router Cable unchanged.
+init:
+  initializer_id: initializers.ios.openshop_flow_cross_app:OpenShopFlowCrossAppInitializer
+  params:
+    bundle_id: com.killt.openshop
+    flow_params:
+      bundle_id: mn.flow.flow
+      seed_spec:
+        accounts:
+          - name: "Bench Checking"
+            currency: "USD"
+            icon: "card"
+          - name: "Bench Cash"
+            currency: "USD"
+            icon: "cash"
+          - name: "Bench Savings"
+            currency: "USD"
+            icon: "savings"
+            exclude_from_total_balance: true
+        categories:
+          - name: "Bench Equipment"
+            icon: "shopping"
+          - name: "Bench Groceries"
+            icon: "groceries"
+          - name: "Bench Coffee"
+            icon: "coffee"
+        opening_balances:
+          - account: "Bench Checking"
+            amount: 1200.00
+            title: "Bench Checking Opening Balance"
+            day_offset: -2
+          - account: "Bench Cash"
+            amount: 150.00
+            title: "Bench Cash Opening Balance"
+            day_offset: -2
+          - account: "Bench Savings"
+            amount: 500.00
+            title: "Bench Savings Opening Balance"
+            day_offset: -2
+        transactions:
+          - kind: "expense"
+            account: "Bench Checking"
+            category: "Bench Equipment"
+            amount: 35.00
+            title: "Bench Router Cable"
+            description: "Keep this purchase unchanged"
+            day_offset: -1
+      wait_ms: 1200
+    openshop_params:
+      bundle_id: com.killt.openshop
+      login_session: true
+      cart_items:
+        - product_id: p1004
+          quantity: 1
+        - product_id: p1006
+          quantity: 1
+      wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.openshop_flow_cross_app:OpenShopFlowCrossAppEvaluator
+  params:
+    openshop_params:
+      bundle_id: com.killt.openshop
+      session_logged_in: true
+      cart_size: 0
+      order_count: 1
+      latest_order:
+        address_id: addr-office
+        payment_method_id: wechat
+        note: "Backpack plus coffee for the offsite setup."
+        status: "Awaiting Shipment"
+        total: 749
+        items:
+          - product_id: p1004
+            quantity: 2
+          - product_id: p1005
+            quantity: 2
+          - product_id: p1001
+            quantity: 1
+      timeout_seconds: 12
+      poll_interval_seconds: 0.5
+    flow_params:
+      assert_spec:
+        present_transactions:
+          - type: "expense"
+            title: "Bench Router Cable"
+            description: "Keep this purchase unchanged"
+            amount: -35.00
+            account: "Bench Checking"
+            category: "Bench Equipment"
+          - type: "expense"
+            title: "Bench Offsite Setup Order"
+            description: "OpenShop order: backpack, headphones, and coffee for the offsite setup."
+            amount: -749.00
+            account: "Bench Checking"
+            category: "Bench Equipment"
+        transaction_count: 5
+        account_balances:
+          Bench Checking: 416.00
+          Bench Cash: 150.00
+          Bench Savings: 500.00
+      timeout_seconds: 12
+      poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [cross_app, openshop, flow, ios, shopping, finance, hard, benchmark, oracle]
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  description: "Oracle state-seed task for ios.openshop_flow.adjust_checkout_and_log_order."
+  oracle_for: ios.openshop_flow.adjust_checkout_and_log_order
+  oracle_actions:
+    - type: seed_state
+      store: openshop
+      params:
+        bundle_id: com.killt.openshop
+        session_logged_in: true
+        cart_size: 0
+        order_count: 1
+        latest_order:
+          address_id: addr-office
+          payment_method_id: wechat
+          note: "Backpack plus coffee for the offsite setup."
+          status: "Awaiting Shipment"
+          total: 749
+          items:
+            - product_id: p1004
+              quantity: 2
+            - product_id: p1005
+              quantity: 2
+            - product_id: p1001
+              quantity: 1
+        timeout_seconds: 12
+        poll_interval_seconds: 0.5
+    - type: seed_state
+      store: flow
+      params:
+        bundle_id: mn.flow.flow
+        seed_spec:
+          accounts:
+            - name: "Bench Checking"
+              currency: "USD"
+              icon: "card"
+            - name: "Bench Cash"
+              currency: "USD"
+              icon: "cash"
+            - name: "Bench Savings"
+              currency: "USD"
+              icon: "savings"
+              exclude_from_total_balance: true
+          categories:
+            - name: "Bench Equipment"
+              icon: "shopping"
+            - name: "Bench Groceries"
+              icon: "groceries"
+            - name: "Bench Coffee"
+              icon: "coffee"
+          opening_balances:
+            - account: "Bench Checking"
+              amount: 1200.00
+              title: "Bench Checking Opening Balance"
+              day_offset: -2
+            - account: "Bench Cash"
+              amount: 150.00
+              title: "Bench Cash Opening Balance"
+              day_offset: -2
+            - account: "Bench Savings"
+              amount: 500.00
+              title: "Bench Savings Opening Balance"
+              day_offset: -2
+          transactions:
+            - kind: "expense"
+              account: "Bench Checking"
+              category: "Bench Equipment"
+              amount: 35.00
+              title: "Bench Router Cable"
+              description: "Keep this purchase unchanged"
+              day_offset: -1
+        assert_spec:
+          present_transactions:
+            - type: "expense"
+              title: "Bench Router Cable"
+              description: "Keep this purchase unchanged"
+              amount: -35.00
+              account: "Bench Checking"
+              category: "Bench Equipment"
+            - type: "expense"
+              title: "Bench Offsite Setup Order"
+              description: "OpenShop order: backpack, headphones, and coffee for the offsite setup."
+              amount: -749.00
+              account: "Bench Checking"
+              category: "Bench Equipment"
+          transaction_count: 5
+          account_balances:
+            Bench Checking: 416.00
+            Bench Cash: 150.00
+            Bench Savings: 500.00
+    - type: success
+      message: Oracle state seeded.

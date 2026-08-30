@@ -1,0 +1,9 @@
+tasks:
+- tasks/windows/vscode_disable_minimap_enable_autosave.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: VS Code Windows task - disable minimap and enable auto save afterDelay

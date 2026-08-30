@@ -1,0 +1,136 @@
+task_id: windows.deltachat.create_launch_debrief_from_existing_chats
+platform: windows
+instruction: 'In Delta Chat, create a new group chat named "Launch Debrief" by adding the existing chats "Avery Design", "Morgan
+  Ops", and "Jordan Travel". Open the group info, pin the group to the top, rename the group to "Helloworld", and send these
+  five exact messages in this order: "Renamed from Launch Debrief to Helloworld", "Launch Debrief participants confirmed.",
+  "Launch agenda owner: Avery Design.", "Operations owner: Morgan Ops.", and "Travel owner: Jordan Travel." Also create these
+  hard-plus verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.deltachat.create_launch_debrief_from_existing_chats\tlinux.deltachat.end_of_day_wrap\thard-plus-ready\napp\tDelta
+  Chat\tevaluator-checked''; C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.deltachat.create_launch_debrief_from_existing_chats\nlinux_peer=linux.deltachat.end_of_day_wrap\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use Delta Chat for the messaging workflow; create required hard-plus verification files directly at the specified paths
+  using the available automation/runtime file-writing method, not Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.deltachat:DeltaChatSendMessageInitializer
+  params:
+    api_base_url: http://127.0.0.1:8081
+    profile_archive_path: files/deltachat/profile.zip
+    purge_greenmail: true
+    seed_sender_email: benchrecv@example.test
+    seed_sender_password: benchpass
+    seed_recipient_email: benchsender@example.test
+    seed_subject: Seed existing chat
+    seed_body: seed_existing_chat_message
+    seed_smtp_host: 127.0.0.1
+    seed_smtp_port: 3025
+    allow_missing_greenmail: false
+    wait_ms: 2500
+evaluation:
+  evaluator_id: evaluators.windows.deltachat_create_group_from_existing_chats:DeltaChatCreateGroupFromExistingChatsEvaluator
+  params:
+    api_base_url: http://127.0.0.1:8081
+    recipient_emails:
+    - avery.design@example.test
+    - morgan.ops@example.test
+    - jordan.travel@example.test
+    group_name: Helloworld
+    body: Renamed from Launch Debrief to Helloworld
+    mailbox: INBOX
+    allow_missing_greenmail: false
+    timeout_seconds: 30
+    poll_interval_seconds: 1
+    expected_messages:
+    - recipient_email: avery.design@example.test
+      body: Renamed from Launch Debrief to Helloworld
+    - recipient_email: morgan.ops@example.test
+      body: Renamed from Launch Debrief to Helloworld
+    - recipient_email: jordan.travel@example.test
+      body: Renamed from Launch Debrief to Helloworld
+    - recipient_email: avery.design@example.test
+      body: Launch Debrief participants confirmed.
+    - recipient_email: morgan.ops@example.test
+      body: Launch Debrief participants confirmed.
+    - recipient_email: jordan.travel@example.test
+      body: Launch Debrief participants confirmed.
+    - recipient_email: avery.design@example.test
+      body: 'Launch agenda owner: Avery Design.'
+    - recipient_email: morgan.ops@example.test
+      body: 'Launch agenda owner: Avery Design.'
+    - recipient_email: jordan.travel@example.test
+      body: 'Launch agenda owner: Avery Design.'
+    - recipient_email: avery.design@example.test
+      body: 'Operations owner: Morgan Ops.'
+    - recipient_email: morgan.ops@example.test
+      body: 'Operations owner: Morgan Ops.'
+    - recipient_email: jordan.travel@example.test
+      body: 'Operations owner: Morgan Ops.'
+    - recipient_email: avery.design@example.test
+      body: 'Travel owner: Jordan Travel.'
+    - recipient_email: morgan.ops@example.test
+      body: 'Travel owner: Jordan Travel.'
+    - recipient_email: jordan.travel@example.test
+      body: 'Travel owner: Jordan Travel.'
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.deltachat.create_launch_debrief_from_existing_chats\tlinux.deltachat.end_of_day_wrap\t\
+          hard-plus-ready\napp\tDelta Chat\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.deltachat.create_launch_debrief_from_existing_chats
+
+          linux_peer=linux.deltachat.end_of_day_wrap
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_deltachat_create_launch_debrief_from_existing_chats\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - chat
+  - deltachat
+  - windows
+  - group
+  - benchmark
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  app: Delta Chat
+  human_steps: 104
+  description: Create and rename a pinned Delta Chat group from existing chats, then send five exact role and confirmation
+    messages to all participants.
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator or supplemental checks
+  linux_peer: linux.deltachat.end_of_day_wrap
+  linux_peer_file: tasks/linux/deltachat_group_ops_sprint_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

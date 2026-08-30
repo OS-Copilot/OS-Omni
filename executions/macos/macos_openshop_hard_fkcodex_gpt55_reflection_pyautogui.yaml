@@ -1,0 +1,10 @@
+tasks:
+  - tasks/macos/openshop_add_two_items_to_cart.yaml
+  - tasks/macos/openshop_checkout_two_items.yaml
+models:
+  - FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS OpenShop hard tasks for FKCODEX_GPT55

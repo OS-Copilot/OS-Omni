@@ -1,0 +1,115 @@
+task_id: macos.cross_app.vscodium_writer_docs_hard
+platform: macos
+instruction: >
+  Open VSCodium. Create a new file by pressing Cmd+N.
+  Type the following Python code:
+
+  def greet(name):
+      """Return a greeting message."""
+      return f"Hello, {name}! Welcome to the project."
+
+  def calculate_sum(numbers):
+      """Calculate the sum of a list of numbers."""
+      return sum(numbers)
+
+  # Example usage
+  if __name__ == "__main__":
+      message = greet("Alice")
+      print(message)
+
+      numbers = [1, 2, 3, 4, 5]
+      total = calculate_sum(numbers)
+      print(f"Sum: {total}")
+
+  Save the file as /Users/bench/Documents/utils.py by pressing Cmd+S.
+  Then switch to the already-open LibreOffice Writer window.
+  Create a new document with the heading "Python Utility Functions".
+  Below the heading, add the following sections:
+
+  "## greet(name)
+  Returns a greeting message for the given name.
+
+  ## calculate_sum(numbers)
+  Calculates the sum of a list of numbers."
+
+  Save the Writer document as /Users/bench/Documents/utils_docs.odt.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall VSCodium >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a VSCodium
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Check Python file
+      py_path = os.path.expanduser("~/Documents/utils.py")
+      if not os.path.exists(py_path):
+          raise SystemExit("PYTHON_FILE_NOT_FOUND")
+
+      with open(py_path, 'r') as f:
+          content = f.read()
+
+      if "def greet" not in content:
+          raise SystemExit("MISSING_GREET_FUNCTION")
+      if "def calculate_sum" not in content:
+          raise SystemExit("MISSING_CALCULATE_SUM_FUNCTION")
+
+      # Check Writer document
+      odt_path = os.path.expanduser("~/Documents/utils_docs.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "Python Utility Functions" not in content:
+          raise SystemExit("MISSING_HEADING")
+      if "greet" not in content:
+          raise SystemExit("MISSING_GREET_DOC")
+      if "calculate_sum" not in content:
+          raise SystemExit("MISSING_CALCULATE_SUM_DOC")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - vscodium
+  - writer
+  - python
+  - documentation
+  - hard
+  app_name: vscodium + libreoffice_writer
+  difficulty: hard
+  description: Write Python code in VSCodium and create documentation in Writer.

@@ -1,0 +1,20 @@
+tasks:
+  # Writer (3 tasks: 1 easy, 2 hard)
+  - tasks/linux/writer_h2o_subscript_easy.yaml
+  - tasks/linux/writer_add_reference_cross_reference_hard.yaml
+  - tasks/linux/writer_deduplicate_train_records_hard.yaml
+  # Calc (3 tasks: 2 easy, 1 hard)
+  - tasks/linux/calc_zoom_out_oversized_cells_easy.yaml
+  - tasks/linux/calc_freeze_header_range_hard.yaml
+  - tasks/linux/calc_demographic_profile_pivots_hard.yaml
+  # Impress (3 tasks: 2 easy, 1 hard)
+  - tasks/linux/impress_add_dissolve_transition_hard.yaml
+  - tasks/linux/impress_set_green_background_easy.yaml
+  - tasks/linux/impress_create_six_image_slides_hard.yaml
+models:
+  - gpt4o
+action_mode: code_adapter
+observation_mode: screenshot_and_a11y_tree
+history_window: 3
+metadata:
+  description: "Linux Office LibreOffice tasks (9 total: Writer/Calc/Impress each 1 easy + 2 hard)"

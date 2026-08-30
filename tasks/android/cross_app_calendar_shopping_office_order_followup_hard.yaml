@@ -1,0 +1,93 @@
+task_id: android.calendar_shopping.office_order_followup_hard
+platform: android
+instruction: Check the BMK Office Purchase Plan event in Fossify Calendar and carry out only the active purchase plan. Delete the cancelled BMK office draft events after you recognize they are not active. If OpenShop asks you to sign in, use phone 13800138000 and password spring2026.
+init:
+  initializer_id: initializers.android.calendar_shopping_cross_app:CalendarShoppingCrossAppInitializer
+  params:
+    app_package: "org.fossify.calendar"
+    database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+    timezone: "UTC"
+    clear_calendar_data: true
+    clear_openshop_data: true
+    seed_events:
+      - title: "BMK Office Purchase Plan"
+        start: "2026-05-05T09:00:00"
+        end: "2026-05-05T09:45:00"
+        location: "OpenShop"
+        description: "Active plan. Order Verdant Pro Noise-Canceling Headphones x1 with spec 30h battery, Mukawa Folding Camping Table and Chair Set x2 with spec Storage bag, Lumen Magnetic Phone Stand x1 with spec Multi-angle, and Polar Day Slim Business Backpack x1 with spec 15.6-inch fit. Use the Office address, WeChat Pay, and exact order note \"Office setup calendar order: headphones, tables, stand, backpack.\" Then create two follow-up events: \"BMK Office Order Follow-up\" on 2026-05-06 from 10:00 AM to 10:30 AM at \"Room 504\" with description \"Check OpenShop shipment for office setup\", and \"BMK Office Inventory Check\" on 2026-05-07 from 3:15 PM to 3:45 PM at \"Supply Desk\" with description \"Verify headphones, tables, stand, and backpack\"."
+      - title: "BMK Office Purchase Draft"
+        start: "2026-05-05T08:00:00"
+        end: "2026-05-05T08:30:00"
+        location: "OpenShop"
+        description: "Cancelled draft. Do not buy bedding. Delete this BMK draft."
+      - title: "BMK Office Old Follow-up"
+        start: "2026-05-06T09:00:00"
+        end: "2026-05-06T09:30:00"
+        location: "Room 402"
+        description: "Outdated reminder. Delete this BMK draft."
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.android.calendar_shopping_cross_app:CalendarShoppingCrossAppEvaluator
+  params:
+    calendar:
+      database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+      timezone: "UTC"
+      expected_events:
+        - title: "BMK Office Purchase Plan"
+          start: "2026-05-05T09:00:00"
+          end: "2026-05-05T09:45:00"
+          location: "OpenShop"
+          description: "Active plan. Order Verdant Pro Noise-Canceling Headphones x1 with spec 30h battery, Mukawa Folding Camping Table and Chair Set x2 with spec Storage bag, Lumen Magnetic Phone Stand x1 with spec Multi-angle, and Polar Day Slim Business Backpack x1 with spec 15.6-inch fit. Use the Office address, WeChat Pay, and exact order note \"Office setup calendar order: headphones, tables, stand, backpack.\" Then create two follow-up events: \"BMK Office Order Follow-up\" on 2026-05-06 from 10:00 AM to 10:30 AM at \"Room 504\" with description \"Check OpenShop shipment for office setup\", and \"BMK Office Inventory Check\" on 2026-05-07 from 3:15 PM to 3:45 PM at \"Supply Desk\" with description \"Verify headphones, tables, stand, and backpack\"."
+        - title: "BMK Office Order Follow-up"
+          start: "2026-05-06T10:00:00"
+          end: "2026-05-06T10:30:00"
+          location: "Room 504"
+          description: "Check OpenShop shipment for office setup"
+        - title: "BMK Office Inventory Check"
+          start: "2026-05-07T15:15:00"
+          end: "2026-05-07T15:45:00"
+          location: "Supply Desk"
+          description: "Verify headphones, tables, stand, and backpack"
+      absent_titles:
+        - "BMK Office Purchase Draft"
+        - "BMK Office Old Follow-up"
+      strict_benchmark_titles: true
+      timeout_seconds: 10
+      poll_interval_seconds: 1
+    openshop:
+      app_package: com.killt.openshop
+      session_logged_in: true
+      cart_size: 0
+      order_count: 1
+      latest_order:
+        address_id: addr-office
+        payment_method_id: wechat
+        note: "Office setup calendar order: headphones, tables, stand, backpack."
+        status: "Awaiting Shipment"
+        items:
+          - product_id: p1001
+            quantity: 1
+            selected_spec: "30h battery"
+          - product_id: p1002
+            quantity: 2
+            selected_spec: "Storage bag"
+          - product_id: p1006
+            quantity: 1
+            selected_spec: "Multi-angle"
+          - product_id: p1004
+            quantity: 1
+            selected_spec: "15.6-inch fit"
+      timeout_seconds: 12
+      poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [calendar, shopping, fossify_calendar, openshop, checkout, cross_app, hard, benchmark]
+  app: "Fossify Calendar + OpenShop"
+  app_bundle_id: org.fossify.calendar
+  description: "Read a calendar purchase plan, complete a multi-item OpenShop checkout with exact specs, and create a follow-up calendar event."
+  difficulty_basis: "Human path is over 20 steps because it requires reading a calendar event, logging in, adding three products, selecting exact specs, adjusting quantity, checkout details, placing the order, and creating a follow-up event."
+  prerequisites:
+    - "Fossify Calendar and OpenShop are installed on the emulator."
+  difficulty: hard

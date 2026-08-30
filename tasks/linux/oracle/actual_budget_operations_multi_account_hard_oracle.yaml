@@ -1,0 +1,270 @@
+task_id: linux.oracle.actual_budget_operations_multi_account_hard
+platform: linux
+instruction: Oracle sanity task for linux.actual_budget.operations_multi_account_hard.
+  The initializer already seeds the expected Actual Budget database. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          python3 - <<'PY'
+          import json
+          import os
+          import signal
+          import sqlite3
+          import time
+          from pathlib import Path
+
+          targets = {"Actual", "actualbudget", "AppRun", "chrome_crashpad_handler"}
+          for _ in range(3):
+              killed = False
+              for pid_text in os.listdir("/proc"):
+                  if not pid_text.isdigit():
+                      continue
+                  try:
+                      comm = open(f"/proc/{pid_text}/comm", "r", encoding="utf-8").read().strip()
+                  except OSError:
+                      continue
+                  if comm in targets:
+                      try:
+                          os.kill(int(pid_text), signal.SIGTERM)
+                          killed = True
+                      except OSError:
+                          pass
+              if not killed:
+                  break
+              time.sleep(1)
+
+          state_root = Path("/home/user/.config/Actual")
+          document_root = Path("/home/user/Documents/Actual")
+          budget_id = "bench-ops-budget"
+          budget_dir = document_root / budget_id
+          budget_dir.mkdir(parents=True, exist_ok=True)
+          state_root.mkdir(parents=True, exist_ok=True)
+          (state_root / "global-store.json").write_text(
+              json.dumps({"lastBudget": budget_id, "document-dir": str(document_root)}, ensure_ascii=False),
+              encoding="utf-8",
+          )
+
+          db_path = budget_dir / "db.sqlite"
+          conn = sqlite3.connect(db_path)
+          cur = conn.cursor()
+          cur.executescript(
+              """
+              DROP TABLE IF EXISTS accounts;
+              DROP TABLE IF EXISTS categories;
+              DROP TABLE IF EXISTS payees;
+              DROP TABLE IF EXISTS transactions;
+              DROP TABLE IF EXISTS zero_budgets;
+              CREATE TABLE accounts (id TEXT PRIMARY KEY, name TEXT, tombstone INTEGER, sort_order REAL);
+              CREATE TABLE categories (id TEXT PRIMARY KEY, name TEXT, tombstone INTEGER);
+              CREATE TABLE payees (id TEXT PRIMARY KEY, name TEXT, tombstone INTEGER);
+              CREATE TABLE transactions (
+                  id TEXT PRIMARY KEY,
+                  acct TEXT,
+                  category TEXT,
+                  description TEXT,
+                  starting_balance_flag INTEGER,
+                  tombstone INTEGER,
+                  amount INTEGER,
+                  transfer_id TEXT
+              );
+              CREATE TABLE zero_budgets (id TEXT PRIMARY KEY, category TEXT, amount INTEGER);
+              """
+          )
+
+          accounts = [
+              ("acct-ops", "Ops Checking", 320000),
+              ("acct-emergency", "Emergency Buffer", 800000),
+              ("acct-travel", "Travel Envelope", 120000),
+              ("acct-tax", "Tax Reserve", 240000),
+              ("acct-payroll", "Payroll Buffer", 420000),
+              ("acct-cloud", "Cloud Escrow", 225000),
+          ]
+          categories = [
+              ("cat-utility", "Utility Buffer", 25000),
+              ("cat-travel", "Conference Travel", 60000),
+              ("cat-meals", "Client Meals", 18000),
+              ("cat-saas", "SaaS Tools", 7500),
+              ("cat-hardware", "Hardware Refresh", 35000),
+              ("cat-renewal", "Renewal Fees", 14000),
+              ("cat-payroll", "Payroll Fees", 42500),
+              ("cat-cloud", "Cloud Hosting", 49000),
+          ]
+          payees = [
+              ("payee-city", "City Utilities"),
+              ("payee-skyline", "Skyline Air"),
+              ("payee-harbor", "Harbor Bistro"),
+              ("payee-stack", "StackTools"),
+              ("payee-desk", "North Desk"),
+              ("payee-license", "License Bureau"),
+              ("payee-payroll", "Payroll Bureau"),
+              ("payee-cloud", "Cloud Grid"),
+          ]
+          transactions = [
+              ("Ops Checking", "City Utilities", "Utility Buffer", 21000),
+              ("Ops Checking", "Skyline Air", "Conference Travel", 48000),
+              ("Ops Checking", "Harbor Bistro", "Client Meals", 6450),
+              ("Ops Checking", "StackTools", "SaaS Tools", 7500),
+              ("Ops Checking", "North Desk", "Hardware Refresh", 31500),
+              ("Tax Reserve", "License Bureau", "Renewal Fees", 11800),
+              ("Payroll Buffer", "Payroll Bureau", "Payroll Fees", 39000),
+              ("Cloud Escrow", "Cloud Grid", "Cloud Hosting", 47000),
+          ]
+          transfers = [
+              ("Ops Checking", "Travel Envelope", 30000),
+              ("Ops Checking", "Payroll Buffer", 55000),
+              ("Tax Reserve", "Emergency Buffer", 20000),
+              ("Ops Checking", "Cloud Escrow", 32500),
+              ("Emergency Buffer", "Travel Envelope", 12500),
+          ]
+
+          account_ids = {name: account_id for account_id, name, _ in accounts}
+          category_ids = {name: category_id for category_id, name, _ in categories}
+          payee_ids = {name: payee_id for payee_id, name in payees}
+
+          for index, (account_id, name, opening_amount) in enumerate(accounts, start=1):
+              cur.execute("INSERT INTO accounts VALUES (?, ?, 0, ?)", (account_id, name, float(index)))
+              cur.execute(
+                  "INSERT INTO transactions VALUES (?, ?, NULL, NULL, 1, 0, ?, NULL)",
+                  (f"open-{account_id}", account_id, opening_amount),
+              )
+          for category_id, name, amount in categories:
+              cur.execute("INSERT INTO categories VALUES (?, ?, 0)", (category_id, name))
+              cur.execute("INSERT INTO zero_budgets VALUES (?, ?, ?)", (f"budget-{category_id}", category_id, amount))
+          for payee_id, name in payees:
+              cur.execute("INSERT INTO payees VALUES (?, ?, 0)", (payee_id, name))
+          for index, (account, payee, category, amount) in enumerate(transactions, start=1):
+              cur.execute(
+                  "INSERT INTO transactions VALUES (?, ?, ?, ?, 0, 0, ?, NULL)",
+                  (f"tx-{index}", account_ids[account], category_ids[category], payee_ids[payee], -amount),
+              )
+          for index, (source, target, amount) in enumerate(transfers, start=1):
+              transfer_id = f"transfer-{index}"
+              cur.execute(
+                  "INSERT INTO transactions VALUES (?, ?, NULL, NULL, 0, 0, ?, ?)",
+                  (f"transfer-{index}-out", account_ids[source], -amount, transfer_id),
+              )
+              cur.execute(
+                  "INSERT INTO transactions VALUES (?, ?, NULL, NULL, 0, 0, ?, ?)",
+                  (f"transfer-{index}-in", account_ids[target], amount, transfer_id),
+              )
+          conn.commit()
+          conn.close()
+          print("ACTUAL_ORACLE_READY")
+          PY
+        timeout: 120
+evaluation:
+  evaluator_id: evaluators.linux.actual_budget:ActualBudgetEvaluator
+  params:
+    mode: full_setup
+    state_root: /home/user/.config/Actual
+    document_root: /home/user/Documents/Actual
+    accounts:
+      - name: Ops Checking
+        opening_balance: 3200
+      - name: Emergency Buffer
+        opening_balance: 8000
+      - name: Travel Envelope
+        opening_balance: 1200
+      - name: Tax Reserve
+        opening_balance: 2400
+      - name: Payroll Buffer
+        opening_balance: 4200
+      - name: Cloud Escrow
+        opening_balance: 2250
+    categories:
+      - name: Utility Buffer
+      - name: Conference Travel
+      - name: Client Meals
+      - name: SaaS Tools
+      - name: Hardware Refresh
+      - name: Renewal Fees
+      - name: Payroll Fees
+      - name: Cloud Hosting
+    payees:
+      - name: City Utilities
+      - name: Skyline Air
+      - name: Harbor Bistro
+      - name: StackTools
+      - name: North Desk
+      - name: License Bureau
+      - name: Payroll Bureau
+      - name: Cloud Grid
+    budgets:
+      - category: Utility Buffer
+        amount: 250
+      - category: Conference Travel
+        amount: 600
+      - category: Client Meals
+        amount: 180
+      - category: SaaS Tools
+        amount: 75
+      - category: Hardware Refresh
+        amount: 350
+      - category: Renewal Fees
+        amount: 140
+      - category: Payroll Fees
+        amount: 425
+      - category: Cloud Hosting
+        amount: 490
+    transactions:
+      - account: Ops Checking
+        payee: City Utilities
+        category: Utility Buffer
+        amount: 210
+      - account: Ops Checking
+        payee: Skyline Air
+        category: Conference Travel
+        amount: 480
+      - account: Ops Checking
+        payee: Harbor Bistro
+        category: Client Meals
+        amount: 64.5
+      - account: Ops Checking
+        payee: StackTools
+        category: SaaS Tools
+        amount: 75
+      - account: Ops Checking
+        payee: North Desk
+        category: Hardware Refresh
+        amount: 315
+      - account: Tax Reserve
+        payee: License Bureau
+        category: Renewal Fees
+        amount: 118
+      - account: Payroll Buffer
+        payee: Payroll Bureau
+        category: Payroll Fees
+        amount: 390
+      - account: Cloud Escrow
+        payee: Cloud Grid
+        category: Cloud Hosting
+        amount: 470
+    transfers:
+      - from_account: Ops Checking
+        to_account: Travel Envelope
+        amount: 300
+      - from_account: Ops Checking
+        to_account: Payroll Buffer
+        amount: 550
+      - from_account: Tax Reserve
+        to_account: Emergency Buffer
+        amount: 200
+      - from_account: Ops Checking
+        to_account: Cloud Escrow
+        amount: 325
+      - from_account: Emergency Buffer
+        to_account: Travel Envelope
+        amount: 125
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, actual_budget, finance, accounting, hard, oracle]
+  app_name: actual-budget
+  difficulty: hard
+  description: Oracle sanity task for linux.actual_budget.operations_multi_account_hard.
+  oracle_for: linux.actual_budget.operations_multi_account_hard

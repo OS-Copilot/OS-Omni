@@ -1,0 +1,10 @@
+models:
+  - free_codesonline_gpt5_5_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/linux/openshop_checkout_coffee_hard.yaml
+metadata:
+  description: Single-task GPT-5.5 retest for linux.openshop.checkout_coffee after OpenShop benchmark API preflight fix.

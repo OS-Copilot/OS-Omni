@@ -1,0 +1,11 @@
+tasks:
+  - tasks/android/spotube_profile_setup.yaml
+  - tasks/android/spotube_queue_naina_zara.yaml
+  - tasks/android/spotube_search_artist_play_attempt.yaml
+models:
+  - android_oracle_agent
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 1
+metadata:
+  description: Retry the three Spotube oracle validation tasks after fixing Windows sqlite temp cleanup.

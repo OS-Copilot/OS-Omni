@@ -1,0 +1,124 @@
+task_id: macos.oracle.libreoffice.writer.insert_table
+platform: macos
+instruction: Oracle sanity task for macos.libreoffice.writer.insert_table. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "killall -9 soffice.bin >/dev/null 2>&1 || true\nkillall -9 LibreOffice\
+        \ >/dev/null 2>&1 || true\npkill -9 -f LibreOffice >/dev/null 2>&1 || true\n\
+        rm -f \"$HOME/Library/Application Support/LibreOffice/4/.lock\" || true\n\
+        rm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/temp\"/* ||\
+        \ true\nrm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/backup\"\
+        /* || true\npython3 - <<'PY'\nfrom pathlib import Path\nimport re\n\npath\
+        \ = Path.home() / \"Library/Application Support/LibreOffice/4/user/registrymodifications.xcu\"\
+        \npath.parent.mkdir(parents=True, exist_ok=True)\n\nentry = '<item oor:path=\"\
+        /org.openoffice.Office.Common/Save/Document\"><prop oor:name=\"WarnAlienFormat\"\
+        \ oor:op=\"fuse\"><value>false</value></prop></item>'\nif path.exists():\n\
+        \    text = path.read_text(encoding=\"utf-8\")\nelse:\n    text = (\n    \
+        \    '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n'\n        '<oor:items\
+        \ xmlns:oor=\"http://openoffice.org/2001/registry\" '\n        'xmlns:xs=\"\
+        http://www.w3.org/2001/XMLSchema\" '\n        'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+        >\\n'\n        '</oor:items>\\n'\n    )\n\npattern = re.compile(\n    r'<item\
+        \ oor:path=\"/org\\.openoffice\\.Office\\.Common/Save/Document\">.*?<prop\
+        \ oor:name=\"WarnAlienFormat\" oor:op=\"fuse\"><value>.*?</value></prop></item>',\n\
+        \    re.DOTALL,\n)\nif pattern.search(text):\n    text = pattern.sub(entry,\
+        \ text, count=1)\nelif entry not in text:\n    text = text.replace('</oor:items>',\
+        \ entry + '\\n</oor:items>')\n\npath.write_text(text, encoding=\"utf-8\")\n\
+        PY\nsleep 2\n"
+      timeout: 30
+    - type: upload_file
+      local_path: ../files/libreoffice/writer_team_roster_template.docx
+      path: ~/Downloads/team_roster.docx
+    - type: run_bash
+      script: 'open -a "LibreOffice" "$HOME/Downloads/team_roster.docx" >/dev/null
+        2>&1 &
+
+        '
+      timeout: 30
+    - type: wait
+      ms: 8000
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: Discard All
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: 'Yes'
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      action:
+        type: keyboard
+        action: escape
+    - type: wait
+      ms: 1000
+    - type: action
+      action:
+        type: tap
+        target:
+          text: The following table lists all team members and their contact extensions.
+            Please keep this document updated when new members join.
+    - type: wait
+      ms: 400
+    - type: action
+      action:
+        type: hotkey
+        keys: cmd+down
+    - type: wait
+      ms: 500
+    - type: action
+      action:
+        type: tap
+        target:
+          text: Table
+    - type: wait
+      ms: 300
+    - type: action
+      action:
+        type: tap
+        target:
+          text: More Options
+    - type: wait
+      ms: 500
+evaluation:
+  evaluator_id: evaluators.macos.libreoffice_writer_table:LibreOfficeWriterTableEvaluator
+  params:
+    remote_path: ~/Downloads/team_roster.docx
+    expected_title: Team Roster 2025
+    expected_body: The following table lists all team members and their contact extensions.
+      Please keep this document updated when new members join.
+    expected_headers:
+    - Name
+    - Department
+    - Extension
+    expected_rows:
+    - - Alice Johnson
+      - Engineering
+      - '1201'
+    - - Bob Smith
+      - Marketing
+      - '1302'
+    - - Carol Davis
+      - Finance
+      - '1403'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.libreoffice.writer.insert_table
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

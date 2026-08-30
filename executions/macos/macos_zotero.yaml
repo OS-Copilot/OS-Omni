@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/zotero_reading_queue_book.yaml
+  - tasks/macos/zotero_dual_collection_articles.yaml
+  - tasks/macos/zotero_reference_library_buildout.yaml
+models:
+  - gpt5_4_local_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS Zotero tasks (1 easy, 2 hard)

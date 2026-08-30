@@ -1,0 +1,52 @@
+task_id: linux.vscode.oracle.update_heading
+platform: linux
+instruction: Oracle sanity task for linux.vscode.update_heading. The initializer already
+  writes the expected workspace files. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: vscode_heading
+    workspace_root: /tmp/helloworld_vscode_workspace
+    files:
+    - path: notes/daily-brief.md
+      content: '# Launch Checklist
+
+
+        - Confirm the release candidate is mirrored.
+
+        - Verify the support inbox is empty.
+
+        '
+    open_files:
+    - notes/daily-brief.md
+evaluation:
+  evaluator_id: evaluators.linux.vscode:VSCodeWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_vscode_workspace/vscode_heading
+    files:
+    - path: notes/daily-brief.md
+      equals: '# Launch Checklist
+
+
+        - Confirm the release candidate is mirrored.
+
+        - Verify the support inbox is empty.
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: VS Code
+  difficulty: easy
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - markdown
+  - easy
+  - oracle
+  description: Oracle sanity task for linux.vscode.update_heading
+  oracle_for: linux.vscode.update_heading

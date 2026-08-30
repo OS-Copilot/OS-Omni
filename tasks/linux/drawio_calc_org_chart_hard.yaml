@@ -1,0 +1,145 @@
+task_id: linux.cross_app.drawio_calc_org_chart_hard
+platform: linux
+instruction: >
+  Open draw.io. Create a new diagram. From the shape panel on the left side,
+  drag a rectangle shape onto the canvas. Double-click the shape to edit its
+  text and type "CEO".
+  Drag another rectangle onto the canvas below the first one. Double-click
+  and type "VP Engineering".
+  Drag another rectangle onto the canvas below the first one but to the right.
+  Double-click and type "VP Sales".
+  Connect "CEO" to "VP Engineering" by dragging from the CEO's bottom
+  connection point to VP Engineering's top connection point.
+  Connect "CEO" to "VP Sales" by dragging from the CEO's bottom connection
+  point to VP Sales's top connection point.
+  Save the diagram as /home/user/Documents/org_chart.drawio.
+  Then switch to the already-open LibreOffice Calc window. Create a new
+  spreadsheet. In cell A1 type "Position", in B1 type "Reports To".
+  In row 2, enter "VP Engineering" and "CEO". In row 3, enter "VP Sales"
+  and "CEO". In cell A5, type "Total Positions". In cell B5, type 3.
+  Save the spreadsheet as /home/user/Documents/org_data.ods.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        pkill -f drawio || true
+        pkill -f soffice.bin || true
+        mkdir -p /home/user/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f drawio >/dev/null 2>&1
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f libreoffice --calc >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      # Check draw.io file
+      drawio_path = os.path.expanduser("~/Documents/org_chart.drawio")
+      if not os.path.exists(drawio_path):
+          raise SystemExit("DRAWIO_FILE_NOT_FOUND")
+
+      with open(drawio_path, 'r') as f:
+          content = f.read()
+      for val in ["CEO", "VP Engineering", "VP Sales"]:
+          if val not in content:
+              raise SystemExit(f"MISSING_SHAPE_{val}")
+
+      # Check Calc spreadsheet
+      ods_path = os.path.expanduser("~/Documents/org_data.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for val in ["VP Engineering", "VP Sales", "CEO"]:
+          if val not in content:
+              raise SystemExit(f"MISSING_VALUE_{val}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - drawio
+  - calc
+  - org_chart
+  - shapes
+  - hard
+  app_name: drawio + libreoffice_calc
+  difficulty: hard
+  description: Create an org chart in draw.io with 3 rectangles and connecting
+    arrows, then create a position data spreadsheet in Calc with reporting
+    relationships.

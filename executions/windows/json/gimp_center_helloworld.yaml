@@ -1,0 +1,9 @@
+tasks:
+  - tasks/windows/gimp_center_helloworld.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows GIMP task - create a centered Helloworld image

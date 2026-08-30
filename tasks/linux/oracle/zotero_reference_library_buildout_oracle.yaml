@@ -1,0 +1,263 @@
+task_id: linux.zotero.oracle.reference_library_buildout
+platform: linux
+instruction: >
+  Oracle sanity task for linux.zotero.reference_library_buildout. The
+  initializer opens a clean Zotero library, and the oracle writes the expected
+  five-item library state directly into Zotero's SQLite database.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads" "$HOME/Documents"
+        pkill -x zotero >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            python3 -c 'from pathlib import Path; from urllib.request import urlopen; url = "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz"; out = Path("/home/user/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"); out.write_bytes(urlopen(url).read())'
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+        rm -f "$HOME/Documents"/zotero_reference_*.txt "$HOME/Documents"/zotero_reference_*.tsv "$HOME/Documents"/zotero_reference_*.csv
+        cat > "$HOME/Documents/zotero_reference_request.txt" <<'EOF'
+        collection	title	type	author	tag	note
+        Reference Shelf	Designing Data-Intensive Applications	Book	Martin Kleppmann	systems	Review storage and replication notes
+        AI Papers	BERT	Journal Article	Jacob Devlin	transformer	Compare encoder baseline
+        Operations Reading	Site Reliability Engineering	Book	Betsy Beyer	reliability	Review incident chapter
+        Security Review	Security Engineering	Book	Ross Anderson	security	Review threat modeling chapter
+        Architecture Shelf	Software Architecture: The Hard Parts	Book	Neal Ford	architecture	Review tradeoff chapter
+        EOF
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        pkill -x zotero >/dev/null 2>&1 || true
+        sleep 2
+    - type: run_python
+      code: |
+        import secrets
+        import shutil
+        import sqlite3
+        import string
+        import tempfile
+        from pathlib import Path
+
+        db_path = Path("/home/user/Zotero/zotero.sqlite")
+        journal_path = db_path.with_name(db_path.name + "-journal")
+        items = [
+            ("book", "Designing Data-Intensive Applications", "Reference Shelf", "Martin", "Kleppmann", "systems", "Review storage and replication notes"),
+            ("journalArticle", "BERT", "AI Papers", "Jacob", "Devlin", "transformer", "Compare encoder baseline"),
+            ("book", "Site Reliability Engineering", "Operations Reading", "Betsy", "Beyer", "reliability", "Review incident chapter"),
+            ("book", "Security Engineering", "Security Review", "Ross", "Anderson", "security", "Review threat modeling chapter"),
+            ("book", "Software Architecture: The Hard Parts", "Architecture Shelf", "Neal", "Ford", "architecture", "Review tradeoff chapter"),
+        ]
+
+        with tempfile.TemporaryDirectory(prefix="zotero-oracle-") as tmpdir:
+            local_db = Path(tmpdir) / "zotero.sqlite"
+            shutil.copy2(db_path, local_db)
+            conn = sqlite3.connect(local_db)
+            cur = conn.cursor()
+            alphabet = string.ascii_uppercase + string.digits
+
+            def randkey() -> str:
+                return "".join(secrets.choice(alphabet) for _ in range(8))
+
+            def scalar(sql: str, args: tuple = ()) -> object:
+                row = cur.execute(sql, args).fetchone()
+                return row[0] if row else None
+
+            def field_id(name: str) -> int:
+                return int(scalar("SELECT fieldID FROM fieldsCombined WHERE fieldName = ?", (name,)))
+
+            def item_type_id(name: str) -> int:
+                return int(scalar("SELECT itemTypeID FROM itemTypes WHERE typeName = ?", (name,)))
+
+            def creator_type_id(name: str) -> int:
+                return int(scalar("SELECT creatorTypeID FROM creatorTypes WHERE creatorType = ?", (name,)))
+
+            def collection_id(name: str) -> int:
+                existing = scalar("SELECT collectionID FROM collections WHERE libraryID = 1 AND collectionName = ?", (name,))
+                if existing is not None:
+                    return int(existing)
+                cur.execute("INSERT INTO collections(collectionName, libraryID, key) VALUES(?, 1, ?)", (name, randkey()))
+                return int(cur.lastrowid)
+
+            def value_id(value: str) -> int:
+                existing = scalar("SELECT valueID FROM itemDataValues WHERE value = ?", (value,))
+                if existing is not None:
+                    return int(existing)
+                cur.execute("INSERT INTO itemDataValues(value) VALUES(?)", (value,))
+                return int(cur.lastrowid)
+
+            def creator_id(first: str, last: str) -> int:
+                existing = scalar(
+                    "SELECT creatorID FROM creators WHERE firstName IS ? AND lastName = ? AND fieldMode = 0",
+                    (first, last),
+                )
+                if existing is not None:
+                    return int(existing)
+                cur.execute("INSERT INTO creators(firstName, lastName, fieldMode) VALUES(?, ?, 0)", (first, last))
+                return int(cur.lastrowid)
+
+            def tag_id(name: str) -> int:
+                existing = scalar("SELECT tagID FROM tags WHERE name = ?", (name,))
+                if existing is not None:
+                    return int(existing)
+                cur.execute("INSERT INTO tags(name) VALUES(?)", (name,))
+                return int(cur.lastrowid)
+
+            for item_type, title, collection, first, last, tag, note in items:
+                cur.execute("INSERT INTO items(itemTypeID, libraryID, key) VALUES(?, 1, ?)", (item_type_id(item_type), randkey()))
+                item_id = int(cur.lastrowid)
+                cur.execute(
+                    "INSERT INTO itemData(itemID, fieldID, valueID) VALUES(?, ?, ?)",
+                    (item_id, field_id("title"), value_id(title)),
+                )
+                cur.execute(
+                    "INSERT OR IGNORE INTO collectionItems(collectionID, itemID, orderIndex) VALUES(?, ?, 0)",
+                    (collection_id(collection), item_id),
+                )
+                cur.execute(
+                    "INSERT OR IGNORE INTO itemCreators(itemID, creatorID, creatorTypeID, orderIndex) VALUES(?, ?, ?, 0)",
+                    (item_id, creator_id(first, last), creator_type_id("author")),
+                )
+                cur.execute(
+                    "INSERT OR IGNORE INTO itemTags(itemID, tagID, type) VALUES(?, ?, 0)",
+                    (item_id, tag_id(tag)),
+                )
+                cur.execute("INSERT INTO items(itemTypeID, libraryID, key) VALUES(?, 1, ?)", (item_type_id("note"), randkey()))
+                note_item_id = int(cur.lastrowid)
+                cur.execute(
+                    "INSERT INTO itemNotes(itemID, parentItemID, note, title) VALUES(?, ?, ?, '')",
+                    (note_item_id, item_id, note),
+                )
+
+            conn.commit()
+            conn.close()
+            shutil.move(local_db, db_path)
+
+        journal_path.unlink(missing_ok=True)
+        docs = Path("/home/user/Documents")
+        docs.mkdir(parents=True, exist_ok=True)
+        (docs / "zotero_reference_handoff.tsv").write_text(
+            "collection\ttitle\towner\n"
+            "Reference Shelf\tDesigning Data-Intensive Applications\tlibrary-ops\n"
+            "AI Papers\tBERT\tlibrary-ops\n"
+            "Operations Reading\tSite Reliability Engineering\tlibrary-ops\n"
+            "Security Review\tSecurity Engineering\tlibrary-ops\n"
+            "Architecture Shelf\tSoftware Architecture: The Hard Parts\tlibrary-ops\n",
+            encoding="utf-8",
+        )
+        (docs / "zotero_reference_review_note.txt").write_text(
+            "request=zotero_reference_request.txt\n"
+            "collections=5\n"
+            "items=5\n"
+            "status=ready-for-review\n",
+            encoding="utf-8",
+        )
+      wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.linux.zotero:ZoteroLibraryEvaluator
+  params:
+    db_path: /home/user/Zotero/zotero.sqlite
+    required_collections:
+    - Reference Shelf
+    - AI Papers
+    - Operations Reading
+    - Security Review
+    - Architecture Shelf
+    required_items:
+    - title: Designing Data-Intensive Applications
+      item_type: book
+      collections:
+      - Reference Shelf
+      creators:
+      - Martin Kleppmann
+      tags:
+      - systems
+      note_contains:
+      - Review storage and replication notes
+    - title: BERT
+      item_type: journalArticle
+      collections:
+      - AI Papers
+      creators:
+      - Jacob Devlin
+      tags:
+      - transformer
+      note_contains:
+      - Compare encoder baseline
+    - title: Site Reliability Engineering
+      item_type: book
+      collections:
+      - Operations Reading
+      creators:
+      - Betsy Beyer
+      tags:
+      - reliability
+      note_contains:
+      - Review incident chapter
+    - title: Security Engineering
+      item_type: book
+      collections:
+      - Security Review
+      creators:
+      - Ross Anderson
+      tags:
+      - security
+      note_contains:
+      - Review threat modeling chapter
+    - title: "Software Architecture: The Hard Parts"
+      item_type: book
+      collections:
+      - Architecture Shelf
+      creators:
+      - Neal Ford
+      tags:
+      - architecture
+      note_contains:
+      - Review tradeoff chapter
+    text_artifacts:
+    - path: /home/user/Documents/zotero_reference_handoff.tsv
+      equals: |
+        collection	title	owner
+        Reference Shelf	Designing Data-Intensive Applications	library-ops
+        AI Papers	BERT	library-ops
+        Operations Reading	Site Reliability Engineering	library-ops
+        Security Review	Security Engineering	library-ops
+        Architecture Shelf	Software Architecture: The Hard Parts	library-ops
+    - path: /home/user/Documents/zotero_reference_review_note.txt
+      equals: |
+        request=zotero_reference_request.txt
+        collections=5
+        items=5
+        status=ready-for-review
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Zotero
+  difficulty: hard
+  tags:
+  - linux
+  - gui
+  - zotero
+  - cross_file
+  - hard
+  - oracle
+  description: Oracle sanity task for linux.zotero.reference_library_buildout.
+  oracle_for: linux.zotero.reference_library_buildout

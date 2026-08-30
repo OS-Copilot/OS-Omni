@@ -1,0 +1,23 @@
+task_id: cross_vm.android_to_windows.site_visit_brief_easy
+platform: cross_vm
+instruction: >
+  First work in the Android emulator: complete and save the prepared transfer
+  note there. Then move to the Windows VM and use the transferred note to
+  complete the LibreOffice Writer document.
+android_task: tasks/android/cross_vm_prepare_site_visit_transfer_easy.yaml
+windows_task: tasks/windows/cross_vm_writer_site_visit_brief_easy.yaml
+transfer:
+  android_guest_path: /sdcard/Documents/markor/site_visit_transfer.txt
+  windows_guest_path: C:\Users\User\Desktop\site_visit_transfer.txt
+  host_filename: site_visit_transfer.txt
+metadata:
+  tags: [cross_vm, android_to_windows, markor, libreoffice, writer, easy]
+  difficulty: easy
+  owner_scope: windows
+  source_platform: android
+  target_platform: windows
+  counts_as_windows_cross_vm_task: true
+  cross_vm_task_unit: composite
+  description: Complete an Android transfer note, transfer it, and turn it into a short Writer brief on Windows.
+  oracle_task: tasks/cross_vm/oracle/android_to_windows_site_visit_brief_easy_oracle.yaml
+  oracle_model: cross_vm_oracle_wait

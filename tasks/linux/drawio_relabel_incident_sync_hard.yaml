@@ -1,0 +1,48 @@
+task_id: linux.drawio.relabel_incident_sync
+platform: linux
+instruction: In draw.io, update the incident sync map so the seven workflow boxes
+  read exactly Pager Intake, Traffic Triage, Status Update, Mitigation Plan, Verification
+  Sweep, Ops Transfer, and Postmortem Review. Leave the title box unchanged. Save
+  the diagram once every workflow box has been relabeled.
+init:
+  initializer_id: initializers.linux.drawio:DrawIOInitializer
+  params:
+    app_command: drawio
+    workspace_name: drawio_incident_sync
+    diagram_name: incident_sync_map.drawio
+    diagram_template: incident_sync_map
+evaluation:
+  evaluator_id: evaluators.linux.drawio:DrawIOFileEvaluator
+  params:
+    diagram_path: /tmp/helloworld_drawio_workspace/drawio_incident_sync/incident_sync_map.drawio
+    cells:
+    - id: pager_box
+      equals: Pager Intake
+    - id: triage_box
+      equals: Traffic Triage
+    - id: status_box
+      equals: Status Update
+    - id: mitigation_box
+      equals: Mitigation Plan
+    - id: verification_box
+      equals: Verification Sweep
+    - id: ops_box
+      equals: Ops Transfer
+    - id: closing_box
+      equals: Postmortem Review
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - drawio
+  - diagram
+  - hard
+  app: draw.io
+  difficulty: hard
+  description: Relabel seven boxes across a draw.io incident map and save the diagram
+    without changing the title.
+  oracle_task: tasks/linux/oracle/drawio_relabel_incident_sync_oracle.yaml
+  oracle_model: linux_oracle_wait

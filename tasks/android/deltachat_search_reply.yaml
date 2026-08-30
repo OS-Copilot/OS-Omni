@@ -1,0 +1,55 @@
+task_id: android.deltachat.search_reply
+platform: android
+instruction: In Delta Chat, search for urgent_project_deadline_reminder_2026Q2 and open the matching final conversation from charlie@example.test. The target message itself contains the exact reply text after REPLY=. Quote-reply to that target message with that text. Ignore weekend, lunch, and draft deadline messages.
+init:
+  initializer_id: initializers.android.deltachat_search_reply:DeltaChatSearchReplyInitializer
+  params:
+    api_base_url: "http://127.0.0.1:8081"
+    app_package: "chat.delta"
+    app_activity: "org.thoughtcrime.securesms.RoutingActivity"
+    reset_app_data: true
+    purge_greenmail: true
+    # Decoy conversations (distractors)
+    decoy1_sender_email: "alice@example.test"
+    decoy1_sender_password: "alicepass"
+    decoy1_recipient_email: "benchsender@example.test"
+    decoy1_subject: "Weekend plans"
+    decoy1_body: "Hey, are you free this weekend for hiking?"
+    decoy2_sender_email: "bob@example.test"
+    decoy2_sender_password: "bobpass"
+    decoy2_recipient_email: "benchsender@example.test"
+    decoy2_subject: "Lunch tomorrow"
+    decoy2_body: "Want to grab lunch tomorrow at noon?"
+    # Target conversation (contains the message to find)
+    target_sender_email: "charlie@example.test"
+    target_sender_password: "charliepass"
+    target_recipient_email: "benchsender@example.test"
+    target_subject: "Project update"
+    target_body: "urgent_project_deadline_reminder_2026Q2 final=true REPLY=acknowledged_will_handle_asap_owner=bench route=blue"
+    seed_smtp_host: "127.0.0.1"
+    seed_smtp_port: 3025
+    wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.android.deltachat_search_reply:DeltaChatSearchReplyEvaluator
+  params:
+    api_base_url: "http://127.0.0.1:8081"
+    sender_email: "benchsender@example.test"
+    target_recipient_email: "charlie@example.test"
+    reply_body: "acknowledged_will_handle_asap_owner=bench route=blue"
+    original_body: "urgent_project_deadline_reminder_2026Q2 final=true"
+    mailbox: "INBOX"
+    timeout_seconds: 30
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [deltachat, search, reply, communication, hard, benchmark]
+  app: "Delta Chat"
+  app_bundle_id: chat.delta
+  description: "Use global search to find a specific message among multiple conversations, then quote-reply to it. Verified via GreenMail."
+  prerequisites:
+    - "Delta Chat is installed on the emulator."
+    - "Delta Chat already contains the benchsender@example.test account configured against GreenMail."
+    - "GreenMail is running on the host and reachable at http://127.0.0.1:8081."
+  difficulty: hard

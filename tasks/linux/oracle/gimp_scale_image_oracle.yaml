@@ -1,0 +1,34 @@
+task_id: linux.gimp.oracle.scale_image
+platform: linux
+instruction: Open the image at /tmp/helloworld_gimp/input.png in GIMP. First scale the image to exactly 1024×768 pixels using Image → Scale Image. Then crop a centered 800×600 region from that scaled image, so the crop box starts at x=112 and y=84. Export the final result to /tmp/helloworld_gimp/scaled.png as a PNG file using File → Export As. Stop once the file has been saved.
+init:
+  initializer_id: initializers.linux.gimp:GimpInitializer
+  params:
+    app_command: gimp
+    workspace: /tmp/helloworld_gimp
+    input_image: /tmp/helloworld_gimp/input.png
+    image_width: 1920
+    image_height: 1080
+evaluation:
+  evaluator_id: evaluators.linux.gimp:GimpFileEvaluator
+  params:
+    output_path: /tmp/helloworld_gimp/scaled.png
+    expected_width: 800
+    expected_height: 600
+    expected_mode: RGB
+    expected_format: PNG
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - image
+  - gimp
+  - scale
+  - oracle
+  app: GIMP
+  difficulty: hard
+  description: Oracle sanity task for linux.gimp.scale_image.
+  oracle_for: linux.gimp.scale_image

@@ -1,0 +1,61 @@
+task_id: ios.calendar_reminders.add_followup_easy
+platform: ios
+instruction: >
+  In Calendar, create a new event for tomorrow titled Bench Coffee Cart Review from
+  16:30-17:00 at Cedar Room. Then switch to Reminders, open the list Bench Coffee
+  Follow-up, add a new reminder titled Submit coffee order receipt, and leave the
+  existing reminder Bring tasting cups unchanged.
+init:
+  initializer_id: initializers.ios.calendar_reminders_cross_app:CalendarRemindersCrossAppInitializer
+  params:
+    bundle_id: com.apple.mobilecal
+    reminder_params:
+      bundle_id: com.apple.reminders
+      list_name: "Bench Coffee Follow-up"
+      purge_existing_reminders: true
+      seed_reminders:
+        - title: "Bring tasting cups"
+    calendar_params:
+      bundle_id: com.apple.mobilecal
+      purge_all_events: true
+      purge_summaries:
+        - "Bench Coffee Cart Review"
+        - "Bench Team Lunch"
+      seed_events:
+        - summary: "Bench Team Lunch"
+          day_offset: 0
+          start_time: "12:00"
+          end_time: "12:30"
+          location: "Studio Kitchen"
+      wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.ios.calendar_reminders_cross_app:CalendarRemindersCrossAppEvaluator
+  params:
+    calendar_params:
+      present_events:
+        - summary: "Bench Team Lunch"
+          day_offset: 0
+          start_time: "12:00"
+          end_time: "12:30"
+          location: "Studio Kitchen"
+        - summary: "Bench Coffee Cart Review"
+          day_offset: 1
+          start_time: "16:30"
+          end_time: "17:00"
+          location: "Cedar Room"
+      timeout_seconds: 10
+      poll_interval_seconds: 0.5
+    reminder_params:
+      bundle_id: com.apple.reminders
+      list_name: "Bench Coffee Follow-up"
+      present_titles:
+        - "Bring tasting cups"
+        - "Submit coffee order receipt"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [cross_app, calendar, reminders, ios, native, productivity, easy, benchmark]
+  app: Calendar
+  app_bundle_id: com.apple.mobilecal
+  description: "Create one follow-up calendar event and one linked reminder across Calendar and Reminders."

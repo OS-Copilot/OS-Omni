@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/cross_app_thunderbird_calendar_add_coffee_cart_event_easy.yaml
+  - tasks/linux/cross_app_thunderbird_calendar_checkout_coffee_followup_hard.yaml
+  - tasks/linux/cross_app_thunderbird_calendar_dual_item_checkout_two_events_hard.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: linux cross-app Thunderbird Calendar and OpenShop benchmark with 1 easy and 2 hard tasks

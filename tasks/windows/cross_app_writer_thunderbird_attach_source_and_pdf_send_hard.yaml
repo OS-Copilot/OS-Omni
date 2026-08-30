@@ -1,0 +1,124 @@
+task_id: windows.cross_app.writer_thunderbird_attach_source_and_pdf_send_hard
+platform: windows
+instruction: 'In LibreOffice Writer, the document Bench Launch Memo is already open. Save a Desktop copy named Bench_Launch_Memo_Copy.docx,
+  then export the document to PDF while keeping the same base file name, so the exported file is named Bench_Launch_Memo.pdf.
+  Do not open Notepad or any other text editor. Use LibreOffice Writer for every Bench_Launch_* artifact document below, and
+  save each one on the Desktop as an OpenDocument Text file with the exact .odt filename specified. Create Bench_Launch_Attachments.odt
+  with exactly these three non-empty lines in this order: Bench_Launch_Memo.docx, Bench_Launch_Memo_Copy.docx, Bench_Launch_Memo.pdf.
+  Create Bench_Launch_Readme.odt with exactly these two non-empty lines in this order: Export verified, Keep draft sent. Create
+  Bench_Launch_Metadata.odt with exactly these three non-empty lines in this order: Draft owner: PMO, Attachment count: 28,
+  Send status: sent. Create Bench_Launch_QA.odt with exactly these two non-empty lines in this order: PDF opens locally, All
+  filenames verified. Then create Bench_Launch_Routing.odt with exactly these two non-empty lines in this order: Routing:
+  launch reviewers, Archive: Bench launch packet. Then create Bench_Launch_Checksum.odt with exactly these two non-empty lines
+  in this order: Checksum status: pending, Packet version: v3. Then create Bench_Launch_Approval.odt with exactly these two
+  non-empty lines in this order: Approval owner: Maya Chen, Approval window: Friday 16:00. Then create Bench_Launch_Evidence.odt
+  with exactly these two non-empty lines in this order: Evidence bundle: source-pdf-manifest, Review lane: launch-readiness.
+  Then create Bench_Launch_Final_Check.odt with exactly these two non-empty lines in this order: Final check: attachments
+  complete, Draft disposition: sent. Then create Bench_Launch_Risk.odt with exactly these two non-empty lines in this order:
+  Risk owner: Launch PMO, Risk lane: attachment-integrity. Then create Bench_Launch_Audit_Trail.odt with exactly these two
+  non-empty lines in this order: Audit source: Bench_Launch_Memo.docx, Audit result: ready-for-review. Then create Bench_Launch_Distribution.odt
+  with exactly these two non-empty lines in this order: Distribution: bench-review@example.com, Cc status: none. Then create
+  Bench_Launch_Retention.odt with exactly these two non-empty lines in this order: Retention class: launch-packet, Retention
+  owner: PMO. Then create Bench_Launch_Handoff.odt with exactly these two non-empty lines in this order: Handoff owner: Maya
+  Chen, Handoff status: staged. Then create Bench_Launch_QC_Owner.odt with exactly these two non-empty lines in this order:
+  QC owner: Priya Nair, QC status: needs-director-view. Then create Bench_Launch_Packet_Index.odt with exactly these two non-empty
+  lines in this order: Packet index: 25-files-plus-mail, Index status: final. Then create Bench_Launch_Send_Gate.odt with
+  exactly these two non-empty lines in this order: Send gate: manual-review, Gate owner: Maya Chen. Then create Bench_Launch_Signoff_Roster.odt
+  with exactly these two non-empty lines in this order: Signoff roster: Maya/Jordan/Priya, Roster status: pending. Then create
+  Bench_Launch_Reviewer_Notes.odt with exactly these two non-empty lines in this order: Reviewer note: verify PDF export,
+  Reviewer lane: launch-readiness. Then create Bench_Launch_Exception_Log.odt with exactly these two non-empty lines in this
+  order: Exception count: 0, Exception owner: Launch PMO. Create Bench_Launch_Archive_Index.odt with exactly these two non-empty
+  lines in this order: Archive index: launch-final, Archive owner: PMO. Create Bench_Launch_Director_Gate.odt with exactly
+  these two non-empty lines in this order: Director gate: hold, Gate evidence: pending. Create Bench_Launch_Transfer_Receipt.odt
+  with exactly these two non-empty lines in this order: Transfer receipt: launch_review, Transfer status: staged. Create Bench_Launch_Attachment_Crosswalk.odt
+  with exactly these four non-empty lines in this order: file depends_on status, Bench_Launch_Metadata.odt depends_on Bench_Launch_Attachments.odt
+  status linked, Bench_Launch_Packet_Index.odt depends_on Bench_Launch_Metadata.odt status linked, Bench_Launch_Transfer_Receipt.odt
+  depends_on Bench_Launch_Director_Gate.odt status linked. Create Bench_Launch_Final_Bundle_Index.odt with exactly these four
+  non-empty lines in this order: root=Bench_Launch_Memo.docx, attachment_manifest=Bench_Launch_Attachments.odt, crosswalk=Bench_Launch_Attachment_Crosswalk.odt,
+  terminal=Bench_Launch_Transfer_Receipt.odt. Next switch to the already-open Thunderbird compose window with subject Bench
+  Dual Attachment Review, attach the original Bench_Launch_Memo.docx file, the saved Bench_Launch_Memo_Copy.docx file, the
+  exported Bench_Launch_Memo.pdf file, and every Bench_Launch_*.odt file listed above, then send the email. Create the hard-plus
+  verification files directly at the specified paths without opening Notepad or any other text editor. Also create these hard-plus
+  verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.cross_app.writer_thunderbird_attach_source_and_pdf_send_hard\tlinux.cross_app.writer_attach_source_and_pdf_draft_hard\thard-plus-ready\napp\tthunderbird
+  + libreoffice_writer\tevaluator-checked''; C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.cross_app.writer_thunderbird_attach_source_and_pdf_send_hard\nlinux_peer=linux.cross_app.writer_attach_source_and_pdf_draft_hard\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.'
+init:
+  initializer_id: initializers.windows.cross_app:OfficeThunderbirdInitializer
+  params:
+    doc_name: Bench_Launch_Memo.docx
+    title: Bench Launch Memo
+    subject: Bench Dual Attachment Review
+    to: bench-review@example.com
+    body:
+    - Launch memo for the benchmark review.
+    - Attach both the source document and the exported PDF.
+evaluation:
+  evaluator_id: evaluators.windows.cross_app:CrossAppEvaluator
+  params:
+    check_id: cross_app_writer_thunderbird_attach_source_and_pdf_send_hard
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 60
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.cross_app.writer_thunderbird_attach_source_and_pdf_send_hard\tlinux.cross_app.writer_attach_source_and_pdf_draft_hard\t\
+          hard-plus-ready\napp\tthunderbird + libreoffice_writer\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.cross_app.writer_thunderbird_attach_source_and_pdf_send_hard
+
+          linux_peer=linux.cross_app.writer_attach_source_and_pdf_draft_hard
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_writer_thunderbird_attach_source_and_pdf_send_hard\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_app
+  - email
+  - office
+  - thunderbird
+  - libreoffice
+  - writer
+  - hard
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  app_name: thunderbird + libreoffice_writer
+  difficulty: hard
+  human_steps: 108
+  description: 'Linux-aligned Writer package task: save a copy, export PDF, create 25 manifest/routing/audit files, attach
+    the full 28-file bundle, and send it in Thunderbird.'
+  hardness: hard-evaluable
+  linux_peer: linux.cross_app.writer_attach_source_and_pdf_draft_hard
+  linux_peer_file: tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

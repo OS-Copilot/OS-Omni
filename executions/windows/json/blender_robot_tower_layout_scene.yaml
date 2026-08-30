@@ -1,0 +1,9 @@
+tasks:
+- tasks/windows/blender_robot_tower_layout_scene.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Blender Windows task - robot tower layout scene

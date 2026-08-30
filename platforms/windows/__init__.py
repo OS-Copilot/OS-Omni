@@ -1,0 +1,1 @@
+"""Windows benchmark platform."""

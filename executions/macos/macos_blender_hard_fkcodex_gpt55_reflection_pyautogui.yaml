@@ -1,0 +1,10 @@
+tasks:
+  - tasks/macos/blender_prepare_social_render.yaml
+  - tasks/macos/blender_restage_product_objects.yaml
+models:
+  - FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS Blender hard tasks for FKCODEX_GPT55

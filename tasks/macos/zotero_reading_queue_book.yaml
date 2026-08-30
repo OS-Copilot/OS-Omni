@@ -1,0 +1,56 @@
+task_id: macos.zotero.reading_queue_book
+platform: macos
+instruction: 'Open Zotero. Create a new collection named "Reading Queue" under My Library. Inside that collection, create
+  a new Book item titled "Clean Code". Save it in the collection, and make sure "Clean Code" appears in the center item list
+  before you finish.
+
+  '
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: 'set -e
+
+        killall Safari >/dev/null 2>&1 || true
+
+        pkill -x Zotero >/dev/null 2>&1 || true
+
+        '
+    - type: launch
+      app_name: Zotero
+    - type: wait
+      ms: 7000
+    - type: action
+      action:
+        type: tap
+        target:
+          text: 完成
+      optional: true
+    - type: action
+      action:
+        type: tap
+        target:
+          text: 不要再询问
+      optional: true
+    - type: run_bash
+      script: "set -e\nosascript <<'APPLESCRIPT'\ntell application \"Zotero\" to activate\ntell application \"System Events\"\
+        \n  tell process \"Zotero\"\n    set position of window 1 to {80, 80}\n    set size of window 1 to {1320, 860}\n \
+        \ end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.macos.zotero:ZoteroLibraryEvaluator
+  params:
+    required_collections:
+    - Reading Queue
+    required_items:
+    - title: Clean Code
+      item_type: book
+      collections:
+      - Reading Queue
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy

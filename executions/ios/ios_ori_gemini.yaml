@@ -1,0 +1,18 @@
+tasks:
+- tasks/ios/reminders_create_single_reminder.yaml
+- tasks/ios/reminders_manage_seeded_list.yaml
+- tasks/ios/reminders_rework_seeded_agenda.yaml
+- tasks/ios/safari_open_target_page.yaml
+- tasks/ios/safari_organize_tabs_and_bookmarks.yaml
+- tasks/ios/safari_build_two_reading_folders.yaml
+- tasks/ios/contacts_add_contact_card.yaml
+- tasks/ios/contacts_reconcile_seeded_contacts.yaml
+- tasks/ios/contacts_reconcile_multi_field_directory.yaml
+- tasks/ios/calendar_create_today_event.yaml
+- tasks/ios/calendar_update_and_create_followup.yaml
+- tasks/ios/calendar_finalize_schedule_with_two_followups.yaml
+models:
+- FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3

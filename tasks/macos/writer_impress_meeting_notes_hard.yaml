@@ -1,0 +1,85 @@
+task_id: macos.cross_app.writer_impress_meeting_notes_hard
+platform: macos
+instruction: >
+  Open LibreOffice Writer. Create a new document with the heading
+  "Weekly Team Meeting Notes". Below the heading, create a table with
+  two columns: "Topic" and "Owner". Add these rows:
+  - Sprint Planning, Alice
+  - Bug Triage, Bob
+  - Release Review, Carol
+  Save the document as /Users/bench/Documents/meeting_notes.odt.
+  Then switch to the already-open LibreOffice Impress window. Create a new
+  presentation. On the first slide, use Insert → Text Box to add a text box
+  and type "Meeting Summary" as the title. Then use Insert → File to insert
+  the document /Users/bench/Documents/meeting_notes.odt. In the insert dialog,
+  navigate to /Users/bench/Documents/, select meeting_notes.odt, and click Open.
+  Save the presentation as /Users/bench/Documents/meeting_presentation.odp.
+  Finish after the presentation is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --impress
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      odt_path = os.path.expanduser("~/Documents/meeting_notes.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for value in ["Weekly Team Meeting Notes", "Sprint Planning", "Bug Triage", "Release Review"]:
+          if value not in content:
+              raise SystemExit(f"MISSING_VALUE_{value.replace(' ', '_')}")
+
+      odp_path = os.path.expanduser("~/Documents/meeting_presentation.odp")
+      if not os.path.exists(odp_path):
+          raise SystemExit("IMPRESS_FILE_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - writer
+  - impress
+  - meeting
+  - table
+  - presentation
+  - hard
+  app_name: libreoffice_writer + libreoffice_impress
+  difficulty: hard
+  description: Create a meeting notes document in Writer with a table of topics
+    and owners, then insert it into an Impress presentation via Insert →
+    File dialog.

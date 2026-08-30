@@ -1,0 +1,112 @@
+task_id: macos.drawio.ops_plan_relabel
+platform: macos
+instruction: 'draw.io is already open with `/Users/bench/Downloads/ops_plan_relabel.drawio`.
+
+
+  There are 20 rounded rectangles visible in a 4-row by 5-column grid.
+
+  Replace the text inside the rectangles exactly as follows:
+
+
+  - `Item 1` -> `Staffing`
+
+  - `Item 2` -> `Agenda`
+
+  - `Item 3` -> `Badges`
+
+  - `Item 4` -> `Catering`
+
+  - `Item 5` -> `Wayfinding`
+
+  - `Item 6` -> `Check-in`
+
+  - `Item 7` -> `Welcome`
+
+  - `Item 8` -> `Roadmap`
+
+  - `Item 9` -> `Breakout A`
+
+  - `Item 10` -> `Breakout B`
+
+  - `Item 11` -> `Lunch`
+
+  - `Item 12` -> `Demo`
+
+  - `Item 13` -> `Panel`
+
+  - `Item 14` -> `Work Session`
+
+  - `Item 15` -> `Closing`
+
+  - `Item 16` -> `Notes Pack`
+
+  - `Item 17` -> `Feedback Form`
+
+  - `Item 18` -> `Sponsor Deck`
+
+  - `Item 19` -> `Teardown`
+
+  - `Item 20` -> `Follow-up`
+
+
+  Do not create or delete any shapes. Only replace the text in the existing
+
+  rounded rectangles, then save the file.
+
+  '
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall "draw.io" >/dev/null 2>&1 || true
+        sleep 1
+        APP_PATH=""
+        for candidate in "$HOME/Applications/draw.io.app" "/Applications/draw.io.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "draw.io.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "draw.io.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        rm -f /Users/bench/Downloads/ops_plan_relabel.drawio
+        rm -f /Users/bench/Downloads/.$ops_plan_relabel.drawio.dtmp
+    - type: upload_file
+      local_path: files/drawio/ops_plan_relabel/start/ops_plan_relabel.drawio
+      path: /Users/bench/Downloads/ops_plan_relabel.drawio
+    - type: run_bash
+      script: |
+        set -e
+        APP_PATH=""
+        for candidate in "$HOME/Applications/draw.io.app" "/Applications/draw.io.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "draw.io.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "draw.io.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        open -a "$APP_PATH" /Users/bench/Downloads/ops_plan_relabel.drawio
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: "set -e\nosascript <<'APPLESCRIPT'\ntell application \"System Events\"\n  tell process \"draw.io\"\n    set position of window 1 to {40, 80}\n    set size of window 1 to {1800, 1000}\n  end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1500
+evaluation:
+  evaluator_id: evaluators.macos.drawio:DrawIODiagramEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/ops_plan_relabel.drawio
+    expected_path: files/drawio/ops_plan_relabel/expected/ops_plan_relabel.drawio
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

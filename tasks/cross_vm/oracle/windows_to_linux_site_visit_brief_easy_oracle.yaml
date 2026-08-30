@@ -1,0 +1,17 @@
+task_id: cross_vm.oracle.windows_to_linux.site_visit_brief_easy
+platform: cross_vm
+instruction: >
+  Oracle sanity task for cross_vm.windows_to_linux.site_visit_brief_easy. The
+  Windows and Linux initializers already prepare the expected transfer file and
+  final LibreOffice result. Wait briefly and finish.
+windows_task: tasks/windows/oracle/cross_vm_prepare_site_visit_transfer_easy_oracle.yaml
+linux_task: tasks/linux/oracle/cross_vm_writer_site_visit_brief_easy_oracle.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\site_visit_transfer.txt
+  linux_guest_path: /home/user/Desktop/site_visit_transfer.txt
+  host_filename: site_visit_transfer.txt
+metadata:
+  tags: [cross_vm, windows_to_linux, libreoffice, writer, easy, oracle]
+  difficulty: easy
+  oracle_for: cross_vm.windows_to_linux.site_visit_brief_easy
+  description: Oracle sanity task for the site visit brief cross-VM flow.

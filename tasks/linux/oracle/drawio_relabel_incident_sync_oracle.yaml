@@ -1,0 +1,60 @@
+task_id: linux.drawio.oracle.relabel_incident_sync
+platform: linux
+instruction: Oracle sanity task for linux.drawio.relabel_incident_sync. The initializer
+  already seeds the expected draw.io XML. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.drawio:DrawIOInitializer
+  params:
+    app_command: drawio
+    workspace_name: drawio_incident_sync
+    diagram_name: incident_sync_map.drawio
+    diagram_template: incident_sync_map
+    cell_overrides:
+    - id: pager_box
+      equals: Pager Intake
+    - id: triage_box
+      equals: Traffic Triage
+    - id: status_box
+      equals: Status Update
+    - id: mitigation_box
+      equals: Mitigation Plan
+    - id: verification_box
+      equals: Verification Sweep
+    - id: ops_box
+      equals: Ops Transfer
+    - id: closing_box
+      equals: Postmortem Review
+evaluation:
+  evaluator_id: evaluators.linux.drawio:DrawIOFileEvaluator
+  params:
+    diagram_path: /tmp/helloworld_drawio_workspace/drawio_incident_sync/incident_sync_map.drawio
+    cells:
+    - id: pager_box
+      equals: Pager Intake
+    - id: triage_box
+      equals: Traffic Triage
+    - id: status_box
+      equals: Status Update
+    - id: mitigation_box
+      equals: Mitigation Plan
+    - id: verification_box
+      equals: Verification Sweep
+    - id: ops_box
+      equals: Ops Transfer
+    - id: closing_box
+      equals: Postmortem Review
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: draw.io
+  difficulty: hard
+  tags:
+  - linux
+  - gui
+  - drawio
+  - diagram
+  - hard
+  - oracle
+  description: Oracle sanity task for linux.drawio.relabel_incident_sync
+  oracle_for: linux.drawio.relabel_incident_sync

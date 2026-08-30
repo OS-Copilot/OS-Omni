@@ -1,0 +1,12 @@
+tasks:
+  - tasks/linux/oracle/thunderbird_calendar_create_vendor_followup_easy_oracle.yaml
+  - tasks/linux/oracle/thunderbird_calendar_plan_next_week_reviews_hard_oracle.yaml
+  - tasks/linux/oracle/thunderbird_calendar_build_recurring_release_plan_hard_oracle.yaml
+models:
+  - linux_oracle_wait
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Linux Thunderbird Calendar oracle sanity run.

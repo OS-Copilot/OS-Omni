@@ -1,0 +1,146 @@
+task_id: macos.blender.restage_product_objects
+platform: macos
+instruction: 'Blender has prepared `/Users/bench/Downloads/helloworld_blender_workspace/blender_restage_product/product_stage.blend`
+  for this run.
+
+
+  Restage the product scene into a review-ready layout, then save the `.blend`
+  file. Apply this exact setup:
+
+
+  1. Render settings:
+     - render engine: **Cycles**
+     - output resolution: **1536 x 1080**
+     - resolution percentage: **90**
+     - FPS: **24**
+     - frame range: start **15**, end **180**
+     - output path: `//renders/restage_layout.png`
+     - image format: **PNG**
+     - color mode: **RGBA**
+     - **Transparent** film enabled
+
+  2. Camera and light:
+     - move **Camera** to X **7.8**, Y **-7.0**, Z **6.2**
+     - rotate Camera to X **60**, Y **0**, Z **48** degrees
+     - move **FillLight** to X **1.4**, Y **-3.6**, Z **7.0**
+     - rotate FillLight to X **50**, Y **0**, Z **35** degrees
+     - scale FillLight to X **1.25**, Y **1.25**, Z **1.25**
+
+  3. Main scene objects:
+     - move **FeatureCube** to X **2.0**, Y **-1.0**, Z **1.5**
+     - rotate FeatureCube to X **0**, Y **12**, Z **-16** degrees
+     - scale FeatureCube to X **1.4**, Y **0.8**, Z **1.9**
+     - set FeatureCube diffuse color to RGBA **0.78, 0.22, 0.14, 1.0**
+     - move **AccentCylinder** to X **-2.3**, Y **1.2**, Z **0.9**
+     - rotate AccentCylinder to X **4**, Y **0**, Z **14** degrees
+     - scale AccentCylinder to X **0.6**, Y **0.6**, Z **2.2**
+     - set AccentCylinder diffuse color to RGBA **0.12, 0.52, 0.70, 1.0**
+     - move **HeroSphere** to X **2.9**, Y **2.1**, Z **1.35**
+     - rotate HeroSphere to X **18**, Y **0**, Z **-24** degrees
+     - scale HeroSphere to X **1.15**, Y **1.15**, Z **1.15**
+     - set HeroSphere diffuse color to RGBA **0.96, 0.78, 0.22, 1.0**
+     - move **BackdropPlane** to X **-0.15**, Y **0.25**, Z **-0.05**
+     - rotate BackdropPlane to X **1**, Y **-1.5**, Z **7** degrees
+     - scale BackdropPlane to X **6.0**, Y **4.5**, Z **1.0**
+     - set BackdropPlane diffuse color to RGBA **0.04, 0.05, 0.06, 1.0**
+
+  4. Add two layout helpers:
+     - add a cylinder named **ScaleMarker** at X **0.4**, Y **-2.2**, Z **0.65**,
+       rotation **0, 0, 32** degrees, scale **0.35, 0.35, 1.10**, color
+       **0.22, 0.86, 0.38, 1.0**
+     - add a UV sphere named **BalancePuck** at X **-2.8**, Y **-1.4**, Z **0.45**,
+       rotation **9, 0, -22** degrees, scale **0.55, 0.55, 0.25**, color
+       **0.82, 0.82, 0.18, 1.0**
+
+
+  Stop as soon as the file is saved.
+
+  '
+init:
+  initializer_id: initializers.macos.blender:BlenderInitializer
+  params:
+    app_command: blender
+    workspace_name: blender_restage_product
+    scene_name: product_stage.blend
+    scene_template: product_stage
+    launch_gui: false
+evaluation:
+  evaluator_id: evaluators.macos.blender:BlenderSceneEvaluator
+  params:
+    blend_path: /Users/bench/Downloads/helloworld_blender_workspace/blender_restage_product/product_stage.blend
+    app_command: blender
+    render:
+      engine: CYCLES
+      resolution_x: 1536
+      resolution_y: 1080
+      resolution_percentage: 90
+      fps: 24
+      frame_start: 15
+      frame_end: 180
+      filepath: //renders/restage_layout.png
+      file_format: PNG
+      color_mode: RGBA
+      film_transparent: true
+    objects:
+    - name: Camera
+      location: [7.8, -7.0, 6.2]
+      rotation_degrees: [60.0, 0.0, 48.0]
+    - name: FillLight
+      location: [1.4, -3.6, 7.0]
+      rotation_degrees: [50.0, 0.0, 35.0]
+      scale: [1.25, 1.25, 1.25]
+    - name: FeatureCube
+      location:
+      - 2.0
+      - -1.0
+      - 1.5
+      rotation_degrees:
+      - 0.0
+      - 12.0
+      - -16.0
+      scale:
+      - 1.4
+      - 0.8
+      - 1.9
+      material_diffuse_color: [0.78, 0.22, 0.14, 1.0]
+    - name: AccentCylinder
+      location:
+      - -2.3
+      - 1.2
+      - 0.9
+      rotation_degrees:
+      - 4.0
+      - 0.0
+      - 14.0
+      scale:
+      - 0.6
+      - 0.6
+      - 2.2
+      material_diffuse_color: [0.12, 0.52, 0.7, 1.0]
+    - name: HeroSphere
+      location: [2.9, 2.1, 1.35]
+      rotation_degrees: [18.0, 0.0, -24.0]
+      scale: [1.15, 1.15, 1.15]
+      material_diffuse_color: [0.96, 0.78, 0.22, 1.0]
+    - name: BackdropPlane
+      location: [-0.15, 0.25, -0.05]
+      rotation_degrees: [1.0, -1.5, 7.0]
+      scale: [6.0, 4.5, 1.0]
+      material_diffuse_color: [0.04, 0.05, 0.06, 1.0]
+    - name: ScaleMarker
+      type: MESH
+      location: [0.4, -2.2, 0.65]
+      rotation_degrees: [0.0, 0.0, 32.0]
+      scale: [0.35, 0.35, 1.1]
+      material_diffuse_color: [0.22, 0.86, 0.38, 1.0]
+    - name: BalancePuck
+      type: MESH
+      location: [-2.8, -1.4, 0.45]
+      rotation_degrees: [9.0, 0.0, -22.0]
+      scale: [0.55, 0.55, 0.25]
+      material_diffuse_color: [0.82, 0.82, 0.18, 1.0]
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

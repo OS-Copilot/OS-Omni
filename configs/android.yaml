@@ -1,0 +1,25 @@
+# Android guest runtime connection settings.
+# The Android platform uses ADB to communicate with the emulator,
+# so no HTTP runtime server is needed (unlike Windows/Linux).
+
+# ADB device serial or emulator address.
+# Use "emulator-5554" for default emulator, or a specific serial.
+adb_device: "emulator-5554"
+
+# AVD name used when auto-launching the emulator.
+avd_name: "AndroidWorldAvd"
+
+# Whether to auto-launch the emulator if no device is detected.
+auto_launch_emulator: true
+
+# Seconds to wait for emulator boot before giving up.
+emulator_boot_timeout: 120
+
+# When true, each Android task run restores emulator_snapshot_name before the
+# task initializer. This mirrors Windows/Linux snapshot reset behavior and
+# prevents task-to-task state leakage on the AVD.
+emulator_reset_between_tasks: true
+
+# Clean baseline snapshot inside the Android emulator/AVD.
+# Check available names with: adb -s emulator-5554 emu avd snapshot list
+emulator_snapshot_name: "default_boot"

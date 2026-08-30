@@ -1,0 +1,11 @@
+tasks:
+  - tasks/android/openshop_add_coffee_to_cart.yaml
+  - tasks/android/openshop_office_setup_checkout.yaml
+  - tasks/android/openshop_home_refresh_checkout.yaml
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Android OpenShop shopping task pack with one easy cart task and two hard checkout tasks

@@ -1,0 +1,90 @@
+task_id: macos.calc.create_chart_hard
+platform: macos
+instruction: >
+  Open LibreOffice Calc. Create a new spreadsheet with the following data:
+  - Row 1: Headers "Month" and "Sales"
+  - Row 2: January, 1200
+  - Row 3: February, 1500
+  - Row 4: March, 1800
+  - Row 5: April, 2100
+  - Row 6: May, 2400
+  Select the data range A1:B6. Go to Insert → Chart.
+  In the Chart dialog, select "Column" as the chart type and "Clustered Column"
+  as the chart variant. Click Next.
+  In the Data Range step, verify the range is correct and click Next.
+  In the Data Series step, click Next.
+  In the Chart Title step, enter "Monthly Sales" as the title.
+  Click "Finish" to create the chart.
+  Save the spreadsheet as /Users/bench/Documents/sales_chart.ods.
+  Finish after the spreadsheet is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --calc
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      ods_path = os.path.expanduser("~/Documents/sales_chart.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      # Check if the file contains chart data
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          # Check for content.xml
+          if 'content.xml' not in z.namelist():
+              raise SystemExit("MISSING_CONTENT_XML")
+
+          content = z.read('content.xml').decode('utf-8')
+
+          # Check for expected data
+          expected_values = ["Month", "Sales", "January", "February", "March", "April", "May"]
+          for val in expected_values:
+              if val not in content:
+                  raise SystemExit(f"MISSING_VALUE_{val}")
+
+          # Check for chart (LibreOffice stores charts in ObjectReplacements/)
+          has_chart = False
+          for name in z.namelist():
+              if 'ObjectReplacements' in name or 'chart' in name.lower():
+                  has_chart = True
+                  break
+
+          if not has_chart:
+              raise SystemExit("CHART_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - calc
+  - chart
+  - column
+  - hard
+  app_name: libreoffice_calc
+  difficulty: hard
+  description: Create a clustered column chart in LibreOffice Calc with monthly sales data.

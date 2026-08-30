@@ -1,0 +1,165 @@
+task_id: linux.blender.oracle.prepare_social_render
+platform: linux
+instruction: Oracle sanity task for linux.blender.prepare_social_render. The initializer
+  already seeds the expected Blender scene state and handoff note. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.linux.blender:BlenderInitializer
+  params:
+    app_command: blender
+    workspace_name: blender_social_render
+    scene_name: product_stage.blend
+    scene_template: product_stage
+    scene_spec:
+      render:
+        resolution_x: 1600
+        resolution_y: 900
+        resolution_percentage: 100
+        fps: 30
+        frame_start: 1
+        frame_end: 120
+        engine: BLENDER_EEVEE
+        film_transparent: true
+        filepath: //renders/social_preview_final.png
+        file_format: PNG
+        color_mode: RGBA
+        eevee_taa_render_samples: 80
+      objects:
+        - type: CAMERA
+          name: Camera
+          location: [6.4, -6.0, 4.8]
+          rotation_degrees: [60.0, 0.0, 43.0]
+        - type: LIGHT
+          light_type: SUN
+          name: FillLight
+          location: [1.5, -3.0, 6.2]
+          rotation_degrees: [52.0, 0.0, 30.0]
+          scale: [1.1, 1.1, 1.1]
+        - type: MESH_PLANE
+          name: BackdropPlane
+          location: [0.0, 0.0, -0.05]
+          rotation_degrees: [0.0, 0.0, 4.0]
+          scale: [5.8, 4.2, 1.0]
+          material_diffuse_color: [0.06, 0.07, 0.09, 1.0]
+        - type: MESH_CUBE
+          name: FeatureCube
+          location: [0.45, -0.35, 1.25]
+          rotation_degrees: [0.0, 0.0, 12.0]
+          scale: [1.2, 0.85, 1.35]
+          material_diffuse_color: [0.9, 0.32, 0.16, 1.0]
+        - type: MESH_CYLINDER
+          name: AccentCylinder
+          location: [-1.5, 0.9, 1.05]
+          rotation_degrees: [0.0, 0.0, -14.0]
+          scale: [0.55, 0.55, 1.35]
+          material_diffuse_color: [0.12, 0.45, 0.82, 1.0]
+        - type: MESH_UV_SPHERE
+          name: HeroSphere
+          location: [2.0, 1.15, 0.95]
+          scale: [0.75, 0.75, 0.75]
+          material_diffuse_color: [0.16, 0.75, 0.55, 1.0]
+        - type: MESH_PLANE
+          name: CTAPlate
+          location: [1.35, -2.35, 0.06]
+          rotation_degrees: [0.0, 0.0, 6.0]
+          scale: [1.65, 0.25, 1.0]
+          material_diffuse_color: [0.95, 0.78, 0.14, 1.0]
+        - type: MESH_CUBE
+          name: CropGuide
+          location: [-2.65, 2.0, 0.35]
+          rotation_degrees: [0.0, 0.0, -18.0]
+          scale: [0.32, 0.32, 0.7]
+          material_diffuse_color: [0.95, 0.95, 0.95, 1.0]
+    text_artifacts:
+      - path: /tmp/helloworld_blender_workspace/blender_social_render/social_brief.txt
+        content: |
+          Channel: paid social feed
+          Goal: make the hero product readable with a small CTA zone.
+          Crop: keep the upper-left area clear for review notes.
+          Deliverable: save the scene and leave a short handoff note.
+      - path: /tmp/helloworld_blender_workspace/blender_social_render/social_render_handoff.txt
+        content: |
+          brief=social paid preview
+          primary=product_stage.blend
+          render=social_preview_final.png
+          crop=safe for feed
+          status=ready
+evaluation:
+  evaluator_id: evaluators.linux.blender:BlenderSceneEvaluator
+  params:
+    blend_path: /tmp/helloworld_blender_workspace/blender_social_render/product_stage.blend
+    render:
+      engine: BLENDER_EEVEE
+      resolution_x: 1600
+      resolution_y: 900
+      resolution_percentage: 100
+      fps: 30
+      frame_start: 1
+      frame_end: 120
+      filepath: //renders/social_preview_final.png
+      file_format: PNG
+      color_mode: RGBA
+      film_transparent: true
+      eevee_taa_render_samples: 80
+    objects:
+      - name: Camera
+        location: [6.4, -6.0, 4.8]
+        rotation_degrees: [60.0, 0.0, 43.0]
+      - name: FillLight
+        location: [1.5, -3.0, 6.2]
+        rotation_degrees: [52.0, 0.0, 30.0]
+        scale: [1.1, 1.1, 1.1]
+      - name: FeatureCube
+        location: [0.45, -0.35, 1.25]
+        rotation_degrees: [0.0, 0.0, 12.0]
+        scale: [1.2, 0.85, 1.35]
+        material_diffuse_color: [0.9, 0.32, 0.16, 1.0]
+      - name: AccentCylinder
+        location: [-1.5, 0.9, 1.05]
+        rotation_degrees: [0.0, 0.0, -14.0]
+        scale: [0.55, 0.55, 1.35]
+        material_diffuse_color: [0.12, 0.45, 0.82, 1.0]
+      - name: HeroSphere
+        location: [2.0, 1.15, 0.95]
+        scale: [0.75, 0.75, 0.75]
+        material_diffuse_color: [0.16, 0.75, 0.55, 1.0]
+      - name: BackdropPlane
+        location: [0.0, 0.0, -0.05]
+        rotation_degrees: [0.0, 0.0, 4.0]
+        scale: [5.8, 4.2, 1.0]
+        material_diffuse_color: [0.06, 0.07, 0.09, 1.0]
+      - name: CTAPlate
+        type: MESH
+        location: [1.35, -2.35, 0.06]
+        rotation_degrees: [0.0, 0.0, 6.0]
+        scale: [1.65, 0.25, 1.0]
+        material_diffuse_color: [0.95, 0.78, 0.14, 1.0]
+      - name: CropGuide
+        type: MESH
+        location: [-2.65, 2.0, 0.35]
+        rotation_degrees: [0.0, 0.0, -18.0]
+        scale: [0.32, 0.32, 0.7]
+        material_diffuse_color: [0.95, 0.95, 0.95, 1.0]
+    text_artifacts:
+      - path: /tmp/helloworld_blender_workspace/blender_social_render/social_render_handoff.txt
+        equals: |
+          brief=social paid preview
+          primary=product_stage.blend
+          render=social_preview_final.png
+          crop=safe for feed
+          status=ready
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  app: Blender
+  difficulty: hard
+  tags:
+    - linux
+    - gui
+    - blender
+    - render
+    - hard
+    - oracle
+  description: Oracle sanity task for linux.blender.prepare_social_render
+  oracle_for: linux.blender.prepare_social_render

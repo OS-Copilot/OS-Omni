@@ -1,0 +1,10 @@
+tasks:
+  - tasks/android/cross_app_email_office_compile_brief_and_reply_hard.yaml
+  - tasks/android/fossify_gallery_rename_photo.yaml
+models:
+  - codesonline_gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Retry Android validation for email-office and gallery rename fixes with CodesOnline GPT-5.5.

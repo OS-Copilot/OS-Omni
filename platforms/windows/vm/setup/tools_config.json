@@ -1,0 +1,122 @@
+{
+    "Python": {
+        "mirrors": [
+            "https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe"
+        ],
+        "alias": "python"
+    },
+    "git": {
+        "mirrors": [
+            "https://github.com/git-for-windows/git/releases/download/v2.37.1.windows.1/Git-2.37.1-64-bit.exe"
+        ]
+    },
+    "7zip": {
+        "mirrors": [
+            "https://www.7-zip.org/a/7z2407-x64.exe"
+        ]
+    },
+    "ffmpeg": {
+        "mirrors": [
+            "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z"
+        ]
+    },
+    "Google Chrome": {
+        "mirrors": [
+            "https://dl.google.com/chrome/install/latest/chrome_installer.exe"
+        ],
+        "alias": "google-chrome"
+    },
+    "LibreOffice": {
+        "mirrors": [
+            "https://mirror.raiolanetworks.com/tdf/libreoffice/stable/24.8.2/win/x86_64/LibreOffice_24.8.2_Win_x86-64.msi",
+            "https://mirrors.iu13.net/tdf/libreoffice/stable/24.8.2/win/x86_64/LibreOffice_24.8.2_Win_x86-64.msi",
+            "https://download.documentfoundation.org/libreoffice/stable/24.8.2/win/x86_64/LibreOffice_24.8.2_Win_x86-64.msi"
+        ]
+    },
+    "VLC": {
+        "mirrors": [
+            "https://ftp.free.org/mirrors/videolan/vlc/3.0.21/win64/vlc-3.0.21-win64.exe",
+            "https://mirror.fcix.net/videolan-ftp/vlc/3.0.21/win64/vlc-3.0.21-win64.exe",
+            "https://mirror.raiolanetworks.com/videolan/vlc/3.0.21/win64/vlc-3.0.21-win64.exe"
+        ],
+        "alias": "vlc"
+    },
+    "GIMP": {
+        "mirrors": [
+            "https://www-ftp.lip6.fr/pub/gimp/gimp/v2.10/windows/gimp-2.10.38-setup.exe",
+            "https://download.gimp.org/gimp/v2.10/windows/gimp-2.10.38-setup.exe",
+            "https://www-ftp.lip6.fr/pub/gimp/gimp/v2.10/windows/gimp-2.10.0-setup.exe"
+        ],
+        "alias": "gimp"
+    },
+    "VS Code": {
+        "mirrors": [
+            "https://update.code.visualstudio.com/latest/win32-x64-user/stable"
+        ],
+        "alias": "code"
+    },
+    "Thunderbird": {
+        "mirrors": [
+            "https://download-installer.cdn.mozilla.net/pub/thunderbird/releases/115.12.1/win64/en-US/Thunderbird%20Setup%20115.12.1.exe",
+            "https://archive.mozilla.org/pub/thunderbird/releases/115.12.1/win64/en-US/Thunderbird%20Setup%20115.12.1.exe"
+        ],
+        "alias": "thunderbird"
+    },
+    "Delta Chat": {
+        "mirrors": [
+            "https://download.delta.chat/desktop/v2.48.0/DeltaChat-2.48.0-Setup.x64.exe",
+            "https://github.com/deltachat/deltachat-desktop/releases/download/v2.48.0/DeltaChat-2.48.0-Setup.x64.exe"
+        ],
+        "alias": "deltachat"
+    },
+    "Spotube": {
+        "mirrors": [
+            "https://github.com/KRTirtho/spotube/releases/latest/download/Spotube-windows-x86_64-setup.exe",
+            "https://github.com/KRTirtho/spotube/releases/download/v5.1.1/Spotube-windows-x86_64-setup.exe"
+        ],
+        "alias": "spotube"
+    },
+    "Blender": {
+        "mirrors": [
+            "https://download.blender.org/release/Blender2.79/blender-2.79b-windows64.zip"
+        ],
+        "alias": "blender"
+    },
+    "draw.io": {
+        "mirrors": [
+            "https://github.com/jgraph/drawio-desktop/releases/download/v29.7.9/draw.io-29.7.9-windows-installer.exe"
+        ],
+        "alias": "drawio"
+    },
+    "Wireshark": {
+        "mirrors": [
+            "https://www.wireshark.org/download/win64/Wireshark-4.4.14-x64.exe"
+        ],
+        "alias": "wireshark"
+    },
+    "Zotero": {
+        "mirrors": [
+            "https://download.zotero.org/client/release/7.0.15/Zotero-7.0.15_x64_setup.exe"
+        ],
+        "alias": "zotero"
+    },
+    "Marble": {
+        "mirrors": [
+            "https://files.kde.org/marble/downloads/windows/Marble-setup_2.2.0-1_x64.exe",
+            "https://www.mirrorservice.org/sites/download.kde.org/marble/downloads/windows/Marble-setup_2.2.0-1_x64.exe"
+        ],
+        "alias": "marble"
+    },
+    "Actual Budget": {
+        "mirrors": [
+            "https://github.com/actualbudget/actual/releases/latest/download/Actual-windows-x64.exe"
+        ],
+        "alias": "actualbudget"
+    },
+    "Caddy Proxy": {
+        "mirrors": [
+            "https://caddyserver.com/api/download?os=windows&arch=amd64"
+        ],
+        "alias": "caddy"
+    }
+  }

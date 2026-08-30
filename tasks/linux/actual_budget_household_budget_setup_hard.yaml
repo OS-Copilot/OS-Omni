@@ -1,0 +1,192 @@
+task_id: linux.actual_budget.household_budget_setup_hard
+platform: linux
+instruction: >
+  Actual Budget is already open. Use the household close request at
+  /home/user/Desktop/household_budget_request.txt to create a local budget named
+  "Bench Household Budget" in the default documents location. Create the five
+  accounts from the request, create the seven budget categories with their
+  monthly amounts, enter the seven paid transactions, and record the four
+  transfers listed under "Envelope moves". Finish only after the budget reflects
+  the request file.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          python3 - <<'PY'
+          import os
+          import signal
+          import time
+
+          targets = {"Actual", "actualbudget", "AppRun", "chrome_crashpad_handler"}
+          for _ in range(2):
+              killed = False
+              for pid_text in os.listdir("/proc"):
+                  if not pid_text.isdigit():
+                      continue
+                  try:
+                      comm = open(f"/proc/{pid_text}/comm", "r", encoding="utf-8").read().strip()
+                  except OSError:
+                      continue
+                  if comm in targets:
+                      try:
+                          os.kill(int(pid_text), signal.SIGTERM)
+                          killed = True
+                      except OSError:
+                          pass
+              if not killed:
+                  break
+              time.sleep(1)
+          PY
+          rm -rf /home/user/.config/Actual /home/user/Documents/Actual /home/user/.cache/Actual
+          mkdir -p /home/user/Documents /home/user/Desktop
+          cat > /home/user/Desktop/household_budget_request.txt <<'EOF'
+          Bench Household Budget close request
+
+          Accounts:
+          - Bench Checking, opening balance 5000
+          - Bench Savings, opening balance 10000
+          - Bench Emergency, opening balance 2500
+          - Bench Home Reserve, opening balance 900
+          - Bench Travel Fund, opening balance 1200
+
+          Monthly categories:
+          - Housing Reserve 1500
+          - Pantry Restock 400
+          - Utilities Buffer 275
+          - Healthcare Buffer 180
+          - School Supplies 150
+          - Home Repairs 320
+          - Weekend Fun 200
+
+          Paid transactions:
+          - Bench Checking, Atlas Property, Housing Reserve, 1500
+          - Bench Checking, Corner Market, Pantry Restock, 350
+          - Bench Savings, Metro Utilities, Utilities Buffer, 125
+          - Bench Emergency, City Clinic, Healthcare Buffer, 90
+          - Bench Checking, Campus Store, School Supplies, 84
+          - Bench Home Reserve, Repair Hub, Home Repairs, 188
+          - Bench Travel Fund, Rail Depot, Weekend Fun, 210
+
+          Envelope moves:
+          - Bench Checking to Bench Savings, 1000
+          - Bench Savings to Bench Emergency, 250
+          - Bench Checking to Bench Home Reserve, 300
+          - Bench Checking to Bench Travel Fund, 130
+          EOF
+        timeout: 120
+      - type: run_bash
+        script: |
+          export DISPLAY=:0
+          export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
+          export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+          export DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=${XDG_RUNTIME_DIR}/bus}
+          if [ ! -x /home/user/.local/bin/actualbudget ]; then
+            echo "Actual Budget is not installed in the Linux VM." >&2
+            exit 1
+          fi
+          setsid -f /home/user/.local/bin/actualbudget >/tmp/actualbudget.log 2>&1
+        timeout: 120
+      - type: wait
+        ms: 10000
+evaluation:
+  evaluator_id: evaluators.linux.actual_budget:ActualBudgetEvaluator
+  params:
+    mode: full_setup
+    state_root: /home/user/.config/Actual
+    document_root: /home/user/Documents/Actual
+    accounts:
+      - name: Bench Checking
+        opening_balance: 5000
+      - name: Bench Savings
+        opening_balance: 10000
+      - name: Bench Emergency
+        opening_balance: 2500
+      - name: Bench Home Reserve
+        opening_balance: 900
+      - name: Bench Travel Fund
+        opening_balance: 1200
+    categories:
+      - name: Housing Reserve
+      - name: Pantry Restock
+      - name: Utilities Buffer
+      - name: Healthcare Buffer
+      - name: School Supplies
+      - name: Home Repairs
+      - name: Weekend Fun
+    payees:
+      - name: Atlas Property
+      - name: Corner Market
+      - name: Metro Utilities
+      - name: City Clinic
+      - name: Campus Store
+      - name: Repair Hub
+      - name: Rail Depot
+    budgets:
+      - category: Housing Reserve
+        amount: 1500
+      - category: Pantry Restock
+        amount: 400
+      - category: Utilities Buffer
+        amount: 275
+      - category: Healthcare Buffer
+        amount: 180
+      - category: School Supplies
+        amount: 150
+      - category: Home Repairs
+        amount: 320
+      - category: Weekend Fun
+        amount: 200
+    transactions:
+      - account: Bench Checking
+        payee: Atlas Property
+        category: Housing Reserve
+        amount: 1500
+      - account: Bench Checking
+        payee: Corner Market
+        category: Pantry Restock
+        amount: 350
+      - account: Bench Savings
+        payee: Metro Utilities
+        category: Utilities Buffer
+        amount: 125
+      - account: Bench Emergency
+        payee: City Clinic
+        category: Healthcare Buffer
+        amount: 90
+      - account: Bench Checking
+        payee: Campus Store
+        category: School Supplies
+        amount: 84
+      - account: Bench Home Reserve
+        payee: Repair Hub
+        category: Home Repairs
+        amount: 188
+      - account: Bench Travel Fund
+        payee: Rail Depot
+        category: Weekend Fun
+        amount: 210
+    transfers:
+      - from_account: Bench Checking
+        to_account: Bench Savings
+        amount: 1000
+      - from_account: Bench Savings
+        to_account: Bench Emergency
+        amount: 250
+      - from_account: Bench Checking
+        to_account: Bench Home Reserve
+        amount: 300
+      - from_account: Bench Checking
+        to_account: Bench Travel Fund
+        amount: 130
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, actual_budget, finance, accounting, hard]
+  app_name: actual-budget
+  difficulty: hard
+  description: Build a household Actual Budget from a realistic close request with accounts, categories, paid bills, and envelope transfers.
+  oracle_task: tasks/linux/oracle/actual_budget_household_budget_setup_hard_oracle.yaml
+  oracle_model: linux_oracle_wait

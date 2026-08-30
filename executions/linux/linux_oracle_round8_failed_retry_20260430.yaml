@@ -1,0 +1,13 @@
+tasks:
+  - tasks/linux/oracle/blender_prepare_social_render_oracle.yaml
+  - tasks/linux/oracle/calc_freeze_header_range_oracle.yaml
+  - tasks/linux/oracle/cross_vm_calc_budget_review_hard_oracle.yaml
+  - tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+models:
+  - linux_oracle_wait
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Round 8 Linux oracle retry for GUI tasks that failed the first sanity run.

@@ -1,0 +1,100 @@
+task_id: macos.openshop.add_two_items_to_cart
+platform: macos
+instruction: >
+  In OpenShop, first sign in with phone number 13800138000 and password
+  spring2026. On the home page, set the category to Electronics and the sort to
+  Price: High to Low. Search for Verdant Pro Noise-Canceling Headphones, open
+  its product page from the search results, and add exactly one item with the
+  Bluetooth 5.4 option to the cart. From the cart, use Continue Shopping to go
+  back home. Then set the category to Grocery and the sort to Price: Low to
+  High. Search for Mountain Isle Pour-Over Coffee 20 Pack, open its product
+  page from the search results, and add exactly one item with the 20 sachets
+  option to the cart. In the cart, make sure the subtotal stays at ¥365, the
+  shipping fee is ¥12, and the ¥30 discount is still applied. Then increase the
+  headphones quantity to 2 and return it to 1. Also increase the coffee
+  quantity to 2 and return it to 1. Stop only when both products are listed
+  together in the cart with quantity 1 each and the discounted total is ¥347.
+init:
+  initializer_id: initializers.macos.openshop:OpenShopInitializer
+  params:
+    benchmark_mode: macos.openshop.add_two_items_to_cart
+    final_wait_ms: 1800
+evaluation:
+  evaluator_id: evaluators.macos.openshop:OpenShopMacOSApiEvaluator
+  params:
+    ui:
+      require_foreground: true
+      app_names: [OpenShop]
+      bundle_ids: [com.killt.openshop]
+    session:
+      logged_in: true
+      phone: '13800138000'
+      user_name: Lucas Lin
+    cart:
+      item_count: 2
+      subtotal: 365
+      shipping: 12
+      discount: 30
+      total: 347
+      items:
+        - product_id: p1001
+          quantity: 1
+          selected_spec: Bluetooth 5.4
+        - product_id: p1005
+          quantity: 1
+          selected_spec: 20 sachets
+    orders:
+      count: 0
+    benchmark:
+      mode: macos.openshop.add_two_items_to_cart
+      ordered:
+        - type: session_login_success
+          phone: '13800138000'
+        - type: catalog_view
+          query: verdant pro noise-canceling headphones
+          category: Electronics
+          sort: priceDesc
+          total: 1
+        - type: product_view
+          productId: p1001
+          title: Verdant Pro Noise-Canceling Headphones
+        - type: cart_item_added
+          productId: p1001
+          selectedSpec: Bluetooth 5.4
+        - type: cart_continue_shopping
+        - type: catalog_view
+          query: mountain isle pour-over coffee 20 pack
+          category: Grocery
+          sort: priceAsc
+          total: 1
+        - type: product_view
+          productId: p1005
+          title: Mountain Isle Pour-Over Coffee 20 Pack
+        - type: cart_item_added
+          productId: p1005
+          selectedSpec: 20 sachets
+        - type: cart_review_confirmed
+          kind: headphones_present
+        - type: cart_review_confirmed
+          kind: coffee_present
+        - type: cart_review_confirmed
+          kind: cart_total
+        - type: cart_review_confirmed
+          kind: discount_rule
+        - type: cart_quantity_updated
+          productId: p1001
+          quantity: 2
+        - type: cart_quantity_updated
+          productId: p1001
+          quantity: 1
+        - type: cart_quantity_updated
+          productId: p1005
+          quantity: 2
+        - type: cart_quantity_updated
+          productId: p1005
+          quantity: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

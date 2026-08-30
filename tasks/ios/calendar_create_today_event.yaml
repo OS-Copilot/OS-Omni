@@ -1,0 +1,34 @@
+task_id: ios.calendar.create_today_event
+platform: ios
+instruction: "Use Calendar to create a new event for today titled Bench Focus Session. Set the time to 18:30-19:15 and set the location to Studio 3."
+init:
+  initializer_id: initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer
+  params:
+    bundle_id: com.apple.mobilecal
+    purge_all_events: true
+    purge_summaries:
+      - "Bench Focus Session"
+    seed_events: []
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.ios.calendar_event_state:CalendarEventStateEvaluator
+  params:
+    present_events:
+      - summary: "Bench Focus Session"
+        day_offset: 0
+        start_time: "18:30"
+        end_time: "19:15"
+        location: "Studio 3"
+    absent_summaries: []
+    timeout_seconds: 8
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [calendar, ios, native, productivity, simple, benchmark]
+  app: Calendar
+  app_bundle_id: com.apple.mobilecal
+  description: "Create one new Calendar event with a fixed title, time, and location."
+  prerequisites:
+    - "The iOS Calendar app is available in the simulator."

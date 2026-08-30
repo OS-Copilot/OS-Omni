@@ -1,0 +1,10 @@
+tasks:
+  - tasks/macos/libreoffice_impress_add_slide_with_notes.yaml
+  - tasks/macos/libreoffice_impress_restructure_presentation.yaml
+models:
+  - FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS LibreOffice Impress hard tasks for FKCODEX_GPT55

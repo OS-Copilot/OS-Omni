@@ -1,0 +1,13 @@
+models:
+  - gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+  - tasks/windows/calc_formulas_conditional.yaml
+metadata:
+  description: Windows Calc formulas conditional hardened single-task run for gpt5_5 high with code_adapter mode.
+  scope: single_app
+  difficulty_filter: hard

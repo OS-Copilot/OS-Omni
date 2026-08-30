@@ -1,0 +1,46 @@
+task_id: linux.drawio.refresh_release_flow
+platform: linux
+instruction: In draw.io, update the six workflow boxes in the release board so they
+  read exactly Customer Intake, Scope Proposal, Risk Review, Team Approved, Launch
+  Window, and Retro Actions. Do not change the title box. Save the diagram after all
+  six labels are updated.
+init:
+  initializer_id: initializers.linux.drawio:DrawIOInitializer
+  params:
+    app_command: drawio
+    workspace_name: drawio_release_flow
+    diagram_name: release_flow_board.drawio
+    diagram_template: release_flow_board
+evaluation:
+  evaluator_id: evaluators.linux.drawio:DrawIOFileEvaluator
+  params:
+    diagram_path: /tmp/helloworld_drawio_workspace/drawio_release_flow/release_flow_board.drawio
+    cells:
+    - id: queue_box
+      equals: Customer Intake
+    - id: draft_box
+      equals: Scope Proposal
+    - id: review_box
+      equals: Risk Review
+    - id: approval_box
+      equals: Team Approved
+    - id: ship_box
+      equals: Launch Window
+    - id: follow_box
+      equals: Retro Actions
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - drawio
+  - diagram
+  - hard
+  app: draw.io
+  difficulty: hard
+  description: Rewrite six separate workflow labels in a draw.io release board and
+    save the finished diagram.
+  oracle_task: tasks/linux/oracle/drawio_refresh_release_flow_oracle.yaml
+  oracle_model: linux_oracle_wait

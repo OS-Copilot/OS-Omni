@@ -1,0 +1,18 @@
+tasks:
+  - tasks/linux/oracle/blender_prepare_social_render_oracle.yaml
+  - tasks/linux/oracle/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard_oracle.yaml
+  - tasks/linux/oracle/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard_oracle.yaml
+  - tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+  - tasks/linux/oracle/notepadqq_prepare_release_packet_oracle.yaml
+  - tasks/linux/oracle/spotube_import_city_weather_mix_oracle.yaml
+  - tasks/linux/oracle/spotube_import_focus_capsule_oracle.yaml
+  - tasks/linux/oracle/thunderbird_calendar_plan_next_week_reviews_hard_oracle.yaml
+  - tasks/linux/oracle/thunderbird_unified_inbox_oracle.yaml
+models:
+  - linux_oracle_wait
+reuse_vm_session: true
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Recheck updated oracle tasks for pass-hard Linux task difficulty refresh.

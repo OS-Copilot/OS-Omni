@@ -1,0 +1,126 @@
+task_id: macos.cross_app.zotero_impress_bibliography_slide_hard
+platform: macos
+instruction: >
+  Open Zotero. Create a new collection named "ML Papers" under My Library.
+  Add three Journal Article items to this collection:
+  1. "Attention Is All You Need" by Ashish Vaswani
+  2. "BERT" by Jacob Devlin
+  3. "Longformer" by Iz Beltagy
+  Select the "ML Papers" collection. Go to File → Export Collection. In the
+  export dialog, choose "BibTeX" format and save the file to
+  /Users/bench/Documents/ml_papers.bib.
+  Then switch to the already-open LibreOffice Impress window. Create a new
+  presentation. On the first slide, use Insert → Text Box to add a text box
+  and type "ML Papers Bibliography" as the title. Then use Insert → File
+  to insert the BibTeX file /Users/bench/Documents/ml_papers.bib. In the
+  insert dialog, navigate to /Users/bench/Documents/, select ml_papers.bib,
+  and click Open.
+  Save the presentation as /Users/bench/Documents/ml_presentation.odp.
+  Finish after the presentation is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Zotero >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        rm -rf ~/Zotero ~/.zotero
+        mkdir -p /Users/bench/Documents
+    - type: run_bash
+      script: |
+        open -a Zotero
+    - type: wait
+      ms: 12000
+    - type: action
+      action:
+        type: tap
+        target:
+          text: Done
+      optional: true
+    - type: action
+      action:
+        type: tap
+        target:
+          text: Don't Ask Again
+      optional: true
+    - type: action
+      action:
+        type: tap
+        target:
+          text: Remind Me Later
+      optional: true
+    - type: run_bash
+      script: "osascript <<'APPLESCRIPT'\ntell application \"Zotero\" to activate\ntell application \"System Events\"\n  tell process \"Zotero\"\n    set position of window 1 to {80, 80}\n    set size of window 1 to {1320, 860}\n  end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --impress
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import sqlite3
+      import os
+
+      db_path = os.path.expanduser("~/Zotero/zotero.sqlite")
+      if not os.path.exists(db_path):
+          raise SystemExit("ZOTERO_DB_NOT_FOUND")
+
+      conn = sqlite3.connect(db_path)
+      cur = conn.cursor()
+
+      cur.execute("SELECT collectionName FROM collections WHERE collectionName='ML Papers'")
+      if not cur.fetchone():
+          raise SystemExit("COLLECTION_NOT_FOUND")
+
+      cur.execute("""
+          SELECT DISTINCT idv.value FROM items i
+          JOIN itemData id ON i.itemID = id.itemID
+          JOIN fields f ON id.fieldID = f.fieldID
+          JOIN itemDataValues idv ON id.valueID = idv.valueID
+          WHERE f.fieldName = 'title'
+          AND idv.value IN ('Attention Is All You Need', 'BERT', 'Longformer')
+      """)
+      items = cur.fetchall()
+      if len(items) != 3:
+          raise SystemExit(f"EXPECTED_3_ITEMS_GOT_{len(items)}")
+
+      conn.close()
+
+      bib_path = os.path.expanduser("~/Documents/ml_papers.bib")
+      if not os.path.exists(bib_path):
+          raise SystemExit("BIBTEX_FILE_NOT_FOUND")
+
+      odp_path = os.path.expanduser("~/Documents/ml_presentation.odp")
+      if not os.path.exists(odp_path):
+          raise SystemExit("IMPRESS_FILE_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - zotero
+  - impress
+  - bibliography
+  - presentation
+  - hard
+  app_name: zotero + libreoffice_impress
+  difficulty: hard
+  description: Create a Zotero collection with 3 journal articles, export as
+    BibTeX via File menu dialog, then insert into Impress presentation via
+    Insert → File dialog.

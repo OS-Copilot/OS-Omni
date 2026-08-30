@@ -1,0 +1,208 @@
+task_id: linux.actual_budget.operations_multi_account_hard
+platform: linux
+instruction: >
+  Actual Budget is already open. Use the operations close request at
+  /home/user/Desktop/ops_budget_request.txt to create a local budget named
+  "Bench Ops Budget" in the default documents location. Create the six accounts,
+  eight budget categories with their monthly amounts, eight paid transactions,
+  and five reserve transfers from the request. Finish only when the budget
+  matches the close request.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          python3 - <<'PY'
+          import os
+          import signal
+          import time
+
+          targets = {"Actual", "actualbudget", "AppRun", "chrome_crashpad_handler"}
+          for _ in range(2):
+              killed = False
+              for pid_text in os.listdir("/proc"):
+                  if not pid_text.isdigit():
+                      continue
+                  try:
+                      comm = open(f"/proc/{pid_text}/comm", "r", encoding="utf-8").read().strip()
+                  except OSError:
+                      continue
+                  if comm in targets:
+                      try:
+                          os.kill(int(pid_text), signal.SIGTERM)
+                          killed = True
+                      except OSError:
+                          pass
+              if not killed:
+                  break
+              time.sleep(1)
+          PY
+          rm -rf /home/user/.config/Actual /home/user/Documents/Actual /home/user/.cache/Actual
+          mkdir -p /home/user/Documents /home/user/Desktop
+          cat > /home/user/Desktop/ops_budget_request.txt <<'EOF'
+          Bench Ops Budget close request
+
+          Accounts:
+          - Ops Checking, opening balance 3200
+          - Emergency Buffer, opening balance 8000
+          - Travel Envelope, opening balance 1200
+          - Tax Reserve, opening balance 2400
+          - Payroll Buffer, opening balance 4200
+          - Cloud Escrow, opening balance 2250
+
+          Monthly categories:
+          - Utility Buffer 250
+          - Conference Travel 600
+          - Client Meals 180
+          - SaaS Tools 75
+          - Hardware Refresh 350
+          - Renewal Fees 140
+          - Payroll Fees 425
+          - Cloud Hosting 490
+
+          Paid transactions:
+          - Ops Checking, City Utilities, Utility Buffer, 210
+          - Ops Checking, Skyline Air, Conference Travel, 480
+          - Ops Checking, Harbor Bistro, Client Meals, 64.50
+          - Ops Checking, StackTools, SaaS Tools, 75
+          - Ops Checking, North Desk, Hardware Refresh, 315
+          - Tax Reserve, License Bureau, Renewal Fees, 118
+          - Payroll Buffer, Payroll Bureau, Payroll Fees, 390
+          - Cloud Escrow, Cloud Grid, Cloud Hosting, 470
+
+          Reserve transfers:
+          - Ops Checking to Travel Envelope, 300
+          - Ops Checking to Payroll Buffer, 550
+          - Tax Reserve to Emergency Buffer, 200
+          - Ops Checking to Cloud Escrow, 325
+          - Emergency Buffer to Travel Envelope, 125
+          EOF
+        timeout: 120
+      - type: run_bash
+        script: |
+          export DISPLAY=:0
+          export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
+          export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+          export DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=${XDG_RUNTIME_DIR}/bus}
+          if [ ! -x /home/user/.local/bin/actualbudget ]; then
+            echo "Actual Budget is not installed in the Linux VM." >&2
+            exit 1
+          fi
+          setsid -f /home/user/.local/bin/actualbudget >/tmp/actualbudget.log 2>&1
+        timeout: 120
+      - type: wait
+        ms: 10000
+evaluation:
+  evaluator_id: evaluators.linux.actual_budget:ActualBudgetEvaluator
+  params:
+    mode: full_setup
+    state_root: /home/user/.config/Actual
+    document_root: /home/user/Documents/Actual
+    accounts:
+      - name: Ops Checking
+        opening_balance: 3200
+      - name: Emergency Buffer
+        opening_balance: 8000
+      - name: Travel Envelope
+        opening_balance: 1200
+      - name: Tax Reserve
+        opening_balance: 2400
+      - name: Payroll Buffer
+        opening_balance: 4200
+      - name: Cloud Escrow
+        opening_balance: 2250
+    categories:
+      - name: Utility Buffer
+      - name: Conference Travel
+      - name: Client Meals
+      - name: SaaS Tools
+      - name: Hardware Refresh
+      - name: Renewal Fees
+      - name: Payroll Fees
+      - name: Cloud Hosting
+    payees:
+      - name: City Utilities
+      - name: Skyline Air
+      - name: Harbor Bistro
+      - name: StackTools
+      - name: North Desk
+      - name: License Bureau
+      - name: Payroll Bureau
+      - name: Cloud Grid
+    budgets:
+      - category: Utility Buffer
+        amount: 250
+      - category: Conference Travel
+        amount: 600
+      - category: Client Meals
+        amount: 180
+      - category: SaaS Tools
+        amount: 75
+      - category: Hardware Refresh
+        amount: 350
+      - category: Renewal Fees
+        amount: 140
+      - category: Payroll Fees
+        amount: 425
+      - category: Cloud Hosting
+        amount: 490
+    transactions:
+      - account: Ops Checking
+        payee: City Utilities
+        category: Utility Buffer
+        amount: 210
+      - account: Ops Checking
+        payee: Skyline Air
+        category: Conference Travel
+        amount: 480
+      - account: Ops Checking
+        payee: Harbor Bistro
+        category: Client Meals
+        amount: 64.5
+      - account: Ops Checking
+        payee: StackTools
+        category: SaaS Tools
+        amount: 75
+      - account: Ops Checking
+        payee: North Desk
+        category: Hardware Refresh
+        amount: 315
+      - account: Tax Reserve
+        payee: License Bureau
+        category: Renewal Fees
+        amount: 118
+      - account: Payroll Buffer
+        payee: Payroll Bureau
+        category: Payroll Fees
+        amount: 390
+      - account: Cloud Escrow
+        payee: Cloud Grid
+        category: Cloud Hosting
+        amount: 470
+    transfers:
+      - from_account: Ops Checking
+        to_account: Travel Envelope
+        amount: 300
+      - from_account: Ops Checking
+        to_account: Payroll Buffer
+        amount: 550
+      - from_account: Tax Reserve
+        to_account: Emergency Buffer
+        amount: 200
+      - from_account: Ops Checking
+        to_account: Cloud Escrow
+        amount: 325
+      - from_account: Emergency Buffer
+        to_account: Travel Envelope
+        amount: 125
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, actual_budget, finance, accounting, hard]
+  app_name: actual-budget
+  difficulty: hard
+  description: Build an operations Actual Budget from a close request with operating accounts, vendor payments, and reserve transfers.
+  oracle_task: tasks/linux/oracle/actual_budget_operations_multi_account_hard_oracle.yaml
+  oracle_model: linux_oracle_wait

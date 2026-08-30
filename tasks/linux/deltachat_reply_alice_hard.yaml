@@ -1,0 +1,44 @@
+task_id: linux.deltachat.coordination_roundup
+platform: linux
+instruction: 'In Delta Chat, read the seeded chats and complete every follow-up below.
+  Use the exact sentence templates shown, replacing each placeholder with the correct
+  values from the conversations. 1. In Alice, send: Confirmed for {meeting_time} in
+  {meeting_room}. 2. In Bob, send: I will send {budget_filename} by {budget_deadline}.
+  3. In Nora, send: The coffee restock order is {order_number} from {vendor}. 4. In
+  Ops Sprint, send: Coordination update: Alice confirmed for {meeting_time} in {meeting_room},
+  Bob gets {budget_filename} by {budget_deadline}, Nora needs {order_number} from
+  {vendor}.'
+init:
+  initializer_id: initializers.linux.deltachat:DeltaChatInitializer
+  params:
+    app_command: deltachat-desktop
+evaluation:
+  evaluator_id: evaluators.linux.deltachat:DeltaChatMessageEvaluator
+  params:
+    expectations:
+    - chat_name: Alice
+      expected_text: Confirmed for 3 PM in Cedar-3.
+    - chat_name: Bob
+      expected_text: I will send budget-april-v7.xlsx by 5 PM.
+    - chat_name: Nora
+      expected_text: The coffee restock order is CFX-2048 from Northwind Beans.
+    - chat_name: Ops Sprint
+      expected_text: 'Coordination update: Alice confirmed for 3 PM in Cedar-3, Bob
+        gets budget-april-v7.xlsx by 5 PM, Nora needs CFX-2048 from Northwind Beans.'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - chat
+  - deltachat
+  - multi_chat
+  - hard
+  app: Delta Chat
+  description: Read multiple seeded Delta Chat conversations and send four coordination
+    follow-ups with extracted facts.
+  oracle_task: tasks/linux/oracle/deltachat_coordination_roundup_oracle.yaml
+  oracle_model: deltachat_oracle
+  difficulty: hard

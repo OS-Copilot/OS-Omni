@@ -1,0 +1,19 @@
+# VM provider used for macOS benchmark lifecycle management.
+vm_provider: "tart"
+
+# Tart base VM name used as the clone source for each run.
+base_vm_name: "allapps-base"
+
+# Live/runtime VM IP address used when directly connecting to an already-running VM.
+# Clone-based Tart runs resolve the clone IP dynamically after boot.
+vm_ip: "192.168.64.2"
+
+# Guest runtime_server.py listening port.
+runtime_port: 5000
+
+# Guest runtime_server.py bearer token.
+vm_token: "macuibench-runtime-token"
+
+# Optional Tart storage directory. Leave unset to use Tart default ~/.tart.
+# Override with HELLOWORLD_MACOS_TART_HOME when needed.
+# tart_home: "~/.tart"

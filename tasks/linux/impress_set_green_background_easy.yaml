@@ -1,0 +1,51 @@
+task_id: linux.impress.set_green_background
+platform: linux
+instruction: Move to slide 1 and give it a green background color. The presentation should already be open in LibreOffice Impress. Save when finished.
+init:
+  initializer_id: initializers.linux.office_setup:LinuxOfficeSetupInitializer
+  params:
+    tool_source_dir: platforms/linux/office_tools
+    tool_names:
+    - libreoffice_writer.py
+    - libreoffice_calc.py
+    - libreoffice_impress.py
+    remote_tool_dir: "~"
+    uno_port: 2002
+    startup_wait_seconds: 6
+    seed_downloads:
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_impress/9cf05d24-6bd9-4dae-8967-f67d88f5d38a/214_9.pptx
+      path: /tmp/helloworld_office/impress_9cf05d24_actual.pptx
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_impress/9cf05d24-6bd9-4dae-8967-f67d88f5d38a/214_9_Gold.pptx
+      path: /tmp/helloworld_office/impress_9cf05d24_expected.pptx
+    open_documents_after_download:
+    - /tmp/helloworld_office/impress_9cf05d24_actual.pptx
+    open_documents_wait_seconds: 5
+evaluation:
+  evaluator_id: evaluators.linux.pptx_compare:PptxCompareEvaluator
+  params:
+    actual_path: /tmp/helloworld_office/impress_9cf05d24_actual.pptx
+    expected_path: /tmp/helloworld_office/impress_9cf05d24_expected.pptx
+    options:
+      examine_number_of_slides: true
+      examine_text: false
+      examine_shape: false
+      examine_run_count: false
+      examine_alignment: false
+      examine_background_color: true
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - libreoffice
+  - impress
+  - pptx
+  - background
+  - easy
+  app: LibreOffice Impress
+  difficulty: easy
+  description: Change the background of the first slide in a prepared Impress deck to green and save it.
+  oracle_task: tasks/linux/oracle/impress_set_green_background_oracle.yaml
+  oracle_model: linux_oracle_wait

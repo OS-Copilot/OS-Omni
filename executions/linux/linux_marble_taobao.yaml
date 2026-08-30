@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/marble_bookmark_cairo_launch_point_easy.yaml
+  - tasks/linux/marble_north_atlantic_survey_hard.yaml
+  - tasks/linux/marble_east_africa_briefing_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Marble desktop benchmark tasks via taobao gpt-5

@@ -1,0 +1,34 @@
+task_id: linux.blender.set_preview_resolution
+platform: linux
+instruction: In Blender, open the prepared product stage scene. Change the output
+  resolution to 1280 by 720, then save the .blend file.
+init:
+  initializer_id: initializers.linux.blender:BlenderInitializer
+  params:
+    app_command: blender
+    workspace_name: blender_preview_resolution
+    scene_name: product_stage.blend
+    scene_template: product_stage
+evaluation:
+  evaluator_id: evaluators.linux.blender:BlenderSceneEvaluator
+  params:
+    blend_path: /tmp/helloworld_blender_workspace/blender_preview_resolution/product_stage.blend
+    render:
+      resolution_x: 1280
+      resolution_y: 720
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - blender
+  - scene
+  - easy
+  app: Blender
+  difficulty: easy
+  description: Change the output resolution of a prepared Blender scene and save the
+    file.
+  oracle_task: tasks/linux/oracle/blender_set_preview_resolution_oracle.yaml
+  oracle_model: linux_oracle_wait

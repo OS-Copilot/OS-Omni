@@ -1,0 +1,10 @@
+tasks:
+  - tasks/android/deltachat_search_reply.yaml
+  - tasks/android/spotube_search_artist_play_attempt.yaml
+models:
+  - android_oracle_agent
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 1
+metadata:
+  description: Targeted oracle retry for the two tasks adjusted after the 20260501_052626 validation run.

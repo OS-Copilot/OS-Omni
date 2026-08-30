@@ -1,0 +1,39 @@
+task_id: macos.maps.sf_landmark_briefing_hard
+platform: macos
+instruction: >
+  In Maps, build a San Francisco landmark briefing trail by searching for and
+  opening the details for Ferry Building Marketplace, Palace of Fine Arts, and
+  Coit Tower. Finish with Recents visible and the Coit Tower detail card open
+  so all three places can be seen as the briefing trail.
+init:
+  initializer_id: initializers.macos.maps:MapsInitializer
+  params:
+    final_wait_ms: 3000
+evaluation:
+  evaluator_id: evaluators.macos.maps:MapsStateEvaluator
+  params:
+    required_texts:
+      - Coit Tower
+    any_text_groups:
+      - - Recents
+        - Library
+      - - Ferry Building Marketplace
+        - Ferry Building
+      - - 3601 Lyon St
+        - 3601 Lyon Street
+        - Palace of Fine Arts
+      - - 1 Telegraph Hill Blvd
+        - Observation Deck
+metadata:
+  app: Maps
+  app_name: apple-maps
+  difficulty: hard
+  tags: [macos, gui, maps, native, landmarks, recents, hard, single_app, evaluator_backed]
+  human_steps: 56
+  description: Build a three-place San Francisco landmark briefing trail from search/detail results.
+  hardness: hard-evaluable
+  evaluation_standard: foreground Maps text, final Coit Tower detail state, Recents visibility, and prior landmark address recents are checked
+  oracle_task: tasks/macos/oracle/maps_sf_landmark_briefing_hard_oracle.yaml
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120

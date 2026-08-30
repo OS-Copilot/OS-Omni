@@ -1,0 +1,11 @@
+name: windows_deltachat_create_launch_debrief_from_existing_chats
+description: Windows Delta Chat - create Launch Debrief group from existing chats
+tasks:
+- tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows execution for deltachat_create_launch_debrief_from_existing_chats

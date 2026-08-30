@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/spotube_set_market_algeria_easy.yaml
+  - tasks/linux/spotube_import_city_weather_mix_hard.yaml
+  - tasks/linux/spotube_import_focus_capsule_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Spotube desktop benchmark tasks via taobao gpt-5

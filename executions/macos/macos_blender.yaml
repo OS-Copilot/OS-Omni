@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/blender_set_preview_resolution.yaml
+  - tasks/macos/blender_prepare_social_render.yaml
+  - tasks/macos/blender_restage_product_objects.yaml
+models:
+  - macos_blender_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS Blender tasks (1 easy, 2 hard)

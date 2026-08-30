@@ -1,0 +1,96 @@
+task_id: macos.cross_app.wireshark_calc_summary_hard
+platform: macos
+instruction: >
+  Open the seeded Wireshark capture /Users/bench/Downloads/retail_mix.pcapng.
+  In the display filter bar at the top, type "dns" and press Enter or click
+  the Apply button to apply the filter. Count the number of displayed DNS
+  packets.
+  Then clear the filter by clicking the Clear button.
+  Now type "http" in the filter bar and apply it. Count the number of
+  displayed HTTP packets.
+  Then clear the filter again.
+  Now type "tcp" in the filter bar and apply it. Count the number of
+  displayed TCP packets.
+  Then switch to the already-open LibreOffice Calc window. Create a new
+  spreadsheet. In cell A1 type "Protocol", in B1 type "Packet Count".
+  In row 2, enter "DNS" and the DNS packet count. In row 3, enter "HTTP"
+  and the HTTP packet count. In row 4, enter "TCP" and the TCP packet count.
+  In cell A6, type "Total". In cell B6, enter a SUM formula =SUM(B2:B4).
+  Save the spreadsheet as /Users/bench/Documents/traffic_summary.ods.
+  Finish after the spreadsheet is saved.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall Wireshark >/dev/null 2>&1 || true
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Downloads /Users/bench/Documents
+        python3 - <<'PY'
+from pathlib import Path
+from urllib.request import urlopen
+url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+out = Path("/Users/bench/Downloads/retail_mix.pcapng")
+out.parent.mkdir(parents=True, exist_ok=True)
+out.write_bytes(urlopen(url).read())
+PY
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a Wireshark /Users/bench/Downloads/retail_mix.pcapng
+    - type: wait
+      ms: 10000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --calc
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      ods_path = os.path.expanduser("~/Documents/traffic_summary.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for protocol in ["DNS", "HTTP", "TCP"]:
+          if protocol not in content:
+              raise SystemExit(f"MISSING_PROTOCOL_{protocol}")
+
+      if "SUM" not in content:
+          raise SystemExit("MISSING_SUM_FORMULA")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - wireshark
+  - calc
+  - network
+  - filter
+  - spreadsheet
+  - hard
+  app_name: wireshark + libreoffice_calc
+  difficulty: hard
+  description: Apply 3 display filters in Wireshark (dns, http, tcp), count packets
+    for each, then create a traffic summary spreadsheet in Calc with protocol
+    counts and a SUM total.

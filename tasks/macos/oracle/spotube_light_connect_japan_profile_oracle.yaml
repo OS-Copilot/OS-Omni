@@ -1,0 +1,32 @@
+task_id: macos.oracle.spotube.light_connect_japan_profile
+platform: macos
+instruction: Oracle sanity task for macos.spotube.light_connect_japan_profile. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.spotube:SpotubeInitializer
+  params:
+    allow_headless_fallback: true
+    wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.spotube:SpotubeEvaluator
+  params:
+    mode: state_check
+    expected_audio_source_plugin_name: YouTube Audio
+    expected_locale_contains: '"languageCode":"en"'
+    expected_preferences:
+      market: JP
+      endless_playback: false
+      theme_mode: light
+      normalize_audio: true
+      enable_connect: true
+      album_color_sync: false
+      system_title_bar: true
+      show_system_tray_icon: true
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.spotube.light_connect_japan_profile
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

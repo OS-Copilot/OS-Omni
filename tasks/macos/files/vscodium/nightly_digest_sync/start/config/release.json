@@ -1,0 +1,6 @@
+{
+  "pilotGroup": "support-preview",
+  "sendDigest": false,
+  "retryLimit": 1,
+  "retryWindowMinutes": 5
+}

@@ -1,0 +1,17 @@
+task_id: cross_vm.oracle.android_to_windows.site_visit_brief_easy
+platform: cross_vm
+instruction: >
+  Oracle sanity task for cross_vm.android_to_windows.site_visit_brief_easy. The
+  Android and Windows initializers already prepare the expected transfer file
+  and final LibreOffice result. Wait briefly and finish.
+android_task: tasks/android/oracle/cross_vm_prepare_site_visit_transfer_easy_oracle.yaml
+windows_task: tasks/windows/oracle/cross_vm_writer_site_visit_brief_easy_oracle.yaml
+transfer:
+  android_guest_path: /sdcard/Documents/markor/site_visit_transfer.txt
+  windows_guest_path: C:\Users\User\Desktop\site_visit_transfer.txt
+  host_filename: site_visit_transfer.txt
+metadata:
+  tags: [cross_vm, android_to_windows, libreoffice, writer, easy, oracle]
+  difficulty: easy
+  oracle_for: cross_vm.android_to_windows.site_visit_brief_easy
+  description: Oracle sanity task for the Android-to-Windows site visit brief flow.

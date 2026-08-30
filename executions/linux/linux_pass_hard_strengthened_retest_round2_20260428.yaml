@@ -1,0 +1,17 @@
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/linux/blender_prepare_social_render_hard.yaml
+  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  - tasks/linux/cross_vm_writer_launch_review_minutes_hard.yaml
+  - tasks/linux/spotube_import_city_weather_mix_hard.yaml
+  - tasks/linux/spotube_import_focus_capsule_hard.yaml
+  - tasks/linux/thunderbird_calendar_plan_next_week_reviews_hard.yaml
+  - tasks/linux/thunderbird_unified_inbox_hard.yaml
+  - tasks/linux/wireshark_export_protocol_bundle_hard.yaml
+metadata:
+  description: Retest the second-round strengthened Linux hard tasks with the same gpt5_4 reflection_pyautogui settings.

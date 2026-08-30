@@ -1,0 +1,9 @@
+tasks:
+  - tasks/macos/libreoffice_calc_multi_sheet_summary.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS LibreOffice Calc multi-sheet summary

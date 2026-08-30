@@ -1,0 +1,41 @@
+task_id: linux.marble.north_atlantic_survey
+platform: linux
+instruction: 'In Marble, create a new bookmark folder named North Atlantic Survey.
+  Then search for Reykjavik, Nuuk, and Torshavn one by one. After centering on each
+  city, add a bookmark in the North Atlantic Survey folder using these exact names:
+  Survey Reykjavik, Survey Nuuk, and Survey Torshavn. Stop after all three bookmarks
+  are saved in that folder.'
+init:
+  initializer_id: initializers.linux.marble:MarbleInitializer
+  params:
+    app_command: marble
+evaluation:
+  evaluator_id: evaluators.linux.marble:MarbleBookmarkEvaluator
+  params:
+    required_folders:
+    - North Atlantic Survey
+    required_bookmarks:
+    - name: Survey Reykjavik
+      folder: North Atlantic Survey
+    - name: Survey Nuuk
+      folder: North Atlantic Survey
+    - name: Survey Torshavn
+      folder: North Atlantic Survey
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - marble
+  - maps
+  - bookmark
+  - folder
+  - hard
+  app: Marble
+  difficulty: hard
+  description: Create a bookmark folder and save three separate North Atlantic city
+    bookmarks into it.
+  oracle_task: tasks/linux/oracle/marble_north_atlantic_survey_oracle.yaml
+  oracle_model: linux_oracle_wait

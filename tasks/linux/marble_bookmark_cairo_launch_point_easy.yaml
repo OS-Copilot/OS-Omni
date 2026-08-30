@@ -1,0 +1,33 @@
+task_id: linux.marble.bookmark_cairo_launch_point
+platform: linux
+instruction: In Marble, switch the map theme to OpenStreetMap. Then search for Cairo,
+  center the map on Cairo, and add a bookmark named Cairo Launch Point in the default
+  bookmarks folder. Stop after the bookmark is saved.
+init:
+  initializer_id: initializers.linux.marble:MarbleInitializer
+  params:
+    app_command: marble
+evaluation:
+  evaluator_id: evaluators.linux.marble:MarbleBookmarkEvaluator
+  params:
+    map_theme: earth/openstreetmap/openstreetmap.dgml
+    required_bookmarks:
+    - name: Cairo Launch Point
+      folder: Default
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - marble
+  - maps
+  - bookmark
+  - easy
+  app: Marble
+  difficulty: easy
+  description: Switch Marble to OpenStreetMap and save Cairo as a named bookmark in
+    the default folder.
+  oracle_task: tasks/linux/oracle/marble_bookmark_cairo_launch_point_oracle.yaml
+  oracle_model: linux_oracle_wait

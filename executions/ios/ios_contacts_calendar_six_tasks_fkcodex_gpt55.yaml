@@ -1,0 +1,14 @@
+tasks:
+- tasks/ios/contacts_add_contact_card.yaml
+- tasks/ios/contacts_reconcile_seeded_contacts.yaml
+- tasks/ios/contacts_reconcile_multi_field_directory.yaml
+- tasks/ios/calendar_create_today_event.yaml
+- tasks/ios/calendar_update_and_create_followup.yaml
+- tasks/ios/calendar_finalize_schedule_with_two_followups.yaml
+models:
+- FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: iOS Contacts and Calendar six-task batch routed through FKCODEX_GPT55.

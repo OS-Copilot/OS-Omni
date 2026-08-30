@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/oracle/maps_search_ferry_building_easy_oracle.yaml
+  - tasks/macos/oracle/maps_walking_route_sf_hard_oracle.yaml
+  - tasks/macos/oracle/maps_sf_landmark_briefing_hard_oracle.yaml
+models:
+  - macos_script_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Native macOS Maps oracle sanity run.

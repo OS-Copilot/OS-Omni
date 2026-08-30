@@ -1,0 +1,13 @@
+models:
+  - windows_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+timeout: 120
+tasks:
+  - tasks/windows/calc_crosssheet_chart.yaml
+  - tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
+  - tasks/windows/gimp_center_helloworld.yaml
+metadata:
+  description: Windows oracle recheck for the three remaining precision failures.

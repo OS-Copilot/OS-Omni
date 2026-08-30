@@ -1,0 +1,20 @@
+tasks:
+  - tasks/android/fossify_gallery_move_rename_photo.yaml
+  - tasks/android/fossify_gallery_rename_photo.yaml
+  - tasks/android/material_files_rename_file.yaml
+  - tasks/android/oinkoin_create_custom_category_and_use_it.yaml
+  - tasks/android/spotube_queue_naina_zara.yaml
+  - tasks/android/tasks_org_create_task_with_due_date.yaml
+  - tasks/android/tasks_org_create_task_with_subtasks.yaml
+  - tasks/android/oinkoin_delete_expense.yaml
+  - tasks/android/libreoffice_status_report_update.yaml
+  - tasks/android/libreoffice_notes_append_hard.yaml
+  - tasks/android/k9_manual_setup_send_email.yaml
+  - tasks/android/k9_send_email.yaml
+models:
+  - gpt5_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Android hardened 12-task subset, aligned with android_main_screenshot_pyautogui_gpt5_5.

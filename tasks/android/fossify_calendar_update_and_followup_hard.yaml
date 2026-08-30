@@ -1,0 +1,76 @@
+task_id: android.fossify_calendar.update_and_followup_hard
+platform: android
+instruction: In Fossify Calendar, open BMK Draft Planning and use the final launch plan stored in its description. Apply that plan exactly, delete the obsolete backup draft, create all follow-up events named there, and leave BMK Reference Hold unchanged.
+init:
+  initializer_id: initializers.android.fossify_calendar:FossifyCalendarInitializer
+  params:
+    app_package: "org.fossify.calendar"
+    database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+    timezone: "UTC"
+    clear_app_data: true
+    seed_events:
+      - title: "BMK Draft Planning"
+        start: "2026-04-27T10:00:00"
+        end: "2026-04-27T11:00:00"
+        location: "Room 201"
+        description: "FINAL LAUNCH PLAN: rename this event to BMK Launch Planning on 2026-04-28 14:30-15:45 at Room 504 with description Finalize launch checklist. Delete BMK Draft Planning Backup. Add BMK Launch Follow-up on 2026-04-29 09:15-10:00 at Room 504 with description Send recap and owners. Add BMK Launch Metrics Review on 2026-04-30 11:00-11:25 at Analytics Desk with description Check launch metrics. Add BMK Launch Risk Sweep on 2026-05-01 16:05-16:35 at Risk Desk with description Resolve launch blockers. Leave BMK Reference Hold unchanged."
+      - title: "BMK Reference Hold"
+        start: "2026-04-27T16:00:00"
+        end: "2026-04-27T16:30:00"
+        location: "Room 102"
+        description: "Do not edit this event"
+      - title: "BMK Draft Planning Backup"
+        start: "2026-04-28T09:00:00"
+        end: "2026-04-28T09:30:00"
+        location: "Room 103"
+        description: "Obsolete backup draft"
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.android.fossify_calendar:FossifyCalendarEventStateEvaluator
+  params:
+    database_path: "/data/user/0/org.fossify.calendar/databases/events.db"
+    timezone: "UTC"
+    expected_events:
+      - title: "BMK Launch Planning"
+        start: "2026-04-28T14:30:00"
+        end: "2026-04-28T15:45:00"
+        location: "Room 504"
+        description: "Finalize launch checklist"
+      - title: "BMK Launch Follow-up"
+        start: "2026-04-29T09:15:00"
+        end: "2026-04-29T10:00:00"
+        location: "Room 504"
+        description: "Send recap and owners"
+      - title: "BMK Launch Metrics Review"
+        start: "2026-04-30T11:00:00"
+        end: "2026-04-30T11:25:00"
+        location: "Analytics Desk"
+        description: "Check launch metrics"
+      - title: "BMK Launch Risk Sweep"
+        start: "2026-05-01T16:05:00"
+        end: "2026-05-01T16:35:00"
+        location: "Risk Desk"
+        description: "Resolve launch blockers"
+      - title: "BMK Reference Hold"
+        start: "2026-04-27T16:00:00"
+        end: "2026-04-27T16:30:00"
+        location: "Room 102"
+        description: "Do not edit this event"
+    absent_titles:
+      - "BMK Draft Planning"
+      - "BMK Draft Planning Backup"
+    strict_benchmark_titles: true
+    timeout_seconds: 10
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [calendar, fossify_calendar, productivity, edit, multi_event, hard, benchmark]
+  app: "Fossify Calendar"
+  app_bundle_id: org.fossify.calendar
+  description: "Edit a seeded event, create two follow-up events, and preserve an unrelated seeded event."
+  difficulty_basis: "Human path is over 20 steps because it requires opening an existing event, editing title/date/time/location/description, saving, then creating two detailed events."
+  prerequisites:
+    - "Fossify Calendar is installed on the emulator."
+  difficulty: hard

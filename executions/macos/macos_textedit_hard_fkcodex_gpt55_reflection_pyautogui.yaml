@@ -1,0 +1,10 @@
+tasks:
+  - tasks/macos/textedit_shift_handoff_update.yaml
+  - tasks/macos/textedit_config_rewrite.yaml
+models:
+  - FKCODEX_GPT55
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS TextEdit hard tasks for FKCODEX_GPT55

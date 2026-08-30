@@ -1,0 +1,11 @@
+tasks:
+  - tasks/linux/deltachat_reply_bob_easy.yaml
+  - tasks/linux/deltachat_reply_alice_hard.yaml
+  - tasks/linux/deltachat_group_ops_sprint_hard.yaml
+models:
+  - taobao_gpt_5
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 6
+metadata:
+  description: Delta Chat desktop benchmark tasks via taobao gpt-5

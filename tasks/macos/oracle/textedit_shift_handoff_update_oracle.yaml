@@ -1,0 +1,47 @@
+task_id: macos.oracle.textedit.shift_handoff_update
+platform: macos
+instruction: Oracle sanity task for macos.textedit.shift_handoff_update. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: 'set -e
+
+        killall TextEdit >/dev/null 2>&1 || true
+
+        rm -f /Users/bench/Downloads/shift_log.txt
+
+        '
+    - type: upload_file
+      local_path: ../files/textedit/shift_handoff_update/start/shift_log.txt
+      path: /Users/bench/Downloads/shift_log.txt
+    - type: run_bash
+      script: 'set -e
+
+        open -a TextEdit /Users/bench/Downloads/shift_log.txt
+
+        '
+    - type: wait
+      ms: 2500
+    - type: run_bash
+      script: "set -e\nosascript <<'APPLESCRIPT'\ntell application \"System Events\"\
+        \n  tell process \"TextEdit\"\n    set position of window 1 to {90, 90}\n\
+        \    set size of window 1 to {1300, 860}\n  end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.macos.textedit:TextEditFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/shift_log.txt
+    expected_path: ../files/textedit/shift_handoff_update/expected/shift_log.txt
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.textedit.shift_handoff_update
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

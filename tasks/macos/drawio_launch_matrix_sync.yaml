@@ -1,0 +1,112 @@
+task_id: macos.drawio.launch_matrix_sync
+platform: macos
+instruction: 'draw.io is already open with `/Users/bench/Downloads/launch_matrix_sync.drawio`.
+
+
+  There are 20 rounded rectangles visible in a 4-row by 5-column grid.
+
+  Replace the text inside the rectangles exactly as follows:
+
+
+  - `Slot 1` -> `Intake`
+
+  - `Slot 2` -> `Goals`
+
+  - `Slot 3` -> `Owners`
+
+  - `Slot 4` -> `Assets`
+
+  - `Slot 5` -> `Copy Review`
+
+  - `Slot 6` -> `QA Sweep`
+
+  - `Slot 7` -> `Legal Signoff`
+
+  - `Slot 8` -> `Launch Review`
+
+  - `Slot 9` -> `Dry Run`
+
+  - `Slot 10` -> `Freeze Window`
+
+  - `Slot 11` -> `Go/No-Go`
+
+  - `Slot 12` -> `Channel Brief`
+
+  - `Slot 13` -> `Email Push`
+
+  - `Slot 14` -> `Social Queue`
+
+  - `Slot 15` -> `Partner Note`
+
+  - `Slot 16` -> `Status Check`
+
+  - `Slot 17` -> `Dashboard`
+
+  - `Slot 18` -> `Incident Desk`
+
+  - `Slot 19` -> `Retro Notes`
+
+  - `Slot 20` -> `Archive Pack`
+
+
+  Do not create or delete any shapes. Only replace the text in the existing
+
+  rounded rectangles, then save the file.
+
+  '
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall "draw.io" >/dev/null 2>&1 || true
+        sleep 1
+        APP_PATH=""
+        for candidate in "$HOME/Applications/draw.io.app" "/Applications/draw.io.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "draw.io.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "draw.io.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        rm -f /Users/bench/Downloads/launch_matrix_sync.drawio
+        rm -f /Users/bench/Downloads/.$launch_matrix_sync.drawio.dtmp
+    - type: upload_file
+      local_path: files/drawio/launch_matrix_sync/start/launch_matrix_sync.drawio
+      path: /Users/bench/Downloads/launch_matrix_sync.drawio
+    - type: run_bash
+      script: |
+        set -e
+        APP_PATH=""
+        for candidate in "$HOME/Applications/draw.io.app" "/Applications/draw.io.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "draw.io.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "draw.io.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        open -a "$APP_PATH" /Users/bench/Downloads/launch_matrix_sync.drawio
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: "set -e\nosascript <<'APPLESCRIPT'\ntell application \"System Events\"\n  tell process \"draw.io\"\n    set position of window 1 to {40, 80}\n    set size of window 1 to {1800, 1000}\n  end tell\nend tell\nAPPLESCRIPT\n"
+    - type: wait
+      ms: 1500
+evaluation:
+  evaluator_id: evaluators.macos.drawio:DrawIODiagramEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/launch_matrix_sync.drawio
+    expected_path: files/drawio/launch_matrix_sync/expected/launch_matrix_sync.drawio
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard
