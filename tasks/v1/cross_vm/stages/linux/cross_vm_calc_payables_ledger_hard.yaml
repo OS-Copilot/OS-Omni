@@ -1,0 +1,213 @@
+task_id: linux.cross_vm.calc_payables_ledger_hard
+platform: linux
+instruction: 'A blank LibreOffice Calc workbook named payables.xlsx is already open, and the transferred file invoices_transfer.csv
+  is on the Desktop. Sheet 1 must be named "Pending": put the CSV header and all 16 invoice rows in A1:D17 with
+  Amount as numbers, then add E1 "Tax" with =ROUND(D2*0.08;2), F1 "Total" with =D2+E2, and G1 "Size" with =IF(F2>=1000;"Large";"Standard"),
+  each filled down to the last invoice row; the next row has "Total" in A and SUM formulas over the invoice rows
+  in D, E, and F. Sheet 2 must be named "ByVendor" with the header Vendor, Invoices, Amount Due, Large, Share in
+  A1:E1 and one row per vendor sorted alphabetically from row 2, where B uses COUNTIF over the Pending vendor cells,
+  C uses SUMIF over the Pending vendor cells summing the Pending Total cells, D uses COUNTIFS for that vendor and
+  Size "Large", and E uses =ROUND(C2/<Amount Due total cell>;4); the row after the last vendor has "Total" in A
+  and SUM formulas over the vendor rows in B, C, and D, with E empty. Reference the Pending ranges A2:A17, C2:C17,
+  F2:F17, and G2:G17 with absolute references such as $Pending.$A$2:$A$17. Sheet 3 must be named "ByCategory" with
+  the header Category, Invoices, Amount Due and one row per category sorted alphabetically, using COUNTIF and SUMIF
+  over the Pending category cells in the same way. Leave everything else empty and save the workbook in xlsx format.
+  Finally, export the ByVendor sheet as a comma-separated CSV file named vendor_summary.csv in the same Documents
+  folder.'
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f soffice.bin >/dev/null 2>&1 || true
+        pkill -f '/usr/lib/libreoffice/program/soffice' >/dev/null 2>&1 || true
+        mkdir -p /home/user/Documents /home/user/Desktop
+        cat > /home/user/Desktop/invoices_transfer.csv <<'EOF'
+        Vendor,Invoice,Category,Amount
+        Atlas Freight,INV-1042,Freight,1250.00
+        Atlas Freight,INV-1047,Freight,640.00
+        Cobalt Cleaning,INV-1051,Facilities,915.25
+        Brightline Print,INV-1055,Print,212.75
+        Delta Office,INV-1060,Office,1575.40
+        Atlas Freight,INV-1063,Freight,298.60
+        Delta Office,INV-1069,Office,84.90
+        Evergreen IT,INV-1071,IT,1199.00
+        Fjord Catering,INV-1074,Facilities,655.30
+        Brightline Print,INV-1077,Print,1020.00
+        Fjord Catering,INV-1083,Facilities,318.20
+        Evergreen IT,INV-1086,IT,760.00
+        Cobalt Cleaning,INV-1089,Facilities,1105.75
+        Granite Security,INV-1095,Facilities,1890.00
+        Granite Security,INV-1101,Facilities,415.00
+        Brightline Print,INV-1104,Print,96.40
+        EOF
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir"
+        printf '\n' > blank.csv
+        libreoffice --headless --convert-to xlsx blank.csv >/dev/null 2>&1
+        mv blank.xlsx /home/user/Documents/payables.xlsx
+        rm -rf "$tmpdir"
+      timeout: 120
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f libreoffice --calc /home/user/Documents/payables.xlsx >/dev/null 2>&1
+      timeout: 120
+    - type: wait
+      ms: 6000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      python3 - <<'PY'
+      import re
+      import zipfile
+      import xml.etree.ElementTree as ET
+
+      NS = {
+          "a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+          "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+          "p": "http://schemas.openxmlformats.org/package/2006/relationships",
+      }
+
+      def col_to_idx(ref):
+          letters = re.match(r"([A-Z]+)", ref).group(1)
+          value = 0
+          for ch in letters:
+              value = value * 26 + (ord(ch) - ord("A") + 1)
+          return value
+
+      def read_workbook(path, width):
+          with zipfile.ZipFile(path) as zf:
+              names = zf.namelist()
+              shared = []
+              if "xl/sharedStrings.xml" in names:
+                  sst = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+                  for si in sst.findall("a:si", NS):
+                      shared.append("".join(t.text or "" for t in si.findall(".//a:t", NS)))
+              workbook = ET.fromstring(zf.read("xl/workbook.xml"))
+              rels = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+              targets = {rel.attrib["Id"]: rel.attrib["Target"] for rel in rels.findall("p:Relationship", NS)}
+              sheets = []
+              for sheet in workbook.findall("a:sheets/a:sheet", NS):
+                  rid = sheet.attrib["{%s}id" % NS["r"]]
+                  target = targets[rid].lstrip("/")
+                  if not target.startswith("xl/"):
+                      target = "xl/" + target
+                  root = ET.fromstring(zf.read(target))
+                  rows = {}
+                  for row in root.findall(".//a:sheetData/a:row", NS):
+                      cells = [None] * width
+                      for cell in row.findall("a:c", NS):
+                          idx = col_to_idx(cell.attrib["r"]) - 1
+                          if not 0 <= idx < width:
+                              continue
+                          formula = cell.find("a:f", NS)
+                          if formula is not None and (formula.text or "").strip():
+                              cells[idx] = "=" + formula.text
+                              continue
+                          kind = cell.attrib.get("t")
+                          if kind == "inlineStr":
+                              node = cell.find("a:is", NS)
+                              cells[idx] = "".join(t.text or "" for t in node.findall(".//a:t", NS))
+                              continue
+                          value = cell.find("a:v", NS)
+                          if value is None or value.text is None:
+                              continue
+                          if kind == "s":
+                              cells[idx] = shared[int(value.text)]
+                          elif kind in ("str", "b", "e"):
+                              cells[idx] = value.text
+                          else:
+                              cells[idx] = float(value.text)
+                      rows[int(row.attrib["r"])] = cells
+                  sheets.append((sheet.attrib["name"], rows))
+          return sheets
+      def norm(value):
+          if isinstance(value, str):
+              text = value.strip()
+              if text.startswith('='):
+                  return '=' + text[1:].replace(' ', '').replace('$', '').replace("'", '').upper()
+              return text
+          if isinstance(value, bool) or value is None:
+              return value
+          number = float(value)
+          return int(number) if number.is_integer() else round(number, 4)
+      sheets = read_workbook("/home/user/Documents/payables.xlsx", 7)
+      expected_sheets = [('Pending', [['Vendor', 'Invoice', 'Category', 'Amount', 'Tax', 'Total', 'Size'], ['Atlas Freight', 'INV-1042', 'Freight', 1250.0, '=ROUND(D2*0.08,2)', '=D2+E2', '=IF(F2>=1000,"Large","Standard")'], ['Atlas Freight', 'INV-1047', 'Freight', 640.0, '=ROUND(D3*0.08,2)', '=D3+E3', '=IF(F3>=1000,"Large","Standard")'], ['Cobalt Cleaning', 'INV-1051', 'Facilities', 915.25, '=ROUND(D4*0.08,2)', '=D4+E4', '=IF(F4>=1000,"Large","Standard")'], ['Brightline Print', 'INV-1055', 'Print', 212.75, '=ROUND(D5*0.08,2)', '=D5+E5', '=IF(F5>=1000,"Large","Standard")'], ['Delta Office', 'INV-1060', 'Office', 1575.4, '=ROUND(D6*0.08,2)', '=D6+E6', '=IF(F6>=1000,"Large","Standard")'], ['Atlas Freight', 'INV-1063', 'Freight', 298.6, '=ROUND(D7*0.08,2)', '=D7+E7', '=IF(F7>=1000,"Large","Standard")'], ['Delta Office', 'INV-1069', 'Office', 84.9, '=ROUND(D8*0.08,2)', '=D8+E8', '=IF(F8>=1000,"Large","Standard")'], ['Evergreen IT', 'INV-1071', 'IT', 1199.0, '=ROUND(D9*0.08,2)', '=D9+E9', '=IF(F9>=1000,"Large","Standard")'], ['Fjord Catering', 'INV-1074', 'Facilities', 655.3, '=ROUND(D10*0.08,2)', '=D10+E10', '=IF(F10>=1000,"Large","Standard")'], ['Brightline Print', 'INV-1077', 'Print', 1020.0, '=ROUND(D11*0.08,2)', '=D11+E11', '=IF(F11>=1000,"Large","Standard")'], ['Fjord Catering', 'INV-1083', 'Facilities', 318.2, '=ROUND(D12*0.08,2)', '=D12+E12', '=IF(F12>=1000,"Large","Standard")'], ['Evergreen IT', 'INV-1086', 'IT', 760.0, '=ROUND(D13*0.08,2)', '=D13+E13', '=IF(F13>=1000,"Large","Standard")'], ['Cobalt Cleaning', 'INV-1089', 'Facilities', 1105.75, '=ROUND(D14*0.08,2)', '=D14+E14', '=IF(F14>=1000,"Large","Standard")'], ['Granite Security', 'INV-1095', 'Facilities', 1890.0, '=ROUND(D15*0.08,2)', '=D15+E15', '=IF(F15>=1000,"Large","Standard")'], ['Granite Security', 'INV-1101', 'Facilities', 415.0, '=ROUND(D16*0.08,2)', '=D16+E16', '=IF(F16>=1000,"Large","Standard")'], ['Brightline Print', 'INV-1104', 'Print', 96.4, '=ROUND(D17*0.08,2)', '=D17+E17', '=IF(F17>=1000,"Large","Standard")'], ['Total', None, None, '=SUM(D2:D17)', '=SUM(E2:E17)', '=SUM(F2:F17)', None]]), ('ByVendor', [['Vendor', 'Invoices', 'Amount Due', 'Large', 'Share'], ['Atlas Freight', '=COUNTIF(Pending!A2:A17,A2)', '=SUMIF(Pending!A2:A17,A2,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A2,Pending!G2:G17,"Large")', '=ROUND(C2/C9,4)'], ['Brightline Print', '=COUNTIF(Pending!A2:A17,A3)', '=SUMIF(Pending!A2:A17,A3,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A3,Pending!G2:G17,"Large")', '=ROUND(C3/C9,4)'], ['Cobalt Cleaning', '=COUNTIF(Pending!A2:A17,A4)', '=SUMIF(Pending!A2:A17,A4,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A4,Pending!G2:G17,"Large")', '=ROUND(C4/C9,4)'], ['Delta Office', '=COUNTIF(Pending!A2:A17,A5)', '=SUMIF(Pending!A2:A17,A5,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A5,Pending!G2:G17,"Large")', '=ROUND(C5/C9,4)'], ['Evergreen IT', '=COUNTIF(Pending!A2:A17,A6)', '=SUMIF(Pending!A2:A17,A6,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A6,Pending!G2:G17,"Large")', '=ROUND(C6/C9,4)'], ['Fjord Catering', '=COUNTIF(Pending!A2:A17,A7)', '=SUMIF(Pending!A2:A17,A7,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A7,Pending!G2:G17,"Large")', '=ROUND(C7/C9,4)'], ['Granite Security', '=COUNTIF(Pending!A2:A17,A8)', '=SUMIF(Pending!A2:A17,A8,Pending!F2:F17)', '=COUNTIFS(Pending!A2:A17,A8,Pending!G2:G17,"Large")', '=ROUND(C8/C9,4)'], ['Total', '=SUM(B2:B8)', '=SUM(C2:C8)', '=SUM(D2:D8)', None]]), ('ByCategory', [['Category', 'Invoices', 'Amount Due'], ['Facilities', '=COUNTIF(Pending!C2:C17,A2)', '=SUMIF(Pending!C2:C17,A2,Pending!F2:F17)'], ['Freight', '=COUNTIF(Pending!C2:C17,A3)', '=SUMIF(Pending!C2:C17,A3,Pending!F2:F17)'], ['IT', '=COUNTIF(Pending!C2:C17,A4)', '=SUMIF(Pending!C2:C17,A4,Pending!F2:F17)'], ['Office', '=COUNTIF(Pending!C2:C17,A5)', '=SUMIF(Pending!C2:C17,A5,Pending!F2:F17)'], ['Print', '=COUNTIF(Pending!C2:C17,A6)', '=SUMIF(Pending!C2:C17,A6,Pending!F2:F17)']])]
+      if len(sheets) < len(expected_sheets):
+          raise SystemExit("SHEET_COUNT_MISMATCH:%r" % [name for name, _ in sheets])
+      if True and [name for name, _ in sheets[:len(expected_sheets)]] != [name for name, _ in expected_sheets]:
+          raise SystemExit("SHEET_NAMES_MISMATCH:%r" % [name for name, _ in sheets])
+      for (name, observed_rows), (_, rows) in zip(sheets, expected_sheets):
+          for r in range(1, len(rows) + 2):
+              expected = [norm(v) for v in rows[r - 1]] if r <= len(rows) else [None] * 7
+              expected += [None] * (7 - len(expected))
+              observed = [norm(v) for v in observed_rows.get(r, [None] * 7)]
+              observed = [None if v == "" else v for v in observed]
+              if observed != expected:
+                  raise SystemExit("ROW_MISMATCH:%s:%d:%r" % (name, r, observed))
+      import os
+
+      def fail(message):
+          raise SystemExit(message)
+      def norm_csv(value):
+          text = (value or '').strip()
+          try:
+              number = float(text)
+          except ValueError:
+              return text
+          return int(number) if number.is_integer() else round(number, 2)
+      import csv
+      csv_path = "/home/user/Documents/vendor_summary.csv"
+      if not os.path.exists(csv_path):
+          fail('MISSING_CSV')
+      def trim(row):
+          row = [norm_csv(v) for v in row]
+          while row and row[-1] == '':
+              row.pop()
+          return row
+      with open(csv_path, newline='', encoding='utf-8-sig') as handle:
+          observed_csv = [trim(row) for row in csv.reader(handle) if any(v.strip() for v in row)]
+      expected_csv = [trim(row) for row in [['Vendor', 'Invoices', 'Amount Due', 'Large', 'Share'], ['Atlas Freight', '3', '2363.69', '1', '0.176'], ['Brightline Print', '3', '1435.48', '1', '0.1069'], ['Cobalt Cleaning', '2', '2182.68', '1', '0.1625'], ['Delta Office', '2', '1793.12', '1', '0.1335'], ['Evergreen IT', '2', '2115.72', '1', '0.1575'], ['Fjord Catering', '2', '1051.38', '0', '0.0783'], ['Granite Security', '2', '2489.4', '1', '0.1853'], ['Total', '16', '13431.47', '6', '']]]
+      if observed_csv != expected_csv:
+          fail('CSV_MISMATCH:%r' % (observed_csv,))
+      print("PASS")
+      PY
+limits:
+  max_steps: 200
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_vm
+  - libreoffice
+  - calc
+  - multi_sheet
+  - csv_export
+  - hard
+  app_name: cross_vm
+  difficulty: hard
+  description: Build Pending, ByVendor, and ByCategory sheets with tax, size buckets, COUNTIF/COUNTIFS/SUMIF rollups,
+    shares, and a CSV export.
+  cross_vm_role: linux_target_phase
+  composite_task: cross_vm.windows_to_linux.payables_ledger_hard
+  source_platform: windows
+  target_platform: linux
+  oracle_task: tasks/v1/cross_vm/stages/linux/oracle/cross_vm_calc_payables_ledger_hard_oracle.yaml
+  human_steps: 127
+  human_steps_breakdown:
+  - 'open transferred CSV, copy rows, paste into workbook: 10'
+  - 'rename first sheet, insert and name ByVendor and ByCategory: 10'
+  - 'Pending headers E1:G1: 6'
+  - 'Pending formulas E:G (type + fill down each): 15'
+  - 'Pending total row: 8'
+  - 'ByVendor headers and 7 vendor names: 17'
+  - 'ByVendor formulas B:E (type + fill down each): 20'
+  - 'ByVendor total row: 8'
+  - 'ByCategory headers, 5 category names, two formulas: 21'
+  - 'Save in xlsx (keep-format prompt): 4'
+  - 'Export ByVendor as CSV (sheet, Save As, type, name, options): 8'

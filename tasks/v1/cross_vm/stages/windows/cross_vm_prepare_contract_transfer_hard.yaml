@@ -1,0 +1,98 @@
+task_id: windows.cross_vm.prepare_contract_transfer_hard
+platform: windows
+instruction: A contract register CSV is open in Notepad. Save a filtered copy to the Desktop as "renewals_transfer.csv"
+  that keeps the header and all five columns but contains only the contracts whose EndDate falls in Q4 2026 (2026-10-01
+  through 2026-12-31 inclusive), sorted by EndDate from earliest to latest and by Contract when dates are equal,
+  with values written exactly as in the register. Leave the saved Desktop file available for transfer.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $sourcePath = Join-Path $env:USERPROFILE "Documents\contracts_source.csv"
+        New-Item -ItemType Directory -Path (Split-Path $sourcePath) -Force | Out-Null
+        @'
+        Contract,Vendor,Owner,EndDate,AnnualValue
+        C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+        C-102,Brightline Print,Jordan Lee,2027-02-15,12500
+        C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+        C-104,Delta Office,Maya Chen,2026-12-15,9600
+        C-105,Evergreen IT,Theo Martin,2027-01-31,61000
+        C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+        C-107,Granite Security,Priya Nair,2026-12-31,37200
+        C-108,Harbor Supply,Theo Martin,2026-09-30,8800
+        C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+        C-110,Juniper Travel,Lena Fischer,2027-03-31,19900
+        C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+        C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+        C-113,Meridian Payroll,Omar Haddad,2027-01-01,54000
+        C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+        C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+        C-116,Pinnacle Elevators,Priya Nair,2026-08-31,26500
+        C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+        C-118,Redwood Insurance,Maya Chen,2027-02-28,72000
+        C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+        C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+        C-121,Umber Printing,Jordan Lee,2026-09-15,6400
+        C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+        C-123,Willow Wellness,Priya Nair,2027-01-15,14800
+        C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+        '@ | Set-Content -Path $sourcePath -Encoding UTF8
+        Start-Process notepad.exe $sourcePath
+      timeout: 30
+    - type: wait
+      ms: 4000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Contract,Vendor,Owner,EndDate,AnnualValue
+      C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+      C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+      C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+      C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+      C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+      C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+      C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+      C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+      C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+      C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+      C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+      C-104,Delta Office,Maya Chen,2026-12-15,9600
+      C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+      C-107,Granite Security,Priya Nair,2026-12-31,37200
+      C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\renewals_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - notepad
+  - hard
+  app_name: notepad
+  difficulty: hard
+  description: Filter a 24-contract register to Q4 2026 end dates and sort by date in Notepad.
+  cross_vm_role: windows_source_phase
+  composite_task: cross_vm.windows_to_linux.contract_renewals_hard
+  source_platform: windows
+  target_platform: linux
+  oracle_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_prepare_contract_transfer_hard_oracle.yaml
+  human_steps: 60
+  human_steps_breakdown:
+  - 'delete 9 out-of-quarter rows (select, delete): 18'
+  - 'sort 15 remaining rows by date (about 9 cut/paste moves, 4 each): 36'
+  - 'Save As to Desktop with name and type: 6'

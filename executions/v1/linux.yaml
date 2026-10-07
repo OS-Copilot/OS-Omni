@@ -1,0 +1,57 @@
+tasks:
+- tasks/v1/linux/blender_5_3_product_stage_layout.yaml
+- tasks/v1/linux/blender_goal6_3_launch_card.yaml
+- tasks/v1/linux/blender_pedestal_orbit_study.yaml
+- tasks/v1/linux/blender_product_gallery_review.yaml
+- tasks/v1/linux/calc_demographic_profile_pivots_hard.yaml
+- tasks/v1/linux/calc_freeze_header_range_hard.yaml
+- tasks/v1/linux/calc_writer_budget_report_hard.yaml
+- tasks/v1/linux/calc_writer_expense_hard.yaml
+- tasks/v1/linux/gimp_calc_image_metadata_hard.yaml
+- tasks/v1/linux/gimp_impress_image_slide_hard.yaml
+- tasks/v1/linux/gimp_writer_color_balance_hard.yaml
+- tasks/v1/linux/gimp_writer_impress_photo_slide_hard.yaml
+- tasks/v1/linux/marble_calc_distances_hard.yaml
+- tasks/v1/linux/marble_impress_map_slide_hard.yaml
+- tasks/v1/linux/cross_app_thunderbird_calendar_checkout_coffee_followup_hard.yaml
+- tasks/v1/linux/cross_app_thunderbird_calendar_dual_item_checkout_two_events_hard.yaml
+- tasks/v1/linux/wireshark_calc_summary_hard.yaml
+- tasks/v1/linux/wireshark_impress_traffic_slide_hard.yaml
+- tasks/v1/linux/wireshark_writer_protocol_hard.yaml
+- tasks/v1/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
+- tasks/v1/linux/cross_app_writer_thunderbird_export_pdf_attach_draft_easy.yaml
+- tasks/v1/linux/writer_impress_meeting_notes_hard.yaml
+- tasks/v1/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+- tasks/v1/linux/zotero_calc_author_stats_hard.yaml
+- tasks/v1/linux/zotero_impress_bibliography_slide_hard.yaml
+- tasks/v1/linux/zotero_subcollection_tags_notes_hard.yaml
+- tasks/v1/linux/deltachat_reply_alice_hard.yaml
+- tasks/v1/linux/deltachat_group_ops_sprint_hard.yaml
+- tasks/v1/linux/deltachat_reply_bob_easy.yaml
+- tasks/v1/linux/impress_add_dissolve_transition_hard.yaml
+- tasks/v1/linux/impress_create_six_image_slides_hard.yaml
+- tasks/v1/linux/impress_set_green_background_easy.yaml
+- tasks/v1/linux/marble_east_africa_briefing_hard.yaml
+- tasks/v1/linux/notepadqq_prepare_release_packet_hard.yaml
+- tasks/v1/linux/notepadqq_sync_ops_bundle_hard.yaml
+- tasks/v1/linux/notepadqq_update_banner_easy.yaml
+- tasks/v1/linux/spotube_import_city_weather_mix_hard.yaml
+- tasks/v1/linux/spotube_import_focus_capsule_hard.yaml
+- tasks/v1/linux/spotube_set_market_algeria_easy.yaml
+- tasks/v1/linux/thunderbird_6_4_mail_filter.yaml
+- tasks/v1/linux/thunderbird_calendar_thunderbird2_392495.yaml
+- tasks/v1/linux/thunderbird_mail_thunderbird3_revision_239018.yaml
+- tasks/v1/linux/thunderbird_qa66_mail_folder_search_calendar.yaml
+- tasks/v1/linux/thunderbird_calendar_5_5_goal5_ubuntu1.yaml
+- tasks/v1/linux/thunderbird_calendar_goal6_6_5.yaml
+- tasks/v1/linux/vscode_apply_theme_ticket_hard.yaml
+- tasks/v1/linux/vscode_prepare_release_packet_hard.yaml
+- tasks/v1/linux/vscode_update_heading_easy.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: all 48 Linux desktop benchmark tasks.'

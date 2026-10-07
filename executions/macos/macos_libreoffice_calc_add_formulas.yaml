@@ -1,5 +1,5 @@
 tasks:
-  - tasks/macos/libreoffice_calc_add_formulas.yaml
+  - tasks/v1/macos/libreoffice_calc_add_formulas.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

@@ -1,0 +1,53 @@
+task_id: macos.oracle.vscodium.incident_handoff_refresh
+platform: macos
+instruction: Oracle sanity task for macos.vscodium.incident_handoff_refresh. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.vscodium:VSCodiumInitializer
+  params:
+    wait_ms: 6000
+    open_settings_file: false
+    open_workspace: true
+    workspace_root: /Users/bench/Documents/incident_handoff
+    fixture_root: ../files/vscodium/incident_handoff_refresh/start
+    file_aliases:
+    - alias: runbook.md
+      target: docs/runbook.md
+    - alias: incident_summary.py
+      target: src/incident_summary.py
+    - alias: rotation.py
+      target: src/rotation.py
+    - alias: incident.json
+      target: config/incident.json
+    baseline_settings:
+      breadcrumbs.enabled: false
+      workbench.editor.showTabs: false
+      workbench.list.openMode: singleClick
+      editor.autoIndent: none
+    starter_files:
+    - README.md
+    - runbook.md
+    - incident_summary.py
+    - rotation.py
+    - incident.json
+    active_file: README.md
+evaluation:
+  evaluator_id: evaluators.macos.vscodium:VSCodiumWorkspaceEvaluator
+  params:
+    workspace_root: /Users/bench/Documents/incident_handoff
+    expected_root: ../files/vscodium/incident_handoff_refresh/expected
+    compare_paths:
+    - README.md
+    - docs/runbook.md
+    - src/incident_summary.py
+    - src/rotation.py
+    - config/incident.json
+    - .vscode/settings.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.vscodium.incident_handoff_refresh
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

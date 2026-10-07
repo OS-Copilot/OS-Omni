@@ -1,0 +1,48 @@
+task_id: linux.notepadqq.update_banner
+platform: linux
+instruction: In Gedit, open notes/launch-note.txt. Change the first line from Launch
+  note draft to Launch note final, then save the file.
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: notepadqq_banner
+    files:
+    - path: notes/launch-note.txt
+      content: 'Launch note draft
+
+
+        Confirm the rollout badge is visible.
+
+        Ping support before publishing.
+
+        '
+evaluation:
+  evaluator_id: evaluators.linux.notepadqq:NotepadqqWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_notepadqq_workspace/notepadqq_banner
+    files:
+    - path: notes/launch-note.txt
+      equals: 'Launch note final
+
+
+        Confirm the rollout badge is visible.
+
+        Ping support before publishing.
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - easy
+  app: notepadqq
+  difficulty: easy
+  description: Update a single heading line in Gedit and save the file.
+  oracle_task: tasks/v1/linux/oracle/notepadqq_update_banner_oracle.yaml
+  oracle_model: linux_oracle_wait

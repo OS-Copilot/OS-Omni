@@ -1,0 +1,73 @@
+task_id: windows.oracle.cross_vm.prepare_contract_transfer_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.prepare_contract_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $targetPath = Join-Path $env:USERPROFILE "Desktop\renewals_transfer.csv"
+        New-Item -ItemType Directory -Path (Split-Path $targetPath) -Force | Out-Null
+        @'
+        Contract,Vendor,Owner,EndDate,AnnualValue
+        C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+        C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+        C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+        C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+        C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+        C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+        C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+        C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+        C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+        C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+        C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+        C-104,Delta Office,Maya Chen,2026-12-15,9600
+        C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+        C-107,Granite Security,Priya Nair,2026-12-31,37200
+        C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+        '@ | Set-Content -Path $targetPath -Encoding UTF8
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Contract,Vendor,Owner,EndDate,AnnualValue
+      C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+      C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+      C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+      C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+      C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+      C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+      C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+      C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+      C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+      C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+      C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+      C-104,Delta Office,Maya Chen,2026-12-15,9600
+      C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+      C-107,Granite Security,Priya Nair,2026-12-31,37200
+      C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\renewals_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.prepare_contract_transfer_hard

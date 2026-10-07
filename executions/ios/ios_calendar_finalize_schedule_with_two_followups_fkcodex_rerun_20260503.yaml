@@ -1,5 +1,5 @@
 tasks:
-- tasks/ios/calendar_finalize_schedule_with_two_followups.yaml
+- tasks/v1/ios/calendar_finalize_schedule_with_two_followups.yaml
 models:
 - gpt5_4
 action_mode: code_adapter

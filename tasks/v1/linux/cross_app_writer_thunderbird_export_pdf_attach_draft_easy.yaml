@@ -1,0 +1,77 @@
+task_id: linux.cross_app.writer_export_pdf_attach_draft_easy
+platform: linux
+instruction: In LibreOffice Writer, the document Bench Status Update is already open. Export it to PDF while keeping the same file name. Then switch to the already-open Thunderbird compose window with subject Bench PDF Review, attach the exported PDF, and leave the draft open without sending it.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_bash
+        script: |
+          pkill -f thunderbird || true
+          pkill -f soffice.bin || true
+          pkill -f '/usr/lib/libreoffice/program/soffice' || true
+      - type: wait
+        ms: 1200
+      - type: download
+        url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31/View_Person_Organizational_Summary.docx
+        path: /home/user/Desktop/Bench_Status_Update.docx
+      - type: download
+        url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/dd84e895-72fd-4023-a336-97689ded257c/thunderbird-profile.tar.gz
+        path: /home/user/thunderbird-profile.tar.gz
+      - type: download
+        url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/d38192b0-17dc-4e1d-99c3-786d0117de77/show-thunderbird-attachments.py
+        path: /home/user/show-thunderbird-attachments.py
+      - type: download
+        url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/d38192b0-17dc-4e1d-99c3-786d0117de77/cssselect-1.3.0-py3-none-any.whl
+        path: /home/user/cssselect-1.3.0-py3-none-any.whl
+      - type: run_bash
+        script: tar -xzv --recursive-unlink -f /home/user/thunderbird-profile.tar.gz -C /home/user/
+      - type: run_bash
+        script: |
+          export DISPLAY=:0
+          setsid -f libreoffice --writer /home/user/Desktop/Bench_Status_Update.docx >/dev/null 2>&1
+      - type: wait
+        ms: 5000
+      - type: run_bash
+        script: |
+          export DISPLAY=:0
+          setsid -f /usr/bin/thunderbird -compose "from='Anonym Tester <anonym-x2024@outlook.com>',to=assistant@outlook.com,subject='Bench PDF Review',body='Please review the attached Bench Status Update PDF draft.'" >/dev/null 2>&1
+      - type: wait
+        ms: 3500
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 -m pip install --quiet /home/user/cssselect-1.3.0-py3-none-any.whl >/tmp/bench-cssselect.log 2>&1 || true
+      pdf_path=""
+      for p in \
+        /home/user/Desktop/Bench_Status_Update.pdf \
+        /home/user/Documents/Bench_Status_Update.pdf \
+        /home/user/Downloads/Bench_Status_Update.pdf \
+        /home/user/Bench_Status_Update.pdf; do
+        if [ -f "$p" ]; then
+          pdf_path="$p"
+          break
+        fi
+      done
+      if [ -z "$pdf_path" ]; then
+        echo "PDF_NOT_FOUND"
+        exit 1
+      fi
+      python3 /home/user/show-thunderbird-attachments.py "Bench PDF Review" "$(basename "$pdf_path")" >/tmp/bench-attach.out
+      cat /tmp/bench-attach.out
+      grep -q "Attachment added!" /tmp/bench-attach.out
+      echo "PASS"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, cross_app, email, office, thunderbird, libreoffice, writer, easy]
+  app_name: thunderbird + libreoffice_writer
+  difficulty: easy
+  description: Export an already-open Writer document to PDF, then attach that PDF in an already-open Thunderbird draft.
+  oracle_task: tasks/v1/linux/oracle/cross_app_writer_thunderbird_export_pdf_attach_draft_easy_oracle.yaml
+  oracle_model: linux_oracle_wait

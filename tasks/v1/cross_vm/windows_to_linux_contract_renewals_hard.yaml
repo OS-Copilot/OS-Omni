@@ -1,0 +1,31 @@
+task_id: cross_vm.windows_to_linux.contract_renewals_hard
+platform: cross_vm
+instruction: 'First work in the Windows VM: a contract register is open in Notepad, and you need to save the Q4
+  2026 renewals as a sorted transfer CSV. Then move to the Linux VM and use the transferred CSV to write the renewal
+  brief in LibreOffice Writer.'
+windows_task: tasks/v1/cross_vm/stages/windows/cross_vm_prepare_contract_transfer_hard.yaml
+linux_task: tasks/v1/cross_vm/stages/linux/cross_vm_writer_contract_renewals_hard.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\renewals_transfer.csv
+  linux_guest_path: /home/user/Desktop/renewals_transfer.csv
+  host_filename: renewals_transfer.csv
+metadata:
+  tags:
+  - cross_vm
+  - windows_to_linux
+  - notepad
+  - libreoffice
+  - writer
+  - table
+  - hard
+  difficulty: hard
+  source_platform: windows
+  target_platform: linux
+  description: Filter and sort Q4 renewals from a 24-contract register in Notepad on Windows, transfer them, and
+    write a Writer renewal brief with computed notice dates, owner and month rollups, and totals on Linux.
+  oracle_task: tasks/v1/cross_vm/oracle/windows_to_linux_contract_renewals_hard_oracle.yaml
+  oracle_model: cross_vm_oracle_wait
+  human_steps: 219
+  human_steps_by_stage:
+    windows: 60
+    linux: 159

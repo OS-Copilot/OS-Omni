@@ -1,16 +1,6 @@
 tasks:
-  - tasks/linux/oracle/actual_budget_household_budget_setup_hard_oracle.yaml
-  - tasks/linux/oracle/actual_budget_operations_multi_account_hard_oracle.yaml
-  - tasks/linux/oracle/blender_prepare_social_render_oracle.yaml
-  - tasks/linux/oracle/blender_restage_product_objects_oracle.yaml
-  - tasks/linux/oracle/calc_freeze_header_range_oracle.yaml
-  - tasks/linux/oracle/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard_oracle.yaml
-  - tasks/linux/oracle/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard_oracle.yaml
-  - tasks/linux/oracle/cross_vm_calc_budget_review_hard_oracle.yaml
-  - tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
-  - tasks/linux/oracle/impress_create_six_image_slides_oracle.yaml
-  - tasks/linux/oracle/zotero_reference_library_buildout_oracle.yaml
-  - tasks/linux/oracle/zotero_research_collection_with_notes_oracle.yaml
+  - tasks/v1/cross_vm/stages/linux/oracle/cross_vm_calc_budget_review_hard_oracle.yaml
+  - tasks/v1/cross_vm/stages/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
 models:
   - linux_oracle_wait
 reuse_vm_session: true

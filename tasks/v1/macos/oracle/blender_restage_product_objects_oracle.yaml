@@ -1,0 +1,27 @@
+task_id: macos.oracle.blender.restage_product_objects
+platform: macos
+instruction: Oracle sanity task for macos.blender.restage_product_objects. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: 'mkdir -p /Users/bench/Downloads/helloworld_blender_workspace/blender_restage_product
+
+        rm -f /Users/bench/Downloads/helloworld_blender_workspace/blender_restage_product/product_stage.oracle.json'
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.macos.textedit:TextEditFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/helloworld_blender_workspace/blender_restage_product/product_stage.oracle.json
+    expected_path: ../files/blender/oracle_expected/blender_restage_product_objects_expected.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.blender.restage_product_objects
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

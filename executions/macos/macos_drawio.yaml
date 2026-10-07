@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/drawio_release_board_refresh.yaml
-  - tasks/macos/drawio_launch_matrix_sync.yaml
-  - tasks/macos/drawio_ops_plan_relabel.yaml
+  - tasks/v1/macos/drawio_launch_matrix_sync.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

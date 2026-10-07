@@ -1,0 +1,91 @@
+task_id: android.cross_vm.prepare_schedule_transfer_hard
+platform: android
+instruction: The transfer CSV "schedule_transfer.csv" is open in Markor on Android, and the organizer's note "schedule_source.txt"
+  is in the same Markor folder. Each session in the note is written as Time | Room | Session | Speaker, and the
+  last four lines are changes to apply. Using Markor only, rewrite the transfer CSV so it has the header Time,Room,Session,Speaker
+  followed by one row per remaining session after every change is applied, sorted by Time and then by Room, with
+  no spaces around commas and no other lines. Save the file and leave it ready to be transferred to Windows.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/schedule_source.txt
+    transfer_path: /sdcard/Documents/markor/schedule_transfer.csv
+    open_path: /sdcard/Documents/markor/schedule_transfer.csv
+    source_text: |
+      DevSummit 2026 - Day 1 schedule (Time | Room | Session | Speaker)
+      09:00 | Room A | Opening keynote | Maya Chen
+      09:00 | Room B | Accessibility clinic | Omar Haddad
+      09:00 | Room C | Hiring for platform teams | Rosa Lima
+      10:15 | Room A | Scaling event pipelines | Jordan Lee
+      10:15 | Room B | Design tokens in practice | Priya Nair
+      10:15 | Room C | Edge caching patterns | Kenji Sato
+      11:30 | Room A | Observability on a budget | Theo Martin
+      11:30 | Room B | Mobile offline sync | Lena Fischer
+      11:30 | Room C | Cost reviews that stick | Sam Patel
+      13:30 | Room A | Secure defaults for APIs | Rosa Lima
+      13:30 | Room B | Testing flaky UIs | Kenji Sato
+      13:30 | Room C | Feature flags at scale | Dana Ortiz
+      14:45 | Room A | Data contracts | Sam Patel
+      14:45 | Room B | Inclusive onboarding | Dana Ortiz
+      14:45 | Room C | Incident review rituals | Theo Martin
+      16:00 | Room A | Closing panel | Maya Chen
+      16:00 | Room B | Design systems Q and A | Priya Nair
+      16:00 | Room C | Platform roadmap | Jordan Lee
+      Change: "Data contracts" is cancelled.
+      Change: "Edge caching patterns" is cancelled.
+      Change: "Testing flaky UIs" moves to 14:45 in Room A.
+      Change: "Mobile offline sync" will be presented by Ines Duarte.
+    transfer_text: |
+      Time,Room,Session,Speaker
+      09:00,Room A,Opening keynote,Maya Chen
+      09:00,Room B,Accessibility clinic,Omar Haddad
+      13:30,Room B,Testing flaky UIs,Kenji Sato
+      14:45,Room A,Data contracts,Sam Patel
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/schedule_transfer.csv
+    expected_text: |
+      Time,Room,Session,Speaker
+      09:00,Room A,Opening keynote,Maya Chen
+      09:00,Room B,Accessibility clinic,Omar Haddad
+      09:00,Room C,Hiring for platform teams,Rosa Lima
+      10:15,Room A,Scaling event pipelines,Jordan Lee
+      10:15,Room B,Design tokens in practice,Priya Nair
+      11:30,Room A,Observability on a budget,Theo Martin
+      11:30,Room B,Mobile offline sync,Ines Duarte
+      11:30,Room C,Cost reviews that stick,Sam Patel
+      13:30,Room A,Secure defaults for APIs,Rosa Lima
+      13:30,Room C,Feature flags at scale,Dana Ortiz
+      14:45,Room A,Testing flaky UIs,Kenji Sato
+      14:45,Room B,Inclusive onboarding,Dana Ortiz
+      14:45,Room C,Incident review rituals,Theo Martin
+      16:00,Room A,Closing panel,Maya Chen
+      16:00,Room B,Design systems Q and A,Priya Nair
+      16:00,Room C,Platform roadmap,Jordan Lee
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - markor
+  - hard
+  app_name: Markor
+  difficulty: hard
+  description: Rebuild a sorted 16-session conference CSV on Android after two cancellations, a move, and a speaker
+    change.
+  cross_vm_role: android_source_phase
+  composite_task: cross_vm.android_to_windows.conference_schedule_hard
+  source_platform: android
+  target_platform: windows
+  oracle_task: tasks/v1/cross_vm/stages/android/oracle/cross_vm_prepare_schedule_transfer_hard_oracle.yaml
+  human_steps: 88
+  human_steps_breakdown:
+  - 'open reference note and copy its lines: 8'
+  - 'paste into transfer note and clear old rows: 6'
+  - 'convert 18 data lines to CSV (3 each): 54'
+  - 'apply 4 corrections (3 each): 12'
+  - 'type header, save, leave note: 4'
+  - 'move the rescheduled row into time order: 4'

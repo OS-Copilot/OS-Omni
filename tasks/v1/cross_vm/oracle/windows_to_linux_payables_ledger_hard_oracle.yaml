@@ -1,0 +1,21 @@
+task_id: cross_vm.oracle.windows_to_linux.payables_ledger_hard
+platform: cross_vm
+instruction: Oracle sanity task for cross_vm.windows_to_linux.payables_ledger_hard. The Windows and Linux initializers
+  already prepare the expected transfer file and final LibreOffice result. Wait briefly and finish.
+windows_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_prepare_invoice_transfer_hard_oracle.yaml
+linux_task: tasks/v1/cross_vm/stages/linux/oracle/cross_vm_calc_payables_ledger_hard_oracle.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\invoices_transfer.csv
+  linux_guest_path: /home/user/Desktop/invoices_transfer.csv
+  host_filename: invoices_transfer.csv
+metadata:
+  tags:
+  - cross_vm
+  - windows_to_linux
+  - hard
+  - oracle
+  difficulty: hard
+  oracle_for: cross_vm.windows_to_linux.payables_ledger_hard
+  description: Oracle sanity task for filter pending invoices from a 22-invoice register in Notepad on Windows,
+    transfer them, and build a three-sheet Calc ledger with tax, size buckets, vendor and category rollups, and
+    a CSV export on Linux.

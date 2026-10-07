@@ -5,6 +5,6 @@ observation_mode: screenshot_only
 history_window: 3
 max_steps: 100
 tasks:
-  - tasks/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+  - tasks/v1/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
 metadata:
   description: Windows GIMP task - apply default Focus Blur, grayscale, rotate, Linear Invert, and export with code_adapter mode.

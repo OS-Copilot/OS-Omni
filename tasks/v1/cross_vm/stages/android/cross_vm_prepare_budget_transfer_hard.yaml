@@ -1,0 +1,110 @@
+task_id: android.cross_vm.prepare_budget_transfer_hard
+platform: android
+instruction: The reference CSV "budget_source.csv" and the incomplete transfer CSV "budget_transfer.csv" are in Markor on
+  Android, and the transfer CSV is already open. Using Markor only, replace the transfer CSV so it exactly matches the reference
+  CSV, then save it and leave it ready to be transferred to Windows. The finished transfer CSV must contain the header Category,
+  Planned, Actual, Owner, Region, DueDate and all sixteen rows in the same order.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/budget_source.csv
+    transfer_path: /sdcard/Documents/markor/budget_transfer.csv
+    open_path: /sdcard/Documents/markor/budget_transfer.csv
+    source_text: 'Category,Planned,Actual,Owner,Region,DueDate
+
+      Travel,1200,980,Jordan Lee,West,2026-07-01
+
+      Lodging,2100,2240,Maya Chen,West,2026-07-03
+
+      Meals,450,390,Priya Nair,Central,2026-07-04
+
+      Supplies,300,340,Theo Martin,East,2026-07-05
+
+      Contingency,600,720,Maya Chen,Central,2026-07-08
+
+      Permits,250,410,Jordan Lee,East,2026-07-09
+
+      Training,500,455,Priya Nair,West,2026-07-10
+
+      Equipment,850,1025,Theo Martin,Central,2026-07-11
+
+      Insurance,430,610,Maya Chen,East,2026-07-12
+
+      Catering,780,695,Priya Nair,Central,2026-07-13
+
+      Venue,3200,3560,Jordan Lee,West,2026-07-14
+
+      Security,950,910,Theo Martin,East,2026-07-15
+
+      Interpretation,640,820,Maya Chen,Central,2026-07-16
+
+      Signage,380,260,Jordan Lee,East,2026-07-17
+
+      Transport,1450,1695,Theo Martin,West,2026-07-18
+
+      Accessibility,520,750,Priya Nair,Central,2026-07-19
+
+      '
+    transfer_text: 'Category,Planned,Actual,Owner,Region,DueDate
+
+      Travel,1200,980,Jordan Lee,West,2026-07-01
+
+      Lodging,2100,2240,Maya Chen,West,2026-07-03
+
+      Meals,450,390,Priya Nair,Central,2026-07-04
+
+      '
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/budget_transfer.csv
+    expected_text: 'Category,Planned,Actual,Owner,Region,DueDate
+
+      Travel,1200,980,Jordan Lee,West,2026-07-01
+
+      Lodging,2100,2240,Maya Chen,West,2026-07-03
+
+      Meals,450,390,Priya Nair,Central,2026-07-04
+
+      Supplies,300,340,Theo Martin,East,2026-07-05
+
+      Contingency,600,720,Maya Chen,Central,2026-07-08
+
+      Permits,250,410,Jordan Lee,East,2026-07-09
+
+      Training,500,455,Priya Nair,West,2026-07-10
+
+      Equipment,850,1025,Theo Martin,Central,2026-07-11
+
+      Insurance,430,610,Maya Chen,East,2026-07-12
+
+      Catering,780,695,Priya Nair,Central,2026-07-13
+
+      Venue,3200,3560,Jordan Lee,West,2026-07-14
+
+      Security,950,910,Theo Martin,East,2026-07-15
+
+      Interpretation,640,820,Maya Chen,Central,2026-07-16
+
+      Signage,380,260,Jordan Lee,East,2026-07-17
+
+      Transport,1450,1695,Theo Martin,West,2026-07-18
+
+      Accessibility,520,750,Priya Nair,Central,2026-07-19
+
+      '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - markor
+  - csv
+  - hard
+  app_name: Markor
+  app_bundle_id: net.gsantner.markor
+  difficulty: hard
+  description: Complete and save a sixteen-row, six-column Android budget transfer CSV before cross-device transfer.
+  human_steps: 96

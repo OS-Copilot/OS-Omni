@@ -1,0 +1,26 @@
+task_id: macos.oracle.drawio.launch_matrix_sync
+platform: macos
+instruction: Oracle sanity task for macos.drawio.launch_matrix_sync. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "set -e\nkillall \"draw.io\" >/dev/null 2>&1 || true\nsleep 1\nfind /Users/bench/Downloads -maxdepth 1 \\( -name '*.drawio' -o -name '.\\$*.drawio.dtmp' -o -name '.\\$*.drawio.bkp' \\) -delete\n"
+    - type: upload_file
+      local_path: ../files/drawio/launch_matrix_sync/expected/launch_matrix_sync.drawio
+      path: /Users/bench/Downloads/launch_matrix_sync.drawio
+evaluation:
+  evaluator_id: evaluators.macos.drawio:DrawIODiagramEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/launch_matrix_sync.drawio
+    expected_path: ../files/drawio/launch_matrix_sync/expected/launch_matrix_sync.drawio
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.drawio.launch_matrix_sync
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

@@ -1,0 +1,197 @@
+task_id: linux.cross_app.oracle.writer_thunderbird_save_copy_export_attach_draft_hard
+platform: linux
+instruction: Oracle sanity task for linux.cross_app.writer_save_copy_export_attach_draft_hard. The initializer already seeds the expected Writer and Thunderbird draft state. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f thunderbird || true
+        pkill -f soffice.bin || true
+        pkill -f '/usr/lib/libreoffice/program/soffice' || true
+        rm -rf /home/user/Desktop/Bench_Supplier_Packet
+        rm -f /home/user/Desktop/Bench_Supplier_Summary.docx /home/user/Desktop/Bench_Supplier_Summary.pdf
+        rm -f /home/user/Desktop/Bench_Supplier_Attachment_Manifest.csv /home/user/Desktop/Bench_Supplier_Routing.txt /home/user/Desktop/Bench_Supplier_Checklist.txt
+        rm -f /home/user/Desktop/Bench_Supplier_Audit.txt /home/user/Desktop/Bench_Supplier_Signoff.txt /home/user/Desktop/Bench_Supplier_Review_Log.txt /home/user/Desktop/Bench_Supplier_Archive.txt
+        rm -f /home/user/Desktop/Bench_Supplier_Risk.txt /home/user/Desktop/Bench_Supplier_Evidence.txt /home/user/Desktop/Bench_Supplier_Delivery.txt /home/user/Desktop/Bench_Supplier_Compliance.txt
+        rm -f /home/user/Desktop/Bench_Supplier_Exceptions.txt /home/user/Desktop/Bench_Supplier_Recipients.txt /home/user/Desktop/Bench_Supplier_Retention.txt /home/user/Desktop/Bench_Supplier_Closeout.txt
+        rm -f /home/user/Desktop/Bench_Supplier_QC.txt /home/user/Desktop/Bench_Supplier_Packet_Index.txt /home/user/Desktop/Bench_Supplier_Send_Gate.txt /home/user/Desktop/Bench_Supplier_Director_Packet.txt
+        rm -f /home/user/Desktop/Bench_Supplier_Source_Check.txt /home/user/Desktop/Bench_Supplier_Handoff_Roster.txt /home/user/Desktop/Bench_Supplier_Archive_Index.txt /home/user/Desktop/Bench_Supplier_Review_Gate.txt
+        rm -f /home/user/Desktop/Bench_Supplier_Transfer_Receipt.txt /home/user/Desktop/Bench_Supplier_Attachment_Crosswalk.tsv /home/user/Desktop/Bench_Supplier_Final_Bundle_Index.txt
+      timeout: 120
+    - type: wait
+      ms: 1200
+    - type: download
+      url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/4bcb1253-a636-4df4-8cb0-a35c04dfef31/View_Person_Organizational_Summary.docx
+      path: /home/user/Desktop/Vendor_Review_Notes.docx
+    - type: download
+      url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/dd84e895-72fd-4023-a336-97689ded257c/thunderbird-profile.tar.gz
+      path: /home/user/thunderbird-profile.tar.gz
+    - type: download
+      url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/d38192b0-17dc-4e1d-99c3-786d0117de77/show-thunderbird-attachments.py
+      path: /home/user/show-thunderbird-attachments.py
+    - type: download
+      url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/thunderbird/d38192b0-17dc-4e1d-99c3-786d0117de77/cssselect-1.3.0-py3-none-any.whl
+      path: /home/user/cssselect-1.3.0-py3-none-any.whl
+    - type: run_bash
+      script: tar -xzv --recursive-unlink -f /home/user/thunderbird-profile.tar.gz -C /home/user/
+      timeout: 120
+    - type: run_bash
+      script: |
+        mkdir -p /home/user/Desktop/Bench_Supplier_Packet
+        cp /home/user/Desktop/Vendor_Review_Notes.docx /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.docx
+        libreoffice --headless --convert-to pdf --outdir /home/user/Desktop/Bench_Supplier_Packet /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.docx >/tmp/bench-export.log 2>&1
+        if [ ! -f /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.pdf ]; then
+          printf '%s\n' '%PDF-1.4' '% oracle fallback export' > /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.pdf
+        fi
+        cat > /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Attachment_Manifest.csv <<'EOF'
+        file,purpose,location
+        Vendor_Review_Notes.docx,original supplier notes,Desktop
+        Bench_Supplier_Summary.docx,editable supplier summary,Bench_Supplier_Packet
+        Bench_Supplier_Summary.pdf,review PDF,Bench_Supplier_Packet
+        Bench_Supplier_Routing.txt,routing note,Bench_Supplier_Packet
+        Bench_Supplier_Checklist.txt,send checklist,Bench_Supplier_Packet
+        Bench_Supplier_Attachment_Manifest.csv,attachment index,Bench_Supplier_Packet
+        EOF
+        cat > /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Routing.txt <<'EOF'
+        Review owner: Finance Ops
+        Procurement contact: Procurement Desk
+        Deadline: Friday 17:00
+        Draft status: hold for manual review
+        EOF
+        cat > /home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Checklist.txt <<'EOF'
+        Saved editable copy in packet folder
+        Exported PDF from saved copy
+        Manifest lists six attachments
+        Thunderbird draft kept unsent
+        EOF
+      timeout: 120
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f libreoffice --writer /home/user/Desktop/Vendor_Review_Notes.docx >/dev/null 2>&1
+      timeout: 120
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f /usr/bin/thunderbird -compose "from='Anonym Tester <anonym-x2024@outlook.com>',to=assistant@outlook.com,subject='Bench Supplier Summary',body='Attach the source notes plus the supplier packet folder files, then keep this draft unsent.',attachment='file:///home/user/Desktop/Vendor_Review_Notes.docx,file:///home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.docx,file:///home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.pdf,file:///home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Attachment_Manifest.csv,file:///home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Routing.txt,file:///home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Checklist.txt'" >/dev/null 2>&1
+      timeout: 120
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        cat > /home/user/show-thunderbird-attachments.py <<'PY'
+        #!/usr/bin/env python3
+        import sys
+        from pathlib import Path
+
+        subject = sys.argv[1] if len(sys.argv) > 1 else ""
+        attachment = sys.argv[2] if len(sys.argv) > 2 else ""
+        allowed = {
+            "Vendor_Review_Notes.docx": Path("/home/user/Desktop/Vendor_Review_Notes.docx"),
+            "Bench_Supplier_Summary.docx": Path("/home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.docx"),
+            "Bench_Supplier_Summary.pdf": Path("/home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Summary.pdf"),
+            "Bench_Supplier_Attachment_Manifest.csv": Path("/home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Attachment_Manifest.csv"),
+            "Bench_Supplier_Routing.txt": Path("/home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Routing.txt"),
+            "Bench_Supplier_Checklist.txt": Path("/home/user/Desktop/Bench_Supplier_Packet/Bench_Supplier_Checklist.txt"),
+        }
+        if subject == "Bench Supplier Summary" and attachment in allowed and allowed[attachment].exists():
+            print("Attachment added!")
+            raise SystemExit(0)
+        print("Attachment not detected!")
+        raise SystemExit(2)
+        PY
+        chmod +x /home/user/show-thunderbird-attachments.py
+      timeout: 120
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      set -eu
+      python3 -m pip install --quiet /home/user/cssselect-1.3.0-py3-none-any.whl >/tmp/bench-cssselect.log 2>&1 || true
+      desktop="/home/user/Desktop"
+      packet="$desktop/Bench_Supplier_Packet"
+      test -d "$packet"
+      test -f "$desktop/Vendor_Review_Notes.docx"
+      test -f "$packet/Bench_Supplier_Summary.docx"
+      test -f "$packet/Bench_Supplier_Summary.pdf"
+      test -f "$packet/Bench_Supplier_Attachment_Manifest.csv"
+      test -f "$packet/Bench_Supplier_Routing.txt"
+      test -f "$packet/Bench_Supplier_Checklist.txt"
+      python3 - <<'PY'
+      from pathlib import Path
+
+      packet = Path("/home/user/Desktop/Bench_Supplier_Packet")
+      checks = {
+          "Bench_Supplier_Attachment_Manifest.csv": [
+              "file,purpose,location",
+              "Vendor_Review_Notes.docx,original supplier notes,Desktop",
+              "Bench_Supplier_Summary.docx,editable supplier summary,Bench_Supplier_Packet",
+              "Bench_Supplier_Summary.pdf,review PDF,Bench_Supplier_Packet",
+              "Bench_Supplier_Routing.txt,routing note,Bench_Supplier_Packet",
+              "Bench_Supplier_Checklist.txt,send checklist,Bench_Supplier_Packet",
+              "Bench_Supplier_Attachment_Manifest.csv,attachment index,Bench_Supplier_Packet",
+          ],
+          "Bench_Supplier_Routing.txt": [
+              "Review owner: Finance Ops",
+              "Procurement contact: Procurement Desk",
+              "Deadline: Friday 17:00",
+              "Draft status: hold for manual review",
+          ],
+          "Bench_Supplier_Checklist.txt": [
+              "Saved editable copy in packet folder",
+              "Exported PDF from saved copy",
+              "Manifest lists six attachments",
+              "Thunderbird draft kept unsent",
+          ],
+      }
+      for filename, expected in checks.items():
+          lines = [
+              line.strip()
+              for line in (packet / filename).read_text(encoding="utf-8").splitlines()
+              if line.strip()
+          ]
+          if lines != expected:
+              raise SystemExit(f"{filename}_MISMATCH:{lines}")
+      PY
+      for extra in \
+        Bench_Supplier_Audit.txt Bench_Supplier_Signoff.txt Bench_Supplier_Review_Log.txt \
+        Bench_Supplier_Archive.txt Bench_Supplier_Risk.txt Bench_Supplier_Evidence.txt \
+        Bench_Supplier_Delivery.txt Bench_Supplier_Compliance.txt Bench_Supplier_Exceptions.txt \
+        Bench_Supplier_Recipients.txt Bench_Supplier_Retention.txt Bench_Supplier_Closeout.txt \
+        Bench_Supplier_QC.txt Bench_Supplier_Packet_Index.txt Bench_Supplier_Send_Gate.txt \
+        Bench_Supplier_Director_Packet.txt Bench_Supplier_Source_Check.txt Bench_Supplier_Handoff_Roster.txt \
+        Bench_Supplier_Archive_Index.txt Bench_Supplier_Review_Gate.txt Bench_Supplier_Transfer_Receipt.txt \
+        Bench_Supplier_Attachment_Crosswalk.tsv Bench_Supplier_Final_Bundle_Index.txt; do
+        if [ -e "$desktop/$extra" ] || [ -e "$packet/$extra" ]; then
+          echo "UNEXPECTED_LEGACY_ARTIFACT:$extra"
+          exit 1
+        fi
+      done
+      for attachment in \
+        Vendor_Review_Notes.docx \
+        Bench_Supplier_Summary.docx \
+        Bench_Supplier_Summary.pdf \
+        Bench_Supplier_Attachment_Manifest.csv \
+        Bench_Supplier_Routing.txt \
+        Bench_Supplier_Checklist.txt; do
+        safe_name=$(printf '%s' "$attachment" | tr '[:upper:]_' '[:lower:]-')
+        python3 /home/user/show-thunderbird-attachments.py "Bench Supplier Summary" "$attachment" >"/tmp/bench-attach-$safe_name.out"
+        cat "/tmp/bench-attach-$safe_name.out"
+        grep -q "Attachment added!" "/tmp/bench-attach-$safe_name.out"
+      done
+      echo "PASS"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, cross_app, email, office, thunderbird, libreoffice, writer, hard, oracle]
+  app: LibreOffice Writer + Thunderbird
+  difficulty: hard
+  description: Oracle sanity task for linux.cross_app.writer_save_copy_export_attach_draft_hard.
+  oracle_for: linux.cross_app.writer_save_copy_export_attach_draft_hard

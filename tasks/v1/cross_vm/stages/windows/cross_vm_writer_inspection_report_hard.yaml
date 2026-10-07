@@ -1,0 +1,191 @@
+task_id: windows.cross_vm.writer_inspection_report_hard
+platform: windows
+instruction: 'A blank LibreOffice Writer document named "inspection_report.docx" is open, and the transferred CSV
+  "inspection_transfer.csv" is on the Desktop. Use only LibreOffice Writer. Build the report in this exact order:
+  "Harborview Inspection Follow-up" in Heading 1; "Failed items" in Heading 2 followed by a four-column table with
+  the header row Unit, Item, Action, Priority and one row for every FAIL finding in CSV order, where Priority is
+  "High" for Smoke detector, Carbon monoxide alarm, Fire extinguisher, and Electrical outlet items and "Normal"
+  otherwise; "Failures by item" in Heading 2 followed by one paragraph per failed item type in alphabetical order
+  in the form "<item>: <count>"; "Open items by unit" in Heading 2 followed by one paragraph per unit that has failures,
+  in CSV order, in the form "<unit>: <count> open"; "Units with no failures" in Heading 2 followed by one paragraph
+  listing those units in CSV order separated by ", "; and "Totals" in Heading 2 followed by the paragraphs "Open
+  items: <count>" and "High priority: <count>". All non-heading paragraphs use body text styles and the document
+  must contain nothing else. Save the document in Word format, then also export it to PDF as "inspection_report.pdf"
+  in the same Documents folder. Do not open Notepad or any other text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        Get-Process soffice,soffice.bin,swriter -ErrorAction SilentlyContinue |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+        $docPath = Join-Path $env:USERPROFILE 'Documents\inspection_report.docx'
+        $notePath = Join-Path $env:USERPROFILE 'Desktop\inspection_transfer.csv'
+        New-Item -ItemType Directory -Path (Split-Path $docPath) -Force | Out-Null
+        New-Item -ItemType Directory -Path (Split-Path $notePath) -Force | Out-Null
+        @(
+          'Unit,Item,Result,Action'
+          'Unit 2A,Smoke detector,PASS,none'
+          'Unit 2A,Fire extinguisher,FAIL,replace expired extinguisher'
+          'Unit 2A,Window latch,PASS,none'
+          'Unit 2B,Smoke detector,FAIL,replace detector'
+          'Unit 2B,Carbon monoxide alarm,PASS,none'
+          'Unit 2B,Stair handrail,PASS,none'
+          'Unit 3A,Window latch,PASS,none'
+          'Unit 3A,Electrical outlet,PASS,none'
+          'Unit 3A,Smoke detector,PASS,none'
+          'Unit 3B,Smoke detector,PASS,none'
+          'Unit 3B,Carbon monoxide alarm,FAIL,install new alarm'
+          'Unit 3B,Door closer,PASS,none'
+          'Unit 4A,Stair handrail,FAIL,tighten brackets'
+          'Unit 4A,Fire extinguisher,PASS,none'
+          'Unit 4A,Electrical outlet,PASS,none'
+          'Unit 4C,Fire extinguisher,PASS,none'
+          'Unit 4C,Door closer,PASS,none'
+          'Unit 4C,Smoke detector,PASS,none'
+          'Unit 5A,Window latch,FAIL,replace latch'
+          'Unit 5A,Carbon monoxide alarm,PASS,none'
+          'Unit 5A,Door closer,FAIL,adjust closing speed'
+          'Unit 5B,Carbon monoxide alarm,PASS,none'
+          'Unit 5B,Electrical outlet,FAIL,replace scorched outlet'
+          'Unit 5B,Smoke detector,FAIL,replace detector'
+        ) | Set-Content -LiteralPath $notePath -Encoding UTF8
+        $code = @'
+        import os, subprocess, sys
+        def _need(mod, pkg):
+            try:
+                return __import__(mod)
+            except ImportError:
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+                return __import__(mod)
+        docx = _need('docx', 'python-docx')
+        path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'inspection_report.docx')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        docx.Document().save(path)
+        print('INIT_OK', path)
+        '@
+        $code | py -3 -W ignore -
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create inspection_report.docx" }
+        if (-not (Test-Path -LiteralPath $docPath)) { throw "Missing initialized document: $docPath" }
+        if (-not (Test-Path -LiteralPath $notePath)) { throw "Missing transferred file: $notePath" }
+      timeout: 90
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        $filePath = Join-Path $env:USERPROFILE 'Documents\inspection_report.docx'
+        if (-not (Test-Path -LiteralPath $filePath)) { throw "Missing document before launch: $filePath" }
+        $candidates = @(
+          'C:\Program Files\LibreOffice\program\swriter.exe',
+          'C:\Program Files (x86)\LibreOffice\program\swriter.exe',
+          'C:\Program Files\LibreOffice\program\soffice.exe',
+          'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+          'C:\Program Files\LibreOffice 26\program\swriter.exe',
+          'C:\Program Files\LibreOffice 26\program\soffice.exe'
+        )
+        $officeExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if (-not $officeExe) {
+          $cmd = Get-Command swriter.exe -ErrorAction SilentlyContinue
+          if ($cmd) { $officeExe = $cmd.Source }
+        }
+        if (-not $officeExe) { throw 'LibreOffice executable not found' }
+        Start-Process -FilePath $officeExe -ArgumentList "`"$filePath`""
+      timeout: 30
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      def _need(mod, pkg):
+          try:
+              return __import__(mod)
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+              return __import__(mod)
+      docx = _need('docx', 'python-docx')
+      from docx.table import Table
+      from docx.text.paragraph import Paragraph
+      def fail(message):
+          print(message)
+          raise SystemExit(1)
+      docs = os.path.join(os.environ['USERPROFILE'], 'Documents')
+      doc = docx.Document(os.path.join(docs, 'inspection_report.docx'))
+      items = []
+      for child in doc.element.body.iterchildren():
+          tag = child.tag.split('}')[1]
+          if tag == 'p':
+              para = Paragraph(child, doc)
+              text = para.text.strip()
+              if text:
+                  items.append(('p', text, (para.style.name if para.style is not None else '').lower()))
+          elif tag == 'tbl':
+              table = Table(child, doc)
+              items.append(('tbl', [[cell.text.strip() for cell in row.cells] for row in table.rows], ''))
+      expected = [('p', 'Harborview Inspection Follow-up', 'heading 1'), ('p', 'Failed items', 'heading 2'), ('tbl', [['Unit', 'Item', 'Action', 'Priority'], ['Unit 2A', 'Fire extinguisher', 'replace expired extinguisher', 'High'], ['Unit 2B', 'Smoke detector', 'replace detector', 'High'], ['Unit 3B', 'Carbon monoxide alarm', 'install new alarm', 'High'], ['Unit 4A', 'Stair handrail', 'tighten brackets', 'Normal'], ['Unit 5A', 'Window latch', 'replace latch', 'Normal'], ['Unit 5A', 'Door closer', 'adjust closing speed', 'Normal'], ['Unit 5B', 'Electrical outlet', 'replace scorched outlet', 'High'], ['Unit 5B', 'Smoke detector', 'replace detector', 'High']], ''), ('p', 'Failures by item', 'heading 2'), ('p', 'Carbon monoxide alarm: 1', ''), ('p', 'Door closer: 1', ''), ('p', 'Electrical outlet: 1', ''), ('p', 'Fire extinguisher: 1', ''), ('p', 'Smoke detector: 2', ''), ('p', 'Stair handrail: 1', ''), ('p', 'Window latch: 1', ''), ('p', 'Open items by unit', 'heading 2'), ('p', 'Unit 2A: 1 open', ''), ('p', 'Unit 2B: 1 open', ''), ('p', 'Unit 3B: 1 open', ''), ('p', 'Unit 4A: 1 open', ''), ('p', 'Unit 5A: 2 open', ''), ('p', 'Unit 5B: 2 open', ''), ('p', 'Units with no failures', 'heading 2'), ('p', 'Unit 3A, Unit 4C', ''), ('p', 'Totals', 'heading 2'), ('p', 'Open items: 8', ''), ('p', 'High priority: 5', '')]
+      if len(items) != len(expected):
+          fail('ITEM_COUNT_MISMATCH:%r' % (items,))
+      for observed, (kind, value, style) in zip(items, expected):
+          if observed[0] != kind or observed[1] != value:
+              fail('CONTENT_MISMATCH:%r' % (observed,))
+          if kind == 'p' and style and observed[2] != style:
+              fail('STYLE_MISMATCH:%r' % (observed,))
+          if kind == 'p' and not style and observed[2].startswith('heading'):
+              fail('UNEXPECTED_HEADING:%r' % (observed,))
+      pypdf = _need('pypdf', 'pypdf')
+      pdf_path = os.path.join(docs, 'inspection_report.pdf')
+      if not os.path.exists(pdf_path):
+          fail('MISSING_PDF')
+      text = ' '.join(' '.join((page.extract_text() or '').split()) for page in pypdf.PdfReader(pdf_path).pages)
+      for needle in ['Harborview Inspection Follow-up', 'replace scorched outlet', 'Open items: 8']:
+          if needle not in text:
+              fail('PDF_MISSING_TEXT:' + needle)
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+    supplemental_checks:
+      powershell:
+      - label: no_notepad_process
+        script: |
+          $p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+          if ($p) { Write-Output 'NOTEPAD_RUNNING'; exit 1 }
+          Write-Output 'NO_NOTEPAD_PROCESS'
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 200
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - libreoffice
+  - writer
+  - table
+  - pdf
+  - hard
+  app_name: libreoffice-writer
+  difficulty: hard
+  description: Write a Writer follow-up with a prioritized failure table, per-item rollups, clean units, totals,
+    and a PDF export.
+  cross_vm_role: windows_target_phase
+  composite_task: cross_vm.android_to_windows.inspection_report_hard
+  source_platform: android
+  target_platform: windows
+  oracle_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_writer_inspection_report_hard_oracle.yaml
+  human_steps: 108
+  human_steps_breakdown:
+  - 'open transferred CSV in Writer and arrange windows: 6'
+  - 'Heading 1 and five Heading 2 headings: 18'
+  - '6 open-items-by-unit paragraphs: 12'
+  - 'failed-items table (8 rows, priority derived): 41'
+  - '7 failures-by-item paragraphs: 14'
+  - 'units-with-no-failures paragraph: 3'
+  - 'two totals paragraphs: 4'
+  - 'Save in Word format (keep-format prompt): 4'
+  - 'Export as PDF with name: 6'

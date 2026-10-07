@@ -1,0 +1,69 @@
+task_id: android.cross_vm.prepare_regional_transfer_hard
+platform: android
+instruction: The transfer CSV "regional_transfer.csv" is open in Markor on Android, and the finance note "regional_source.txt"
+  is in the same Markor folder. Using Markor only, make the transfer CSV contain the header Region,Revenue,Target,Owner
+  followed by one row for each of the eight regions in the note, in the same order, with Revenue and Target as plain
+  numbers and Owner as the person's name. Apply all three finance corrections, fix any existing row that disagrees
+  with the corrected data, and do not include any other lines. Save the file and leave it ready to be transferred
+  to Windows.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/regional_source.txt
+    transfer_path: /sdcard/Documents/markor/regional_transfer.csv
+    open_path: /sdcard/Documents/markor/regional_transfer.csv
+    source_text: |
+      Q3 regional results - draft from finance (revenue and target in k USD)
+      North | revenue 412 | target 400 | owner Maya Chen
+      South | revenue 365 | target 390 | owner Jordan Lee
+      East | revenue 298 | target 310 | owner Priya Nair
+      West | revenue 420 | target 420 | owner Theo Martin
+      Central | revenue 322 | target 330 | owner Lena Fischer
+      Coastal | revenue 287 | target 260 | owner Omar Haddad
+      Mountain | revenue 199 | target 240 | owner Rosa Lima
+      Capital | revenue 505 | target 480 | owner Kenji Sato
+      Finance correction: East revenue is 318, not 298.
+      Finance correction: South owner is now Omar Haddad.
+      Finance correction: Capital target was raised to 505.
+    transfer_text: |
+      Region,Revenue,Target,Owner
+      North,412,400,Maya Chen
+      South,365,390,Jordan Lee
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/regional_transfer.csv
+    expected_text: |
+      Region,Revenue,Target,Owner
+      North,412,400,Maya Chen
+      South,365,390,Omar Haddad
+      East,318,310,Priya Nair
+      West,420,420,Theo Martin
+      Central,322,330,Lena Fischer
+      Coastal,287,260,Omar Haddad
+      Mountain,199,240,Rosa Lima
+      Capital,505,505,Kenji Sato
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - markor
+  - hard
+  app_name: Markor
+  difficulty: hard
+  description: Convert an eight-region results note with three finance corrections into a transfer CSV on Android.
+  cross_vm_role: android_source_phase
+  composite_task: cross_vm.android_to_windows.regional_review_deck_hard
+  source_platform: android
+  target_platform: windows
+  oracle_task: tasks/v1/cross_vm/stages/android/oracle/cross_vm_prepare_regional_transfer_hard_oracle.yaml
+  human_steps: 51
+  human_steps_breakdown:
+  - 'open reference note and copy its lines: 8'
+  - 'paste into transfer note and clear old rows: 6'
+  - 'convert 8 data lines to CSV (3 each): 24'
+  - 'apply 3 corrections (3 each): 9'
+  - 'type header, save, leave note: 4'

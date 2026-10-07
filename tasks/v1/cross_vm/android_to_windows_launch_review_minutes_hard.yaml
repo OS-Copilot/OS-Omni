@@ -1,0 +1,36 @@
+task_id: cross_vm.android_to_windows.launch_review_minutes_hard
+platform: cross_vm
+instruction: 'First work in Android Markor: complete and save the expanded launch-review transfer note there. Then move to
+  the Windows VM and, using only LibreOffice Writer, turn the transferred note into ordered minutes plus seven embedded summary
+  tables.'
+android_task: tasks/v1/cross_vm/stages/android/cross_vm_prepare_launch_review_transfer_hard.yaml
+windows_task: tasks/v1/cross_vm/stages/windows/cross_vm_writer_launch_review_minutes_hard.yaml
+transfer:
+  android_guest_path: /sdcard/Documents/markor/launch_review_transfer.txt
+  windows_guest_path: C:\Users\User\Desktop\launch_review_transfer.txt
+  host_filename: launch_review_transfer.txt
+metadata:
+  tags:
+  - cross_vm
+  - android_to_windows
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  owner_scope: windows
+  source_platform: android
+  target_platform: windows
+  counts_as_windows_cross_vm_task: true
+  cross_vm_task_unit: composite
+  description: Complete an expanded Android launch note, transfer it, and build an especially hard structured Writer document
+    on Windows.
+  linux_peer: cross_vm.windows_to_linux.launch_review_minutes_hard
+  alignment_status: harder_than_linux_peer
+  human_steps: 406
+  human_steps_by_stage:
+    android: 148
+    windows: 258
+  oracle_task: tasks/v1/cross_vm/oracle/android_to_windows_launch_review_minutes_hard_oracle.yaml
+  oracle_model: cross_vm_oracle_wait
+  hard_plus_note: Windows target phase reproduces the full expanded note and checks twelve exact sidecar artifacts.

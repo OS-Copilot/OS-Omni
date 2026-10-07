@@ -1,7 +1,6 @@
 tasks:
-  - tasks/cross_vm/oracle/windows_to_linux_site_visit_brief_easy_oracle.yaml
-  - tasks/cross_vm/oracle/windows_to_linux_budget_review_hard_oracle.yaml
-  - tasks/cross_vm/oracle/windows_to_linux_launch_review_minutes_hard_oracle.yaml
+  - tasks/v1/cross_vm/oracle/windows_to_linux_budget_review_hard_oracle.yaml
+  - tasks/v1/cross_vm/oracle/windows_to_linux_launch_review_minutes_hard_oracle.yaml
 models:
   - cross_vm_oracle_wait
 action_mode: code_adapter

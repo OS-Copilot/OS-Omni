@@ -1,0 +1,114 @@
+task_id: windows.cross_vm.prepare_roster_transfer_hard
+platform: windows
+instruction: 'A shift roster CSV is open in Notepad. Its last six lines are correction notes. Save a corrected copy
+  to the Desktop as "roster_transfer.csv": apply every correction to the data rows (changing, removing, or appending
+  rows exactly as instructed), remove the correction lines, and keep the header Name,Day,Shift,Hours with all remaining
+  rows in their original order. Leave the saved Desktop file available for transfer.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $sourcePath = Join-Path $env:USERPROFILE "Documents\roster_source.csv"
+        New-Item -ItemType Directory -Path (Split-Path $sourcePath) -Force | Out-Null
+        @'
+        Name,Day,Shift,Hours
+        Avery Brooks,Mon,AM,8
+        Dana Ortiz,Tue,PM,6
+        Kenji Sato,Mon,PM,4
+        Lena Fischer,Wed,AM,8
+        Omar Haddad,Thu,AM,6
+        Rosa Lima,Fri,PM,8
+        Sam Patel,Wed,PM,4
+        Tariq Noor,Fri,AM,6
+        Mei Wong,Tue,AM,8
+        Jonas Berg,Thu,PM,4
+        Ines Duarte,Mon,AM,6
+        Paul Okafor,Wed,AM,6
+        Priya Nair,Sat,AM,8
+        Theo Martin,Sat,PM,6
+        Maya Chen,Sun,AM,6
+        Jordan Lee,Thu,AM,8
+        Hugo Silva,Fri,PM,4
+        Nora Quinn,Sun,PM,4
+        Eli Novak,Tue,PM,6
+        Zara Ahmed,Wed,PM,8
+        Liam Doyle,Mon,PM,6
+        Ava Rossi,Sat,AM,4
+        Owen Price,Fri,AM,8
+        # Correction: Dana Ortiz moves from Tue PM to Thu PM.
+        # Correction: Sam Patel works 6 hours, not 4.
+        # Correction: remove Jonas Berg, he has left the team.
+        # Correction: add Hana Kim,Fri,AM,4 as the last row.
+        # Correction: Nora Quinn switches to the Sun AM shift.
+        # Correction: add Leo Brandt,Sun,PM,8 as the last row, after Hana Kim.
+        '@ | Set-Content -Path $sourcePath -Encoding UTF8
+        Start-Process notepad.exe $sourcePath
+      timeout: 30
+    - type: wait
+      ms: 4000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Name,Day,Shift,Hours
+      Avery Brooks,Mon,AM,8
+      Dana Ortiz,Thu,PM,6
+      Kenji Sato,Mon,PM,4
+      Lena Fischer,Wed,AM,8
+      Omar Haddad,Thu,AM,6
+      Rosa Lima,Fri,PM,8
+      Sam Patel,Wed,PM,6
+      Tariq Noor,Fri,AM,6
+      Mei Wong,Tue,AM,8
+      Ines Duarte,Mon,AM,6
+      Paul Okafor,Wed,AM,6
+      Priya Nair,Sat,AM,8
+      Theo Martin,Sat,PM,6
+      Maya Chen,Sun,AM,6
+      Jordan Lee,Thu,AM,8
+      Hugo Silva,Fri,PM,4
+      Nora Quinn,Sun,AM,4
+      Eli Novak,Tue,PM,6
+      Zara Ahmed,Wed,PM,8
+      Liam Doyle,Mon,PM,6
+      Ava Rossi,Sat,AM,4
+      Owen Price,Fri,AM,8
+      Hana Kim,Fri,AM,4
+      Leo Brandt,Sun,PM,8
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\roster_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - notepad
+  - hard
+  app_name: notepad
+  difficulty: hard
+  description: Apply six correction notes (moves, edits, a removal, two additions) to a 23-row roster CSV in Notepad.
+  cross_vm_role: windows_source_phase
+  composite_task: cross_vm.windows_to_linux.shift_coverage_hard
+  source_platform: windows
+  target_platform: linux
+  oracle_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_prepare_roster_transfer_hard_oracle.yaml
+  human_steps: 41
+  human_steps_breakdown:
+  - 'apply four in-place corrections (locate, select, type): 16'
+  - 'delete the removed person''s row: 3'
+  - 'append two new rows: 4'
+  - 'delete six correction lines: 12'
+  - 'Save As to Desktop with name and type: 6'

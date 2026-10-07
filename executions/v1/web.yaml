@@ -1,0 +1,57 @@
+tasks:
+- tasks/v1/web/openbank_ace_mira_dana_paperless_alerts_1787715900920_100250.yaml
+- tasks/v1/web/openbank_lena_marco_dispute_security_1787714650786_886074.yaml
+- tasks/v1/web/openbank_nina_evan_transfers_city_utilities_tessa_1787714989601_855205.yaml
+- tasks/v1/web/openblender_client_camera_review.yaml
+- tasks/v1/web/openblender_kiosk_arc_animation.yaml
+- tasks/v1/web/openblender_robot_pose_review.yaml
+- tasks/v1/web/opencode_sk2_hook_debug_commit.yaml
+- tasks/v1/web/opencode_sk2_trendcard_loading_label_commit.yaml
+- tasks/v1/web/opencode_tooling_notes_settings.yaml
+- tasks/v1/web/opendoc_client_plan_export_html_hard.yaml
+- tasks/v1/web/opendoc_launch_review_duplicate_hard.yaml
+- tasks/v1/web/opendoc_q3_sync_decision_log.yaml
+- tasks/v1/web/opendriver_auto_hard.yaml
+- tasks/v1/web/opendriver_driver_single_1_2.yaml
+- tasks/v1/web/opendriver_rider_single_1_1.yaml
+- tasks/v1/web/openfinance_10_1.yaml
+- tasks/v1/web/openfinance_10_2.yaml
+- tasks/v1/web/openfinance_10_3.yaml
+- tasks/v1/web/openfood_qa02_s2_ops.yaml
+- tasks/v1/web/openfood_qa03_s2_ops.yaml
+- tasks/v1/web/openfood_qa04_snap2_deep_dish_status_reorder.yaml
+- tasks/v1/web/openmail_contacts_receipt_review_workflow.yaml
+- tasks/v1/web/openmail_image_attachment_review_followup.yaml
+- tasks/v1/web/openmail_receipts_travel_archive_snap2.yaml
+- tasks/v1/web/opennavigation_route_review_2_1.yaml
+- tasks/v1/web/opennavigation_route_review_2_2.yaml
+- tasks/v1/web/opennavigation_route_review_2_3.yaml
+- tasks/v1/web/opennote_bakery_resume_route_photo2.yaml
+- tasks/v1/web/opennote_desk_cable_followup_snap2.yaml
+- tasks/v1/web/opennote_snap2_home_food_profile.yaml
+- tasks/v1/web/openphoto_edit_city_night_dual_export.yaml
+- tasks/v1/web/openphoto_edit_station_platform_dual_export.yaml
+- tasks/v1/web/openphotoedit_window_portrait_dual_export_043767.yaml
+- tasks/v1/web/opensheet_daily_shift_photo2.yaml
+- tasks/v1/web/opensheet_monthly_budget_approved_hard.yaml
+- tasks/v1/web/opensheet_quarterly_sales_aster_review_hard.yaml
+- tasks/v1/web/openshop_core_order_stepwise_20260827.yaml
+- tasks/v1/web/openshop_desk_order_stepwise_20260827.yaml
+- tasks/v1/web/openslide_qa70_review_199367.yaml
+- tasks/v1/web/openslide_qa71_training_701512.yaml
+- tasks/v1/web/opentrip_harbor_link_cloud_terrace_booking_20260825_180315.yaml
+- tasks/v1/web/opentrip_sk2_qingdao_dual_booking_audit.yaml
+- tasks/v1/web/opentwitter_community_handoff_snap1.yaml
+- tasks/v1/web/opentwitter_control_trail.yaml
+- tasks/v1/web/openwireshark_9_0.yaml
+- tasks/v1/web/openwireshark_9_1.yaml
+- tasks/v1/web/openzotero_blur_gate_vision_review_snapshot2_157630.yaml
+- tasks/v1/web/openzotero_toolbenchx_reliability_review_snapshot2.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: all 48 Web (Linux VM browser) benchmark tasks.'

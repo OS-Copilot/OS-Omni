@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/spotube_get_started_market_canada_disable_endless.yaml
-  - tasks/macos/spotube_dark_profile_with_plugins.yaml
-  - tasks/macos/spotube_light_connect_japan_profile.yaml
+  - tasks/v1/macos/spotube_dark_profile_with_plugins.yaml
 models:
   - macos_spotube_oracle
 action_mode: code_adapter

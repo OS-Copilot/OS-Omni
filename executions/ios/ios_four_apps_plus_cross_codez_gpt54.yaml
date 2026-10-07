@@ -1,22 +1,12 @@
 tasks:
-- tasks/ios/fsnotes_create_markdown_note.yaml
-- tasks/ios/fsnotes_move_rename_and_update_note.yaml
-- tasks/ios/fsnotes_archive_note_and_create_followup.yaml
-- tasks/ios/habit_add_new_habit.yaml
-- tasks/ios/habit_manage_seeded_habits.yaml
-- tasks/ios/habit_rework_seeded_routine.yaml
-- tasks/ios/safari_open_target_page.yaml
-- tasks/ios/safari_organize_tabs_and_bookmarks.yaml
-- tasks/ios/safari_build_two_reading_folders.yaml
-- tasks/ios/reminders_create_single_reminder.yaml
-- tasks/ios/reminders_manage_seeded_list.yaml
-- tasks/ios/reminders_rework_seeded_agenda.yaml
-- tasks/ios/calendar_reminders_add_followup_easy.yaml
-- tasks/ios/calendar_reminders_finalize_briefing.yaml
-- tasks/ios/calendar_reminders_finalize_launch_plan.yaml
-- tasks/ios/openshop_flow_record_cart_reserve_easy.yaml
-- tasks/ios/openshop_flow_checkout_and_record_order.yaml
-- tasks/ios/openshop_flow_adjust_checkout_and_log_order.yaml
+- tasks/v1/ios/fsnotes_move_rename_and_update_note.yaml
+- tasks/v1/ios/fsnotes_archive_note_and_create_followup.yaml
+- tasks/v1/ios/habit_manage_seeded_habits.yaml
+- tasks/v1/ios/habit_rework_seeded_routine.yaml
+- tasks/v1/ios/safari_organize_tabs_and_bookmarks.yaml
+- tasks/v1/ios/safari_build_two_reading_folders.yaml
+- tasks/v1/ios/reminders_manage_seeded_list.yaml
+- tasks/v1/ios/reminders_rework_seeded_agenda.yaml
 models:
 - free_codesonline_gpt5_4_responses
 action_mode: code_adapter

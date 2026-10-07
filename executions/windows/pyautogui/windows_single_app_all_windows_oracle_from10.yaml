@@ -6,44 +6,10 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-  - tasks/windows/calendar_create_event.yaml
-  - tasks/windows/calendar_create_recurring_event.yaml
-  - tasks/windows/calendar_manage_multiple_events.yaml
-  - tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
-  - tasks/windows/deltachat_send_message_project_updates.yaml
-  - tasks/windows/deltachat_share_sync_time_with_avery_and_project_updates.yaml
-  - tasks/windows/drawio_ellipse_vertical_divider_styled.yaml
-  - tasks/windows/drawio_square_center_helloworld.yaml
-  - tasks/windows/drawio_sum_loop_flowchart.yaml
-  - tasks/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
-  - tasks/windows/gimp_cartoon_girl_bottom_left_blend_flip_opacity.yaml
-  - tasks/windows/gimp_center_helloworld.yaml
-  - tasks/windows/impress_animation_transition.yaml
-  - tasks/windows/impress_slide_shape_bold.yaml
-  - tasks/windows/impress_title_notes.yaml
-  - tasks/windows/notepad_append_text.yaml
-  - tasks/windows/notepad_edit_config.yaml
-  - tasks/windows/notepad_find_replace.yaml
-  - tasks/windows/openshop_add_headphones_to_cart.yaml
-  - tasks/windows/openshop_checkout_two_items.yaml
-  - tasks/windows/openshop_login.yaml
-  - tasks/windows/spotube_get_started_market_canada_disable_endless.yaml
-  - tasks/windows/spotube_album_queue_light_english_playlist_repeat.yaml
-  - tasks/windows/spotube_one_ok_rock_queue_single_repeat_pause.yaml
-  - tasks/windows/thunderbird_collect_st_club_progress.yaml
-  - tasks/windows/thunderbird_create_contact_send_by_nickname.yaml
-  - tasks/windows/thunderbird_send_email_exact_body.yaml
-  - tasks/windows/vscode_disable_minimap_enable_autosave.yaml
-  - tasks/windows/vscode_ops_handoff_workspace.yaml
-  - tasks/windows/vscode_release_cleanup_workspace.yaml
-  - tasks/windows/wireshark_advanced_filter_export.yaml
-  - tasks/windows/wireshark_open_and_filter.yaml
-  - tasks/windows/wireshark_statistics_report.yaml
-  - tasks/windows/writer_font_bold.yaml
-  - tasks/windows/writer_headings_list_pagebreak.yaml
-  - tasks/windows/writer_toc_image_footnote.yaml
-  - tasks/windows/zotero_add_item_by_identifier.yaml
-  - tasks/windows/zotero_create_collection_with_notes.yaml
-  - tasks/windows/zotero_organize_library.yaml
+  - tasks/v1/windows/calendar_create_recurring_event.yaml
+  - tasks/v1/windows/drawio_ellipse_vertical_divider_styled.yaml
+  - tasks/v1/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+  - tasks/v1/windows/impress_animation_transition.yaml
+  - tasks/v1/windows/notepad_append_text.yaml
 metadata:
   description: Resume Windows oracle validation from task 10 after runtime bootstrap interruption.

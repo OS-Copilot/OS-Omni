@@ -1,5 +1,5 @@
 tasks:
-- tasks/windows/cross_app_openshop_calendar_checkout_coffee_followup_hard.yaml
+- tasks/v1/windows/cross_app_openshop_calendar_checkout_coffee_followup_hard.yaml
 models:
 - gpt5_4
 action_mode: code_adapter

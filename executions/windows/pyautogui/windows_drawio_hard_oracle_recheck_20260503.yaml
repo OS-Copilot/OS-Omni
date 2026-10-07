@@ -6,7 +6,6 @@ history_window: 3
 max_steps: 100
 timeout: 180
 tasks:
-  - tasks/windows/drawio_ellipse_vertical_divider_styled.yaml
-  - tasks/windows/drawio_sum_loop_flowchart.yaml
+  - tasks/v1/windows/drawio_ellipse_vertical_divider_styled.yaml
 metadata:
   description: Oracle recheck for Windows draw.io hard single-app tasks.

@@ -1,0 +1,20 @@
+task_id: cross_vm.oracle.windows_to_linux.incident_postmortem_hard
+platform: cross_vm
+instruction: Oracle sanity task for cross_vm.windows_to_linux.incident_postmortem_hard. The Windows and Linux initializers
+  already prepare the expected transfer file and final LibreOffice result. Wait briefly and finish.
+windows_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_prepare_incident_transfer_hard_oracle.yaml
+linux_task: tasks/v1/cross_vm/stages/linux/oracle/cross_vm_writer_incident_postmortem_hard_oracle.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\incident_transfer.csv
+  linux_guest_path: /home/user/Desktop/incident_transfer.csv
+  host_filename: incident_transfer.csv
+metadata:
+  tags:
+  - cross_vm
+  - windows_to_linux
+  - hard
+  - oracle
+  difficulty: hard
+  oracle_for: cross_vm.windows_to_linux.incident_postmortem_hard
+  description: Oracle sanity task for de-duplicate and sort a 23-line incident log in Notepad on Windows, transfer
+    it, and write a Writer postmortem with summary figures, three tables, and follow-ups on Linux.

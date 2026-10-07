@@ -1,0 +1,86 @@
+task_id: linux.cross_app.marble_impress_map_slide_hard
+platform: linux
+instruction: >
+  Open Marble. Use the search bar at the top to search for "Tokyo". Click
+  on the search result to center the map on Tokyo. Use the scroll wheel or
+  zoom slider to zoom in until you can see the city label "Tokyo" on the
+  map. Click on the city label to open an info card. Note the coordinates
+  shown in the card.
+  Then search for "Seoul", zoom in, click the label, and note its coordinates.
+  Then search for "Beijing", zoom in, click the label, and note its coordinates.
+  Then switch to the already-open LibreOffice Impress window. Create a new
+  presentation. On the first slide, use Insert → Text Box to add a text box
+  and type "East Asian Capital Cities" as the title. Then add another text
+  box below it with the coordinates you noted for each city in the format:
+  "Tokyo: [coordinates]
+  Seoul: [coordinates]
+  Beijing: [coordinates]"
+  Save the presentation as /home/user/Documents/east_asia_cities.odp.
+  Finish after the presentation is saved.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f marble || true
+        pkill -f soffice.bin || true
+        mkdir -p /home/user/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f marble >/dev/null 2>&1
+    - type: wait
+      ms: 8000
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f libreoffice --impress >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      odp_path = os.path.expanduser("~/Documents/east_asia_cities.odp")
+      if not os.path.exists(odp_path):
+          raise SystemExit("IMPRESS_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odp_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "East Asian Capital Cities" not in content:
+          raise SystemExit("MISSING_TITLE")
+
+      for city in ["Tokyo", "Seoul", "Beijing"]:
+          if city not in content:
+              raise SystemExit(f"MISSING_CITY_{city}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - marble
+  - impress
+  - geography
+  - presentation
+  - hard
+  app_name: marble + libreoffice_impress
+  difficulty: hard
+  description: Search for 3 East Asian capital cities in Marble, note coordinates
+    from info card, then create a presentation slide in Impress with city names
+    and coordinates.

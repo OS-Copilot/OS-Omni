@@ -1,0 +1,52 @@
+task_id: linux.vscode.update_heading
+platform: linux
+instruction: "In Gedit, open notes/daily-brief.md. Change the first line from # Daily Brief to # Launch Checklist, then save the file."
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: vscode_heading
+    workspace_root: /tmp/helloworld_vscode_workspace
+    files:
+    - path: notes/daily-brief.md
+      content: '# Daily Brief
+
+
+        - Confirm the release candidate is mirrored.
+
+        - Verify the support inbox is empty.
+
+        '
+    open_files:
+    - notes/daily-brief.md
+evaluation:
+  evaluator_id: evaluators.linux.vscode:VSCodeWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_vscode_workspace/vscode_heading
+    files:
+    - path: notes/daily-brief.md
+      equals: '# Launch Checklist
+
+
+        - Confirm the release candidate is mirrored.
+
+        - Verify the support inbox is empty.
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - markdown
+  - easy
+  app: vscode
+  difficulty: easy
+  description: Open a single Markdown file in Gedit, replace the main heading, and
+    save it.
+  oracle_task: tasks/v1/linux/oracle/vscode_update_heading_oracle.yaml
+  oracle_model: linux_oracle_wait

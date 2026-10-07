@@ -1,0 +1,163 @@
+task_id: linux.cross_app.zotero_calc_author_stats_hard
+platform: linux
+instruction: >
+  Open Zotero. Create a new collection named "AI Research" under My Library.
+  Add five Journal Article items to this collection:
+  1. "Attention Is All You Need" by Ashish Vaswani
+  2. "BERT: Pre-training of Deep Bidirectional Transformers" by Jacob Devlin
+  3. "Language Models are Few-Shot Learners" by Tom Brown
+  4. "Training Compute-Optimal Large Language Models" by Jordan Hoffmann
+  5. "LLaMA: Open and Efficient Foundation Language Models" by Hugo Touvron
+  Add the tag "language-model" to items 2, 3, 4, and 5.
+  Add the tag "transformer" to items 1, 2, and 3.
+  Select the "AI Research" collection. Go to File → Export Collection. In the
+  export dialog, choose "BibTeX" format and export. The file will be saved to
+  /home/user/Documents/ai_research.bib.
+  Then switch to the already-open LibreOffice Calc window. Create a new
+  spreadsheet. In cell A1 type "Tag", in B1 type "Count". In row 2, enter
+  "language-model" and 4. In row 3, enter "transformer" and 3. In cell A5,
+  type "Total Items". In cell B5, type 5. Save the spreadsheet as
+  /home/user/Documents/ai_tag_stats.ods.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        export HOME=/home/user
+        export PATH="$HOME/.local/bin:$PATH"
+        mkdir -p "$HOME/Applications" "$HOME/.local/share/applications" "$HOME/.local/bin" "$HOME/Downloads" "$HOME/Documents"
+        pkill -x zotero >/dev/null 2>&1 || true
+        pkill -f soffice.bin >/dev/null 2>&1 || true
+        archive="$HOME/Downloads/Zotero-9.0.1_linux-x86_64.tar.xz"
+        if [ ! -x "$HOME/Applications/Zotero_linux-x86_64/zotero" ]; then
+          if [ ! -f "$archive" ]; then
+            # One line: an indented heredoc terminator is not recognised by bash.
+            python3 -c 'import sys, urllib.request; open(sys.argv[2], "wb").write(urllib.request.urlopen(sys.argv[1]).read())' "https://download.zotero.org/client/release/9.0.1/Zotero-9.0.1_linux-x86_64.tar.xz" "$archive"
+          fi
+          rm -rf "$HOME/Applications/Zotero_linux-x86_64"
+          tar -xf "$archive" -C "$HOME/Applications"
+          (
+            cd "$HOME/Applications/Zotero_linux-x86_64"
+            ./set_launcher_icon
+          )
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero.desktop" "$HOME/.local/share/applications/zotero.desktop"
+          ln -sf "$HOME/Applications/Zotero_linux-x86_64/zotero" "$HOME/.local/bin/zotero"
+        fi
+        rm -rf "$HOME/Zotero" "$HOME/.zotero"
+    - type: launch_app
+      command: /home/user/Applications/Zotero_linux-x86_64/zotero
+    - type: wait
+      ms: 12000
+    - type: run_bash
+      script: |
+        export DISPLAY=${DISPLAY:-:0}
+        wmctrl -a Zotero 2>/dev/null || true
+        wmctrl -r Zotero -b remove,maximized_vert,maximized_horz 2>/dev/null || true
+        wmctrl -r Zotero -e 0,80,80,1320,860 2>/dev/null || true
+    - type: wait
+      ms: 1000
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f libreoffice --calc >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import sqlite3
+      import os
+      import zipfile
+
+      # Check Zotero database
+      db_path = os.path.expanduser("~/Zotero/zotero.sqlite")
+      if not os.path.exists(db_path):
+          raise SystemExit("ZOTERO_DB_NOT_FOUND")
+
+      # Zotero keeps an exclusive lock on the live database; read a copy.
+      import shutil, tempfile
+      snapshot_dir = tempfile.mkdtemp()
+      for suffix in ("", "-wal", "-journal"):
+          if os.path.exists(db_path + suffix):
+              shutil.copy2(db_path + suffix, os.path.join(snapshot_dir, "zotero.sqlite" + suffix))
+      conn = sqlite3.connect(os.path.join(snapshot_dir, "zotero.sqlite"))
+      cur = conn.cursor()
+
+      # Check collection
+      cur.execute("SELECT collectionName FROM collections WHERE collectionName='AI Research'")
+      if not cur.fetchone():
+          raise SystemExit("COLLECTION_NOT_FOUND")
+
+      # Check 5 items
+      titles = [
+          'Attention Is All You Need',
+          'BERT: Pre-training of Deep Bidirectional Transformers',
+          'Language Models are Few-Shot Learners',
+          'Training Compute-Optimal Large Language Models',
+          'LLaMA: Open and Efficient Foundation Language Models'
+      ]
+      placeholders = ','.join(['?'] * len(titles))
+      cur.execute(f"""
+          SELECT DISTINCT idv.value FROM items i
+          JOIN itemData id ON i.itemID = id.itemID
+          JOIN fields f ON id.fieldID = f.fieldID
+          JOIN itemDataValues idv ON id.valueID = idv.valueID
+          WHERE f.fieldName = 'title'
+          AND idv.value IN ({placeholders})
+      """, titles)
+      items = cur.fetchall()
+      if len(items) != 5:
+          raise SystemExit(f"EXPECTED_5_ITEMS_GOT_{len(items)}")
+
+      # Check tags
+      cur.execute("SELECT DISTINCT name FROM tags WHERE name IN ('language-model', 'transformer')")
+      tags = cur.fetchall()
+      if len(tags) != 2:
+          raise SystemExit(f"EXPECTED_2_TAGS_GOT_{len(tags)}")
+
+      conn.close()
+
+      # Check BibTeX file
+      bib_path = os.path.expanduser("~/Documents/ai_research.bib")
+      if not os.path.exists(bib_path):
+          raise SystemExit("BIBTEX_FILE_NOT_FOUND")
+
+      # Check Calc spreadsheet
+      ods_path = os.path.expanduser("~/Documents/ai_tag_stats.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for val in ["language-model", "transformer"]:
+          if val not in content:
+              raise SystemExit(f"MISSING_TAG_{val}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - zotero
+  - calc
+  - bibliography
+  - tags
+  - statistics
+  - hard
+  app_name: zotero + libreoffice_calc
+  difficulty: hard
+  description: Create a Zotero collection with 5 journal articles, add selective tags
+    to items, export as BibTeX, then create a tag statistics spreadsheet in Calc.

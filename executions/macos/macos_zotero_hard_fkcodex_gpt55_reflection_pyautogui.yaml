@@ -1,5 +1,5 @@
 tasks:
-  - tasks/macos/zotero_dual_collection_articles.yaml
+  - tasks/v1/macos/zotero_dual_collection_articles.yaml
 models:
   - FKCODEX_GPT55
 action_mode: code_adapter

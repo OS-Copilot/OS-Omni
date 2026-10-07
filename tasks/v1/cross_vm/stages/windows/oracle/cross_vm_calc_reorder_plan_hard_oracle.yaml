@@ -1,0 +1,122 @@
+task_id: windows.oracle.cross_vm.calc_reorder_plan_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.calc_reorder_plan_hard. The initializer already prepares the
+  expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        Get-Process soffice,soffice.bin,scalc -ErrorAction SilentlyContinue |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+        $code = @'
+        import os, subprocess, sys
+        def _need(mod, pkg):
+            try:
+                return __import__(mod)
+            except ImportError:
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+                return __import__(mod)
+        openpyxl = _need('openpyxl', 'openpyxl')
+        path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'reorder_plan.xlsx')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        sheets = [('Reorder', [['Item', 'OnHand', 'ReorderPoint', 'Supplier', 'UnitCost', 'Shortfall', 'OrderQty', 'LineCost', 'Priority'], ['Packing tape', 22, 40, 'Harbor Supply', 3, '=MAX(0,C2-B2)', '=ROUNDUP(F2/10,0)*10', '=G2*E2', '=IF(B2=0,"Critical",IF(F2>0,"Reorder","OK"))'], ['Shipping labels', 160, 200, 'LabelWorks', 1, '=MAX(0,C3-B3)', '=ROUNDUP(F3/10,0)*10', '=G3*E3', '=IF(B3=0,"Critical",IF(F3>0,"Reorder","OK"))'], ['Bubble wrap rolls', 6, 12, 'Harbor Supply', 14, '=MAX(0,C4-B4)', '=ROUNDUP(F4/10,0)*10', '=G4*E4', '=IF(B4=0,"Critical",IF(F4>0,"Reorder","OK"))'], ['Corrugated boxes M', 95, 150, 'BoxCo', 2, '=MAX(0,C5-B5)', '=ROUNDUP(F5/10,0)*10', '=G5*E5', '=IF(B5=0,"Critical",IF(F5>0,"Reorder","OK"))'], ['Corrugated boxes L', 140, 120, 'BoxCo', 3, '=MAX(0,C6-B6)', '=ROUNDUP(F6/10,0)*10', '=G6*E6', '=IF(B6=0,"Critical",IF(F6>0,"Reorder","OK"))'], ['Stretch film', 9, 10, 'Harbor Supply', 22, '=MAX(0,C7-B7)', '=ROUNDUP(F7/10,0)*10', '=G7*E7', '=IF(B7=0,"Critical",IF(F7>0,"Reorder","OK"))'], ['Void fill paper', 30, 75, 'WrapRight', 5, '=MAX(0,C8-B8)', '=ROUNDUP(F8/10,0)*10', '=G8*E8', '=IF(B8=0,"Critical",IF(F8>0,"Reorder","OK"))'], ['Thermal ribbons', 12, 10, 'LabelWorks', 9, '=MAX(0,C9-B9)', '=ROUNDUP(F9/10,0)*10', '=G9*E9', '=IF(B9=0,"Critical",IF(F9>0,"Reorder","OK"))'], ['Pallet wrap tool', 2, 4, 'Harbor Supply', 35, '=MAX(0,C10-B10)', '=ROUNDUP(F10/10,0)*10', '=G10*E10', '=IF(B10=0,"Critical",IF(F10>0,"Reorder","OK"))'], ['Edge protectors', 48, 100, 'BoxCo', 1, '=MAX(0,C11-B11)', '=ROUNDUP(F11/10,0)*10', '=G11*E11', '=IF(B11=0,"Critical",IF(F11>0,"Reorder","OK"))'], ['Fragile stickers', 300, 250, 'LabelWorks', 1, '=MAX(0,C12-B12)', '=ROUNDUP(F12/10,0)*10', '=G12*E12', '=IF(B12=0,"Critical",IF(F12>0,"Reorder","OK"))'], ['Mailer bags', 75, 200, 'WrapRight', 2, '=MAX(0,C13-B13)', '=ROUNDUP(F13/10,0)*10', '=G13*E13', '=IF(B13=0,"Critical",IF(F13>0,"Reorder","OK"))'], ['Box cutters', 0, 12, 'Harbor Supply', 6, '=MAX(0,C14-B14)', '=ROUNDUP(F14/10,0)*10', '=G14*E14', '=IF(B14=0,"Critical",IF(F14>0,"Reorder","OK"))'], ['Corrugated boxes S', 210, 180, 'BoxCo', 1, '=MAX(0,C15-B15)', '=ROUNDUP(F15/10,0)*10', '=G15*E15', '=IF(B15=0,"Critical",IF(F15>0,"Reorder","OK"))'], ['Label printer rolls', 0, 8, 'LabelWorks', 12, '=MAX(0,C16-B16)', '=ROUNDUP(F16/10,0)*10', '=G16*E16', '=IF(B16=0,"Critical",IF(F16>0,"Reorder","OK"))'], ['Strapping kits', 5, 6, 'Harbor Supply', 28, '=MAX(0,C17-B17)', '=ROUNDUP(F17/10,0)*10', '=G17*E17', '=IF(B17=0,"Critical",IF(F17>0,"Reorder","OK"))'], ['Total', None, None, None, None, None, '=SUM(G2:G17)', '=SUM(H2:H17)', None]]), ('BySupplier', [['Supplier', 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A2,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A2,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!I2:I17,"Critical")'], ['Harbor Supply', '=COUNTIFS(Reorder!D2:D17,A3,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A3,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A3,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A3,Reorder!I2:I17,"Critical")'], ['LabelWorks', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A4,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A4,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!I2:I17,"Critical")'], ['WrapRight', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A5,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A5,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!I2:I17,"Critical")'], ['Total', '=SUM(B2:B5)', '=SUM(C2:C5)', '=SUM(D2:D5)', '=SUM(E2:E5)']]), ('Summary', [['Metric', 'Value'], ['Items to reorder', '=COUNTIF(Reorder!G2:G17,">0")'], ['Critical items', '=COUNTIF(Reorder!I2:I17,"Critical")'], ['Total order cost', '=Reorder!H18'], ['Largest supplier', '=INDEX(BySupplier!A2:A5,MATCH(MAX(BySupplier!D2:D5),BySupplier!D2:D5,0))'], ['Largest supplier cost', '=MAX(BySupplier!D2:D5)']])]
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        for name, rows in sheets:
+            ws = wb.create_sheet(name)
+            for r, values in enumerate(rows, start=1):
+                for c, value in enumerate(values, start=1):
+                    if value is not None:
+                        ws.cell(row=r, column=c, value=value)
+        wb.save(path)
+        print('ORACLE_OK', path)
+        import csv
+        with open(os.path.join(os.environ['USERPROFILE'], 'Documents', 'supplier_po.csv'), 'w', newline='', encoding='utf-8') as handle:
+            csv.writer(handle).writerows([['Supplier', 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '2', '120', '180', '0'], ['Harbor Supply', '6', '80', '1170', '1'], ['LabelWorks', '2', '50', '160', '1'], ['WrapRight', '2', '180', '510', '0'], ['Total', '12', '430', '2020', '2']])
+        '@
+        $code | py -3 -W ignore -
+        if ($LASTEXITCODE -ne 0) { throw "Failed to build oracle reorder_plan.xlsx" }
+      timeout: 180
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      def _need(mod, pkg):
+          try:
+              return __import__(mod)
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+              return __import__(mod)
+      def norm(value):
+          if isinstance(value, str):
+              text = value.strip()
+              if text.startswith('='):
+                  return '=' + text[1:].replace(' ', '').replace('$', '').replace("'", '').upper()
+              return text
+          if isinstance(value, bool) or value is None:
+              return value
+          number = float(value)
+          return int(number) if number.is_integer() else round(number, 4)
+      openpyxl = _need('openpyxl', 'openpyxl')
+      path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'reorder_plan.xlsx')
+      wb = openpyxl.load_workbook(path, data_only=False)
+      expected_sheets = [('Reorder', [['Item', 'OnHand', 'ReorderPoint', 'Supplier', 'UnitCost', 'Shortfall', 'OrderQty', 'LineCost', 'Priority'], ['Packing tape', 22, 40, 'Harbor Supply', 3, '=MAX(0,C2-B2)', '=ROUNDUP(F2/10,0)*10', '=G2*E2', '=IF(B2=0,"Critical",IF(F2>0,"Reorder","OK"))'], ['Shipping labels', 160, 200, 'LabelWorks', 1, '=MAX(0,C3-B3)', '=ROUNDUP(F3/10,0)*10', '=G3*E3', '=IF(B3=0,"Critical",IF(F3>0,"Reorder","OK"))'], ['Bubble wrap rolls', 6, 12, 'Harbor Supply', 14, '=MAX(0,C4-B4)', '=ROUNDUP(F4/10,0)*10', '=G4*E4', '=IF(B4=0,"Critical",IF(F4>0,"Reorder","OK"))'], ['Corrugated boxes M', 95, 150, 'BoxCo', 2, '=MAX(0,C5-B5)', '=ROUNDUP(F5/10,0)*10', '=G5*E5', '=IF(B5=0,"Critical",IF(F5>0,"Reorder","OK"))'], ['Corrugated boxes L', 140, 120, 'BoxCo', 3, '=MAX(0,C6-B6)', '=ROUNDUP(F6/10,0)*10', '=G6*E6', '=IF(B6=0,"Critical",IF(F6>0,"Reorder","OK"))'], ['Stretch film', 9, 10, 'Harbor Supply', 22, '=MAX(0,C7-B7)', '=ROUNDUP(F7/10,0)*10', '=G7*E7', '=IF(B7=0,"Critical",IF(F7>0,"Reorder","OK"))'], ['Void fill paper', 30, 75, 'WrapRight', 5, '=MAX(0,C8-B8)', '=ROUNDUP(F8/10,0)*10', '=G8*E8', '=IF(B8=0,"Critical",IF(F8>0,"Reorder","OK"))'], ['Thermal ribbons', 12, 10, 'LabelWorks', 9, '=MAX(0,C9-B9)', '=ROUNDUP(F9/10,0)*10', '=G9*E9', '=IF(B9=0,"Critical",IF(F9>0,"Reorder","OK"))'], ['Pallet wrap tool', 2, 4, 'Harbor Supply', 35, '=MAX(0,C10-B10)', '=ROUNDUP(F10/10,0)*10', '=G10*E10', '=IF(B10=0,"Critical",IF(F10>0,"Reorder","OK"))'], ['Edge protectors', 48, 100, 'BoxCo', 1, '=MAX(0,C11-B11)', '=ROUNDUP(F11/10,0)*10', '=G11*E11', '=IF(B11=0,"Critical",IF(F11>0,"Reorder","OK"))'], ['Fragile stickers', 300, 250, 'LabelWorks', 1, '=MAX(0,C12-B12)', '=ROUNDUP(F12/10,0)*10', '=G12*E12', '=IF(B12=0,"Critical",IF(F12>0,"Reorder","OK"))'], ['Mailer bags', 75, 200, 'WrapRight', 2, '=MAX(0,C13-B13)', '=ROUNDUP(F13/10,0)*10', '=G13*E13', '=IF(B13=0,"Critical",IF(F13>0,"Reorder","OK"))'], ['Box cutters', 0, 12, 'Harbor Supply', 6, '=MAX(0,C14-B14)', '=ROUNDUP(F14/10,0)*10', '=G14*E14', '=IF(B14=0,"Critical",IF(F14>0,"Reorder","OK"))'], ['Corrugated boxes S', 210, 180, 'BoxCo', 1, '=MAX(0,C15-B15)', '=ROUNDUP(F15/10,0)*10', '=G15*E15', '=IF(B15=0,"Critical",IF(F15>0,"Reorder","OK"))'], ['Label printer rolls', 0, 8, 'LabelWorks', 12, '=MAX(0,C16-B16)', '=ROUNDUP(F16/10,0)*10', '=G16*E16', '=IF(B16=0,"Critical",IF(F16>0,"Reorder","OK"))'], ['Strapping kits', 5, 6, 'Harbor Supply', 28, '=MAX(0,C17-B17)', '=ROUNDUP(F17/10,0)*10', '=G17*E17', '=IF(B17=0,"Critical",IF(F17>0,"Reorder","OK"))'], ['Total', None, None, None, None, None, '=SUM(G2:G17)', '=SUM(H2:H17)', None]]), ('BySupplier', [['Supplier', 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A2,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A2,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!I2:I17,"Critical")'], ['Harbor Supply', '=COUNTIFS(Reorder!D2:D17,A3,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A3,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A3,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A3,Reorder!I2:I17,"Critical")'], ['LabelWorks', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A4,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A4,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!I2:I17,"Critical")'], ['WrapRight', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!G2:G17,">0")', '=SUMIF(Reorder!D2:D17,A5,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A5,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!I2:I17,"Critical")'], ['Total', '=SUM(B2:B5)', '=SUM(C2:C5)', '=SUM(D2:D5)', '=SUM(E2:E5)']]), ('Summary', [['Metric', 'Value'], ['Items to reorder', '=COUNTIF(Reorder!G2:G17,">0")'], ['Critical items', '=COUNTIF(Reorder!I2:I17,"Critical")'], ['Total order cost', '=Reorder!H18'], ['Largest supplier', '=INDEX(BySupplier!A2:A5,MATCH(MAX(BySupplier!D2:D5),BySupplier!D2:D5,0))'], ['Largest supplier cost', '=MAX(BySupplier!D2:D5)']])]
+      names = wb.sheetnames
+      if names[:len(expected_sheets)] != [name for name, _ in expected_sheets]:
+          print('SHEET_NAMES_MISMATCH:' + repr(names))
+          raise SystemExit(1)
+      width = 9
+      for name, rows in expected_sheets:
+          ws = wb[name]
+          for r in range(1, len(rows) + 2):
+              expected = [norm(v) for v in rows[r - 1]] if r <= len(rows) else [None] * width
+              expected += [None] * (width - len(expected))
+              observed = [norm(ws.cell(row=r, column=c).value) for c in range(1, width + 1)]
+              observed = [None if v == '' else v for v in observed]
+              if observed != expected:
+                  print('ROW_MISMATCH:%s:%d:%r' % (name, r, observed))
+                  raise SystemExit(1)
+      def fail(message):
+          print(message)
+          raise SystemExit(1)
+      def norm_csv(value):
+          text = (value or '').strip()
+          try:
+              number = float(text)
+          except ValueError:
+              return text
+          return int(number) if number.is_integer() else round(number, 2)
+      import csv
+      csv_path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'supplier_po.csv')
+      if not os.path.exists(csv_path):
+          fail('MISSING_CSV')
+      def trim(row):
+          row = [norm_csv(v) for v in row]
+          while row and row[-1] == '':
+              row.pop()
+          return row
+      with open(csv_path, newline='', encoding='utf-8-sig') as handle:
+          observed_csv = [trim(row) for row in csv.reader(handle) if any(v.strip() for v in row)]
+      expected_csv = [trim(row) for row in [['Supplier', 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '2', '120', '180', '0'], ['Harbor Supply', '6', '80', '1170', '1'], ['LabelWorks', '2', '50', '160', '1'], ['WrapRight', '2', '180', '510', '0'], ['Total', '12', '430', '2020', '2']]]
+      if observed_csv != expected_csv:
+          fail('CSV_MISMATCH:%r' % (observed_csv,))
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.calc_reorder_plan_hard

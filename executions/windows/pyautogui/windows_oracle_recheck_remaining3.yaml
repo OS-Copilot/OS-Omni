@@ -6,8 +6,6 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-  - tasks/windows/calc_crosssheet_chart.yaml
-  - tasks/windows/deltachat_create_launch_debrief_from_existing_chats.yaml
-  - tasks/windows/gimp_center_helloworld.yaml
+  - tasks/v1/windows/calc_crosssheet_chart.yaml
 metadata:
   description: Windows oracle recheck for the three remaining precision failures.

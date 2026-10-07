@@ -1,0 +1,93 @@
+task_id: windows.notepad.append_text
+platform: windows
+instruction: 'A text file named guest.txt is open in Notepad. Rewrite the file into this exact 12-line final form, preserving
+  the original first line and original guest-log line in the required positions: "Welcome to the system.", "Session owner:
+  guest_ops", "Access level: temporary", "This is a guest log.", "Task completed", "Reviewed by: shift_lead", "Priority: medium",
+  "Queue: overnight", "# handoff ready", "Audit: hard mode complete", "Escalation: none", and "Checksum: HW-4827". Save the
+  file when done. Also create these hard-plus verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.notepad.append_text\tlinux.notepadqq.sync_ops_bundle\thard-plus-ready\napp\tnotepad\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_dependency_index.txt with exactly this
+  content: ''primary_task=windows.notepad.append_text\nlinux_peer=linux.notepadqq.sync_ops_bundle\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_review_matrix.csv with exactly this content:
+  ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: '$content = "Welcome to the system.`r`nThis is a guest log."
+
+        $filePath = Join-Path $env:USERPROFILE "Downloads\guest.txt"
+
+        Set-Content -Path $filePath -Value $content -Encoding UTF8
+
+        Write-Output ''INIT_OK''
+
+        '
+      timeout: 10
+    - type: run_powershell
+      script: '$filePath = Join-Path $env:USERPROFILE "Downloads\guest.txt"
+
+        Start-Process notepad.exe $filePath
+
+        '
+      timeout: 15
+    - type: wait
+      ms: 2000
+evaluation:
+  evaluator_id: evaluators.windows.notepad:NotepadEvaluator
+  params:
+    check_id: notepad_append_text
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.notepad.append_text\tlinux.notepadqq.sync_ops_bundle\thard-plus-ready\n\
+          app\tnotepad\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.notepad.append_text
+
+          linux_peer=linux.notepadqq.sync_ops_bundle
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_notepad_append_text\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - notepad
+  - text
+  - insert
+  - append
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  app_name: notepad
+  human_steps: 88
+  description: 'Linux-aligned hard Notepad task: produce a precise multi-line handoff file with inserted owner/access lines,
+    audit lines, escalation status, and checksum.'
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator or supplemental checks
+  linux_peer: linux.notepadqq.sync_ops_bundle
+  linux_peer_file: tasks/linux/notepadqq_sync_ops_bundle_hard.yaml
+  alignment_status: functional_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

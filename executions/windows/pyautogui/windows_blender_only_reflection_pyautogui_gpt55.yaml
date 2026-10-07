@@ -6,8 +6,6 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-  - tasks/windows/blender_marker_cube_scene.yaml
-  - tasks/windows/blender_robot_tower_layout_scene.yaml
-  - tasks/windows/blender_warehouse_blockout_scene.yaml
+  - tasks/v1/windows/blender_robot_tower_layout_scene.yaml
 metadata:
   description: Windows Blender-only smoke rerun for gpt5_5 with code_adapter mode.

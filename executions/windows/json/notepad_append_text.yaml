@@ -1,5 +1,5 @@
 tasks:
-- tasks/windows/notepad_append_text.yaml
+- tasks/v1/windows/notepad_append_text.yaml
 models:
 - gpt5_4
 action_mode: code_adapter

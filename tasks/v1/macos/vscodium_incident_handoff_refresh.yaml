@@ -1,0 +1,51 @@
+task_id: macos.vscodium.incident_handoff_refresh
+platform: macos
+instruction: "A VSCodium workspace named incident_handoff is already open. The relevant\nfiles are already available in the Explorer sidebar, and README.md is the\nactive editor. The workspace also exposes top-level aliases for runbook.md,\nincident_summary.py, rotation.py, and incident.json, and each alias edits\nthe real underlying file.\n\nRefresh the overnight handoff so every file agrees on the same SEV2 watch:\nseverity must be `SEV2`, the handoff owner must be `Night Watch`, queue lag\nmust page at 12 minutes, and bridge lag must escalate at 20 minutes.\n\nComplete the task with this exact file order:\n1. overwrite README.md with the final markdown below, then save\n2. press Cmd+P, type runbook.md, press Enter\n3. overwrite runbook.md with the final markdown below, then save\n4. press Cmd+P, type incident_summary.py, press Enter\n5. overwrite incident_summary.py with the final Python below, then save\n6. press Cmd+P, type rotation.py, press Enter\n7. overwrite rotation.py with the final Python below, then save\n8. press Cmd+P, type incident.json, press Enter\n9. overwrite incident.json with the final JSON below, then save\n\nDo not use the command palette and do not edit any other files.\n\nReplace README.md\
+  \ with exactly:\n\n```md\n# SEV2 Overnight Watch\n\nStatus: Ready for SEV2 overnight watch\n\nCurrent watch settings:\n- Severity: SEV2\n- Owner: Night Watch\n- Queue lag threshold: 12 minutes\n- Bridge lag threshold: 20 minutes\n\nFiles in this workspace:\n- docs/runbook.md\n- src/incident_summary.py\n- src/rotation.py\n- config/incident.json\n- .vscode/settings.json\n```\n\nReplace docs/runbook.md with exactly:\n\n```md\n# SEV2 Queue Lag Runbook\n\n## Escalation\n- Keep the incident at SEV2 during the overnight watch.\n- Post the current lag graph in the handoff thread.\n- Page the backup on-call if queue lag stays above 12 minutes for two checks.\n- Escalate immediately if bridge lag reaches 20 minutes.\n\n## Recovery\n- Confirm the ingestion worker is healthy.\n- Ask support to pause bulk imports if lag keeps rising.\n- Reassign the handoff owner to Night Watch after paging.\n```\n\nReplace src/incident_summary.py with exactly:\n\n```python\nINCIDENT_SEVERITY = \"SEV2\"\nDEFAULT_OWNER = \"Night Watch\"\n\n\ndef render_summary(queue_name: str) -> str:\n    return f\"{INCIDENT_SEVERITY}: {queue_name} -> owner {DEFAULT_OWNER}\"\n```\n\nReplace src/rotation.py with exactly:\n\n```python\nPRIMARY_ENGINEER = \"Nina\"\
+  \nBACKUP_ENGINEER = \"Marco\"\nESCALATION_OWNER = \"Night Watch\"\n\n\ndef current_rotation() -> str:\n    return f\"primary={PRIMARY_ENGINEER}, backup={BACKUP_ENGINEER}, owner={ESCALATION_OWNER}\"\n```\n\nReplace config/incident.json with exactly:\n\n```json\n{\n  \"pageBackupOnLag\": true,\n  \"queueLagThresholdMinutes\": 12,\n  \"bridgeLagThresholdMinutes\": 20,\n  \"handoffOwner\": \"Night Watch\",\n  \"severity\": \"SEV2\",\n  \"handoffState\": \"ready\"\n}\n```\n"
+init:
+  initializer_id: initializers.macos.vscodium:VSCodiumInitializer
+  params:
+    wait_ms: 6000
+    open_settings_file: false
+    open_workspace: true
+    workspace_root: /Users/bench/Documents/incident_handoff
+    fixture_root: files/vscodium/incident_handoff_refresh/start
+    file_aliases:
+    - alias: runbook.md
+      target: docs/runbook.md
+    - alias: incident_summary.py
+      target: src/incident_summary.py
+    - alias: rotation.py
+      target: src/rotation.py
+    - alias: incident.json
+      target: config/incident.json
+    baseline_settings:
+      breadcrumbs.enabled: false
+      workbench.editor.showTabs: false
+      workbench.list.openMode: singleClick
+      editor.autoIndent: none
+    starter_files:
+    - README.md
+    - runbook.md
+    - incident_summary.py
+    - rotation.py
+    - incident.json
+    active_file: README.md
+evaluation:
+  evaluator_id: evaluators.macos.vscodium:VSCodiumWorkspaceEvaluator
+  params:
+    workspace_root: /Users/bench/Documents/incident_handoff
+    expected_root: files/vscodium/incident_handoff_refresh/expected
+    compare_paths:
+    - README.md
+    - docs/runbook.md
+    - src/incident_summary.py
+    - src/rotation.py
+    - config/incident.json
+    - .vscode/settings.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

@@ -1,15 +1,7 @@
 models:
   - free_codesonline_gpt5_5_responses
 tasks:
-  - tasks/linux/blender_prepare_social_render_hard.yaml
-  - tasks/linux/blender_restage_product_objects_hard.yaml
-  - tasks/linux/calc_freeze_header_range_hard.yaml
-  - tasks/linux/impress_create_six_image_slides_hard.yaml
-  - tasks/linux/zotero_reference_library_buildout_hard.yaml
-  - tasks/linux/zotero_research_collection_with_notes_hard.yaml
-  - tasks/linux/cross_vm_writer_launch_review_minutes_hard.yaml
-  - tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
-  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_writer_launch_review_minutes_hard.yaml
 reuse_vm_session: true
 action_mode: code_adapter
 observation_mode: screenshot_only

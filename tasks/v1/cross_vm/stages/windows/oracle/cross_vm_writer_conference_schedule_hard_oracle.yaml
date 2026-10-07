@@ -1,0 +1,118 @@
+task_id: windows.oracle.cross_vm.writer_conference_schedule_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.writer_conference_schedule_hard. The initializer already prepares
+  the expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        Get-Process soffice,soffice.bin,swriter -ErrorAction SilentlyContinue |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+        $code = @'
+        import os, subprocess, sys
+        def _need(mod, pkg):
+            try:
+                return __import__(mod)
+            except ImportError:
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+                return __import__(mod)
+        docx = _need('docx', 'python-docx')
+        path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'conference_schedule.docx')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        doc = docx.Document()
+        for kind, value, style in [('p', 'DevSummit 2026 Day 1', 'heading 1'), ('p', 'Room A', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Opening keynote', 'Maya Chen'], ['10:15', 'Scaling event pipelines', 'Jordan Lee'], ['11:30', 'Observability on a budget', 'Theo Martin'], ['13:30', 'Secure defaults for APIs', 'Rosa Lima'], ['14:45', 'Testing flaky UIs', 'Kenji Sato'], ['16:00', 'Closing panel', 'Maya Chen']], ''), ('p', 'Room B', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Accessibility clinic', 'Omar Haddad'], ['10:15', 'Design tokens in practice', 'Priya Nair'], ['11:30', 'Mobile offline sync', 'Ines Duarte'], ['14:45', 'Inclusive onboarding', 'Dana Ortiz'], ['16:00', 'Design systems Q and A', 'Priya Nair']], ''), ('p', 'Room C', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Hiring for platform teams', 'Rosa Lima'], ['11:30', 'Cost reviews that stick', 'Sam Patel'], ['13:30', 'Feature flags at scale', 'Dana Ortiz'], ['14:45', 'Incident review rituals', 'Theo Martin'], ['16:00', 'Platform roadmap', 'Jordan Lee']], ''), ('p', 'Speaker index', 'heading 2'), ('p', 'Dana Ortiz: Feature flags at scale; Inclusive onboarding', ''), ('p', 'Ines Duarte: Mobile offline sync', ''), ('p', 'Jordan Lee: Scaling event pipelines; Platform roadmap', ''), ('p', 'Kenji Sato: Testing flaky UIs', ''), ('p', 'Maya Chen: Opening keynote; Closing panel', ''), ('p', 'Omar Haddad: Accessibility clinic', ''), ('p', 'Priya Nair: Design tokens in practice; Design systems Q and A', ''), ('p', 'Rosa Lima: Hiring for platform teams; Secure defaults for APIs', ''), ('p', 'Sam Patel: Cost reviews that stick', ''), ('p', 'Theo Martin: Observability on a budget; Incident review rituals', ''), ('p', 'Totals', 'heading 2'), ('p', 'Sessions: 16', ''), ('p', 'Speakers: 10', ''), ('p', 'Busiest room: Room A (6 sessions)', '')]:
+            if kind == 'tbl':
+                table = doc.add_table(rows=len(value), cols=len(value[0]))
+                for r, row in enumerate(value):
+                    for c, text in enumerate(row):
+                        table.cell(r, c).text = text
+            elif style.startswith('heading'):
+                doc.add_heading(value, level=int(style.split()[-1]))
+            else:
+                doc.add_paragraph(value)
+        doc.save(path)
+        print('ORACLE_OK', path)
+        '@
+        $code | py -3 -W ignore -
+        if ($LASTEXITCODE -ne 0) { throw "Failed to build oracle conference_schedule.docx" }
+        $candidates = @(
+          'C:\Program Files\LibreOffice\program\soffice.exe',
+          'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+          'C:\Program Files\LibreOffice 26\program\soffice.exe'
+        )
+        $officeExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if (-not $officeExe) { $cmd = Get-Command soffice.exe -ErrorAction SilentlyContinue; if ($cmd) { $officeExe = $cmd.Source } }
+        if (-not $officeExe) { throw 'LibreOffice executable not found' }
+        $docDir = Join-Path $env:USERPROFILE 'Documents'
+        $docPath = Join-Path $docDir 'conference_schedule.docx'
+        & $officeExe --headless --convert-to pdf --outdir $docDir $docPath | Out-Null
+        $pdfPath = Join-Path $docDir 'conference_schedule.pdf'
+        if (-not (Test-Path -LiteralPath $pdfPath)) { throw "Missing oracle PDF: $pdfPath" }
+      timeout: 180
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      def _need(mod, pkg):
+          try:
+              return __import__(mod)
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+              return __import__(mod)
+      docx = _need('docx', 'python-docx')
+      from docx.table import Table
+      from docx.text.paragraph import Paragraph
+      def fail(message):
+          print(message)
+          raise SystemExit(1)
+      docs = os.path.join(os.environ['USERPROFILE'], 'Documents')
+      doc = docx.Document(os.path.join(docs, 'conference_schedule.docx'))
+      items = []
+      for child in doc.element.body.iterchildren():
+          tag = child.tag.split('}')[1]
+          if tag == 'p':
+              para = Paragraph(child, doc)
+              text = para.text.strip()
+              if text:
+                  items.append(('p', text, (para.style.name if para.style is not None else '').lower()))
+          elif tag == 'tbl':
+              table = Table(child, doc)
+              items.append(('tbl', [[cell.text.strip() for cell in row.cells] for row in table.rows], ''))
+      expected = [('p', 'DevSummit 2026 Day 1', 'heading 1'), ('p', 'Room A', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Opening keynote', 'Maya Chen'], ['10:15', 'Scaling event pipelines', 'Jordan Lee'], ['11:30', 'Observability on a budget', 'Theo Martin'], ['13:30', 'Secure defaults for APIs', 'Rosa Lima'], ['14:45', 'Testing flaky UIs', 'Kenji Sato'], ['16:00', 'Closing panel', 'Maya Chen']], ''), ('p', 'Room B', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Accessibility clinic', 'Omar Haddad'], ['10:15', 'Design tokens in practice', 'Priya Nair'], ['11:30', 'Mobile offline sync', 'Ines Duarte'], ['14:45', 'Inclusive onboarding', 'Dana Ortiz'], ['16:00', 'Design systems Q and A', 'Priya Nair']], ''), ('p', 'Room C', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Hiring for platform teams', 'Rosa Lima'], ['11:30', 'Cost reviews that stick', 'Sam Patel'], ['13:30', 'Feature flags at scale', 'Dana Ortiz'], ['14:45', 'Incident review rituals', 'Theo Martin'], ['16:00', 'Platform roadmap', 'Jordan Lee']], ''), ('p', 'Speaker index', 'heading 2'), ('p', 'Dana Ortiz: Feature flags at scale; Inclusive onboarding', ''), ('p', 'Ines Duarte: Mobile offline sync', ''), ('p', 'Jordan Lee: Scaling event pipelines; Platform roadmap', ''), ('p', 'Kenji Sato: Testing flaky UIs', ''), ('p', 'Maya Chen: Opening keynote; Closing panel', ''), ('p', 'Omar Haddad: Accessibility clinic', ''), ('p', 'Priya Nair: Design tokens in practice; Design systems Q and A', ''), ('p', 'Rosa Lima: Hiring for platform teams; Secure defaults for APIs', ''), ('p', 'Sam Patel: Cost reviews that stick', ''), ('p', 'Theo Martin: Observability on a budget; Incident review rituals', ''), ('p', 'Totals', 'heading 2'), ('p', 'Sessions: 16', ''), ('p', 'Speakers: 10', ''), ('p', 'Busiest room: Room A (6 sessions)', '')]
+      if len(items) != len(expected):
+          fail('ITEM_COUNT_MISMATCH:%r' % (items,))
+      for observed, (kind, value, style) in zip(items, expected):
+          if observed[0] != kind or observed[1] != value:
+              fail('CONTENT_MISMATCH:%r' % (observed,))
+          if kind == 'p' and style and observed[2] != style:
+              fail('STYLE_MISMATCH:%r' % (observed,))
+          if kind == 'p' and not style and observed[2].startswith('heading'):
+              fail('UNEXPECTED_HEADING:%r' % (observed,))
+      pypdf = _need('pypdf', 'pypdf')
+      pdf_path = os.path.join(docs, 'conference_schedule.pdf')
+      if not os.path.exists(pdf_path):
+          fail('MISSING_PDF')
+      text = ' '.join(' '.join((page.extract_text() or '').split()) for page in pypdf.PdfReader(pdf_path).pages)
+      for needle in ['DevSummit 2026 Day 1', 'Speaker index', 'Sessions: 16', 'Ines Duarte']:
+          if needle not in text:
+              fail('PDF_MISSING_TEXT:' + needle)
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.writer_conference_schedule_hard

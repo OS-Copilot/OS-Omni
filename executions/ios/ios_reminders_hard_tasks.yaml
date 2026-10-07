@@ -1,7 +1,7 @@
 tasks:
 # - tasks/ios/reminders_create_single_reminder.yaml
-- tasks/ios/reminders_manage_seeded_list.yaml
-- tasks/ios/reminders_rework_seeded_agenda.yaml
+- tasks/v1/ios/reminders_manage_seeded_list.yaml
+- tasks/v1/ios/reminders_rework_seeded_agenda.yaml
 models:
 - FKCODEX_GPT55
 action_mode: code_adapter

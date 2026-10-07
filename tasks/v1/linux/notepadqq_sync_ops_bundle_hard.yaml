@@ -1,0 +1,101 @@
+task_id: linux.notepadqq.sync_ops_bundle
+platform: linux
+instruction: In Gedit, use docs/ops-ticket.txt as the source of truth. Update config/ops.ini
+  so owner is Samir Cole, region is eu-west, maintenance_window is 23:30-01:00, and
+  escalation_channel is pager-eu. Then update notes/checklist.txt so the three checklist
+  items read Verify EU dashboards, Confirm pager-eu coverage, and Archive the old
+  rotation. Save both files.
+init:
+  initializer_id: initializers.linux.notepadqq:NotepadqqInitializer
+  params:
+    app_command: gedit
+    workspace_name: notepadqq_ops_bundle
+    files:
+    - path: docs/ops-ticket.txt
+      content: 'OPS CHANGE TICKET
+
+
+        Owner: Samir Cole
+
+        Region: eu-west
+
+        Maintenance window: 23:30-01:00
+
+        Escalation channel: pager-eu
+
+
+        Checklist:
+
+        - Verify EU dashboards
+
+        - Confirm pager-eu coverage
+
+        - Archive the old rotation
+
+        '
+    - path: config/ops.ini
+      content: '[ops]
+
+        owner=
+
+        region=
+
+        maintenance_window=
+
+        escalation_channel=
+
+        '
+    - path: notes/checklist.txt
+      content: '- Placeholder one
+
+        - Placeholder two
+
+        - Placeholder three
+
+        '
+    open_files:
+    - docs/ops-ticket.txt
+    - config/ops.ini
+    - notes/checklist.txt
+evaluation:
+  evaluator_id: evaluators.linux.notepadqq:NotepadqqWorkspaceEvaluator
+  params:
+    workspace_path: /tmp/helloworld_notepadqq_workspace/notepadqq_ops_bundle
+    files:
+    - path: config/ops.ini
+      equals: '[ops]
+
+        owner=Samir Cole
+
+        region=eu-west
+
+        maintenance_window=23:30-01:00
+
+        escalation_channel=pager-eu
+
+        '
+    - path: notes/checklist.txt
+      equals: '- Verify EU dashboards
+
+        - Confirm pager-eu coverage
+
+        - Archive the old rotation
+
+        '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - gedit
+  - editor
+  - ini
+  - checklist
+  - hard
+  app: notepadqq
+  difficulty: hard
+  description: Use an ops ticket to update an INI file and a checklist in Gedit.
+  oracle_task: tasks/v1/linux/oracle/notepadqq_sync_ops_bundle_oracle.yaml
+  oracle_model: linux_oracle_wait

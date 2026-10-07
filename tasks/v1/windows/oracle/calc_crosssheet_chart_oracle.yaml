@@ -1,0 +1,113 @@
+task_id: windows.oracle.calc.crosssheet_chart
+platform: windows
+instruction: >
+  Oracle sanity check for windows.calc.crosssheet_chart.
+
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          $ErrorActionPreference = "Stop"
+          $py = @'
+          import os, subprocess, sys
+          try:
+              from openpyxl import Workbook
+              from openpyxl.chart import BarChart, Reference
+              from openpyxl.comments import Comment
+              from openpyxl.formatting.rule import CellIsRule
+              from openpyxl.styles import PatternFill
+          except ImportError:
+              subprocess.check_call([sys.executable, "-m", "pip", "install", "openpyxl", "-q"])
+              from openpyxl import Workbook
+              from openpyxl.chart import BarChart, Reference
+              from openpyxl.comments import Comment
+              from openpyxl.formatting.rule import CellIsRule
+              from openpyxl.styles import PatternFill
+
+          quarter_data = {
+              "Q1": [("Alpha", 120, 36000), ("Beta", 85, 25500), ("Gamma", 200, 40000), ("Delta", 95, 28500), ("Epsilon", 160, 38400)],
+              "Q2": [("Gamma", 180, 36000), ("Alpha", 150, 45000), ("Epsilon", 170, 40800), ("Beta", 90, 27000), ("Delta", 110, 33000)],
+              "Q3": [("Delta", 125, 37500), ("Beta", 110, 33000), ("Alpha", 130, 39000), ("Gamma", 160, 32000), ("Epsilon", 155, 37200)],
+              "Q4": [("Epsilon", 190, 45600), ("Gamma", 210, 42000), ("Delta", 140, 42000), ("Alpha", 170, 51000), ("Beta", 118, 35400)],
+          }
+          products = {
+              "Alpha": ("Hardware", 165000),
+              "Beta": ("Software", 125000),
+              "Gamma": ("Hardware", 155000),
+              "Delta": ("Services", 145000),
+              "Epsilon": ("Software", 168000),
+          }
+          rev = {prod: {q: next(row[2] for row in rows if row[0] == prod) for q, rows in quarter_data.items()} for prod in products}
+          def total(prod):
+              return sum(rev[prod].values())
+          order = sorted(products.keys(), key=lambda p: (products[p][0], -total(p), p))
+
+          wb = Workbook()
+          first = True
+          for sheet_name, rows in quarter_data.items():
+              ws = wb.active if first else wb.create_sheet(sheet_name)
+              if first:
+                  ws.title = sheet_name
+                  first = False
+              ws.append(["Product", "Units", "Revenue"])
+              for row in rows:
+                  ws.append(row)
+
+          pws = wb.create_sheet("Products")
+          pws.append(["Product", "Category", "Annual Target"])
+          for prod in ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]:
+              pws.append([prod, products[prod][0], products[prod][1]])
+
+          ws = wb.create_sheet("Summary")
+          ws.append(["Product", "Category", "Q1 Revenue", "Q2 Revenue", "Q3 Revenue", "Q4 Revenue", "Total Revenue", "Average Revenue", "Q4 Share", "Target Variance", "Target Status"])
+          for row_idx, prod in enumerate(order, start=2):
+              ws.cell(row_idx, 1).value = prod
+              ws.cell(row_idx, 2).value = f"=VLOOKUP(A{row_idx},Products!$A$2:$C$6,2,0)"
+              for col_idx, q in enumerate(["Q1", "Q2", "Q3", "Q4"], start=3):
+                  ws.cell(row_idx, col_idx).value = f"=VLOOKUP(A{row_idx},{q}!$A$2:$C$6,3,0)"
+              ws.cell(row_idx, 7).value = f"=SUM(C{row_idx}:F{row_idx})"
+              ws.cell(row_idx, 8).value = f"=AVERAGE(C{row_idx}:F{row_idx})"
+              ws.cell(row_idx, 9).value = f"=F{row_idx}/G{row_idx}"
+              ws.cell(row_idx, 9).number_format = "0.0%"
+              ws.cell(row_idx, 10).value = f"=G{row_idx}-VLOOKUP(A{row_idx},Products!$A$2:$C$6,3,0)"
+              ws.cell(row_idx, 11).value = f'=IF(J{row_idx}>=0,"Above Target","Below Target")'
+          ws.freeze_panes = "A2"
+          ws.auto_filter.ref = "A1:K6"
+          ws["K1"].comment = Comment("Target status is based on Products targets", "HelloWorld")
+          red = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+          green = PatternFill(start_color="FF00B050", end_color="FF00B050", fill_type="solid")
+          ws.conditional_formatting.add("J2:J6", CellIsRule(operator="lessThan", formula=["0"], fill=red))
+          ws.conditional_formatting.add("J2:J6", CellIsRule(operator="greaterThanOrEqual", formula=["0"], fill=green))
+
+          chart = BarChart()
+          chart.title = "Annual Revenue by Product"
+          chart.add_data(Reference(ws, min_col=7, min_row=1, max_row=6), titles_from_data=True)
+          chart.set_categories(Reference(ws, min_col=1, min_row=2, max_row=6))
+          ws.add_chart(chart, "M2")
+
+          path = os.path.join(os.environ["USERPROFILE"], "Downloads", "quarterly.xlsx")
+          os.makedirs(os.path.dirname(path), exist_ok=True)
+          wb.save(path)
+          print("ORACLE_CALC_READY", path)
+          '@
+          $tmp = Join-Path $env:TEMP "calc_crosssheet_chart_oracle.py"
+          Set-Content -LiteralPath $tmp -Value $py -Encoding UTF8
+          py -3 -W ignore $tmp
+        timeout: 60
+
+evaluation:
+  evaluator_id: evaluators.windows.libreoffice_calc:LibreOfficeCalcEvaluator
+  params:
+    check_id: calc_crosssheet_chart
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 120
+
+limits:
+  max_steps: 100
+  step_timeout_seconds: 180
+
+metadata:
+  tags: [oracle, windows, libreoffice, calc]
+  oracle_for: windows.calc.crosssheet_chart

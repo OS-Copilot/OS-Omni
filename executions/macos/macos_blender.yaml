@@ -1,7 +1,6 @@
 tasks:
-  - tasks/macos/blender_set_preview_resolution.yaml
-  - tasks/macos/blender_prepare_social_render.yaml
-  - tasks/macos/blender_restage_product_objects.yaml
+  - tasks/v1/macos/blender_prepare_social_render.yaml
+  - tasks/v1/macos/blender_restage_product_objects.yaml
 models:
   - macos_blender_oracle
 action_mode: code_adapter

@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/oracle/photos_import_receipts_easy_oracle.yaml
-  - tasks/macos/oracle/photos_favorite_receipts_hard_oracle.yaml
-  - tasks/macos/oracle/photos_route_album_hard_oracle.yaml
+  - tasks/v1/macos/oracle/photos_favorite_receipts_hard_oracle.yaml
 models:
   - macos_script_oracle
 action_mode: code_adapter

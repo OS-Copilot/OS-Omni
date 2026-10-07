@@ -1,13 +1,7 @@
 tasks:
-  - tasks/windows/oracle/actual_budget_add_transactions_oracle.yaml
-  - tasks/windows/oracle/actual_budget_create_account_oracle.yaml
-  - tasks/windows/oracle/actual_budget_full_setup_oracle.yaml
-  - tasks/windows/oracle/blender_marker_cube_scene_oracle.yaml
-  - tasks/windows/oracle/blender_robot_tower_layout_scene_oracle.yaml
-  - tasks/windows/oracle/blender_warehouse_blockout_scene_oracle.yaml
-  - tasks/windows/oracle/calc_crosssheet_chart_oracle.yaml
-  - tasks/windows/oracle/calc_formulas_conditional_oracle.yaml
-  - tasks/windows/oracle/calc_freeze_filter_oracle.yaml
+  - tasks/v1/windows/oracle/actual_budget_add_transactions_oracle.yaml
+  - tasks/v1/windows/oracle/blender_robot_tower_layout_scene_oracle.yaml
+  - tasks/v1/windows/oracle/calc_crosssheet_chart_oracle.yaml
 models:
   - cross_vm_oracle_wait
 reuse_vm_session: true

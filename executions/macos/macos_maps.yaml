@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/maps_search_ferry_building_easy.yaml
-  - tasks/macos/maps_walking_route_sf_hard.yaml
-  - tasks/macos/maps_sf_landmark_briefing_hard.yaml
+  - tasks/v1/macos/maps_sf_landmark_briefing_hard.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

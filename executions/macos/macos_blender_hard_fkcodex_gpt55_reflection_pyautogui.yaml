@@ -1,6 +1,6 @@
 tasks:
-  - tasks/macos/blender_prepare_social_render.yaml
-  - tasks/macos/blender_restage_product_objects.yaml
+  - tasks/v1/macos/blender_prepare_social_render.yaml
+  - tasks/v1/macos/blender_restage_product_objects.yaml
 models:
   - FKCODEX_GPT55
 action_mode: code_adapter
