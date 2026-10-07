@@ -83,6 +83,10 @@ if bookmarks_path.exists():
 print(json.dumps(payload, ensure_ascii=False))
 PY"""
 
+        close_report = None
+        if params.get("close_app_before_read", True):
+            close_report = self._close_marble(controller, int(params.get("close_wait_seconds", 15) or 15))
+
         result = controller.run_bash_script(script, timeout=timeout)
         returncode = int(result.get("returncode", -1))
         output = str(result.get("output", "")).strip()
@@ -94,6 +98,8 @@ PY"""
 
         try:
             payload = json.loads(output)
+            if close_report is not None:
+                payload["app_close"] = close_report
         except json.JSONDecodeError as exc:
             return EvalResult(
                 status=EvalStatus.ERROR,
@@ -142,3 +148,37 @@ PY"""
             return EvalResult(status=EvalStatus.ERROR, message=f"Marble evaluator failed: {exc}", metadata=payload)
 
         return EvalResult(status=EvalStatus.PASS, message="Marble bookmark evaluation passed", metadata=payload)
+
+    @staticmethod
+    def _close_marble(controller: Any, wait_seconds: int) -> dict[str, Any]:
+        """Close running Marble windows the way a user would, then wait for exit.
+
+        Marble keeps the map theme in memory and writes ``[MarbleWidget]
+        mapTheme`` to ``marblerc`` only when its main window closes, so a
+        still-running session would read as "no theme".  The window is closed
+        through the window manager (not a signal), which runs Marble's normal
+        save-on-close path; Marble is never killed.
+        """
+
+        script = f"""export DISPLAY=${{DISPLAY:-:0}}
+export XAUTHORITY=${{XAUTHORITY:-$HOME/.Xauthority}}
+if ! pgrep -x marble >/dev/null 2>&1; then
+  echo '{{"was_running": false, "exited": true}}'
+  exit 0
+fi
+for window in $(wmctrl -lx 2>/dev/null | awk 'tolower($3) ~ /marble/ {{print $1}}'); do
+  wmctrl -ic "$window" 2>/dev/null || true
+done
+exited=false
+for _ in $(seq 1 {max(1, int(wait_seconds))}); do
+  if ! pgrep -x marble >/dev/null 2>&1; then exited=true; break; fi
+  sleep 1
+done
+printf '{{"was_running": true, "exited": %s}}\\n' "$exited"
+"""
+        try:
+            result = controller.run_bash_script(script, timeout=max(1, int(wait_seconds)) + 15)
+            output = str(result.get("output") or result.get("stdout") or "").strip()
+            return dict(json.loads(output.splitlines()[-1]))
+        except Exception as exc:  # noqa: BLE001 - reading proceeds either way
+            return {"error": f"{type(exc).__name__}: {exc}"}
