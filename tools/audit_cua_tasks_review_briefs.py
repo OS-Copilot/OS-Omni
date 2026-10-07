@@ -69,10 +69,10 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=16)
     args = parser.parse_args()
 
-    tasks = _source_tasks(args.source_root.resolve())
     briefs = json.loads(args.instruction_map.read_text(encoding="utf-8"))[
         "instructions"
     ]
+    tasks = _source_tasks(args.source_root.resolve(), set(briefs))
     if set(briefs) != {str(task["task_id"]).lower() for task in tasks}:
         raise ValueError("Instruction map does not exactly cover the source tasks")
 

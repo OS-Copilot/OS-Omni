@@ -308,6 +308,14 @@ class LinuxRuntimeController:
         timeout: int = 30,
         working_dir: Optional[str] = None,
     ) -> Dict[str, Any]:
+        # A headless runtime may inherit a system-service PATH rather than the
+        # desktop login PATH. Include tools installed for the guest user.
+        path_setup = 'export PATH="$HOME/.local/bin:$PATH"\n'
+        if script.startswith("#!"):
+            first_line, _, body = script.partition("\n")
+            script = first_line + "\n" + path_setup + body
+        else:
+            script = path_setup + script
         payload = {"script": script, "timeout": timeout, "working_dir": working_dir}
         return self._request_json(
             "POST",

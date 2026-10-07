@@ -149,17 +149,10 @@ def create_maps_db(path: Path) -> None:
         conn.close()
 
 
-def test_maps_task_metadata_tracks_windows_aligned_hard_step_budget() -> None:
+def test_v1_maps_task_metadata_tracks_hard_step_budget() -> None:
     import yaml
 
-    route = yaml.safe_load(Path("tasks/macos/maps_walking_route_sf_hard.yaml").read_text())
-    guide = yaml.safe_load(Path("tasks/macos/maps_sf_landmark_briefing_hard.yaml").read_text())
-
-    assert "initial_url" not in route["init"]["params"]
-    assert route["metadata"]["difficulty"] == "hard"
-    assert route["metadata"]["human_steps"] >= 35
-    assert "single_app" in route["metadata"]["tags"]
-    assert "evaluator_backed" in route["metadata"]["tags"]
+    guide = yaml.safe_load(Path("tasks/v1/macos/maps_sf_landmark_briefing_hard.yaml").read_text())
 
     assert guide["metadata"]["difficulty"] == "hard"
     assert guide["metadata"]["human_steps"] >= 40

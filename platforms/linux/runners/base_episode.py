@@ -612,7 +612,7 @@ class BaseEpisodeRunner(ABC):
         )
 
         self._logger.info("Building LLM Agent...")
-        session_metadata = {"task_id": task.id}
+        session_metadata = {"task_id": task.id, "task_instruction": task.goal}
         planner_cls = self._reflection_pyautogui_planner_cls()
         action_planner = planner_cls(
             llm_client=self.llm_client,

@@ -80,6 +80,13 @@ def wait_for_runtime_ready(
 class EpisodeRunner(BaseEpisodeRunner):
     """Executes one Linux task episode."""
 
+    def _reflection_pyautogui_planner_cls(self):
+        model = self.llm_client.load_model_registry().get(self.model_id)
+        if model.metadata.get("computer_use_protocol") == "qwen":
+            from platforms.linux.agent.planners.qwen_computer_use_planner import QwenComputerUsePlanner
+            return QwenComputerUsePlanner
+        return super()._reflection_pyautogui_planner_cls()
+
     def __init__(
         self,
         controller: LinuxRuntimeController,

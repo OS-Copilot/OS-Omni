@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping, Optional
 
 from core.evaluation import EvalResult, EvalStatus, load_evaluator
+from core.evaluation.context import with_task_binding
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,11 @@ def run_task_evaluation(
             controller=controller,
             final_observation=final_observation,
         )
+        context = with_task_binding(context, task)
+        runtime_udid = getattr(getattr(controller, "runtime", None), "udid", None)
+        if runtime_udid and not context["params"].get("udid"):
+            # Reviewed iOS evaluators read the run-bound simulator from params.
+            context["params"]["udid"] = str(runtime_udid)
         result = evaluator.evaluate(context)
         if not isinstance(result, EvalResult):
             raise TypeError(

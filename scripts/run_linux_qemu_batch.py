@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""Run Linux execution tasks against an existing QEMU VM with per-task reset.
+
+The VM must already expose its guest runtime and a QMP Unix socket, and have
+a clean snapshot containing the required applications and running runtime.
+Model configuration is read from configs/models.yaml as in the standard CLI.
+"""
+
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import socket
+import subprocess
+import sys
+import time
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
+from core.specs.loader import load_execution_spec, load_task_spec  # noqa: E402
+from platforms.linux.runners.episode import wait_for_runtime_ready  # noqa: E402
+
+
+def qmp_command(socket_path: Path, command: str, arguments: dict | None = None):
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+        connection.settimeout(180)
+        connection.connect(str(socket_path))
+        stream = connection.makefile("rwb")
+        greeting = json.loads(stream.readline())
+        if "QMP" not in greeting:
+            raise RuntimeError("Invalid QMP greeting")
+        for request_id, payload in enumerate((
+            {"execute": "qmp_capabilities"},
+            {"execute": command, "arguments": arguments or {}},
+        ), start=1):
+            stream.write(json.dumps(dict(payload, id=request_id)).encode() + b"\n")
+            stream.flush()
+            while True:
+                line = stream.readline()
+                if not line:
+                    raise RuntimeError("QMP connection closed without a response")
+                response = json.loads(line)
+                if response.get("id") != request_id:
+                    continue
+                if "error" in response:
+                    raise RuntimeError(f"QMP command failed: {response['error']}")
+                break
+        return response.get("return")
+
+
+def restore_snapshot(socket_path: Path, snapshot: str) -> None:
+    if not re.fullmatch(r"[a-zA-Z0-9_.-]+", snapshot):
+        raise ValueError("Snapshot names must contain only letters, digits, _, ., or -")
+    reply = qmp_command(socket_path, "human-monitor-command", {"command-line": f"loadvm {snapshot}"})
+    if reply and str(reply).strip():
+        raise RuntimeError(f"Snapshot restore failed: {reply}")
+    qmp_command(socket_path, "cont")
+
+
+def classify_result(result: dict) -> str:
+    initializer = result.get("initializer") or {}
+    evaluator = result.get("evaluation") or {}
+    if initializer and initializer.get("status") != "PASS":
+        return "INITIALIZATION_ERROR"
+    if evaluator.get("status") in {"ERROR", "SKIP"}:
+        return "EVALUATION_ERROR"
+    if evaluator.get("status") == "FAIL" and (evaluator.get("metadata") or {}).get("returncode") in {126, 127}:
+        return "EVALUATION_ERROR"
+    if result.get("status") == "PASS":
+        return "PASS"
+    if result.get("status") == "FAIL":
+        return "FAIL"
+    return "EXECUTION_ERROR"
+
+
+def write_summary(path: Path, run: dict, rows: list[dict]) -> None:
+    counts = Counter(row["classification"] for row in rows)
+    payload = dict(run, completed=len(rows), counts=dict(counts), tasks=rows)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--execution", type=Path, required=True)
+    parser.add_argument("--model", required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--summary-file", type=Path, help="Separate summary path for a disjoint task shard")
+    parser.add_argument("--qmp-socket", type=Path, required=True)
+    parser.add_argument("--snapshot", required=True)
+    parser.add_argument("--runtime-host", default="127.0.0.1")
+    parser.add_argument("--runtime-port", type=int, required=True)
+    parser.add_argument("--runtime-token-env", default="OS_OMNI_LINUX_RUNTIME_TOKEN")
+    parser.add_argument("--task-id", action="append", help="Run only these task IDs, in execution order")
+    parser.add_argument("--resume", action="store_true", help="Reuse completed results with matching task/model/run settings")
+    args = parser.parse_args()
+    token = os.environ.get(args.runtime_token_env)
+    if not token:
+        parser.error(f"Set {args.runtime_token_env} to the guest runtime token")
+    execution = load_execution_spec(args.execution)
+    tasks = [(path, load_task_spec(path)) for path in execution.task_paths]
+    if any(task.platform != "linux" for _, task in tasks):
+        parser.error("Every task must target Linux")
+    if args.task_id:
+        selected = set(args.task_id)
+        unknown = selected - {task.task_id for _, task in tasks}
+        if unknown:
+            parser.error(f"Unknown task IDs: {sorted(unknown)}")
+        tasks = [(path, task) for path, task in tasks if task.task_id in selected]
+    output = args.output_dir.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    summary_path = args.summary_file.resolve() if args.summary_file else output / "summary.json"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    run = {
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "execution": str(args.execution.resolve()), "model": args.model,
+        "snapshot": args.snapshot, "task_count": len(tasks),
+        "observation_mode": execution.observation_mode or "screenshot_only",
+        "action_mode": execution.action_mode or "code_adapter",
+        "history_window": execution.history_window or 3,
+    }
+    rows = []
+    for index, (path, task) in enumerate(tasks, start=1):
+        task_dir = output / task.task_id
+        task_dir.mkdir(parents=True, exist_ok=True)
+        fingerprint = {
+            "task_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "models_sha256": hashlib.sha256((REPO_ROOT / "configs/models.yaml").read_bytes()).hexdigest(),
+            **{key: run[key] for key in ("model", "snapshot", "observation_mode", "action_mode", "history_window")},
+        }
+        marker = task_dir / "batch_run.json"
+        result_path = task_dir / "result.json"
+        if args.resume and result_path.is_file() and marker.is_file():
+            previous = json.loads(marker.read_text())
+            if previous.get("fingerprint") != fingerprint:
+                raise RuntimeError(f"Run settings changed for {task.task_id}; choose a new output directory")
+            rows.append(previous["summary"])
+            write_summary(summary_path, run, rows)
+            print(f"[{index}/{len(tasks)}] reused {task.task_id}", flush=True)
+            continue
+        if any(task_dir.iterdir()):
+            raise RuntimeError(f"Task output already exists: {task_dir}; use --resume or a new directory")
+        print(f"[{index}/{len(tasks)}] {task.task_id}: restoring {args.snapshot}", flush=True)
+        started = time.monotonic()
+        row = {"task_id": task.task_id, "task_path": str(path), "output_dir": str(task_dir)}
+        try:
+            restore_snapshot(args.qmp_socket, args.snapshot)
+            wait_for_runtime_ready(f"http://{args.runtime_host}:{args.runtime_port}", token, timeout_seconds=90)
+            command = [
+                sys.executable, "-m", "platforms.linux.cli", "__benchmark_task",
+                "--task-file", str(path), "--execution-file", str(args.execution.resolve()),
+                "--model", args.model, "--action-mode", run["action_mode"],
+                "--observation-mode", run["observation_mode"], "--history-window", str(run["history_window"]),
+                "--vm-ip", args.runtime_host, "--runtime-port", str(args.runtime_port), "--runtime-token", token,
+            ]
+            env = dict(os.environ, LINUX_OUTPUT_DIR=str(task_dir))
+            # The full per-task step limit and step timeout are taken from its TaskSpec.
+            with (task_dir / "runner.log").open("w") as log:
+                process = subprocess.run(command, cwd=REPO_ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
+            row["return_code"] = process.returncode
+            if result_path.is_file():
+                result = json.loads(result_path.read_text())
+                row.update(classification=classify_result(result), status=result.get("status"),
+                           steps=result.get("steps_taken"), initializer=result.get("initializer"),
+                           evaluation=result.get("evaluation"), episode_result=result.get("episode_result"))
+            else:
+                row.update(classification="EXECUTION_ERROR", error="Worker did not produce result.json; inspect runner.log")
+        except Exception as error:
+            row.update(classification="INFRASTRUCTURE_ERROR", error=f"{type(error).__name__}: {error}")
+        row["duration_seconds"] = round(time.monotonic() - started, 2)
+        rows.append(row)
+        marker.write_text(json.dumps({"fingerprint": fingerprint, "summary": row}, ensure_ascii=False, indent=2) + "\n")
+        write_summary(summary_path, run, rows)
+        print(f"[{index}/{len(tasks)}] {row['classification']}: {row.get('steps', 0)} steps, {row['duration_seconds']}s", flush=True)
+    print(json.dumps(dict(Counter(row["classification"] for row in rows))), flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

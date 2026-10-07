@@ -10,6 +10,7 @@ from typing import Any, Mapping, Optional
 
 from core.benchmark_policy import REPO_ROOT, is_oracle_task_path, resolve_oracle_task_path
 from core.evaluation import EvalResult, EvalStatus, load_evaluator
+from core.evaluation.context import with_task_binding
 from core.specs.types import EvaluationSpec
 from platforms.macos.host.core.oracle_specs import load_oracle_spec_from_path
 
@@ -100,7 +101,7 @@ def _normalize_eval_params_relative_paths(
             continue
         base_candidate = (base_dir / path).resolve()
         repo_candidate = (REPO_ROOT / path).resolve()
-        task_macos_candidate = (REPO_ROOT / "tasks" / "macos" / path).resolve()
+        task_macos_candidate = (REPO_ROOT / "tasks" / "v1" / "macos" / path).resolve()
         if base_candidate.exists():
             normalized[key] = str(base_candidate)
         elif repo_candidate.exists():
@@ -179,6 +180,7 @@ def run_task_evaluation(
             )
         context = dict(raw_context)
         context["params"] = dict(evaluation.params)
+        context = with_task_binding(context, task)
         active_logger.info("Evaluator context keys: %s", sorted(context.keys()))
         evaluator = load_evaluator(evaluation.evaluator_id)
         result = evaluator.evaluate(context)

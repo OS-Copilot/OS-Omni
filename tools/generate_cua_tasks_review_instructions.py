@@ -42,7 +42,7 @@ QUOTED_VALUE_RE = re.compile(r'`([^`]+)`|“([^”]+)”|"([^"\n]+)"')
 UI_COMMAND_VALUES = {"Format Document", "Save File", "Run Tests"}
 
 
-def _source_tasks(source_root: Path) -> list[dict[str, Any]]:
+def _source_tasks(source_root: Path, task_ids: set[str] | None = None) -> list[dict[str, Any]]:
     tasks: list[dict[str, Any]] = []
     inventory = source_root / INVENTORY_NAME
     for line in inventory.read_text(encoding="utf-8").splitlines():
@@ -52,6 +52,11 @@ def _source_tasks(source_root: Path) -> list[dict[str, Any]]:
         directory = source_root / app / platform_dir / task_dir
         task, _ = _extract_task(_read_json(directory / "args.json"), directory)
         tasks.append(task)
+    if task_ids is not None:
+        source_ids = {str(task["task_id"]).lower() for task in tasks}
+        if not task_ids or not task_ids <= source_ids:
+            raise ValueError(f"Invalid selected task IDs: {sorted(task_ids - source_ids)}")
+        tasks = [task for task in tasks if str(task["task_id"]).lower() in task_ids]
     return tasks
 
 
@@ -184,8 +189,8 @@ def main() -> int:
     if args.output.resolve() == args.prior_map.resolve():
         parser.error("--output must differ from --prior-map")
 
-    tasks = _source_tasks(args.source_root.resolve())
     prior_records = _read_json(args.prior_map)["instructions"]
+    tasks = _source_tasks(args.source_root.resolve(), set(prior_records))
     if set(prior_records) != {str(task["task_id"]).lower() for task in tasks}:
         raise ValueError("Prior instruction map does not exactly match source tasks")
     existing: dict[str, Any] = {}

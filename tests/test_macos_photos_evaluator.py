@@ -180,20 +180,13 @@ def test_photos_evaluator_fails_forbidden_imported_asset(tmp_path: Path) -> None
     assert "forbidden asset was imported: client_receipt_blue_final_774.png" in str(result.message)
 
 
-def test_photos_task_metadata_keeps_one_easy_two_hard_evaluable_tasks() -> None:
-    easy = yaml.safe_load(Path("tasks/macos/photos_import_receipts_easy.yaml").read_text())
-    favorite_hard = yaml.safe_load(Path("tasks/macos/photos_favorite_receipts_hard.yaml").read_text())
-    route_hard = yaml.safe_load(Path("tasks/macos/photos_route_album_hard.yaml").read_text())
+def test_v1_photos_task_keeps_exact_asset_evaluation() -> None:
+    favorite_hard = yaml.safe_load(Path("tasks/v1/macos/photos_favorite_receipts_hard.yaml").read_text())
 
-    assert easy["metadata"]["difficulty"] == "easy"
     assert favorite_hard["metadata"]["difficulty"] == "hard"
-    assert route_hard["metadata"]["difficulty"] == "hard"
     assert favorite_hard["metadata"]["human_steps"] >= 40
-    assert route_hard["metadata"]["human_steps"] >= 45
-
-    for hard in (favorite_hard, route_hard):
-        assert "single_app" in hard["metadata"]["tags"]
-        assert "evaluator_backed" in hard["metadata"]["tags"]
-        assert hard["init"]["params"]["mode"] == "open"
-        assert hard["evaluation"]["params"]["exact_asset_set"] is True
-        assert hard["evaluation"]["params"]["albums"][0]["exact_assets"] is True
+    assert "single_app" in favorite_hard["metadata"]["tags"]
+    assert "evaluator_backed" in favorite_hard["metadata"]["tags"]
+    assert favorite_hard["init"]["params"]["mode"] == "open"
+    assert favorite_hard["evaluation"]["params"]["exact_asset_set"] is True
+    assert favorite_hard["evaluation"]["params"]["albums"][0]["exact_assets"] is True

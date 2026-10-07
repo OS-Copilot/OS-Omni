@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
-_TASK_ROOT = _REPO_ROOT / "tasks" / "macos" / "oracle"
+_TASK_ROOT = _REPO_ROOT / "tasks" / "v1" / "macos" / "oracle"
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

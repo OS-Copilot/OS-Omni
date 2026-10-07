@@ -97,8 +97,8 @@ def main() -> int:
     if args.output.resolve() == args.instruction_map.resolve():
         parser.error("--output must differ from the input map")
 
-    tasks = _source_tasks(args.source_root.resolve())
     base = json.loads(args.instruction_map.read_text(encoding="utf-8"))
+    tasks = _source_tasks(args.source_root.resolve(), set(base["instructions"]))
     audits = json.loads(args.audit_report.read_text(encoding="utf-8"))
     records = dict(base["instructions"])
     if args.output.is_file():

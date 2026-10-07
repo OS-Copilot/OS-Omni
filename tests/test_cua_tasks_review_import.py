@@ -7,12 +7,16 @@ import re
 from collections import Counter
 from pathlib import Path
 
+import yaml
+
+from core.evaluation import BaseEvaluator, load_evaluator
+from core.init import BaseInitializer, load_initializer
 from core.specs.loader import load_task_spec
 from tools.import_cua_tasks_review import _model_instruction, _ordered_requirements
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-MANIFEST_PATH = REPO_ROOT / "tasks" / "cua_tasks_review_manifest.json"
-INSTRUCTION_MAP_PATH = REPO_ROOT / "tasks" / "cua_tasks_review_instructions.json"
+MANIFEST_PATH = REPO_ROOT / "tasks" / "v1" / "cua_tasks_review_manifest.json"
+INSTRUCTION_MAP_PATH = REPO_ROOT / "tasks" / "v1" / "cua_tasks_review_instructions.json"
 
 
 def _manifest() -> dict:
@@ -24,31 +28,34 @@ def test_cua_review_manifest_covers_all_generated_tasks() -> None:
     entries = manifest["tasks"]
     generated = [REPO_ROOT / entry["task_path"] for entry in entries]
 
-    assert manifest["task_count"] == 303
-    assert len(entries) == 303
-    assert len(generated) == 303
+    assert manifest["task_count"] == 212
+    assert len(entries) == 212
+    assert len(generated) == 212
     assert all(path.is_file() for path in generated)
     assert manifest["platform_counts"] == {
-        "android": 60,
-        "ios": 36,
-        "linux": 131,
-        "macos": 35,
-        "windows": 41,
+        "android": 48,
+        "ios": 34,
+        "linux": 58,
+        "macos": 33,
+        "windows": 39,
     }
     assert manifest["extraction_counts"] == {
         "reconstructed_artifacts": 1,
         "reconstructed_flat_args": 4,
         "repaired_partial_snapshot": 1,
-        "task_snapshot": 297,
+        "task_snapshot": 206,
     }
     assert manifest["instruction_summary_source_counts"] == {
-        "generated_english_natural_language": 303,
+        "generated_english_natural_language": 212,
     }
     assert {entry["task_path"] for entry in entries} == {
         path.relative_to(REPO_ROOT).as_posix() for path in generated
     }
+    # Web tasks run on the Linux VM but live in their own release track folder.
     assert all(
-        Path(entry["task_path"]).parent.name == entry["platform"] for entry in entries
+        Path(entry["task_path"]).parent.name
+        in ({entry["platform"], "web"} if entry["platform"] == "linux" else {entry["platform"]})
+        for entry in entries
     )
     assert not any("cua_tasks_review" in entry["task_path"] for entry in entries)
     assert not any("cua_tasks_review" in entry["evaluator_id"] for entry in entries)
@@ -62,15 +69,15 @@ def test_all_cua_review_tasks_satisfy_task_spec_schema() -> None:
     specs = [load_task_spec(entry["task_path"]) for entry in _manifest()["tasks"]]
     task_ids = [spec.task_id for spec in specs]
 
-    assert len(task_ids) == 303
-    assert len(set(task_ids)) == 303
+    assert len(task_ids) == 212
+    assert len(set(task_ids)) == 212
     assert all(task_id == task_id.lower() for task_id in task_ids)
     assert Counter(spec.platform for spec in specs) == {
-        "android": 60,
-        "ios": 36,
-        "linux": 131,
-        "macos": 35,
-        "windows": 41,
+        "android": 48,
+        "ios": 34,
+        "linux": 58,
+        "macos": 33,
+        "windows": 39,
     }
 
 
@@ -102,19 +109,28 @@ def test_instructions_are_english_natural_language_with_current_hashes() -> None
         ):
             if key in metadata:
                 assert metadata[key] == current_hash
+        # Evaluators bind to the source instruction the runners pass them.
+        source = provenance["source_instruction"]
+        assert (
+            hashlib.sha256(source.encode("utf-8")).hexdigest()
+            == provenance["source_instruction_sha256"]
+        )
         evaluation_params = spec.evaluation.params
         if "expected_instruction_sha256" in evaluation_params:
-            assert evaluation_params["expected_instruction_sha256"] == current_hash
+            assert evaluation_params["expected_instruction_sha256"] in {
+                hashlib.sha256(text.encode("utf-8")).hexdigest()
+                for text in (source, source.rstrip("\n") + "\n")
+            }
 
 
-def test_english_instruction_map_exactly_covers_imported_tasks() -> None:
+def test_english_instruction_map_covers_imported_tasks() -> None:
     payload = json.loads(INSTRUCTION_MAP_PATH.read_text(encoding="utf-8"))
     records = payload["instructions"]
     task_ids = {entry["task_id"] for entry in _manifest()["tasks"]}
 
     assert payload["style_version"] == 2
-    assert len(records) == 303
-    assert set(records) == task_ids
+    # Briefs of reviewed tasks outside the current selection are kept for reuse.
+    assert set(records) >= task_ids
     assert all(record["style_version"] == 2 for record in records.values())
 
 
@@ -150,6 +166,33 @@ def test_implementation_ready_entries_have_importable_classes() -> None:
             module_name, class_name = import_id.split(":", 1)
             module = importlib.import_module(module_name)
             assert getattr(module, class_name) is not None
+
+
+def test_every_cua_review_evaluator_loads_through_the_runner_loader() -> None:
+    manifest = _manifest()
+
+    assert manifest["unresolved_evaluator_task_count"] == 0
+    for entry in manifest["tasks"]:
+        spec = load_task_spec(entry["task_path"])
+        assert spec.evaluation.evaluator_id == entry["evaluator_id"]
+        assert isinstance(load_evaluator(entry["evaluator_id"]), BaseEvaluator)
+
+
+def test_every_cua_review_initializer_loads_through_the_runner_loader() -> None:
+    manifest = _manifest()
+
+    assert manifest["unresolved_initializer_task_count"] == 0
+    assert manifest["implementation_ready_count"] == manifest["task_count"]
+    for entry in manifest["tasks"]:
+        spec = load_task_spec(entry["task_path"])
+        assert spec.init.initializer_id == entry["initializer_id"]
+        assert isinstance(load_initializer(entry["initializer_id"]), BaseInitializer)
+        task = yaml.safe_load((REPO_ROOT / entry["task_path"]).read_text(encoding="utf-8"))
+        original = task["metadata"]["cua_tasks_review"].get("original_initializer_id")
+        if entry["initializer_id"].startswith("evaluators.cua_review."):
+            assert original and entry["initializer_id"] == f"evaluators.cua_review.{original}"
+        else:
+            assert original is None
 
 
 def test_normalized_legacy_ids_keep_original_id_in_manifest() -> None:
