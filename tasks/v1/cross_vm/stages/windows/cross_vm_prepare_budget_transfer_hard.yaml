@@ -1,0 +1,114 @@
+task_id: windows.cross_vm.prepare_budget_transfer_hard
+platform: windows
+instruction: A source CSV is already open in Notepad. Save a clean Desktop copy as "budget_transfer.csv". The saved file must contain exactly the original header and all twelve data rows, preserving the four columns Category, Planned, Actual, and Owner, in the same order as shown in the source note. Leave the saved Desktop file available for transfer.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: 'Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+        $sourcePath = Join-Path $env:USERPROFILE "Documents\budget_source.csv"
+
+        @''
+
+        Category,Planned,Actual,Owner
+
+        Travel,1200,980,Logistics
+
+        Lodging,2100,2240,Logistics
+
+        Meals,450,390,Ops
+
+        Supplies,300,340,Ops
+
+        Insurance,600,720,Finance
+
+        Software,950,875,Engineering
+
+        Training,780,910,People
+
+        Equipment,1600,1425,Engineering
+
+        Marketing,1250,1380,Growth
+
+        Legal,700,640,Finance
+
+        Support,520,615,Ops
+
+        Contingency,900,760,Finance
+
+        ''@ | Set-Content -Path $sourcePath -Encoding UTF8
+
+        Start-Process notepad.exe $sourcePath
+
+        '
+      timeout: 30
+    - type: wait
+      ms: 4000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: '$expected = @''
+
+      Category,Planned,Actual,Owner
+
+      Travel,1200,980,Logistics
+
+      Lodging,2100,2240,Logistics
+
+      Meals,450,390,Ops
+
+      Supplies,300,340,Ops
+
+      Insurance,600,720,Finance
+
+      Software,950,875,Engineering
+
+      Training,780,910,People
+
+      Equipment,1600,1425,Engineering
+
+      Marketing,1250,1380,Growth
+
+      Legal,700,640,Finance
+
+      Support,520,615,Ops
+
+      Contingency,900,760,Finance
+
+      ''@.Trim()
+
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\budget_transfer.csv"
+
+      if (-not (Test-Path $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+
+      $actual = (Get-Content -Path $targetPath -Raw).Trim()
+
+      if ($actual -ne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+
+      Write-Output "EVAL_RESULT:PASS"
+
+      '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - notepad
+  - hard
+  app_name: notepad
+  difficulty: hard
+  human_steps: 96
+  description: Save a twelve-row, four-column budget transfer CSV exactly from Notepad for the cross-VM Calc task.
+  hardness: hard-evaluable
+  cross_vm_role: windows_source_phase
+  composite_task: cross_vm.windows_to_linux.budget_review_hard
+  source_platform: windows
+  target_platform: linux
+  owner_scope: linux
+  counts_as_windows_cross_vm_task: false

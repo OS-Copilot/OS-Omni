@@ -6,9 +6,6 @@ history_window: 3
 max_steps: 1
 timeout: 600
 tasks:
-  - tasks/windows/blender_robot_tower_layout_scene.yaml
-  - tasks/windows/blender_warehouse_blockout_scene.yaml
-  - tasks/windows/zotero_create_collection_with_notes.yaml
-  - tasks/windows/zotero_organize_library.yaml
+  - tasks/v1/windows/blender_robot_tower_layout_scene.yaml
 metadata:
   description: Single-step oracle recheck for Windows Blender and Zotero hard tasks using a11y-only observation to avoid screenshot timeouts with multi-window Blender.

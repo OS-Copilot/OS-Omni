@@ -1,0 +1,61 @@
+task_id: android.oracle.cross_vm.prepare_schedule_transfer_hard
+platform: android
+instruction: Oracle sanity task for android.cross_vm.prepare_schedule_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/schedule_source.txt
+    transfer_path: /sdcard/Documents/markor/schedule_transfer.csv
+    prepare_transfer: true
+    source_text: |
+      Time,Room,Session,Speaker
+      09:00,Room A,Opening keynote,Maya Chen
+      09:00,Room B,Accessibility clinic,Omar Haddad
+      09:00,Room C,Hiring for platform teams,Rosa Lima
+      10:15,Room A,Scaling event pipelines,Jordan Lee
+      10:15,Room B,Design tokens in practice,Priya Nair
+      11:30,Room A,Observability on a budget,Theo Martin
+      11:30,Room B,Mobile offline sync,Ines Duarte
+      11:30,Room C,Cost reviews that stick,Sam Patel
+      13:30,Room A,Secure defaults for APIs,Rosa Lima
+      13:30,Room C,Feature flags at scale,Dana Ortiz
+      14:45,Room A,Testing flaky UIs,Kenji Sato
+      14:45,Room B,Inclusive onboarding,Dana Ortiz
+      14:45,Room C,Incident review rituals,Theo Martin
+      16:00,Room A,Closing panel,Maya Chen
+      16:00,Room B,Design systems Q and A,Priya Nair
+      16:00,Room C,Platform roadmap,Jordan Lee
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/schedule_transfer.csv
+    expected_text: |
+      Time,Room,Session,Speaker
+      09:00,Room A,Opening keynote,Maya Chen
+      09:00,Room B,Accessibility clinic,Omar Haddad
+      09:00,Room C,Hiring for platform teams,Rosa Lima
+      10:15,Room A,Scaling event pipelines,Jordan Lee
+      10:15,Room B,Design tokens in practice,Priya Nair
+      11:30,Room A,Observability on a budget,Theo Martin
+      11:30,Room B,Mobile offline sync,Ines Duarte
+      11:30,Room C,Cost reviews that stick,Sam Patel
+      13:30,Room A,Secure defaults for APIs,Rosa Lima
+      13:30,Room C,Feature flags at scale,Dana Ortiz
+      14:45,Room A,Testing flaky UIs,Kenji Sato
+      14:45,Room B,Inclusive onboarding,Dana Ortiz
+      14:45,Room C,Incident review rituals,Theo Martin
+      16:00,Room A,Closing panel,Maya Chen
+      16:00,Room B,Design systems Q and A,Priya Nair
+      16:00,Room C,Platform roadmap,Jordan Lee
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: android.cross_vm.prepare_schedule_transfer_hard

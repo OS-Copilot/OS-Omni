@@ -1,0 +1,22 @@
+task_id: cross_vm.windows_to_linux.budget_review_hard
+platform: cross_vm
+instruction: >
+  First work in the Windows VM: a budget CSV source is open there, and you need
+  to save the required transfer file. Then move to the Linux VM and use the
+  transferred CSV to complete the LibreOffice Calc workbook.
+windows_task: tasks/v1/cross_vm/stages/windows/cross_vm_prepare_budget_transfer_hard.yaml
+linux_task: tasks/v1/cross_vm/stages/linux/cross_vm_calc_budget_review_hard.yaml
+transfer:
+  windows_guest_path: C:\Users\User\Desktop\budget_transfer.csv
+  linux_guest_path: /home/user/Desktop/budget_transfer.csv
+  host_filename: budget_transfer.csv
+metadata:
+  tags: [cross_vm, windows_to_linux, notepad, libreoffice, calc, hard]
+  difficulty: hard
+  description: Save a budget CSV on Windows, transfer it, and build a formula-driven Calc review sheet on Linux.
+  human_steps: 153
+  human_steps_by_stage:
+    windows: 96
+    linux: 57
+  oracle_task: tasks/v1/cross_vm/oracle/windows_to_linux_budget_review_hard_oracle.yaml
+  oracle_model: cross_vm_oracle_wait

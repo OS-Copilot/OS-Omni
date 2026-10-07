@@ -1,0 +1,173 @@
+task_id: windows.gimp.apple_and_orange_focus_blur_bw_upside_down
+platform: windows
+instruction: 'In GIMP, open the file "Apple_and_Orange.jpg" from the Downloads folder. Apply the default Focus Blur effect
+  to the image. Then convert the result to black and white, rotate it upside down, and apply Linear Invert to the colors.
+  Export the finished image to the Downloads folder as "apple_and_orange_focus_blur_submission.png", and leave the finished
+  image open.
+
+  Additional primary hard-mode requirement: Also save the editable GIMP project as "C:\Users\User\Downloads\apple_and_orange_focus_blur_submission.xcf"
+  before exporting the PNG. Also create these hard-plus verification files so the final state is a multi-artifact handoff
+  bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.gimp.apple_and_orange_focus_blur_bw_upside_down\tlinux.gimp.crop_center\thard-plus-ready\napp\tGIMP\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.gimp.apple_and_orange_focus_blur_bw_upside_down\nlinux_peer=linux.gimp.crop_center\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use the target application for the visual work and create required verification files directly at the specified paths using
+  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: upload_file
+      local_path: tasks/v1/windows/files/gimp/gimp_apples_oranges/Apple_and_Orange.jpg
+      path: C:\Users\User\Downloads\_incoming\Apple_and_Orange.jpg
+    - type: upload_file
+      local_path: tasks/v1/windows/files/gimp/gimp_apples_oranges/Apple_and_Orange_expected.png
+      path: C:\Users\User\Downloads\_incoming\Apple_and_Orange_expected.png
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nGet-Process \"gimp-2.10\" -ErrorAction SilentlyContinue | Stop-Process\
+        \ -Force -ErrorAction SilentlyContinue\nStart-Sleep -Milliseconds 500\n\n$gimpConfigPaths = @(\n  (Join-Path $env:APPDATA\
+        \ \"GIMP\"),\n  (Join-Path $env:LOCALAPPDATA \"GIMP\"),\n  (Join-Path $env:USERPROFILE \".gimp-2.10\")\n)\nforeach\
+        \ ($path in $gimpConfigPaths) {\n  if ($path -and (Test-Path $path)) {\n    Remove-Item -LiteralPath $path -Recurse\
+        \ -Force -ErrorAction SilentlyContinue\n  }\n}\n\n$incomingDir = \"C:\\Users\\User\\Downloads\\_incoming\"\n$sourcePath\
+        \ = \"C:\\Users\\User\\Downloads\\Apple_and_Orange.jpg\"\n$referencePath = \"C:\\Users\\User\\Downloads\\Apple_and_Orange_expected.png\"\
+        \n$exportBase = \"C:\\Users\\User\\Downloads\\apple_and_orange_focus_blur_submission\"\n$exportCandidates = @(\n \
+        \ \"$exportBase.jpg\",\n  \"$exportBase.jpg.png\",\n  \"$exportBase.png.jpg\",\n  \"$exportBase.png\",\n  \"$exportBase.jpg.jpg\"\
+        ,\n  \"$exportBase.png.png\"\n)\n\n$sourceCandidates = @(\n  (Join-Path $incomingDir \"Apple_and_Orange.jpg\"),\n\
+        \  (Join-Path $incomingDir \"Apple_and_Orange.jpg.jpg\")\n)\n$referenceCandidates = @(\n  (Join-Path $incomingDir\
+        \ \"Apple_and_Orange_expected.png\"),\n  (Join-Path $incomingDir \"Apple_and_Orange_expected.png.png\"),\n  (Join-Path\
+        \ $incomingDir \"Apple_and_Orange_expected.jpg\"),\n  (Join-Path $incomingDir \"Apple_and_Orange_expected.jpg.jpg\"\
+        )\n)\n\n$resolvedSource = $sourceCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not $resolvedSource)\
+        \ {\n  throw \"Required source image asset not found. Accepted names: Apple_and_Orange.jpg / Apple_and_Orange.jpg.jpg\"\
+        \n}\n\n$resolvedReference = $referenceCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not\
+        \ $resolvedReference) {\n  throw \"Required reference image asset not found. Accepted names: Apple_and_Orange_expected.png\
+        \ / Apple_and_Orange_expected.png.png / Apple_and_Orange_expected.jpg / Apple_and_Orange_expected.jpg.jpg\"\n}\n\n\
+        Copy-Item -LiteralPath $resolvedSource -Destination $sourcePath -Force\nCopy-Item -LiteralPath $resolvedReference\
+        \ -Destination $referencePath -Force\n\nforeach ($path in $exportCandidates) {\n  if (Test-Path $path) {\n    Remove-Item\
+        \ -LiteralPath $path -Force -ErrorAction SilentlyContinue\n  }\n}\n\n$gimpExe = \"C:\\Program Files\\GIMP 2\\bin\\\
+        gimp-2.10.exe\"\nif (-not (Test-Path $gimpExe)) {\n  throw \"GIMP executable not found: $gimpExe\"\n}\n\nStart-Process\
+        \ -FilePath $gimpExe -WindowStyle Maximized | Out-Null\n"
+      timeout: 20
+    - type: wait
+      ms: 12000
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nAdd-Type -AssemblyName Microsoft.VisualBasic\nAdd-Type @\"\nusing System;\n\
+        using System.Runtime.InteropServices;\npublic static class User32 {\n  [DllImport(\"user32.dll\")]\n  public static\
+        \ extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);\n  [DllImport(\"user32.dll\")]\n  public static extern bool\
+        \ SetForegroundWindow(IntPtr hWnd);\n}\n\"@\n\n$proc = $null\nfor ($i = 0; $i -lt 30; $i++) {\n  $proc = Get-Process\
+        \ \"gimp-2.10\" -ErrorAction SilentlyContinue |\n    Where-Object { $_.MainWindowHandle -ne 0 } |\n    Select-Object\
+        \ -First 1\n  if ($null -ne $proc) {\n    break\n  }\n  Start-Sleep -Milliseconds 500\n}\n\nif ($null -eq $proc) {\n\
+        \  throw \"Could not find a visible GIMP main window\"\n}\n\n[void][User32]::ShowWindowAsync($proc.MainWindowHandle,\
+        \ 3)\nStart-Sleep -Milliseconds 300\n[void][Microsoft.VisualBasic.Interaction]::AppActivate($proc.Id)\nStart-Sleep\
+        \ -Milliseconds 300\n[void][User32]::SetForegroundWindow($proc.MainWindowHandle)\n"
+      timeout: 20
+      optional: true
+    - type: run_powershell
+      script: 'py -3 -W ignore -c "import pyautogui,time; time.sleep(0.5); pyautogui.press(''esc''); time.sleep(0.2); pyautogui.press(''esc'')"
+
+        '
+      timeout: 15
+      optional: true
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nAdd-Type -AssemblyName Microsoft.VisualBasic\nAdd-Type -AssemblyName System.Windows.Forms\n\
+        Add-Type @\"\nusing System;\nusing System.Runtime.InteropServices;\npublic static class User32 {\n  [DllImport(\"\
+        user32.dll\")]\n  public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);\n  [DllImport(\"user32.dll\")]\n\
+        \  public static extern bool SetForegroundWindow(IntPtr hWnd);\n  [DllImport(\"user32.dll\")]\n  public static extern\
+        \ bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);\n}\n\"@\n\n$gimpProc = $null\n\
+        for ($i = 0; $i -lt 20; $i++) {\n  $gimpProc = Get-Process \"gimp-2.10\" -ErrorAction SilentlyContinue |\n    Where-Object\
+        \ { $_.MainWindowHandle -ne 0 } |\n    Select-Object -First 1\n  if ($null -ne $gimpProc) {\n    break\n  }\n  Start-Sleep\
+        \ -Milliseconds 500\n}\n\nif ($null -eq $gimpProc) {\n  throw \"Could not refocus the GIMP window\"\n}\n\nGet-Process\
+        \ -ErrorAction SilentlyContinue |\n  Where-Object {\n    $_.MainWindowHandle -ne 0 -and\n    $_.Id -ne $gimpProc.Id\
+        \ -and\n    ($_.ProcessName -in @(\"WindowsTerminal\", \"powershell\", \"pwsh\", \"cmd\", \"notepad\"))\n  } |\n \
+        \ ForEach-Object {\n    [void][User32]::ShowWindow($_.MainWindowHandle, 6)\n  }\n\n$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea\n\
+        [void][User32]::MoveWindow(\n  $gimpProc.MainWindowHandle,\n  $workingArea.X,\n  $workingArea.Y,\n  $workingArea.Width,\n\
+        \  $workingArea.Height,\n  $true\n)\nStart-Sleep -Milliseconds 200\n[void][User32]::ShowWindow($gimpProc.MainWindowHandle,\
+        \ 9)\nStart-Sleep -Milliseconds 200\n[void][Microsoft.VisualBasic.Interaction]::AppActivate($gimpProc.Id)\nStart-Sleep\
+        \ -Milliseconds 300\n[void][User32]::SetForegroundWindow($gimpProc.MainWindowHandle)\nStart-Sleep -Milliseconds 300\n\
+        [System.Windows.Forms.SendKeys]::SendWait(\"% \")\nStart-Sleep -Milliseconds 200\n[System.Windows.Forms.SendKeys]::SendWait(\"\
+        x\")\nStart-Sleep -Milliseconds 300\n[void][User32]::ShowWindow($gimpProc.MainWindowHandle, 3)\n"
+      timeout: 20
+      optional: true
+    - type: wait
+      ms: 2000
+evaluation:
+  evaluator_id: evaluators.windows.gimp:GimpEvaluator
+  params:
+    check_id: gimp_apple_and_orange_focus_blur_bw_upside_down
+    timeout: 150
+    stdout_contains: EVAL_RESULT:PASS
+    supplemental_checks:
+      powershell:
+      - label: primary_hard_mode
+        script: "$path = \"C:\\Users\\User\\Downloads\\apple_and_orange_focus_blur_submission.xcf\"\nif ((Test-Path -LiteralPath\
+          \ $path) -and ((Get-Item -LiteralPath $path).Length -ge 1024)) {\n  Write-Output \"EVAL_RESULT:PASS primary artifact\
+          \ exists: $path\"\n} else {\n  Write-Output \"EVAL_RESULT:FAIL primary artifact missing or too small: $path\"\n\
+          \  exit 1\n}"
+        stdout_contains: EVAL_RESULT:PASS
+        timeout: 90
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.gimp.apple_and_orange_focus_blur_bw_upside_down\tlinux.gimp.crop_center\t\
+          hard-plus-ready\napp\tGIMP\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.gimp.apple_and_orange_focus_blur_bw_upside_down
+
+          linux_peer=linux.gimp.crop_center
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - gimp
+  - image
+  - blur
+  - rotate
+  - grayscale
+  - invert
+  - export
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  difficulty: hard
+  app: GIMP
+  human_steps: 80
+  description: 'Upload a source apples-and-oranges image and a deterministic reference result, open GIMP in a maximized window,
+    and verify by saved image comparison that the final image applies the default Focus Blur effect, converts it to black
+    and white, rotates it upside down, applies Linear Invert, and is exported by the agent.
+
+    '
+  hardness: hard-evaluable
+  evaluation_standard: all retained hard requirements are covered by the main evaluator or supplemental checks
+  linux_peer: linux.gimp.crop_center
+  linux_peer_file: tasks/linux/gimp_crop_center_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

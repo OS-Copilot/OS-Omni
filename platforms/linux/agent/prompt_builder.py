@@ -139,6 +139,15 @@ class LinuxPromptBuilder:
             extra_step_prompt=extra_step_prompt,
         )
         if self.action_mode == "code_adapter":
+            width = getattr(observation, "width", None)
+            height = getattr(observation, "height", None)
+            if isinstance(width, int) and isinstance(height, int) and width > 0 and height > 0:
+                prompt += (
+                    f"\n\nThe screen is {width}×{height} pixels. Use absolute screen pixel coordinates "
+                    f"for pyautogui: x ranges from 0 to {width - 1}, y from 0 to {height - 1}, "
+                    "with (0, 0) at the top-left. Do not use normalized coordinates or coordinates "
+                    "from a resized preview."
+                )
             prompt += (
                 "\n\nFirst give a short reflection, then return the next pyautogui code block or special code."
             )

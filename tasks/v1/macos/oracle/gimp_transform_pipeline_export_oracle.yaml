@@ -1,0 +1,28 @@
+task_id: macos.oracle.gimp.rotate_flip_export
+platform: macos
+instruction: Oracle sanity task for macos.gimp.rotate_flip_export. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.gimp:GimpInitializer
+  params:
+    wait_ms: 18000
+    upload_files:
+    - local_path: tasks/v1/macos/files/gimp/transform/start/gimp_transform_input.png
+      path: /Users/bench/Downloads/gimp_transform_input.png
+    open_file: /Users/bench/Downloads/gimp_transform_input.png
+evaluation:
+  evaluator_id: evaluators.macos.gimp:GimpFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/gimp_transform_input.png
+    expected_width: 960
+    expected_height: 720
+    expected_format: PNG
+    expected_image_path: ../files/gimp/transform/expected/gimp_rotate_flip_output.png
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.gimp.rotate_flip_export
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

@@ -5,43 +5,8 @@ observation_mode: screenshot_only
 history_window: 3
 max_steps: 100
 tasks:
-  - tasks/linux/actual_budget_household_budget_setup_hard.yaml
-  - tasks/linux/actual_budget_operations_multi_account_hard.yaml
-  - tasks/linux/blender_prepare_social_render_hard.yaml
-  - tasks/linux/blender_restage_product_objects_hard.yaml
-  - tasks/linux/calc_demographic_profile_pivots_hard.yaml
-  - tasks/linux/cross_app_thunderbird_calendar_add_coffee_cart_event_easy.yaml
-  - tasks/linux/cross_app_thunderbird_calendar_checkout_coffee_followup_hard.yaml
-  - tasks/linux/cross_app_thunderbird_calendar_dual_item_checkout_two_events_hard.yaml
-  - tasks/linux/cross_app_writer_thunderbird_attach_source_and_pdf_draft_hard.yaml
-  - tasks/linux/cross_app_writer_thunderbird_save_copy_export_attach_draft_hard.yaml
-  - tasks/linux/cross_vm_calc_budget_review_hard.yaml
-  - tasks/linux/cross_vm_writer_launch_review_minutes_hard.yaml
-  - tasks/linux/deltachat_group_ops_sprint_hard.yaml
-  - tasks/linux/deltachat_reply_alice_hard.yaml
-  - tasks/linux/deltachat_reply_bob_easy.yaml
-  - tasks/linux/drawio_refresh_release_flow_hard.yaml
-  - tasks/linux/drawio_relabel_incident_sync_hard.yaml
-  - tasks/linux/gimp_crop_center_hard.yaml
-  - tasks/linux/gimp_scale_image_hard.yaml
-  - tasks/linux/impress_create_six_image_slides_hard.yaml
-  - tasks/linux/marble_bookmark_cairo_launch_point_easy.yaml
-  - tasks/linux/marble_east_africa_briefing_hard.yaml
-  - tasks/linux/marble_north_atlantic_survey_hard.yaml
-  - tasks/linux/openshop_add_headphones_to_cart_hard.yaml
-  - tasks/linux/openshop_checkout_coffee_hard.yaml
-  - tasks/linux/spotube_import_city_weather_mix_hard.yaml
-  - tasks/linux/spotube_import_focus_capsule_hard.yaml
-  - tasks/linux/thunderbird_calendar_build_recurring_release_plan_hard.yaml
-  - tasks/linux/thunderbird_calendar_plan_next_week_reviews_hard.yaml
-  - tasks/linux/thunderbird_filter_discount_to_promotions_hard.yaml
-  - tasks/linux/vscode_apply_theme_ticket_hard.yaml
-  - tasks/linux/wireshark_export_link_and_syn_bundle_hard.yaml
-  - tasks/linux/wireshark_export_protocol_bundle_hard.yaml
-  - tasks/linux/writer_add_reference_cross_reference_hard.yaml
-  - tasks/linux/writer_h2o_subscript_easy.yaml
-  - tasks/linux/zotero_reference_library_buildout_hard.yaml
-  - tasks/linux/zotero_research_collection_with_notes_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_calc_budget_review_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_writer_launch_review_minutes_hard.yaml
 metadata:
   description: >
     GPT-5.5 Linux retest for the five newly hardened hard-pass tasks plus every

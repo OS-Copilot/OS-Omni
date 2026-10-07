@@ -1,0 +1,20 @@
+task_id: cross_vm.oracle.android_to_windows.conference_schedule_hard
+platform: cross_vm
+instruction: Oracle sanity task for cross_vm.android_to_windows.conference_schedule_hard. The Android and Windows
+  initializers already prepare the expected transfer file and final LibreOffice result. Wait briefly and finish.
+android_task: tasks/v1/cross_vm/stages/android/oracle/cross_vm_prepare_schedule_transfer_hard_oracle.yaml
+windows_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_writer_conference_schedule_hard_oracle.yaml
+transfer:
+  android_guest_path: /sdcard/Documents/markor/schedule_transfer.csv
+  windows_guest_path: C:\Users\User\Desktop\schedule_transfer.csv
+  host_filename: schedule_transfer.csv
+metadata:
+  tags:
+  - cross_vm
+  - android_to_windows
+  - hard
+  - oracle
+  difficulty: hard
+  oracle_for: cross_vm.android_to_windows.conference_schedule_hard
+  description: Oracle sanity task for apply four schedule changes to an 18-session Android note, transfer the CSV,
+    and build a three-room Writer schedule with tables, a speaker index, derived totals, and a PDF export on Windows.

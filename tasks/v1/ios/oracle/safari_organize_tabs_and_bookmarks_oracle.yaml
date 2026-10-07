@@ -1,0 +1,94 @@
+task_id: ios.safari.oracle.organize_tabs_and_bookmarks
+platform: ios
+instruction: 'In Safari, open each of these pages in its own tab: https://example.com/?bench=safari-alpha, https://example.org/?bench=safari-beta, and https://example.net/?bench=safari-gamma. Create a bookmark folder named Bench Reading Queue. Save the alpha page in that folder with the title Bench Alpha Note, save the beta page in that folder with the title Bench Beta Note, do not bookmark the gamma page, close the gamma tab, and leave the beta page open in the active tab.'
+init:
+  initializer_id: initializers.ios.safari_prepare_open_app:SafariPrepareOpenAppInitializer
+  params:
+    bundle_id: com.apple.mobilesafari
+    purge_all_tabs: true
+    purge_history_urls:
+    - https://example.com/?bench=safari-alpha
+    - https://example.org/?bench=safari-beta
+    - https://example.net/?bench=safari-gamma
+    purge_bookmark_urls:
+    - https://example.com/?bench=safari-alpha
+    - https://example.org/?bench=safari-beta
+    - https://example.net/?bench=safari-gamma
+    purge_bookmark_titles:
+    - Bench Alpha Note
+    - Bench Beta Note
+    purge_folder_titles:
+    - Bench Reading Queue
+    terminate_after_setup: true
+    wait_ms: 1000
+evaluation:
+  evaluator_id: evaluators.ios.safari_state:SafariStateEvaluator
+  params:
+    bundle_id: com.apple.mobilesafari
+    present_history_urls:
+    - https://example.com/?bench=safari-alpha
+    - https://example.org/?bench=safari-beta
+    - https://example.net/?bench=safari-gamma
+    present_folders:
+    - title: Bench Reading Queue
+    present_bookmarks:
+    - title: Bench Alpha Note
+      url: https://example.com/?bench=safari-alpha
+      parent_title: Bench Reading Queue
+    - title: Bench Beta Note
+      url: https://example.org/?bench=safari-beta
+      parent_title: Bench Reading Queue
+    absent_bookmark_urls:
+    - https://example.net/?bench=safari-gamma
+    absent_tab_urls:
+    - https://example.net/?bench=safari-gamma
+    present_tabs:
+    - url: https://example.com/?bench=safari-alpha
+    - url: https://example.org/?bench=safari-beta
+    active_tab_url: https://example.org/?bench=safari-beta
+    require_foreground: true
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - safari
+  - ios
+  - browser
+  - tabs
+  - bookmarks
+  - hard
+  - benchmark
+  - oracle
+  app: Safari
+  app_bundle_id: com.apple.mobilesafari
+  description: Oracle state-seed task for ios.safari.organize_tabs_and_bookmarks.
+  prerequisites:
+  - Safari is available in the simulator.
+  oracle_for: ios.safari.organize_tabs_and_bookmarks
+  oracle_actions:
+  - type: seed_state
+    store: safari
+    params:
+      present_history_urls:
+      - https://example.com/?bench=safari-alpha
+      - https://example.org/?bench=safari-beta
+      - https://example.net/?bench=safari-gamma
+      present_folders:
+      - title: Bench Reading Queue
+      present_bookmarks:
+      - title: Bench Alpha Note
+        url: https://example.com/?bench=safari-alpha
+        parent_title: Bench Reading Queue
+      - title: Bench Beta Note
+        url: https://example.org/?bench=safari-beta
+        parent_title: Bench Reading Queue
+      present_tabs:
+      - url: https://example.com/?bench=safari-alpha
+      - url: https://example.org/?bench=safari-beta
+      active_tab_url: https://example.org/?bench=safari-beta
+      require_foreground: true
+  - type: success
+    message: Oracle state seeded.

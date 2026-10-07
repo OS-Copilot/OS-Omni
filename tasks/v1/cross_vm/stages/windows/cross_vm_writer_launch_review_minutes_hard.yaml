@@ -1,0 +1,180 @@
+task_id: windows.cross_vm.writer_launch_review_minutes_hard
+platform: windows
+instruction: 'A blank LibreOffice Writer document named "launch_review_minutes.docx" is open, and the transferred note "launch_review_transfer.txt"
+  is on the Desktop. Use only LibreOffice Writer on Windows. Bring every non-empty line from the transferred note into the
+  document as separate paragraphs in the same order. In the same Writer document, also add seven tables: Routing Matrix, Evidence
+  Reconciliation, Cross-VM Delivery Chain, Final Escalation Summary, Reviewer Rotation, Acceptance Criteria, and Cross-VM
+  Consistency Checks. The tables must summarize only information from the transferred note. Save the document.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$ErrorActionPreference = 'Stop'\nGet-Process soffice,soffice.bin,swriter -ErrorAction SilentlyContinue |\n\
+        \  Stop-Process -Force -ErrorAction SilentlyContinue\n$docPath = Join-Path $env:USERPROFILE 'Documents\\launch_review_minutes.docx'\n\
+        $transferPath = Join-Path $env:USERPROFILE 'Desktop\\launch_review_transfer.txt'\nNew-Item -ItemType Directory -Path\
+        \ (Split-Path $docPath) -Force | Out-Null\nNew-Item -ItemType Directory -Path (Split-Path $transferPath) -Force |\
+        \ Out-Null\n@'\nLaunch Readiness Review\nAttendees:\nMaya Chen\nJordan Lee\nPriya Nair\nTheo Martin\nAction Items:\n\
+        Confirm vendor staging access by Tuesday.\nSend revised demo script to the field team.\nLock the final travel roster\
+        \ at 18 people.\nOwners:\nVendor staging: Jordan Lee\nDemo script: Priya Nair\nTravel roster: Theo Martin\nDecisions:\n\
+        Keep the launch window on July 18.\nPublish the final checklist after the dry run.\nRisks:\nVendor staging account\
+        \ owners are not final.\nDemo recording depends on the dry-run room audio.\nTravel roster changes after Friday need\
+        \ director approval.\nNext Checkpoint:\nFriday 09:30 readiness sync with launch leads.\nEscalation Rules:\nEscalate\
+        \ vendor access blockers to Maya by 16:00.\nEscalate travel roster conflicts to Theo before final approval.\nSignoff:\n\
+        Maya owns agenda confirmation.\nJordan owns vendor staging proof.\nPriya owns demo script delivery.\nAudit Trail:\n\
+        Transfer source: launch_review_transfer.txt\nDocument owner: Maya Chen\nReview status: Ready for director signoff.\n\
+        Follow-up Schedule:\nMonday 11:00 vendor access checkpoint.\nWednesday 15:30 demo-room audio validation.\nVerification\
+        \ Notes:\nQA packet reviewed by Maya.\nDirector signoff packet due Friday 16:30.\nDistribution List:\nmaya.chen@example.test\n\
+        jordan.lee@example.test\npriya.nair@example.test\nReadiness Metrics:\nOpen blockers: 2\nDry-run pass rate: 92%\nTravel\
+        \ roster variance: 1\nDependency Ledger:\nVendor access depends on security approval.\nDemo script depends on field-team\
+        \ comments.\nSignoff packet depends on QA evidence.\nCloseout Owners:\nSecurity approval: Maya Chen\nField comments:\
+        \ Jordan Lee\nQA evidence: Priya Nair\nPacket Checklist:\nInclude agenda confirmation.\nInclude vendor staging screenshot.\n\
+        Include dry-run audio proof.\nInclude travel roster export.\nDirector Questions:\nAre vendor credentials active for\
+        \ every reviewer?\nIs the demo script frozen after field comments?\nIs the travel variance approved before lock?\n\
+        Post-Launch Watch:\nMonitor room audio for the first two sessions.\nMonitor vendor login failures for 24 hours.\n\
+        Monitor travel exception requests through Monday.\nArchive Routing:\nStore packet under Launch/Readiness/Final.\n\
+        Send archive notice to Maya and Priya.\nKeep source transfer beside the final DOCX.\nEscalation Packet Owners:\nVendor\
+        \ access packet: Jordan Lee\nDemo audio packet: Priya Nair\nTravel exception packet: Theo Martin\nEvidence Hashes:\n\
+        vendor-staging=hash-pending\ndemo-audio=hash-pending\ntravel-roster=hash-pending\nFinal Review Questions:\nHas Maya\
+        \ approved the launch window summary?\nHas Jordan verified every vendor staging credential?\nHas Priya confirmed the\
+        \ dry-run audio capture?\nHas Theo frozen the travel exception list?\nApproval Gates:\nGate 1: vendor access screenshot\
+        \ attached.\nGate 2: demo script checksum recorded.\nGate 3: QA evidence packet reviewed.\nGate 4: director signoff\
+        \ queued.\nRollback Contacts:\nVendor access rollback: Jordan Lee\nDemo room rollback: Priya Nair\nTravel roster rollback:\
+        \ Theo Martin\nPacket Receipt:\nReceipt owner: Maya Chen\nReceipt channel: launch-readiness archive\nReceipt status:\
+        \ pending director review\nDirector Packet Routing:\nRoute vendor packet to Jordan before Maya review.\nRoute demo\
+        \ audio packet to Priya before archive receipt.\nRoute travel exception packet to Theo before director signoff.\n\
+        Evidence Reconciliation:\nMatch vendor-staging hash to Gate 1 evidence.\nMatch demo-audio hash to Gate 2 checksum.\n\
+        Match travel-roster hash to Gate 3 QA packet.\nCross-VM Delivery Chain:\nAndroid source note feeds Windows minutes.\n\
+        Windows minutes feed owner matrix and archive manifest.\nArchive manifest feeds director question packet.\nFinal Escalation\
+        \ Summary:\nJordan remains blocked until vendor credentials are active.\nPriya remains ready after dry-run audio validation.\n\
+        Theo remains locked after travel exception review.\nReviewer Rotation:\nMaya reviews agenda and packet receipts.\n\
+        Jordan reviews vendor access and route locks.\nPriya reviews demo audio and field comments.\nTheo reviews travel roster\
+        \ and exception locks.\nAcceptance Criteria:\nEvery gate has a named owner.\nEvery packet has a predecessor and status.\n\
+        Every evidence item maps to a gate.\nEvery blocked item has an escalation owner.\nCross-VM Consistency Checks:\nThe\
+        \ Android note must be the single source of truth.\nThe Windows minutes must preserve the Android ordering.\nThe embedded\
+        \ tables must summarize the transferred note only.\nDirector Handoff:\nHandoff owner: Maya Chen\nHandoff route: launch-readiness\
+        \ archive\nHandoff status: queued after packet receipt.\n'@.Trim() | Set-Content -LiteralPath $transferPath -Encoding\
+        \ UTF8\n$code = @'\nimport os\nimport subprocess\nimport sys\n\ntry:\n    from docx import Document\nexcept ImportError:\n\
+        \    subprocess.check_call([sys.executable, \"-m\", \"pip\", \"install\", \"python-docx\", \"-q\"])\n    from docx\
+        \ import Document\n\npath = os.path.join(os.environ[\"USERPROFILE\"], \"Documents\", \"launch_review_minutes.docx\"\
+        )\nos.makedirs(os.path.dirname(path), exist_ok=True)\nDocument().save(path)\nprint(\"INIT_OK\", path)\n'@\n$code |\
+        \ py -3 -W ignore -\nif ($LASTEXITCODE -ne 0) { throw \"Failed to create launch_review_minutes.docx\" }\nif (-not\
+        \ (Test-Path -LiteralPath $docPath)) { throw \"Missing initialized document: $docPath\" }\nif (-not (Test-Path -LiteralPath\
+        \ $transferPath)) { throw \"Missing transferred note: $transferPath\" }\n"
+      timeout: 60
+    - type: run_powershell
+      script: "$ErrorActionPreference = 'Stop'\n$filePath = Join-Path $env:USERPROFILE 'Documents\\launch_review_minutes.docx'\n\
+        if (-not (Test-Path -LiteralPath $filePath)) { throw \"Missing document before launch: $filePath\" }\n$candidates\
+        \ = @(\n  'C:\\Program Files\\LibreOffice\\program\\swriter.exe',\n  'C:\\Program Files (x86)\\LibreOffice\\program\\\
+        swriter.exe',\n  'C:\\Program Files\\LibreOffice\\program\\soffice.exe',\n  'C:\\Program Files (x86)\\LibreOffice\\\
+        program\\soffice.exe',\n  'C:\\Program Files\\LibreOffice 26\\program\\swriter.exe',\n  'C:\\Program Files\\LibreOffice\
+        \ 26\\program\\soffice.exe'\n)\n$officeExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1\n\
+        if (-not $officeExe) {\n  $cmd = Get-Command swriter.exe -ErrorAction SilentlyContinue\n  if ($cmd) { $officeExe =\
+        \ $cmd.Source }\n}\nif (-not $officeExe) { throw 'LibreOffice Writer executable not found' }\nStart-Process -FilePath\
+        \ $officeExe -ArgumentList \"`\"$filePath`\"\"\n"
+      timeout: 30
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: "@'\nimport os, subprocess, sys\nfrom pathlib import Path\ntry:\n    from docx import Document\nexcept ImportError:\n\
+      \    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-docx', '-q'])\n    from docx import Document\n\
+      doc = Document(str(Path(os.environ['USERPROFILE']) / 'Documents' / 'launch_review_minutes.docx'))\nparagraphs = [p.text.strip()\
+      \ for p in doc.paragraphs if p.text.strip()]\nexpected = ['Launch Readiness Review', 'Attendees:', 'Maya Chen', 'Jordan\
+      \ Lee', 'Priya Nair', 'Theo Martin', 'Action Items:', 'Confirm vendor staging access by Tuesday.', 'Send revised demo\
+      \ script to the field team.', 'Lock the final travel roster at 18 people.', 'Owners:', 'Vendor staging: Jordan Lee',\
+      \ 'Demo script: Priya Nair', 'Travel roster: Theo Martin', 'Decisions:', 'Keep the launch window on July 18.', 'Publish\
+      \ the final checklist after the dry run.', 'Risks:', 'Vendor staging account owners are not final.', 'Demo recording\
+      \ depends on the dry-run room audio.', 'Travel roster changes after Friday need director approval.', 'Next Checkpoint:',\
+      \ 'Friday 09:30 readiness sync with launch leads.', 'Escalation Rules:', 'Escalate vendor access blockers to Maya by\
+      \ 16:00.', 'Escalate travel roster conflicts to Theo before final approval.', 'Signoff:', 'Maya owns agenda confirmation.',\
+      \ 'Jordan owns vendor staging proof.', 'Priya owns demo script delivery.', 'Audit Trail:', 'Transfer source: launch_review_transfer.txt',\
+      \ 'Document owner: Maya Chen', 'Review status: Ready for director signoff.', 'Follow-up Schedule:', 'Monday 11:00 vendor\
+      \ access checkpoint.', 'Wednesday 15:30 demo-room audio validation.', 'Verification Notes:', 'QA packet reviewed by\
+      \ Maya.', 'Director signoff packet due Friday 16:30.', 'Distribution List:', 'maya.chen@example.test', 'jordan.lee@example.test',\
+      \ 'priya.nair@example.test', 'Readiness Metrics:', 'Open blockers: 2', 'Dry-run pass rate: 92%', 'Travel roster variance:\
+      \ 1', 'Dependency Ledger:', 'Vendor access depends on security approval.', 'Demo script depends on field-team comments.',\
+      \ 'Signoff packet depends on QA evidence.', 'Closeout Owners:', 'Security approval: Maya Chen', 'Field comments: Jordan\
+      \ Lee', 'QA evidence: Priya Nair', 'Packet Checklist:', 'Include agenda confirmation.', 'Include vendor staging screenshot.',\
+      \ 'Include dry-run audio proof.', 'Include travel roster export.', 'Director Questions:', 'Are vendor credentials active\
+      \ for every reviewer?', 'Is the demo script frozen after field comments?', 'Is the travel variance approved before lock?',\
+      \ 'Post-Launch Watch:', 'Monitor room audio for the first two sessions.', 'Monitor vendor login failures for 24 hours.',\
+      \ 'Monitor travel exception requests through Monday.', 'Archive Routing:', 'Store packet under Launch/Readiness/Final.',\
+      \ 'Send archive notice to Maya and Priya.', 'Keep source transfer beside the final DOCX.', 'Escalation Packet Owners:',\
+      \ 'Vendor access packet: Jordan Lee', 'Demo audio packet: Priya Nair', 'Travel exception packet: Theo Martin', 'Evidence\
+      \ Hashes:', 'vendor-staging=hash-pending', 'demo-audio=hash-pending', 'travel-roster=hash-pending', 'Final Review Questions:',\
+      \ 'Has Maya approved the launch window summary?', 'Has Jordan verified every vendor staging credential?', 'Has Priya\
+      \ confirmed the dry-run audio capture?', 'Has Theo frozen the travel exception list?', 'Approval Gates:', 'Gate 1: vendor\
+      \ access screenshot attached.', 'Gate 2: demo script checksum recorded.', 'Gate 3: QA evidence packet reviewed.', 'Gate\
+      \ 4: director signoff queued.', 'Rollback Contacts:', 'Vendor access rollback: Jordan Lee', 'Demo room rollback: Priya\
+      \ Nair', 'Travel roster rollback: Theo Martin', 'Packet Receipt:', 'Receipt owner: Maya Chen', 'Receipt channel: launch-readiness\
+      \ archive', 'Receipt status: pending director review', 'Director Packet Routing:', 'Route vendor packet to Jordan before\
+      \ Maya review.', 'Route demo audio packet to Priya before archive receipt.', 'Route travel exception packet to Theo\
+      \ before director signoff.', 'Evidence Reconciliation:', 'Match vendor-staging hash to Gate 1 evidence.', 'Match demo-audio\
+      \ hash to Gate 2 checksum.', 'Match travel-roster hash to Gate 3 QA packet.', 'Cross-VM Delivery Chain:', 'Android source\
+      \ note feeds Windows minutes.', 'Windows minutes feed owner matrix and archive manifest.', 'Archive manifest feeds director\
+      \ question packet.', 'Final Escalation Summary:', 'Jordan remains blocked until vendor credentials are active.', 'Priya\
+      \ remains ready after dry-run audio validation.', 'Theo remains locked after travel exception review.', 'Reviewer Rotation:',\
+      \ 'Maya reviews agenda and packet receipts.', 'Jordan reviews vendor access and route locks.', 'Priya reviews demo audio\
+      \ and field comments.', 'Theo reviews travel roster and exception locks.', 'Acceptance Criteria:', 'Every gate has a\
+      \ named owner.', 'Every packet has a predecessor and status.', 'Every evidence item maps to a gate.', 'Every blocked\
+      \ item has an escalation owner.', 'Cross-VM Consistency Checks:', 'The Android note must be the single source of truth.',\
+      \ 'The Windows minutes must preserve the Android ordering.', 'The embedded tables must summarize the transferred note\
+      \ only.', 'Director Handoff:', 'Handoff owner: Maya Chen', 'Handoff route: launch-readiness archive', 'Handoff status:\
+      \ queued after packet receipt.']\npos = -1\nfor line in expected:\n    try:\n        nxt = paragraphs.index(line, pos\
+      \ + 1)\n    except ValueError:\n        print('MISSING_OR_OUT_OF_ORDER:' + line + ' PARAGRAPHS=' + repr(paragraphs))\n\
+      \        raise SystemExit(1)\n    pos = nxt\nactual_tables = []\nfor table in doc.tables:\n    actual_tables.append([[cell.text.strip()\
+      \ for cell in row.cells] for row in table.rows])\nfor expected_table in [[['Route', 'Owner', 'Predecessor', 'Status'],\
+      \ ['vendor-packet', 'Jordan Lee', 'Maya review', 'blocked'], ['demo-audio', 'Priya Nair', 'archive receipt', 'ready'],\
+      \ ['travel-exception', 'Theo Martin', 'director signoff', 'locked']], [['Evidence', 'Gate', 'Status'], ['vendor-staging',\
+      \ 'Gate 1', 'pending'], ['demo-audio', 'Gate 2', 'ready'], ['travel-roster', 'Gate 3', 'ready']], [['Artifact', 'Feeds'],\
+      \ ['Android source note', 'Windows minutes'], ['Windows minutes', 'Owner matrix and archive manifest'], ['Archive manifest',\
+      \ 'Director question packet']], [['Owner', 'Final state'], ['Jordan', 'blocked until vendor credentials are active'],\
+      \ ['Priya', 'ready after dry-run audio validation'], ['Theo', 'locked after travel exception review']], [['Reviewer',\
+      \ 'Area', 'Required check'], ['Maya Chen', 'agenda', 'packet receipts'], ['Jordan Lee', 'vendor access', 'route locks'],\
+      \ ['Priya Nair', 'demo audio', 'field comments'], ['Theo Martin', 'travel roster', 'exception locks']], [['Criterion',\
+      \ 'Expected state'], ['gate ownership', 'named owner on every gate'], ['packet lineage', 'predecessor and status on\
+      \ every packet'], ['evidence mapping', 'every evidence item maps to a gate'], ['blocked escalation', 'blocked item has\
+      \ escalation owner']], [['Consistency check', 'Result'], ['Android source', 'single source of truth'], ['Windows ordering',\
+      \ 'preserves Android ordering'], ['Embedded tables', 'summarize transferred note only']]]:\n    if expected_table not\
+      \ in actual_tables:\n        print('MISSING_TABLE:' + repr(expected_table) + ' ACTUAL=' + repr(actual_tables))\n   \
+      \     raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\n'@ | py -3 -W ignore -\n"
+    supplemental_checks:
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - libreoffice
+  - writer
+  - hard
+  - hard-plus
+  - multi_artifact_handoff
+  app_name: libreoffice-writer
+  difficulty: hard
+  human_steps: 258
+  description: Reproduce an expanded Android transfer note in Writer and add seven structured tables inside the same document.
+  hardness: hard-evaluable
+  cross_vm_role: windows_target_phase
+  composite_task: cross_vm.android_to_windows.launch_review_minutes_hard
+  source_platform: android
+  target_platform: windows
+  counts_as_windows_cross_vm_task: false
+  linux_peer: linux.cross_vm.writer_launch_review_minutes_hard
+  linux_peer_file: tasks/v1/cross_vm/stages/linux/cross_vm_writer_launch_review_minutes_hard.yaml
+  alignment_status: harder_than_linux_peer

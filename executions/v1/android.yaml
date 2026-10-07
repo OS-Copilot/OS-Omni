@@ -1,0 +1,57 @@
+tasks:
+- tasks/v1/android/deltachat_bot_evidence_device_location_684193.yaml
+- tasks/v1/android/deltachat_delivery_claim_record_1787390185793_240468.yaml
+- tasks/v1/android/deltachat_mobility_safety_actual_input_1787395000000_739204.yaml
+- tasks/v1/android/deltachat_release_control_room_1787364494557_711349.yaml
+- tasks/v1/android/deltachat_river_park_action_team_1787372393006_488939.yaml
+- tasks/v1/android/openbank_ace_dispute_paperless_security_lena_marco_1787394510087_195225.yaml
+- tasks/v1/android/openbank_ace_tessa_security_city_nora_1787392720204_995198.yaml
+- tasks/v1/android/openbank_card_rebate_dispute_1787391981468_550137.yaml
+- tasks/v1/android/openbank_city_rainy_lena_marco_security_1787396657268_013944.yaml
+- tasks/v1/android/openbank_lena_marco_dispute_security_paperless_1787390266564_553878.yaml
+- tasks/v1/android/openbank_maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252.yaml
+- tasks/v1/android/opendriver_driver_workspace_support_ticket_final.yaml
+- tasks/v1/android/opendriver_rider_full_service_logout.yaml
+- tasks/v1/android/opendriver_rider_three_scheduled_bay_rides_20260729.yaml
+- tasks/v1/android/opendriver_seeded_driver_profile_document_arrival_5930_20260729.yaml
+- tasks/v1/android/openfood_dumpling_biryani_coupon_merchant_clean_20260731.yaml
+- tasks/v1/android/openfood_poke_sushi_wallet_merchant_clean_20260729.yaml
+- tasks/v1/android/openfood_smokehouse_espresso_feast20_merchant_clean_20260801.yaml
+- tasks/v1/android/openfood_smokehouse_pizza_merchant_ops_clean_20260729.yaml
+- tasks/v1/android/opennavigation_meta_campus_transit_records_20260803.yaml
+- tasks/v1/android/opennavigation_saved_routes_incidents_records_20260801.yaml
+- tasks/v1/android/opennavigation_silicon_station_campus_records_20260803.yaml
+- tasks/v1/android/opennote_city_food_469121.yaml
+- tasks/v1/android/opennote_fashion_trip_970990.yaml
+- tasks/v1/android/opennote_film_beauty_573866.yaml
+- tasks/v1/android/opennote_fitness_mind_940880.yaml
+- tasks/v1/android/opennote_gaming_home_461774.yaml
+- tasks/v1/android/opennote_style_home_477136.yaml
+- tasks/v1/android/openphoto_clown_dual_calibrated_export_20260804.yaml
+- tasks/v1/android/openphoto_coastal_dual_calibrated_export_20260803.yaml
+- tasks/v1/android/openphoto_cooking_dual_calibrated_export_20260804.yaml
+- tasks/v1/android/openphoto_guitar_dual_calibrated_export_20260804.yaml
+- tasks/v1/android/openshop_beauty_care_checkout_review_20260821.yaml
+- tasks/v1/android/openshop_commute_summary_order_review.yaml
+- tasks/v1/android/openshop_family_weekend_checkout_20260821.yaml
+- tasks/v1/android/openshop_garage_setup_checkout_backpack_review_20260821.yaml
+- tasks/v1/android/openshop_gift_trip_bundle_checkout_document_review_20260821.yaml
+- tasks/v1/android/openshop_home_refresh_2026_alipay_checkout.yaml
+- tasks/v1/android/opentrip_flight_voucher_baggage_booking.yaml
+- tasks/v1/android/opentrip_hotel_voucher_family_suite_booking.yaml
+- tasks/v1/android/opentrip_seed_hotel_review_wallet_audit.yaml
+- tasks/v1/android/opentrip_seed_orders_reschedule.yaml
+- tasks/v1/android/opentwitter_01_release_review_coordination.yaml
+- tasks/v1/android/opentwitter_03_research_search_coordination.yaml
+- tasks/v1/android/opentwitter_04_mobile_incident_frontend_audit.yaml
+- tasks/v1/android/opentwitter_05_security_billing_api_audit.yaml
+- tasks/v1/android/opentwitter_changelog_follow_audit_workflow_20260822.yaml
+- tasks/v1/android/opentwitter_focus_research_community_workflow_20260822_v2.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: all 48 android benchmark tasks.'

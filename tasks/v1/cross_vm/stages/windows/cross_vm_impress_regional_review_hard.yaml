@@ -1,0 +1,159 @@
+task_id: windows.cross_vm.impress_regional_review_hard
+platform: windows
+instruction: 'A LibreOffice Impress presentation named "regional_review.pptx" is open with one empty title slide,
+  and the transferred CSV "regional_transfer.csv" is on the Desktop. Use only LibreOffice Impress. Make the deck
+  exactly twelve slides. Slide 1 uses the title layout with the title "Q3 Regional Review" and the subtitle "Revenue
+  vs target (k USD)". Slide 2 has the title "Agenda" and one content line per region name in CSV order. Slides 3
+  to 10 cover one region each in CSV order, using a title and content layout: the title is the region name and the
+  content has exactly five lines, "Revenue: <revenue>", "Target: <target>", "Variance: <revenue minus target>" (with
+  a leading + when positive, a leading - when negative, and 0 when equal), "Owner: <owner>", and "Status: <status>",
+  where status is "Above target", "Below target", or "On target". Slide 11 has the title "Follow-ups" and one content
+  line "<region> - <owner> (<variance>)" for each region below target, in CSV order. Slide 12 has the title "Summary"
+  and the five content lines "Total revenue: <sum>", "Total target: <sum>", "Above target: <count>", "On target:
+  <count>", and "Below target: <count>". Put no other text on any slide and save the presentation in pptx format.
+  Do not open Notepad or any other text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        Get-Process soffice,soffice.bin,simpress -ErrorAction SilentlyContinue |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+        $docPath = Join-Path $env:USERPROFILE 'Documents\regional_review.pptx'
+        $notePath = Join-Path $env:USERPROFILE 'Desktop\regional_transfer.csv'
+        New-Item -ItemType Directory -Path (Split-Path $docPath) -Force | Out-Null
+        New-Item -ItemType Directory -Path (Split-Path $notePath) -Force | Out-Null
+        @(
+          'Region,Revenue,Target,Owner'
+          'North,412,400,Maya Chen'
+          'South,365,390,Omar Haddad'
+          'East,318,310,Priya Nair'
+          'West,420,420,Theo Martin'
+          'Central,322,330,Lena Fischer'
+          'Coastal,287,260,Omar Haddad'
+          'Mountain,199,240,Rosa Lima'
+          'Capital,505,505,Kenji Sato'
+        ) | Set-Content -LiteralPath $notePath -Encoding UTF8
+        $code = @'
+        import os, subprocess, sys
+        def _need(mod, pkg):
+            try:
+                return __import__(mod)
+            except ImportError:
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+                return __import__(mod)
+        pptx = _need('pptx', 'python-pptx')
+        path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        deck = pptx.Presentation()
+        deck.slides.add_slide(deck.slide_layouts[0])
+        deck.save(path)
+        print('INIT_OK', path)
+        '@
+        $code | py -3 -W ignore -
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create regional_review.pptx" }
+        if (-not (Test-Path -LiteralPath $docPath)) { throw "Missing initialized document: $docPath" }
+        if (-not (Test-Path -LiteralPath $notePath)) { throw "Missing transferred file: $notePath" }
+      timeout: 90
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        $filePath = Join-Path $env:USERPROFILE 'Documents\regional_review.pptx'
+        if (-not (Test-Path -LiteralPath $filePath)) { throw "Missing document before launch: $filePath" }
+        $candidates = @(
+          'C:\Program Files\LibreOffice\program\simpress.exe',
+          'C:\Program Files (x86)\LibreOffice\program\simpress.exe',
+          'C:\Program Files\LibreOffice\program\soffice.exe',
+          'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+          'C:\Program Files\LibreOffice 26\program\simpress.exe',
+          'C:\Program Files\LibreOffice 26\program\soffice.exe'
+        )
+        $officeExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if (-not $officeExe) {
+          $cmd = Get-Command simpress.exe -ErrorAction SilentlyContinue
+          if ($cmd) { $officeExe = $cmd.Source }
+        }
+        if (-not $officeExe) { throw 'LibreOffice executable not found' }
+        Start-Process -FilePath $officeExe -ArgumentList "`"$filePath`""
+      timeout: 30
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      def _need(mod, pkg):
+          try:
+              return __import__(mod)
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+              return __import__(mod)
+      pptx = _need('pptx', 'python-pptx')
+      path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')
+      deck = pptx.Presentation(path)
+      observed = []
+      for slide in deck.slides:
+          title_shape = slide.shapes.title
+          title = title_shape.text_frame.text.strip() if title_shape is not None else None
+          body = []
+          for shape in slide.shapes:
+              if not shape.has_text_frame or (title_shape is not None and shape.shape_id == title_shape.shape_id):
+                  continue
+              body.extend(p.text.strip() for p in shape.text_frame.paragraphs if p.text.strip())
+          if title is None and body:
+              title, body = body[0], body[1:]
+          observed.append((title, body))
+      expected = [('Q3 Regional Review', ['Revenue vs target (k USD)']), ('Agenda', ['North', 'South', 'East', 'West', 'Central', 'Coastal', 'Mountain', 'Capital']), ('North', ['Revenue: 412', 'Target: 400', 'Variance: +12', 'Owner: Maya Chen', 'Status: Above target']), ('South', ['Revenue: 365', 'Target: 390', 'Variance: -25', 'Owner: Omar Haddad', 'Status: Below target']), ('East', ['Revenue: 318', 'Target: 310', 'Variance: +8', 'Owner: Priya Nair', 'Status: Above target']), ('West', ['Revenue: 420', 'Target: 420', 'Variance: 0', 'Owner: Theo Martin', 'Status: On target']), ('Central', ['Revenue: 322', 'Target: 330', 'Variance: -8', 'Owner: Lena Fischer', 'Status: Below target']), ('Coastal', ['Revenue: 287', 'Target: 260', 'Variance: +27', 'Owner: Omar Haddad', 'Status: Above target']), ('Mountain', ['Revenue: 199', 'Target: 240', 'Variance: -41', 'Owner: Rosa Lima', 'Status: Below target']), ('Capital', ['Revenue: 505', 'Target: 505', 'Variance: 0', 'Owner: Kenji Sato', 'Status: On target']), ('Follow-ups', ['South - Omar Haddad (-25)', 'Central - Lena Fischer (-8)', 'Mountain - Rosa Lima (-41)']), ('Summary', ['Total revenue: 2828', 'Total target: 2855', 'Above target: 3', 'On target: 2', 'Below target: 3'])]
+      if len(observed) != len(expected):
+          print('SLIDE_COUNT_MISMATCH:%d' % len(observed))
+          raise SystemExit(1)
+      for index, (got, want) in enumerate(zip(observed, expected), start=1):
+          if (got[0], got[1]) != (want[0], want[1]):
+              print('SLIDE_MISMATCH:%d:%r' % (index, got))
+              raise SystemExit(1)
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+    supplemental_checks:
+      powershell:
+      - label: no_notepad_process
+        script: |
+          $p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+          if ($p) { Write-Output 'NOTEPAD_RUNNING'; exit 1 }
+          Write-Output 'NO_NOTEPAD_PROCESS'
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 200
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - libreoffice
+  - impress
+  - hard
+  app_name: libreoffice-impress
+  difficulty: hard
+  description: Build a twelve-slide Impress deck with per-region variance and status, a follow-up slide, and a computed
+    summary.
+  cross_vm_role: windows_target_phase
+  composite_task: cross_vm.android_to_windows.regional_review_deck_hard
+  source_platform: android
+  target_platform: windows
+  oracle_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_impress_regional_review_hard_oracle.yaml
+  human_steps: 124
+  human_steps_breakdown:
+  - 'open transferred CSV to read it: 4'
+  - 'title slide (title + subtitle): 5'
+  - 'agenda slide: 13'
+  - '8 region slides (5 lines each): 80'
+  - 'follow-ups slide: 8'
+  - 'summary slide with derived totals: 10'
+  - 'Save in pptx (keep-format prompt): 4'

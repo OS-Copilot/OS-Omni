@@ -6,8 +6,7 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-- tasks/windows/calendar_create_recurring_event.yaml
-- tasks/windows/calendar_manage_multiple_events.yaml
+- tasks/v1/windows/calendar_create_recurring_event.yaml
 metadata:
   description: Windows calendar hard-only run for gpt5_5 high with code_adapter mode.
   difficulty_filter: hard

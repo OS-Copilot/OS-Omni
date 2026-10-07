@@ -1,5 +1,5 @@
 tasks:
-  - tasks/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+  - tasks/v1/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

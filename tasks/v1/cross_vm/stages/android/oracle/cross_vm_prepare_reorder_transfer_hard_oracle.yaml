@@ -1,0 +1,61 @@
+task_id: android.oracle.cross_vm.prepare_reorder_transfer_hard
+platform: android
+instruction: Oracle sanity task for android.cross_vm.prepare_reorder_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/stock_count_source.txt
+    transfer_path: /sdcard/Documents/markor/reorder_transfer.csv
+    prepare_transfer: true
+    source_text: |
+      Item,OnHand,ReorderPoint,Supplier,UnitCost
+      Packing tape,22,40,Harbor Supply,3
+      Shipping labels,160,200,LabelWorks,1
+      Bubble wrap rolls,6,12,Harbor Supply,14
+      Corrugated boxes M,95,150,BoxCo,2
+      Corrugated boxes L,140,120,BoxCo,3
+      Stretch film,9,10,Harbor Supply,22
+      Void fill paper,30,75,WrapRight,5
+      Thermal ribbons,12,10,LabelWorks,9
+      Pallet wrap tool,2,4,Harbor Supply,35
+      Edge protectors,48,100,BoxCo,1
+      Fragile stickers,300,250,LabelWorks,1
+      Mailer bags,75,200,WrapRight,2
+      Box cutters,0,12,Harbor Supply,6
+      Corrugated boxes S,210,180,BoxCo,1
+      Label printer rolls,0,8,LabelWorks,12
+      Strapping kits,5,6,Harbor Supply,28
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/reorder_transfer.csv
+    expected_text: |
+      Item,OnHand,ReorderPoint,Supplier,UnitCost
+      Packing tape,22,40,Harbor Supply,3
+      Shipping labels,160,200,LabelWorks,1
+      Bubble wrap rolls,6,12,Harbor Supply,14
+      Corrugated boxes M,95,150,BoxCo,2
+      Corrugated boxes L,140,120,BoxCo,3
+      Stretch film,9,10,Harbor Supply,22
+      Void fill paper,30,75,WrapRight,5
+      Thermal ribbons,12,10,LabelWorks,9
+      Pallet wrap tool,2,4,Harbor Supply,35
+      Edge protectors,48,100,BoxCo,1
+      Fragile stickers,300,250,LabelWorks,1
+      Mailer bags,75,200,WrapRight,2
+      Box cutters,0,12,Harbor Supply,6
+      Corrugated boxes S,210,180,BoxCo,1
+      Label printer rolls,0,8,LabelWorks,12
+      Strapping kits,5,6,Harbor Supply,28
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: android.cross_vm.prepare_reorder_transfer_hard

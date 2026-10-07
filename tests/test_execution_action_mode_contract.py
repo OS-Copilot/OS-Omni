@@ -12,7 +12,7 @@ from core.specs.types import PreparedExecution
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-TASK_PATH = REPO_ROOT / "tasks" / "windows" / "notepad_append_text.yaml"
+TASK_PATH = REPO_ROOT / "tasks" / "v1" / "windows" / "notepad_append_text.yaml"
 
 
 def _write_execution(path: Path, extra: str = "") -> None:

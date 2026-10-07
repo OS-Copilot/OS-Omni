@@ -1,0 +1,212 @@
+task_id: linux.oracle.cross_vm.calc_shift_coverage_hard
+platform: linux
+instruction: Oracle sanity task for linux.cross_vm.calc_shift_coverage_hard. The initializer already prepares the
+  expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f '[s]office.bin' >/dev/null 2>&1 || true
+        pkill -f '/usr/lib/libreoffice/program/[s]office' >/dev/null 2>&1 || true
+        mkdir -p /home/user/Documents /home/user/Desktop
+        python3 - <<'PY'
+        import zipfile
+        from xml.sax.saxutils import escape
+
+        def col_name(index):
+            name = ""
+            while index:
+                index, rem = divmod(index - 1, 26)
+                name = chr(ord("A") + rem) + name
+            return name
+
+        def sheet_xml(rows):
+            out = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+                   '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>']
+            for r, values in enumerate(rows, start=1):
+                out.append('<row r="%d">' % r)
+                for c, value in enumerate(values, start=1):
+                    if value is None:
+                        continue
+                    ref = "%s%d" % (col_name(c), r)
+                    if isinstance(value, str) and value.startswith("="):
+                        out.append('<c r="%s"><f>%s</f></c>' % (ref, escape(value[1:])))
+                    elif isinstance(value, str):
+                        out.append('<c r="%s" t="inlineStr"><is><t>%s</t></is></c>' % (ref, escape(value)))
+                    else:
+                        out.append('<c r="%s"><v>%s</v></c>' % (ref, value))
+                out.append('</row>')
+            out.append('</sheetData></worksheet>')
+            return "".join(out)
+
+        def write_workbook(path, sheets):
+            ct = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+                  '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+                  '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
+                  '<Default Extension="xml" ContentType="application/xml"/>',
+                  '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>']
+            wb = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+                  '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+                  'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>']
+            rels = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">']
+            with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zf:
+                for i, (name, rows) in enumerate(sheets, start=1):
+                    ct.append('<Override PartName="/xl/worksheets/sheet%d.xml" '
+                              'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' % i)
+                    wb.append('<sheet name="%s" sheetId="%d" r:id="rId%d"/>' % (escape(name), i, i))
+                    rels.append('<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                                'relationships/worksheet" Target="worksheets/sheet%d.xml"/>' % (i, i))
+                    zf.writestr("xl/worksheets/sheet%d.xml" % i, sheet_xml(rows))
+                ct.append('</Types>')
+                wb.append('</sheets></workbook>')
+                rels.append('</Relationships>')
+                zf.writestr("[Content_Types].xml", "".join(ct))
+                zf.writestr("_rels/.rels",
+                            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                            'relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')
+                zf.writestr("xl/workbook.xml", "".join(wb))
+                zf.writestr("xl/_rels/workbook.xml.rels", "".join(rels))
+        write_workbook("/home/user/Documents/shift_coverage.xlsx", [('Roster', [['Name', 'Day', 'Shift', 'Hours'], ['Avery Brooks', 'Mon', 'AM', 8], ['Dana Ortiz', 'Thu', 'PM', 6], ['Kenji Sato', 'Mon', 'PM', 4], ['Lena Fischer', 'Wed', 'AM', 8], ['Omar Haddad', 'Thu', 'AM', 6], ['Rosa Lima', 'Fri', 'PM', 8], ['Sam Patel', 'Wed', 'PM', 6], ['Tariq Noor', 'Fri', 'AM', 6], ['Mei Wong', 'Tue', 'AM', 8], ['Ines Duarte', 'Mon', 'AM', 6], ['Paul Okafor', 'Wed', 'AM', 6], ['Priya Nair', 'Sat', 'AM', 8], ['Theo Martin', 'Sat', 'PM', 6], ['Maya Chen', 'Sun', 'AM', 6], ['Jordan Lee', 'Thu', 'AM', 8], ['Hugo Silva', 'Fri', 'PM', 4], ['Nora Quinn', 'Sun', 'AM', 4], ['Eli Novak', 'Tue', 'PM', 6], ['Zara Ahmed', 'Wed', 'PM', 8], ['Liam Doyle', 'Mon', 'PM', 6], ['Ava Rossi', 'Sat', 'AM', 4], ['Owen Price', 'Fri', 'AM', 8], ['Hana Kim', 'Fri', 'AM', 4], ['Leo Brandt', 'Sun', 'PM', 8]]), ('Coverage', [['Day', 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A2,Roster!D2:D25)', 2, 2, '=MAX(0,E2-B2)+MAX(0,F2-C2)', '=IF(G2>0,"Short","OK")'], ['Tue', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A3,Roster!D2:D25)', 2, 1, '=MAX(0,E3-B3)+MAX(0,F3-C3)', '=IF(G3>0,"Short","OK")'], ['Wed', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A4,Roster!D2:D25)', 2, 2, '=MAX(0,E4-B4)+MAX(0,F4-C4)', '=IF(G4>0,"Short","OK")'], ['Thu', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A5,Roster!D2:D25)', 2, 2, '=MAX(0,E5-B5)+MAX(0,F5-C5)', '=IF(G5>0,"Short","OK")'], ['Fri', '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A6,Roster!D2:D25)', 2, 2, '=MAX(0,E6-B6)+MAX(0,F6-C6)', '=IF(G6>0,"Short","OK")'], ['Sat', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A7,Roster!D2:D25)', 2, 1, '=MAX(0,E7-B7)+MAX(0,F7-C7)', '=IF(G7>0,"Short","OK")'], ['Sun', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A8,Roster!D2:D25)', 1, 2, '=MAX(0,E8-B8)+MAX(0,F8-C8)', '=IF(G8>0,"Short","OK")'], ['Total', '=SUM(B2:B8)', '=SUM(C2:C8)', '=SUM(D2:D8)', None, None, '=SUM(G2:G8)', None]]), ('Summary', [['Metric', 'Value'], ['Short days', '=COUNTIF(Coverage!H2:H8,"Short")'], ['Total hours', '=Coverage!D9'], ['Total gap', '=Coverage!G9'], ['Staff on roster', '=COUNTA(Roster!A2:A25)']])])
+        print("ORACLE_OK")
+        import csv
+        with open("/home/user/Documents/coverage.csv", "w", newline="", encoding="utf-8") as handle:
+            csv.writer(handle).writerows([['Day', 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '2', '2', '24', '2', '2', '0', 'OK'], ['Tue', '1', '1', '14', '2', '1', '1', 'Short'], ['Wed', '2', '2', '28', '2', '2', '0', 'OK'], ['Thu', '2', '1', '20', '2', '2', '1', 'Short'], ['Fri', '3', '2', '30', '2', '2', '0', 'OK'], ['Sat', '2', '1', '18', '2', '1', '0', 'OK'], ['Sun', '2', '1', '18', '1', '2', '1', 'Short'], ['Total', '14', '10', '152', '', '', '3', '']])
+        PY
+      timeout: 120
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      python3 - <<'PY'
+      import re
+      import zipfile
+      import xml.etree.ElementTree as ET
+
+      NS = {
+          "a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+          "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+          "p": "http://schemas.openxmlformats.org/package/2006/relationships",
+      }
+
+      def col_to_idx(ref):
+          letters = re.match(r"([A-Z]+)", ref).group(1)
+          value = 0
+          for ch in letters:
+              value = value * 26 + (ord(ch) - ord("A") + 1)
+          return value
+
+      def read_workbook(path, width):
+          with zipfile.ZipFile(path) as zf:
+              names = zf.namelist()
+              shared = []
+              if "xl/sharedStrings.xml" in names:
+                  sst = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+                  for si in sst.findall("a:si", NS):
+                      shared.append("".join(t.text or "" for t in si.findall(".//a:t", NS)))
+              workbook = ET.fromstring(zf.read("xl/workbook.xml"))
+              rels = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+              targets = {rel.attrib["Id"]: rel.attrib["Target"] for rel in rels.findall("p:Relationship", NS)}
+              sheets = []
+              for sheet in workbook.findall("a:sheets/a:sheet", NS):
+                  rid = sheet.attrib["{%s}id" % NS["r"]]
+                  target = targets[rid].lstrip("/")
+                  if not target.startswith("xl/"):
+                      target = "xl/" + target
+                  root = ET.fromstring(zf.read(target))
+                  rows = {}
+                  for row in root.findall(".//a:sheetData/a:row", NS):
+                      cells = [None] * width
+                      for cell in row.findall("a:c", NS):
+                          idx = col_to_idx(cell.attrib["r"]) - 1
+                          if not 0 <= idx < width:
+                              continue
+                          formula = cell.find("a:f", NS)
+                          if formula is not None and (formula.text or "").strip():
+                              cells[idx] = "=" + formula.text
+                              continue
+                          kind = cell.attrib.get("t")
+                          if kind == "inlineStr":
+                              node = cell.find("a:is", NS)
+                              cells[idx] = "".join(t.text or "" for t in node.findall(".//a:t", NS))
+                              continue
+                          value = cell.find("a:v", NS)
+                          if value is None or value.text is None:
+                              continue
+                          if kind == "s":
+                              cells[idx] = shared[int(value.text)]
+                          elif kind in ("str", "b", "e"):
+                              cells[idx] = value.text
+                          else:
+                              cells[idx] = float(value.text)
+                      rows[int(row.attrib["r"])] = cells
+                  sheets.append((sheet.attrib["name"], rows))
+          return sheets
+      def norm(value):
+          if isinstance(value, str):
+              text = value.strip()
+              if text.startswith('='):
+                  return '=' + text[1:].replace(' ', '').replace('$', '').replace("'", '').upper()
+              return text
+          if isinstance(value, bool) or value is None:
+              return value
+          number = float(value)
+          return int(number) if number.is_integer() else round(number, 4)
+      sheets = read_workbook("/home/user/Documents/shift_coverage.xlsx", 8)
+      expected_sheets = [('Roster', [['Name', 'Day', 'Shift', 'Hours'], ['Avery Brooks', 'Mon', 'AM', 8], ['Dana Ortiz', 'Thu', 'PM', 6], ['Kenji Sato', 'Mon', 'PM', 4], ['Lena Fischer', 'Wed', 'AM', 8], ['Omar Haddad', 'Thu', 'AM', 6], ['Rosa Lima', 'Fri', 'PM', 8], ['Sam Patel', 'Wed', 'PM', 6], ['Tariq Noor', 'Fri', 'AM', 6], ['Mei Wong', 'Tue', 'AM', 8], ['Ines Duarte', 'Mon', 'AM', 6], ['Paul Okafor', 'Wed', 'AM', 6], ['Priya Nair', 'Sat', 'AM', 8], ['Theo Martin', 'Sat', 'PM', 6], ['Maya Chen', 'Sun', 'AM', 6], ['Jordan Lee', 'Thu', 'AM', 8], ['Hugo Silva', 'Fri', 'PM', 4], ['Nora Quinn', 'Sun', 'AM', 4], ['Eli Novak', 'Tue', 'PM', 6], ['Zara Ahmed', 'Wed', 'PM', 8], ['Liam Doyle', 'Mon', 'PM', 6], ['Ava Rossi', 'Sat', 'AM', 4], ['Owen Price', 'Fri', 'AM', 8], ['Hana Kim', 'Fri', 'AM', 4], ['Leo Brandt', 'Sun', 'PM', 8]]), ('Coverage', [['Day', 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A2,Roster!D2:D25)', 2, 2, '=MAX(0,E2-B2)+MAX(0,F2-C2)', '=IF(G2>0,"Short","OK")'], ['Tue', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A3,Roster!D2:D25)', 2, 1, '=MAX(0,E3-B3)+MAX(0,F3-C3)', '=IF(G3>0,"Short","OK")'], ['Wed', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A4,Roster!D2:D25)', 2, 2, '=MAX(0,E4-B4)+MAX(0,F4-C4)', '=IF(G4>0,"Short","OK")'], ['Thu', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A5,Roster!D2:D25)', 2, 2, '=MAX(0,E5-B5)+MAX(0,F5-C5)', '=IF(G5>0,"Short","OK")'], ['Fri', '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A6,Roster!D2:D25)', 2, 2, '=MAX(0,E6-B6)+MAX(0,F6-C6)', '=IF(G6>0,"Short","OK")'], ['Sat', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A7,Roster!D2:D25)', 2, 1, '=MAX(0,E7-B7)+MAX(0,F7-C7)', '=IF(G7>0,"Short","OK")'], ['Sun', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,"AM")', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,"PM")', '=SUMIF(Roster!B2:B25,A8,Roster!D2:D25)', 1, 2, '=MAX(0,E8-B8)+MAX(0,F8-C8)', '=IF(G8>0,"Short","OK")'], ['Total', '=SUM(B2:B8)', '=SUM(C2:C8)', '=SUM(D2:D8)', None, None, '=SUM(G2:G8)', None]]), ('Summary', [['Metric', 'Value'], ['Short days', '=COUNTIF(Coverage!H2:H8,"Short")'], ['Total hours', '=Coverage!D9'], ['Total gap', '=Coverage!G9'], ['Staff on roster', '=COUNTA(Roster!A2:A25)']])]
+      if len(sheets) < len(expected_sheets):
+          raise SystemExit("SHEET_COUNT_MISMATCH:%r" % [name for name, _ in sheets])
+      if True and [name for name, _ in sheets[:len(expected_sheets)]] != [name for name, _ in expected_sheets]:
+          raise SystemExit("SHEET_NAMES_MISMATCH:%r" % [name for name, _ in sheets])
+      for (name, observed_rows), (_, rows) in zip(sheets, expected_sheets):
+          for r in range(1, len(rows) + 2):
+              expected = [norm(v) for v in rows[r - 1]] if r <= len(rows) else [None] * 8
+              expected += [None] * (8 - len(expected))
+              observed = [norm(v) for v in observed_rows.get(r, [None] * 8)]
+              observed = [None if v == "" else v for v in observed]
+              if observed != expected:
+                  raise SystemExit("ROW_MISMATCH:%s:%d:%r" % (name, r, observed))
+      import os
+
+      def fail(message):
+          raise SystemExit(message)
+      def norm_csv(value):
+          text = (value or '').strip()
+          try:
+              number = float(text)
+          except ValueError:
+              return text
+          return int(number) if number.is_integer() else round(number, 2)
+      import csv
+      csv_path = "/home/user/Documents/coverage.csv"
+      if not os.path.exists(csv_path):
+          fail('MISSING_CSV')
+      def trim(row):
+          row = [norm_csv(v) for v in row]
+          while row and row[-1] == '':
+              row.pop()
+          return row
+      with open(csv_path, newline='', encoding='utf-8-sig') as handle:
+          observed_csv = [trim(row) for row in csv.reader(handle) if any(v.strip() for v in row)]
+      expected_csv = [trim(row) for row in [['Day', 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '2', '2', '24', '2', '2', '0', 'OK'], ['Tue', '1', '1', '14', '2', '1', '1', 'Short'], ['Wed', '2', '2', '28', '2', '2', '0', 'OK'], ['Thu', '2', '1', '20', '2', '2', '1', 'Short'], ['Fri', '3', '2', '30', '2', '2', '0', 'OK'], ['Sat', '2', '1', '18', '2', '1', '0', 'OK'], ['Sun', '2', '1', '18', '1', '2', '1', 'Short'], ['Total', '14', '10', '152', '', '', '3', '']]]
+      if observed_csv != expected_csv:
+          fail('CSV_MISMATCH:%r' % (observed_csv,))
+      print("PASS")
+      PY
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - linux
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: linux.cross_vm.calc_shift_coverage_hard

@@ -1,0 +1,114 @@
+task_id: linux.spotube.import_city_weather_mix
+platform: linux
+instruction: In Rhythmbox, import the folder Music > BenchVault > Archive Shelf >
+  April Samples > City Weather Mix. Two similarly named distractor folders also
+  exist elsewhere in Music, and more than one of them contains a city_rain track.
+  The target folder also contains a Reference Takes subfolder with its own city_rain
+  file, plus nearby backup and March folders with the same track name. Open the
+  imported City Weather Mix library from Archive Shelf, use search to find city_rain,
+  and play the top-level city_rain track directly from the April Samples > City
+  Weather Mix folder, not a subfolder or backup folder.
+init:
+  initializer_id: initializers.linux.spotube:SpotubeInitializer
+  params:
+    app_command: rhythmbox
+    libraries:
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix
+      tracks:
+      - name: avenue_mist
+        frequency_hz: 260.0
+      - name: bus_window
+        frequency_hz: 290.0
+      - name: curbside_glow
+        frequency_hz: 320.0
+      - name: depot_hum
+        frequency_hz: 350.0
+      - name: city_rain
+        frequency_hz: 380.0
+      - name: city_rain_take2
+        frequency_hz: 395.0
+      - name: platform_echo
+        frequency_hz: 410.0
+      - name: signal_drift
+        frequency_hz: 440.0
+      - name: station_wind
+        frequency_hz: 470.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix
+      - Reference Takes
+      tracks:
+      - name: city_rain
+        frequency_hz: 485.0
+      - name: city_rain_take2
+        frequency_hz: 500.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - April Samples
+      - City Weather Mix Backup
+      tracks:
+      - name: city_rain
+        frequency_hz: 505.0
+      - name: archive_signal
+        frequency_hz: 535.0
+    - root_segments:
+      - BenchVault
+      - Archive Shelf
+      - March Samples
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 565.0
+      - name: platform_echo
+        frequency_hz: 595.0
+    - root_segments:
+      - BenchVault
+      - Draft Shelf
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 520.0
+      - name: spare_signal
+        frequency_hz: 550.0
+    - root_segments:
+      - BenchVault
+      - Travel Shelf
+      - April Samples
+      - City Weather Mix
+      tracks:
+      - name: city_rain
+        frequency_hz: 610.0
+      - name: signal_detour
+        frequency_hz: 640.0
+evaluation:
+  evaluator_id: evaluators.linux.spotube:SpotubeStateEvaluator
+  params:
+    state:
+      playing: true
+      current_track_name: city_rain
+      current_track_path: /home/user/Music/BenchVault/Archive Shelf/April Samples/City Weather Mix/city_rain.wav
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - music
+  - rhythmbox
+  - local-library
+  - hard
+  app: Rhythmbox
+  difficulty: hard
+  description: Import a deeply nested local music folder in Rhythmbox, avoid multiple
+    same-name and nested distractor libraries, search for city_rain, and play the
+    correct top-level file.
+  oracle_task: tasks/v1/linux/oracle/spotube_import_city_weather_mix_oracle.yaml
+  oracle_model: linux_oracle_wait

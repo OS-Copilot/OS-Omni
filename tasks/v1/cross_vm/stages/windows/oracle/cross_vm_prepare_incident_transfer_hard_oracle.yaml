@@ -1,0 +1,85 @@
+task_id: windows.oracle.cross_vm.prepare_incident_transfer_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.prepare_incident_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $targetPath = Join-Path $env:USERPROFILE "Desktop\incident_transfer.csv"
+        New-Item -ItemType Directory -Path (Split-Path $targetPath) -Force | Out-Null
+        @'
+        Time,Service,Event
+        14:05,monitoring,Alert fired for checkout p95 above 2s
+        14:09,payments-gw,Timeouts to cart-service above 5%
+        14:12,monitoring,On-call engineer acknowledged
+        14:15,checkout-api,Retry storm detected on cart calls
+        14:17,payments-gw,Circuit breaker opened for cart-service
+        14:20,checkout-api,Error rate peaked at 7.4%
+        14:23,monitoring,Incident channel opened
+        14:26,cart-service,Bad config in cart-service 2.18 identified
+        14:29,cart-service,Config diff posted for review
+        14:32,cart-service,Rollback of cart-service 2.18 started
+        14:38,cart-service,Rollback completed on all pods
+        14:41,payments-gw,Circuit breaker closed
+        14:44,checkout-api,Cache warm-up finished
+        14:47,checkout-api,Error rate below 0.5%
+        14:51,checkout-api,Latency back to baseline
+        14:55,payments-gw,Timeout rate back to baseline
+        14:58,monitoring,Status page set to monitoring
+        15:02,monitoring,Alert resolved
+        Follow-up,Rosa Lima,Add config schema validation to the cart-service deploy
+        Follow-up,Kenji Sato,Lower the checkout retry budget
+        Follow-up,Omar Haddad,Alert on circuit breaker state changes
+        '@ | Set-Content -Path $targetPath -Encoding UTF8
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Time,Service,Event
+      14:05,monitoring,Alert fired for checkout p95 above 2s
+      14:09,payments-gw,Timeouts to cart-service above 5%
+      14:12,monitoring,On-call engineer acknowledged
+      14:15,checkout-api,Retry storm detected on cart calls
+      14:17,payments-gw,Circuit breaker opened for cart-service
+      14:20,checkout-api,Error rate peaked at 7.4%
+      14:23,monitoring,Incident channel opened
+      14:26,cart-service,Bad config in cart-service 2.18 identified
+      14:29,cart-service,Config diff posted for review
+      14:32,cart-service,Rollback of cart-service 2.18 started
+      14:38,cart-service,Rollback completed on all pods
+      14:41,payments-gw,Circuit breaker closed
+      14:44,checkout-api,Cache warm-up finished
+      14:47,checkout-api,Error rate below 0.5%
+      14:51,checkout-api,Latency back to baseline
+      14:55,payments-gw,Timeout rate back to baseline
+      14:58,monitoring,Status page set to monitoring
+      15:02,monitoring,Alert resolved
+      Follow-up,Rosa Lima,Add config schema validation to the cart-service deploy
+      Follow-up,Kenji Sato,Lower the checkout retry budget
+      Follow-up,Omar Haddad,Alert on circuit breaker state changes
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\incident_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.prepare_incident_transfer_hard

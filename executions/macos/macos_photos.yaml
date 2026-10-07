@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/photos_import_receipts_easy.yaml
-  - tasks/macos/photos_favorite_receipts_hard.yaml
-  - tasks/macos/photos_route_album_hard.yaml
+  - tasks/v1/macos/photos_favorite_receipts_hard.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

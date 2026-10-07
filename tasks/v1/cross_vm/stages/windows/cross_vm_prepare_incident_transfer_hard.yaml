@@ -1,0 +1,111 @@
+task_id: windows.cross_vm.prepare_incident_transfer_hard
+platform: windows
+instruction: A raw incident log is open in Notepad. Each timeline entry is written as Time | Service | Event, some
+  entries are exact duplicates, and the last three lines are follow-ups written as Follow-up | Owner | Task. Save
+  a cleaned copy to the Desktop as "incident_transfer.csv" with the header Time,Service,Event, then each distinct
+  timeline entry exactly once sorted from earliest to latest time, then the three follow-ups in their original order
+  as Follow-up,<owner>,<task>. Use no spaces around commas and include no title line or other lines. Leave the saved
+  Desktop file available for transfer.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $sourcePath = Join-Path $env:USERPROFILE "Documents\incident_source.txt"
+        New-Item -ItemType Directory -Path (Split-Path $sourcePath) -Force | Out-Null
+        @'
+        INC-4821 checkout latency - raw log export (Time | Service | Event)
+        14:32 | cart-service | Rollback of cart-service 2.18 started
+        14:05 | monitoring | Alert fired for checkout p95 above 2s
+        15:02 | monitoring | Alert resolved
+        14:51 | checkout-api | Latency back to baseline
+        14:05 | monitoring | Alert fired for checkout p95 above 2s
+        14:12 | monitoring | On-call engineer acknowledged
+        14:20 | checkout-api | Error rate peaked at 7.4%
+        14:38 | cart-service | Rollback completed on all pods
+        14:26 | cart-service | Bad config in cart-service 2.18 identified
+        14:12 | monitoring | On-call engineer acknowledged
+        14:44 | checkout-api | Cache warm-up finished
+        14:09 | payments-gw | Timeouts to cart-service above 5%
+        14:15 | checkout-api | Retry storm detected on cart calls
+        14:17 | payments-gw | Circuit breaker opened for cart-service
+        14:12 | monitoring | On-call engineer acknowledged
+        14:23 | monitoring | Incident channel opened
+        14:29 | cart-service | Config diff posted for review
+        14:09 | payments-gw | Timeouts to cart-service above 5%
+        14:41 | payments-gw | Circuit breaker closed
+        14:47 | checkout-api | Error rate below 0.5%
+        14:55 | payments-gw | Timeout rate back to baseline
+        14:58 | monitoring | Status page set to monitoring
+        14:29 | cart-service | Config diff posted for review
+        Follow-up | Rosa Lima | Add config schema validation to the cart-service deploy
+        Follow-up | Kenji Sato | Lower the checkout retry budget
+        Follow-up | Omar Haddad | Alert on circuit breaker state changes
+        '@ | Set-Content -Path $sourcePath -Encoding UTF8
+        Start-Process notepad.exe $sourcePath
+      timeout: 30
+    - type: wait
+      ms: 4000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Time,Service,Event
+      14:05,monitoring,Alert fired for checkout p95 above 2s
+      14:09,payments-gw,Timeouts to cart-service above 5%
+      14:12,monitoring,On-call engineer acknowledged
+      14:15,checkout-api,Retry storm detected on cart calls
+      14:17,payments-gw,Circuit breaker opened for cart-service
+      14:20,checkout-api,Error rate peaked at 7.4%
+      14:23,monitoring,Incident channel opened
+      14:26,cart-service,Bad config in cart-service 2.18 identified
+      14:29,cart-service,Config diff posted for review
+      14:32,cart-service,Rollback of cart-service 2.18 started
+      14:38,cart-service,Rollback completed on all pods
+      14:41,payments-gw,Circuit breaker closed
+      14:44,checkout-api,Cache warm-up finished
+      14:47,checkout-api,Error rate below 0.5%
+      14:51,checkout-api,Latency back to baseline
+      14:55,payments-gw,Timeout rate back to baseline
+      14:58,monitoring,Status page set to monitoring
+      15:02,monitoring,Alert resolved
+      Follow-up,Rosa Lima,Add config schema validation to the cart-service deploy
+      Follow-up,Kenji Sato,Lower the checkout retry budget
+      Follow-up,Omar Haddad,Alert on circuit breaker state changes
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\incident_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - notepad
+  - hard
+  app_name: notepad
+  difficulty: hard
+  description: De-duplicate, sort, and convert a pipe-delimited incident log with follow-ups into a CSV in Notepad.
+  cross_vm_role: windows_source_phase
+  composite_task: cross_vm.windows_to_linux.incident_postmortem_hard
+  source_platform: windows
+  target_platform: linux
+  oracle_task: tasks/v1/cross_vm/stages/windows/oracle/cross_vm_prepare_incident_transfer_hard_oracle.yaml
+  human_steps: 80
+  human_steps_breakdown:
+  - 'Replace dialog: '' | '' to '','' (open, two fields, replace all, close): 6'
+  - 'delete 5 duplicate lines (select, delete): 10'
+  - 'delete title line and type header: 3'
+  - 'sort 18 entries by time (about 13 cut/paste moves, 4 each): 52'
+  - 'fix the follow-up rows: 3'
+  - 'Save As to Desktop with name and type: 6'

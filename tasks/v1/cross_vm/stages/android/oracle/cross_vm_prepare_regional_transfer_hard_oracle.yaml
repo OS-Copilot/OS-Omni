@@ -1,0 +1,45 @@
+task_id: android.oracle.cross_vm.prepare_regional_transfer_hard
+platform: android
+instruction: Oracle sanity task for android.cross_vm.prepare_regional_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/regional_source.txt
+    transfer_path: /sdcard/Documents/markor/regional_transfer.csv
+    prepare_transfer: true
+    source_text: |
+      Region,Revenue,Target,Owner
+      North,412,400,Maya Chen
+      South,365,390,Omar Haddad
+      East,318,310,Priya Nair
+      West,420,420,Theo Martin
+      Central,322,330,Lena Fischer
+      Coastal,287,260,Omar Haddad
+      Mountain,199,240,Rosa Lima
+      Capital,505,505,Kenji Sato
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/regional_transfer.csv
+    expected_text: |
+      Region,Revenue,Target,Owner
+      North,412,400,Maya Chen
+      South,365,390,Omar Haddad
+      East,318,310,Priya Nair
+      West,420,420,Theo Martin
+      Central,322,330,Lena Fischer
+      Coastal,287,260,Omar Haddad
+      Mountain,199,240,Rosa Lima
+      Capital,505,505,Kenji Sato
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: android.cross_vm.prepare_regional_transfer_hard

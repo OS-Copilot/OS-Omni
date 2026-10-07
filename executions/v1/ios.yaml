@@ -1,0 +1,57 @@
+tasks:
+- tasks/v1/ios/calendar_finalize_schedule_with_two_followups.yaml
+- tasks/v1/ios/calendar_update_and_create_followup.yaml
+- tasks/v1/ios/contacts_add_contact_card.yaml
+- tasks/v1/ios/contacts_reconcile_multi_field_directory.yaml
+- tasks/v1/ios/deltachat_launch_checklist_saved_messages_4_3.yaml
+- tasks/v1/ios/deltachat_mobile_qa_brief_saved_messages_4_1.yaml
+- tasks/v1/ios/deltachat_route_approval_saved_messages_4_2.yaml
+- tasks/v1/ios/deltachat_route_handoff_saved_messages_4_4.yaml
+- tasks/v1/ios/flow_add_expense_transaction.yaml
+- tasks/v1/ios/flow_rework_budget_with_transfer_and_income.yaml
+- tasks/v1/ios/fsnotes_archive_note_and_create_followup.yaml
+- tasks/v1/ios/fsnotes_move_rename_and_update_note.yaml
+- tasks/v1/ios/habit_manage_seeded_habits.yaml
+- tasks/v1/ios/habit_rework_seeded_routine.yaml
+- tasks/v1/ios/maily_instruction_3_1.yaml
+- tasks/v1/ios/maily_instruction_3_2.yaml
+- tasks/v1/ios/maily_instruction_3_3.yaml
+- tasks/v1/ios/openbank_2_2_transfer_security_448872.yaml
+- tasks/v1/ios/openbank_card_rebate_dispute_183183.yaml
+- tasks/v1/ios/openbank_lena_marco_dispute_security_086132.yaml
+- tasks/v1/ios/opendriver_11-1.yaml
+- tasks/v1/ios/opendriver_11-2.yaml
+- tasks/v1/ios/opendriver_driver_payout_trip_support_profile.yaml
+- tasks/v1/ios/opendriver_driver_requests_insurance_support_payout.yaml
+- tasks/v1/ios/opennote_community_meal_three_notes_618106.yaml
+- tasks/v1/ios/opennote_forum_outfit_three_notes_194503.yaml
+- tasks/v1/ios/opennote_live_music_visuals_three_notes_495011.yaml
+- tasks/v1/ios/opennote_stage_makeup_three_notes_870344.yaml
+- tasks/v1/ios/openphotoedit_community_activity_cards_memory_482863.yaml
+- tasks/v1/ios/openphotoedit_music_media_portraits_four_exports_186365.yaml
+- tasks/v1/ios/openphotoedit_outdoor_brand_four_exports_memory_enhanced_429078.yaml
+- tasks/v1/ios/openphotoedit_theater_visuals_four_exports_137027.yaml
+- tasks/v1/ios/openshop_beauty_office_checkout_review_807073.yaml
+- tasks/v1/ios/openshop_coffee_baby_dual_checkout_958608.yaml
+- tasks/v1/ios/openshop_home_four_item_cart_checkout_368575.yaml
+- tasks/v1/ios/openshop_trip_gear_dual_checkout_review_263796.yaml
+- tasks/v1/ios/opentrip_nr2269_sanya_seabreeze_booking_158915.yaml
+- tasks/v1/ios/opentrip_review_flight_hotel_reschedule_234497.yaml
+- tasks/v1/ios/opentrip_sanya_parkline_review_mj2158_638214.yaml
+- tasks/v1/ios/opentrip_sc2306_grand_axis_booking_284952.yaml
+- tasks/v1/ios/opentwitter_accessibility_audit_engagement_567657.yaml
+- tasks/v1/ios/opentwitter_incident_engagement_profile_451238.yaml
+- tasks/v1/ios/opentwitter_release_gate_engagement_245250.yaml
+- tasks/v1/ios/opentwitter_transit_signal_engagement_483271.yaml
+- tasks/v1/ios/reminders_manage_seeded_list.yaml
+- tasks/v1/ios/reminders_rework_seeded_agenda.yaml
+- tasks/v1/ios/safari_build_two_reading_folders.yaml
+- tasks/v1/ios/safari_organize_tabs_and_bookmarks.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: all 48 ios benchmark tasks.'

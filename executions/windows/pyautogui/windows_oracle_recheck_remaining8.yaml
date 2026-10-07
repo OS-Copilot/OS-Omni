@@ -6,13 +6,6 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-  - tasks/windows/impress_slide_shape_bold.yaml
-  - tasks/windows/notepad_append_text.yaml
-  - tasks/windows/notepad_edit_config.yaml
-  - tasks/windows/notepad_find_replace.yaml
-  - tasks/windows/thunderbird_collect_st_club_progress.yaml
-  - tasks/windows/vscode_release_cleanup_workspace.yaml
-  - tasks/windows/wireshark_advanced_filter_export.yaml
-  - tasks/windows/wireshark_statistics_report.yaml
+  - tasks/v1/windows/notepad_append_text.yaml
 metadata:
   description: Windows oracle recheck for the eight remaining targeted failures.

@@ -1,0 +1,75 @@
+task_id: windows.oracle.cross_vm.prepare_invoice_transfer_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.prepare_invoice_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $targetPath = Join-Path $env:USERPROFILE "Desktop\invoices_transfer.csv"
+        New-Item -ItemType Directory -Path (Split-Path $targetPath) -Force | Out-Null
+        @'
+        Vendor,Invoice,Category,Amount
+        Atlas Freight,INV-1042,Freight,1250.00
+        Atlas Freight,INV-1047,Freight,640.00
+        Cobalt Cleaning,INV-1051,Facilities,915.25
+        Brightline Print,INV-1055,Print,212.75
+        Delta Office,INV-1060,Office,1575.40
+        Atlas Freight,INV-1063,Freight,298.60
+        Delta Office,INV-1069,Office,84.90
+        Evergreen IT,INV-1071,IT,1199.00
+        Fjord Catering,INV-1074,Facilities,655.30
+        Brightline Print,INV-1077,Print,1020.00
+        Fjord Catering,INV-1083,Facilities,318.20
+        Evergreen IT,INV-1086,IT,760.00
+        Cobalt Cleaning,INV-1089,Facilities,1105.75
+        Granite Security,INV-1095,Facilities,1890.00
+        Granite Security,INV-1101,Facilities,415.00
+        Brightline Print,INV-1104,Print,96.40
+        '@ | Set-Content -Path $targetPath -Encoding UTF8
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Vendor,Invoice,Category,Amount
+      Atlas Freight,INV-1042,Freight,1250.00
+      Atlas Freight,INV-1047,Freight,640.00
+      Cobalt Cleaning,INV-1051,Facilities,915.25
+      Brightline Print,INV-1055,Print,212.75
+      Delta Office,INV-1060,Office,1575.40
+      Atlas Freight,INV-1063,Freight,298.60
+      Delta Office,INV-1069,Office,84.90
+      Evergreen IT,INV-1071,IT,1199.00
+      Fjord Catering,INV-1074,Facilities,655.30
+      Brightline Print,INV-1077,Print,1020.00
+      Fjord Catering,INV-1083,Facilities,318.20
+      Evergreen IT,INV-1086,IT,760.00
+      Cobalt Cleaning,INV-1089,Facilities,1105.75
+      Granite Security,INV-1095,Facilities,1890.00
+      Granite Security,INV-1101,Facilities,415.00
+      Brightline Print,INV-1104,Print,96.40
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\invoices_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.prepare_invoice_transfer_hard

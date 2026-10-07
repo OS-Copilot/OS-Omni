@@ -5,6 +5,6 @@ observation_mode: screenshot_only
 history_window: 3
 max_steps: 100
 tasks:
-  - tasks/windows/actual_budget_add_transactions.yaml
+  - tasks/v1/windows/actual_budget_add_transactions.yaml
 metadata:
   description: Windows execution for actual_budget_add_transactions with code_adapter mode.

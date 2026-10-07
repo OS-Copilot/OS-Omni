@@ -1,0 +1,306 @@
+task_id: windows.cross_vm.prepare_launch_review_transfer_hard
+platform: windows
+instruction: A source launch-review note is already open in Notepad. Save a clean Desktop copy as "launch_review_transfer.txt". The saved file must preserve every non-empty line from the source note exactly and in order, from "Launch Readiness Review" through "Include travel roster export." Leave the saved Desktop file available for transfer.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: 'Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+        $sourcePath = Join-Path $env:USERPROFILE "Documents\launch_review_source.txt"
+
+        @''
+
+        Launch Readiness Review
+
+        Attendees:
+
+        Maya Chen
+
+        Jordan Lee
+
+        Priya Nair
+
+        Theo Martin
+
+        Action Items:
+
+        Confirm vendor staging access by Tuesday.
+
+        Send revised demo script to the field team.
+
+        Lock the final travel roster at 18 people.
+
+        Owners:
+
+        Vendor staging: Jordan Lee
+
+        Demo script: Priya Nair
+
+        Travel roster: Theo Martin
+
+        Decisions:
+
+        Keep the launch window on July 18.
+
+        Publish the final checklist after the dry run.
+
+        Risks:
+
+        Vendor staging account owners are not final.
+
+        Demo recording depends on the dry-run room audio.
+
+        Travel roster changes after Friday need director approval.
+
+        Next Checkpoint:
+
+        Friday 09:30 readiness sync with launch leads.
+
+        Escalation Rules:
+
+        Escalate vendor access blockers to Maya by 16:00.
+
+        Escalate travel roster conflicts to Theo before final approval.
+
+        Signoff:
+
+        Maya owns agenda confirmation.
+
+        Jordan owns vendor staging proof.
+
+        Priya owns demo script delivery.
+
+        Audit Trail:
+
+        Transfer source: launch_review_transfer.txt
+
+        Document owner: Maya Chen
+
+        Review status: Ready for director signoff.
+
+        Follow-up Schedule:
+
+        Monday 11:00 vendor access checkpoint.
+
+        Wednesday 15:30 demo-room audio validation.
+
+        Verification Notes:
+
+        QA packet reviewed by Maya.
+
+        Director signoff packet due Friday 16:30.
+
+        Distribution List:
+
+        maya.chen@example.test
+
+        jordan.lee@example.test
+
+        priya.nair@example.test
+
+        Readiness Metrics:
+
+        Open blockers: 2
+
+        Dry-run pass rate: 92%
+
+        Travel roster variance: 1
+
+        Dependency Ledger:
+
+        Vendor access depends on security approval.
+
+        Demo script depends on field-team comments.
+
+        Signoff packet depends on QA evidence.
+
+        Closeout Owners:
+
+        Security approval: Maya Chen
+
+        Field comments: Jordan Lee
+
+        QA evidence: Priya Nair
+
+        Packet Checklist:
+
+        Include agenda confirmation.
+
+        Include vendor staging screenshot.
+
+        Include dry-run audio proof.
+
+        Include travel roster export.
+
+        ''@ | Set-Content -Path $sourcePath -Encoding UTF8
+
+        Start-Process notepad.exe $sourcePath
+
+        '
+      timeout: 30
+    - type: wait
+      ms: 4000
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: '$expected = @''
+
+      Launch Readiness Review
+
+      Attendees:
+
+      Maya Chen
+
+      Jordan Lee
+
+      Priya Nair
+
+      Theo Martin
+
+      Action Items:
+
+      Confirm vendor staging access by Tuesday.
+
+      Send revised demo script to the field team.
+
+      Lock the final travel roster at 18 people.
+
+      Owners:
+
+      Vendor staging: Jordan Lee
+
+      Demo script: Priya Nair
+
+      Travel roster: Theo Martin
+
+      Decisions:
+
+      Keep the launch window on July 18.
+
+      Publish the final checklist after the dry run.
+
+      Risks:
+
+      Vendor staging account owners are not final.
+
+      Demo recording depends on the dry-run room audio.
+
+      Travel roster changes after Friday need director approval.
+
+      Next Checkpoint:
+
+      Friday 09:30 readiness sync with launch leads.
+
+      Escalation Rules:
+
+      Escalate vendor access blockers to Maya by 16:00.
+
+      Escalate travel roster conflicts to Theo before final approval.
+
+      Signoff:
+
+      Maya owns agenda confirmation.
+
+      Jordan owns vendor staging proof.
+
+      Priya owns demo script delivery.
+
+      Audit Trail:
+
+      Transfer source: launch_review_transfer.txt
+
+      Document owner: Maya Chen
+
+      Review status: Ready for director signoff.
+
+      Follow-up Schedule:
+
+      Monday 11:00 vendor access checkpoint.
+
+      Wednesday 15:30 demo-room audio validation.
+
+      Verification Notes:
+
+      QA packet reviewed by Maya.
+
+      Director signoff packet due Friday 16:30.
+
+      Distribution List:
+
+      maya.chen@example.test
+
+      jordan.lee@example.test
+
+      priya.nair@example.test
+
+      Readiness Metrics:
+
+      Open blockers: 2
+
+      Dry-run pass rate: 92%
+
+      Travel roster variance: 1
+
+      Dependency Ledger:
+
+      Vendor access depends on security approval.
+
+      Demo script depends on field-team comments.
+
+      Signoff packet depends on QA evidence.
+
+      Closeout Owners:
+
+      Security approval: Maya Chen
+
+      Field comments: Jordan Lee
+
+      QA evidence: Priya Nair
+
+      Packet Checklist:
+
+      Include agenda confirmation.
+
+      Include vendor staging screenshot.
+
+      Include dry-run audio proof.
+
+      Include travel roster export.
+
+      ''@.Trim()
+
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\launch_review_transfer.txt"
+
+      if (-not (Test-Path $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+
+      $actual = (Get-Content -Path $targetPath -Raw).Trim()
+
+      if ($actual -ne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+
+      Write-Output "EVAL_RESULT:PASS"
+
+      '
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - notepad
+  - hard
+  app_name: notepad
+  difficulty: hard
+  human_steps: 92
+  description: Save a long structured launch-review note exactly to a Desktop transfer file for the cross-VM Writer task.
+  hardness: hard-evaluable
+  cross_vm_role: windows_source_phase
+  composite_task: cross_vm.windows_to_linux.launch_review_minutes_hard
+  source_platform: windows
+  target_platform: linux
+  owner_scope: linux
+  counts_as_windows_cross_vm_task: false

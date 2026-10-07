@@ -1,6 +1,5 @@
 tasks:
-  - tasks/windows/oracle/blender_robot_tower_layout_scene_oracle.yaml
-  - tasks/windows/oracle/blender_warehouse_blockout_scene_oracle.yaml
+  - tasks/v1/windows/oracle/blender_robot_tower_layout_scene_oracle.yaml
 models:
   - cross_vm_oracle_wait
 reuse_vm_session: true

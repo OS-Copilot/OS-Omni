@@ -1,0 +1,77 @@
+task_id: android.oracle.cross_vm.prepare_inspection_transfer_hard
+platform: android
+instruction: Oracle sanity task for android.cross_vm.prepare_inspection_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/inspection_source.txt
+    transfer_path: /sdcard/Documents/markor/inspection_transfer.csv
+    prepare_transfer: true
+    source_text: |
+      Unit,Item,Result,Action
+      Unit 2A,Smoke detector,PASS,none
+      Unit 2A,Fire extinguisher,FAIL,replace expired extinguisher
+      Unit 2A,Window latch,PASS,none
+      Unit 2B,Smoke detector,FAIL,replace detector
+      Unit 2B,Carbon monoxide alarm,PASS,none
+      Unit 2B,Stair handrail,PASS,none
+      Unit 3A,Window latch,PASS,none
+      Unit 3A,Electrical outlet,PASS,none
+      Unit 3A,Smoke detector,PASS,none
+      Unit 3B,Smoke detector,PASS,none
+      Unit 3B,Carbon monoxide alarm,FAIL,install new alarm
+      Unit 3B,Door closer,PASS,none
+      Unit 4A,Stair handrail,FAIL,tighten brackets
+      Unit 4A,Fire extinguisher,PASS,none
+      Unit 4A,Electrical outlet,PASS,none
+      Unit 4C,Fire extinguisher,PASS,none
+      Unit 4C,Door closer,PASS,none
+      Unit 4C,Smoke detector,PASS,none
+      Unit 5A,Window latch,FAIL,replace latch
+      Unit 5A,Carbon monoxide alarm,PASS,none
+      Unit 5A,Door closer,FAIL,adjust closing speed
+      Unit 5B,Carbon monoxide alarm,PASS,none
+      Unit 5B,Electrical outlet,FAIL,replace scorched outlet
+      Unit 5B,Smoke detector,FAIL,replace detector
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/inspection_transfer.csv
+    expected_text: |
+      Unit,Item,Result,Action
+      Unit 2A,Smoke detector,PASS,none
+      Unit 2A,Fire extinguisher,FAIL,replace expired extinguisher
+      Unit 2A,Window latch,PASS,none
+      Unit 2B,Smoke detector,FAIL,replace detector
+      Unit 2B,Carbon monoxide alarm,PASS,none
+      Unit 2B,Stair handrail,PASS,none
+      Unit 3A,Window latch,PASS,none
+      Unit 3A,Electrical outlet,PASS,none
+      Unit 3A,Smoke detector,PASS,none
+      Unit 3B,Smoke detector,PASS,none
+      Unit 3B,Carbon monoxide alarm,FAIL,install new alarm
+      Unit 3B,Door closer,PASS,none
+      Unit 4A,Stair handrail,FAIL,tighten brackets
+      Unit 4A,Fire extinguisher,PASS,none
+      Unit 4A,Electrical outlet,PASS,none
+      Unit 4C,Fire extinguisher,PASS,none
+      Unit 4C,Door closer,PASS,none
+      Unit 4C,Smoke detector,PASS,none
+      Unit 5A,Window latch,FAIL,replace latch
+      Unit 5A,Carbon monoxide alarm,PASS,none
+      Unit 5A,Door closer,FAIL,adjust closing speed
+      Unit 5B,Carbon monoxide alarm,PASS,none
+      Unit 5B,Electrical outlet,FAIL,replace scorched outlet
+      Unit 5B,Smoke detector,FAIL,replace detector
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: android.cross_vm.prepare_inspection_transfer_hard

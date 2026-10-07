@@ -1,0 +1,129 @@
+task_id: macos.oracle.libreoffice.calc.add_formulas
+platform: macos
+instruction: Oracle sanity task for macos.libreoffice.calc.add_formulas. Wait briefly
+  and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "killall -9 soffice.bin >/dev/null 2>&1 || true\nkillall -9 LibreOffice\
+        \ >/dev/null 2>&1 || true\npkill -9 -f LibreOffice >/dev/null 2>&1 || true\n\
+        rm -f \"$HOME/Library/Application Support/LibreOffice/4/.lock\" || true\n\
+        rm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/temp\"/* ||\
+        \ true\nrm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/backup\"\
+        /* || true\npython3 - <<'PY'\nfrom pathlib import Path\nimport re\n\npath\
+        \ = Path.home() / \"Library/Application Support/LibreOffice/4/user/registrymodifications.xcu\"\
+        \npath.parent.mkdir(parents=True, exist_ok=True)\n\nentry = '<item oor:path=\"\
+        /org.openoffice.Office.Common/Save/Document\"><prop oor:name=\"WarnAlienFormat\"\
+        \ oor:op=\"fuse\"><value>false</value></prop></item>'\nif path.exists():\n\
+        \    text = path.read_text(encoding=\"utf-8\")\nelse:\n    text = (\n    \
+        \    '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n'\n        '<oor:items\
+        \ xmlns:oor=\"http://openoffice.org/2001/registry\" '\n        'xmlns:xs=\"\
+        http://www.w3.org/2001/XMLSchema\" '\n        'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+        >\\n'\n        '</oor:items>\\n'\n    )\n\npattern = re.compile(\n    r'<item\
+        \ oor:path=\"/org\\.openoffice\\.Office\\.Common/Save/Document\">.*?<prop\
+        \ oor:name=\"WarnAlienFormat\" oor:op=\"fuse\"><value>.*?</value></prop></item>',\n\
+        \    re.DOTALL,\n)\nif pattern.search(text):\n    text = pattern.sub(entry,\
+        \ text, count=1)\nelif entry not in text:\n    text = text.replace('</oor:items>',\
+        \ entry + '\\n</oor:items>')\n\npath.write_text(text, encoding=\"utf-8\")\n\
+        PY\nsleep 2\n"
+      timeout: 30
+    - type: upload_file
+      local_path: ../files/libreoffice/calc_add_formulas_template.xlsx
+      path: ~/Downloads/calc_add_formulas_template.xlsx
+    - type: run_bash
+      script: 'open -a "LibreOffice" "$HOME/Downloads/calc_add_formulas_template.xlsx"
+        >/dev/null 2>&1 &
+
+        '
+      timeout: 30
+    - type: wait
+      ms: 8000
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: Discard All
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: 'Yes'
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      action:
+        type: keyboard
+        action: escape
+    - type: wait
+      ms: 1000
+evaluation:
+  evaluator_id: evaluators.macos.libreoffice_calc_cells:LibreOfficeCalcCellEvaluator
+  params:
+    remote_path: ~/Downloads/calc_add_formulas_template.xlsx
+    expected_sheet_names:
+    - Inventory
+    sheet_name: Inventory
+    expected_text_cells:
+      A1: Item
+      B1: Quantity
+      C1: Unit Price
+      D1: Total Value
+      A2: Laptop
+      A3: Monitor
+      A4: Keyboard
+      A5: Mouse
+      A6: Headset
+      A8: Total
+    expected_numeric_cells:
+      B2: 25
+      C2: 1200
+      B3: 40
+      C3: 350
+      B4: 100
+      C4: 75
+      B5: 100
+      C5: 25
+      B6: 60
+      C6: 150
+      D2: 30000
+      D3: 14000
+      D4: 7500
+      D5: 2500
+      D6: 9000
+      B8: 325
+      D8: 63000
+    expected_formula_substrings:
+      D2:
+      - B2
+      - C2
+      D3:
+      - B3
+      - C3
+      D4:
+      - B4
+      - C4
+      D5:
+      - B5
+      - C5
+      D6:
+      - B6
+      - C6
+      B8: SUM
+      D8: SUM
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.libreoffice.calc.add_formulas
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

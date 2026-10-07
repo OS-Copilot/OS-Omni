@@ -1,0 +1,174 @@
+task_id: linux.cross_vm.writer_launch_review_minutes_hard
+platform: linux
+instruction: >
+  A blank LibreOffice Writer document named launch_review_minutes.docx is
+  already open, and the transferred file launch_review_transfer.txt is on the
+  Desktop. Use the transferred note to create concise launch review minutes in
+  the Writer document. The document must contain these paragraphs in this exact
+  order: "Launch Readiness Review"; "Source: launch_review_transfer.txt";
+  "Attendees:"; "Maya Chen"; "Jordan Lee"; "Priya Nair"; "Theo Martin";
+  "Decisions:"; "Keep the launch window on July 18."; "Publish the final
+  checklist after the dry run."; "Action Items:"; "Jordan Lee - confirm vendor
+  staging access by Tuesday."; "Priya Nair - send revised demo script to the
+  field team."; "Theo Martin - lock the final travel roster at 18 people.";
+  "Risks:"; "Vendor staging account owners are not final."; "Demo recording
+  depends on the dry-run room audio."; "Next Checkpoint:"; "Friday 09:30
+  readiness sync with launch leads.". Save the Writer document. Then create
+  /home/user/Documents/launch_review_owner_matrix.csv with exactly these four
+  lines: owner,area,status; Jordan Lee,vendor staging,blocked; Priya Nair,demo
+  script,ready; Theo Martin,travel roster,locked. Also create
+  /home/user/Desktop/launch_review_archive_manifest.txt with exactly these four
+  lines: document=launch_review_minutes.docx, source=launch_review_transfer.txt,
+  archive=Launch/Readiness/Final, status=ready.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        set -e
+        pkill -f '[s]office.bin' >/dev/null 2>&1 || true
+        pkill -f '/usr/lib/libreoffice/program/[s]office' >/dev/null 2>&1 || true
+        mkdir -p /home/user/Documents /home/user/Desktop
+        rm -f /home/user/Documents/launch_review_minutes.docx \
+          /home/user/Documents/launch_review_owner_matrix.csv \
+          /home/user/Desktop/launch_review_archive_manifest.txt
+        tmpdir=$(mktemp -d)
+        printf '\n' > "$tmpdir/blank.txt"
+        libreoffice --headless --convert-to docx --outdir "$tmpdir" "$tmpdir/blank.txt" >/dev/null 2>&1
+        mv "$tmpdir/blank.docx" /home/user/Documents/launch_review_minutes.docx
+        rm -rf "$tmpdir"
+      timeout: 120
+    - type: write_file
+      path: /home/user/Desktop/launch_review_transfer.txt
+      content: |
+        Launch Readiness Review
+        Attendees: Maya Chen; Jordan Lee; Priya Nair; Theo Martin
+        Decisions: Keep the launch window on July 18; publish the final checklist after the dry run
+        Actions: Jordan owns vendor staging access by Tuesday; Priya owns revised demo script; Theo owns final travel roster at 18 people
+        Risks: vendor staging account owners are not final; demo recording depends on the dry-run room audio
+        Next checkpoint: Friday 09:30 readiness sync with launch leads
+    - type: run_bash
+      script: |
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_writer/B11B17CA-0B48-4A7E-B567-A2524C24D26F/Bench_Status_Update.docx"
+        out = Path("/home/user/Desktop/Bench_Status_Update.docx")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        python3 - <<'PY'
+        from pathlib import Path
+        from urllib.request import urlopen
+        url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/wireshark/C9CCC440-B4EE-407E-B53D-B389ED564F8E/retail_mix.pcapng"
+        out = Path("/tmp/helloworld_wireshark/retail_mix.pcapng")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(urlopen(url).read())
+        PY|
+        export DISPLAY=:0
+        setsid -f libreoffice --writer /home/user/Documents/launch_review_minutes.docx >/dev/null 2>&1
+      timeout: 120
+    - type: wait
+      ms: 6000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      python3 - <<'PY'
+      import zipfile
+      import xml.etree.ElementTree as ET
+      from pathlib import Path
+
+      with zipfile.ZipFile("/home/user/Documents/launch_review_minutes.docx") as zf:
+          root = ET.fromstring(zf.read("word/document.xml"))
+      ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+      lines = []
+      for paragraph in root.findall(".//w:body/w:p", ns):
+          text = "".join(node.text or "" for node in paragraph.findall(".//w:t", ns)).strip()
+          if text:
+              lines.append(text)
+      expected = [
+          "Launch Readiness Review",
+          "Source: launch_review_transfer.txt",
+          "Attendees:",
+          "Maya Chen",
+          "Jordan Lee",
+          "Priya Nair",
+          "Theo Martin",
+          "Decisions:",
+          "Keep the launch window on July 18.",
+          "Publish the final checklist after the dry run.",
+          "Action Items:",
+          "Jordan Lee - confirm vendor staging access by Tuesday.",
+          "Priya Nair - send revised demo script to the field team.",
+          "Theo Martin - lock the final travel roster at 18 people.",
+          "Risks:",
+          "Vendor staging account owners are not final.",
+          "Demo recording depends on the dry-run room audio.",
+          "Next Checkpoint:",
+          "Friday 09:30 readiness sync with launch leads.",
+      ]
+      if lines != expected:
+          raise SystemExit(f"LINES_MISMATCH:{lines}")
+
+      sidecars = {
+          "/home/user/Documents/launch_review_owner_matrix.csv": [
+              "owner,area,status",
+              "Jordan Lee,vendor staging,blocked",
+              "Priya Nair,demo script,ready",
+              "Theo Martin,travel roster,locked",
+          ],
+          "/home/user/Desktop/launch_review_archive_manifest.txt": [
+              "document=launch_review_minutes.docx",
+              "source=launch_review_transfer.txt",
+              "archive=Launch/Readiness/Final",
+              "status=ready",
+          ],
+      }
+      for path, expected_lines in sidecars.items():
+          actual_lines = [
+              line.strip()
+              for line in Path(path).read_text(encoding="utf-8").splitlines()
+              if line.strip()
+          ]
+          if actual_lines != expected_lines:
+              raise SystemExit(f"SIDECAR_MISMATCH:{path}:{actual_lines}")
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [linux, cross_vm, libreoffice, writer, hard]
+  app_name: cross_vm
+  difficulty: hard
+  description: Turn a transferred launch review note into concise Writer minutes
+    plus an owner matrix and archive manifest.
+  oracle_task: tasks/v1/cross_vm/stages/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
+  oracle_model: linux_oracle_wait
+  human_steps: 74
+  human_steps_breakdown:
+  - 'open transferred note and arrange windows: 6'
+  - '19 required paragraphs (2 each): 38'
+  - 'Save in Word format (keep-format prompt): 4'
+  - 'owner matrix CSV in a text editor (open, 4 lines, save as): 13'
+  - 'archive manifest in a text editor (open, 4 lines, save as): 13'

@@ -1,0 +1,88 @@
+task_id: windows.oracle.cross_vm.impress_regional_review_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.impress_regional_review_hard. The initializer already prepares
+  the expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        $ErrorActionPreference = 'Stop'
+        Get-Process soffice,soffice.bin,simpress -ErrorAction SilentlyContinue |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+        $code = @'
+        import os, subprocess, sys
+        def _need(mod, pkg):
+            try:
+                return __import__(mod)
+            except ImportError:
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+                return __import__(mod)
+        pptx = _need('pptx', 'python-pptx')
+        path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        deck = pptx.Presentation()
+        for index, (title, body) in enumerate([('Q3 Regional Review', ['Revenue vs target (k USD)']), ('Agenda', ['North', 'South', 'East', 'West', 'Central', 'Coastal', 'Mountain', 'Capital']), ('North', ['Revenue: 412', 'Target: 400', 'Variance: +12', 'Owner: Maya Chen', 'Status: Above target']), ('South', ['Revenue: 365', 'Target: 390', 'Variance: -25', 'Owner: Omar Haddad', 'Status: Below target']), ('East', ['Revenue: 318', 'Target: 310', 'Variance: +8', 'Owner: Priya Nair', 'Status: Above target']), ('West', ['Revenue: 420', 'Target: 420', 'Variance: 0', 'Owner: Theo Martin', 'Status: On target']), ('Central', ['Revenue: 322', 'Target: 330', 'Variance: -8', 'Owner: Lena Fischer', 'Status: Below target']), ('Coastal', ['Revenue: 287', 'Target: 260', 'Variance: +27', 'Owner: Omar Haddad', 'Status: Above target']), ('Mountain', ['Revenue: 199', 'Target: 240', 'Variance: -41', 'Owner: Rosa Lima', 'Status: Below target']), ('Capital', ['Revenue: 505', 'Target: 505', 'Variance: 0', 'Owner: Kenji Sato', 'Status: On target']), ('Follow-ups', ['South - Omar Haddad (-25)', 'Central - Lena Fischer (-8)', 'Mountain - Rosa Lima (-41)']), ('Summary', ['Total revenue: 2828', 'Total target: 2855', 'Above target: 3', 'On target: 2', 'Below target: 3'])]):
+            slide = deck.slides.add_slide(deck.slide_layouts[0 if index == 0 else 1])
+            slide.shapes.title.text = title
+            frame = slide.placeholders[1].text_frame
+            frame.text = body[0]
+            for line in body[1:]:
+                frame.add_paragraph().text = line
+        deck.save(path)
+        print('ORACLE_OK', path)
+        '@
+        $code | py -3 -W ignore -
+        if ($LASTEXITCODE -ne 0) { throw "Failed to build oracle regional_review.pptx" }
+      timeout: 180
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 90
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      @'
+      import os, subprocess, sys
+      def _need(mod, pkg):
+          try:
+              return __import__(mod)
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg, '-q'])
+              return __import__(mod)
+      pptx = _need('pptx', 'python-pptx')
+      path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')
+      deck = pptx.Presentation(path)
+      observed = []
+      for slide in deck.slides:
+          title_shape = slide.shapes.title
+          title = title_shape.text_frame.text.strip() if title_shape is not None else None
+          body = []
+          for shape in slide.shapes:
+              if not shape.has_text_frame or (title_shape is not None and shape.shape_id == title_shape.shape_id):
+                  continue
+              body.extend(p.text.strip() for p in shape.text_frame.paragraphs if p.text.strip())
+          if title is None and body:
+              title, body = body[0], body[1:]
+          observed.append((title, body))
+      expected = [('Q3 Regional Review', ['Revenue vs target (k USD)']), ('Agenda', ['North', 'South', 'East', 'West', 'Central', 'Coastal', 'Mountain', 'Capital']), ('North', ['Revenue: 412', 'Target: 400', 'Variance: +12', 'Owner: Maya Chen', 'Status: Above target']), ('South', ['Revenue: 365', 'Target: 390', 'Variance: -25', 'Owner: Omar Haddad', 'Status: Below target']), ('East', ['Revenue: 318', 'Target: 310', 'Variance: +8', 'Owner: Priya Nair', 'Status: Above target']), ('West', ['Revenue: 420', 'Target: 420', 'Variance: 0', 'Owner: Theo Martin', 'Status: On target']), ('Central', ['Revenue: 322', 'Target: 330', 'Variance: -8', 'Owner: Lena Fischer', 'Status: Below target']), ('Coastal', ['Revenue: 287', 'Target: 260', 'Variance: +27', 'Owner: Omar Haddad', 'Status: Above target']), ('Mountain', ['Revenue: 199', 'Target: 240', 'Variance: -41', 'Owner: Rosa Lima', 'Status: Below target']), ('Capital', ['Revenue: 505', 'Target: 505', 'Variance: 0', 'Owner: Kenji Sato', 'Status: On target']), ('Follow-ups', ['South - Omar Haddad (-25)', 'Central - Lena Fischer (-8)', 'Mountain - Rosa Lima (-41)']), ('Summary', ['Total revenue: 2828', 'Total target: 2855', 'Above target: 3', 'On target: 2', 'Below target: 3'])]
+      if len(observed) != len(expected):
+          print('SLIDE_COUNT_MISMATCH:%d' % len(observed))
+          raise SystemExit(1)
+      for index, (got, want) in enumerate(zip(observed, expected), start=1):
+          if (got[0], got[1]) != (want[0], want[1]):
+              print('SLIDE_MISMATCH:%d:%r' % (index, got))
+              raise SystemExit(1)
+      print('EVAL_RESULT:PASS')
+      '@ | py -3 -W ignore -
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.impress_regional_review_hard

@@ -23,6 +23,7 @@ class OpenShopInitializer(BaseInitializer):
     MODERN_GUEST_APP_DIR = "/tmp/helloworld_openshop_current"
     MODERN_GUEST_ARCHIVE = "/tmp/helloworld_openshop_current.tgz"
     MODERN_GUEST_SERVER = "/tmp/helloworld_openshop_current_server.py"
+    SNAPSHOT_GUEST_PUBLIC_DIR = "/home/user/Applications/openshop_web/public"
 
     def initialize(self, context: Mapping[str, Any]) -> InitResult:
         controller = context.get("controller")
@@ -42,15 +43,37 @@ class OpenShopInitializer(BaseInitializer):
         seed_files = params.get("seed_files") if isinstance(params.get("seed_files"), list) else []
         benchmark_mode = str(params.get("benchmark_mode") or "").strip()
         require_benchmark_api = bool(params.get("require_benchmark_api", False))
+        verify_only = bool(params.get("verify_only", False))
+        local_webpage_path = str(params.get("local_webpage_path") or "").strip()
+        app_command = requested_app_command
 
         try:
-            app_command = self._resolve_app_command(controller, requested_app_command)
-            self._stop_app(controller, app_command)
-            self._cleanup_paths(controller, cleanup_paths)
+            if verify_only:
+                if not local_webpage_path:
+                    raise ValueError("verify_only requires local_webpage_path")
+                self._run(
+                    controller,
+                    f"test -e {shlex.quote(local_webpage_path)}",
+                    timeout=10,
+                )
+                return InitResult(
+                    status=InitStatus.PASS,
+                    message="Verified OpenShop snapshot entrypoint",
+                    metadata={
+                        "local_webpage_path": local_webpage_path,
+                        "requested_app_command": requested_app_command,
+                        "benchmark_mode": benchmark_mode,
+                        "verify_only": True,
+                    },
+                )
             if require_benchmark_api:
+                self._cleanup_paths(controller, cleanup_paths)
                 self._deploy_and_launch_current_app(controller, port=port)
                 app_command = "openshop-current-source"
             else:
+                app_command = self._resolve_app_command(controller, requested_app_command)
+                self._stop_app(controller, app_command)
+                self._cleanup_paths(controller, cleanup_paths)
                 self._launch_app(controller, app_command)
             self._seed_state(
                 controller,
@@ -78,6 +101,8 @@ class OpenShopInitializer(BaseInitializer):
                     "requested_app_command": requested_app_command,
                     "benchmark_mode": benchmark_mode,
                     "require_benchmark_api": require_benchmark_api,
+                    "verify_only": verify_only,
+                    "local_webpage_path": local_webpage_path,
                 },
             )
 
@@ -94,6 +119,8 @@ class OpenShopInitializer(BaseInitializer):
                 "requested_app_command": requested_app_command,
                 "benchmark_mode": benchmark_mode,
                 "require_benchmark_api": require_benchmark_api,
+                "verify_only": verify_only,
+                "local_webpage_path": local_webpage_path,
             },
         )
 
@@ -151,24 +178,20 @@ class OpenShopInitializer(BaseInitializer):
         )
         self._run(controller, launch_script, timeout=15)
 
-    def _deploy_and_launch_current_app(self, controller: Any, *, port: int) -> None:
+    def _deploy_and_launch_current_app(self, controller: Any, *, port: int, launch_browser: bool = True) -> None:
         if not hasattr(controller, "upload_file"):
             raise RuntimeError("controller.upload_file is required to deploy the current OpenShop build")
 
         source_dir = Path(__file__).resolve().parents[2] / "apps" / "openshop"
-        if not source_dir.exists():
-            raise RuntimeError(f"OpenShop source directory not found: {source_dir}")
-
-        with tempfile.NamedTemporaryFile(suffix=".tgz") as archive:
-            with tarfile.open(archive.name, "w:gz") as tar:
-                for relative_name in (
-                    "public",
-                    "shared",
-                ):
-                    path = source_dir / relative_name
-                    if path.exists():
-                        tar.add(path, arcname=relative_name)
-            controller.upload_file(archive.name, self.MODERN_GUEST_ARCHIVE)
+        use_host_source = (source_dir / "public").is_dir() and (
+            source_dir / "shared" / "seed-data.json"
+        ).is_file()
+        if use_host_source:
+            with tempfile.NamedTemporaryFile(suffix=".tgz") as archive:
+                with tarfile.open(archive.name, "w:gz") as tar:
+                    for relative_name in ("public", "shared"):
+                        tar.add(source_dir / relative_name, arcname=relative_name)
+                controller.upload_file(archive.name, self.MODERN_GUEST_ARCHIVE)
 
         with tempfile.NamedTemporaryFile("w", suffix=".py", encoding="utf-8") as server_file:
             server_file.write(self._current_server_source())
@@ -178,6 +201,30 @@ class OpenShopInitializer(BaseInitializer):
         guest_dir = shlex.quote(self.MODERN_GUEST_APP_DIR)
         guest_archive = shlex.quote(self.MODERN_GUEST_ARCHIVE)
         guest_server = shlex.quote(self.MODERN_GUEST_SERVER)
+        if use_host_source:
+            prepare_assets = [f"tar -xzf {guest_archive} -C {guest_dir}"]
+        else:
+            snapshot_public = shlex.quote(self.SNAPSHOT_GUEST_PUBLIC_DIR)
+            seed_conversion = "\n".join(
+                [
+                    "import json",
+                    "from pathlib import Path",
+                    f"source = Path({self.SNAPSHOT_GUEST_PUBLIC_DIR!r}) / 'seed-data.js'",
+                    "text = source.read_text(encoding='utf-8').strip()",
+                    "prefix = 'window.openshopSeed = '",
+                    "assert text.startswith(prefix) and text.endswith(';'), 'unsupported OpenShop seed-data.js format'",
+                    "payload = text[len(prefix):-1].strip()",
+                    f"target = Path({self.MODERN_GUEST_APP_DIR!r}) / 'shared' / 'seed-data.json'",
+                    "target.parent.mkdir(parents=True, exist_ok=True)",
+                    "target.write_text(json.dumps(json.loads(payload), ensure_ascii=False), encoding='utf-8')",
+                ]
+            )
+            prepare_assets = [
+                f"test -f {snapshot_public}/index.html",
+                f"test -f {snapshot_public}/seed-data.js",
+                f"ln -s {snapshot_public} {guest_dir}/public",
+                f"python3 -c {shlex.quote(seed_conversion)}",
+            ]
         launch_script = "\n".join(
             [
                 "export DISPLAY=${DISPLAY:-:0}",
@@ -189,14 +236,27 @@ class OpenShopInitializer(BaseInitializer):
                 "sleep 1",
                 f"rm -rf {guest_dir}",
                 f"mkdir -p {guest_dir}",
-                f"tar -xzf {guest_archive} -C {guest_dir}",
+                *prepare_assets,
                 f"cp {guest_server} {guest_dir}/openshop_current_server.py",
                 f"cd {guest_dir}",
                 f"export PORT={int(port)}",
                 "nohup python3 openshop_current_server.py >/tmp/helloworld_openshop_current.log 2>&1 &",
                 "for i in $(seq 1 40); do curl -fsS http://127.0.0.1:${PORT:-4310}/api/bootstrap >/dev/null && break; sleep 0.5; done",
                 "if ! curl -fsS http://127.0.0.1:${PORT:-4310}/api/benchmark >/dev/null; then cat /tmp/helloworld_openshop_current.log >&2 || true; exit 1; fi",
-                "url=http://127.0.0.1:${PORT:-4310}/",
+            ]
+        )
+        self._run(controller, launch_script, timeout=120)
+        if launch_browser:
+            self._open_current_app_browser(controller, port=port)
+
+    def _open_current_app_browser(self, controller: Any, *, port: int) -> None:
+        browser_script = "\n".join(
+            [
+                "export DISPLAY=${DISPLAY:-:0}",
+                "export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}",
+                'export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}',
+                'export DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=${XDG_RUNTIME_DIR}/bus}',
+                f"url=http://127.0.0.1:{int(port)}/",
                 "browser_cmd=''",
                 "for candidate in google-chrome chromium-browser chromium firefox xdg-open; do if command -v \"$candidate\" >/dev/null 2>&1; then browser_cmd=\"$candidate\"; break; fi; done",
                 "if [ -z \"$browser_cmd\" ]; then echo 'no browser command available for OpenShop current-source launch' >&2; exit 1; fi",
@@ -204,7 +264,7 @@ class OpenShopInitializer(BaseInitializer):
                 "sleep 2",
             ]
         )
-        self._run(controller, launch_script, timeout=120)
+        self._run(controller, browser_script, timeout=30)
 
     @staticmethod
     def _current_server_source() -> str:
@@ -390,6 +450,28 @@ def api_product(product_id):
     return jsonify({"product": product})
 
 
+def hash_password(value):
+    # Mirrors hashPassword in the snapshot's public/app.js (FNV-1a over UTF-16 units).
+    data = f"openshop:{value}".encode("utf-16-le")
+    digest = 2166136261
+    for index in range(0, len(data), 2):
+        unit = int.from_bytes(data[index:index + 2], "little")
+        digest = ((digest ^ unit) * 16777619) & 0xFFFFFFFF
+    return f"fnv1a-{digest:08x}"
+
+
+def password_matches(password, account):
+    # Current builds keep a plain password; the snapshot seed only has passwordHash.
+    if account.get("password") is not None:
+        return password == account["password"]
+    return bool(account.get("passwordHash")) and hash_password(password) == account["passwordHash"]
+
+
+def seed_accounts():
+    accounts = SEED.get("accounts") or [SEED.get("benchmarkAccount")]
+    return [account for account in accounts if isinstance(account, dict) and account.get("phone")]
+
+
 @app.get("/api/session")
 def api_session():
     return jsonify({"session": STATE["session"]})
@@ -398,12 +480,15 @@ def api_session():
 @app.post("/api/login")
 def api_login():
     body = request.get_json(silent=True) or {}
-    account = SEED["benchmarkAccount"]
     phone = str(body.get("phone") or "").strip()
     password = str(body.get("password") or "").strip()
     if not phone or not password:
         return jsonify({"error": "MISSING_FIELDS"}), 400
-    if phone != account["phone"] or password != account["password"]:
+    account = next(
+        (item for item in seed_accounts() if item.get("phone") == phone and password_matches(password, item)),
+        None,
+    )
+    if account is None:
         return jsonify({"error": "INVALID_CREDENTIALS"}), 401
     STATE["session"] = {"loggedIn": True, "user": {"name": account["name"], "phone": account["phone"]}}
     record_event("session_login_success", {"phone": account["phone"]})

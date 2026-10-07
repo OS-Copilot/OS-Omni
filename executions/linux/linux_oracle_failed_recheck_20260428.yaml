@@ -1,8 +1,5 @@
 tasks:
-  - tasks/linux/oracle/blender_prepare_social_render_oracle.yaml
-  - tasks/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
-  - tasks/linux/oracle/spotube_import_city_weather_mix_oracle.yaml
-  - tasks/linux/oracle/spotube_import_focus_capsule_oracle.yaml
+  - tasks/v1/cross_vm/stages/linux/oracle/cross_vm_writer_launch_review_minutes_hard_oracle.yaml
 models:
   - linux_oracle_wait
 reuse_vm_session: true

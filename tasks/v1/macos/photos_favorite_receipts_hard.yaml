@@ -1,0 +1,67 @@
+task_id: macos.photos.favorite_receipts_hard
+platform: macos
+instruction: >
+  In Photos, import only the three prepared receipt final images:
+  client_receipt_blue_final_774.png, client_receipt_green_final_610.png, and
+  client_receipt_red_final_203.png. Mark exactly those imported receipt final
+  images as favorites, then create an album named Receipt Finals - Client Set
+  containing exactly those three favorite receipt final images. Do not import or
+  favorite any draft, backup, hold, route, or map images.
+init:
+  initializer_id: initializers.macos.photos:PhotosInitializer
+  params:
+    mode: open
+    final_wait_ms: 2500
+evaluation:
+  evaluator_id: evaluators.macos.photos:PhotosStateEvaluator
+  params:
+    any_text_groups:
+      - - Photos
+        - 照片
+    expected_assets:
+      - client_receipt_blue_final_774.png
+      - client_receipt_green_final_610.png
+      - client_receipt_red_final_203.png
+    forbidden_assets:
+      - receipt_blue_draft_774.png
+      - client_receipt_green_backup_610.png
+      - blue_route_card_hold_1740.png
+      - blue_route_card_final_1740.png
+      - blue_route_map_final_303.png
+      - blue_route_cover_final_501.png
+      - red_route_cover_final_501.png
+    exact_asset_set: true
+    favorite_assets:
+      - client_receipt_blue_final_774.png
+      - client_receipt_green_final_610.png
+      - client_receipt_red_final_203.png
+    albums:
+      - title: Receipt Finals - Client Set
+        expected_assets:
+          - client_receipt_blue_final_774.png
+          - client_receipt_green_final_610.png
+          - client_receipt_red_final_203.png
+        forbidden_assets:
+          - receipt_blue_draft_774.png
+          - client_receipt_green_backup_610.png
+          - blue_route_card_hold_1740.png
+          - blue_route_card_final_1740.png
+          - blue_route_map_final_303.png
+          - blue_route_cover_final_501.png
+          - red_route_cover_final_501.png
+        exact_assets: true
+        min_count: 3
+metadata:
+  app: Photos
+  app_name: apple-photos
+  app_bundle_id: com.apple.Photos
+  difficulty: hard
+  tags: [macos, gui, photos, native, favorites, albums, hard, single_app, evaluator_backed]
+  human_steps: 44
+  description: Import the exact receipt final subset from a prepared inbox, favorite only those images, and create an exact album.
+  hardness: hard-evaluable
+  evaluation_standard: exact imported asset set, ZASSET.ZFAVORITE state, and album membership through Z_30ASSETS are checked in Photos.sqlite
+  oracle_task: tasks/v1/macos/oracle/photos_favorite_receipts_hard_oracle.yaml
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120

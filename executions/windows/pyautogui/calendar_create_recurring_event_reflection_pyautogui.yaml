@@ -5,6 +5,6 @@ observation_mode: screenshot_only
 history_window: 3
 max_steps: 100
 tasks:
-  - tasks/windows/calendar_create_recurring_event.yaml
+  - tasks/v1/windows/calendar_create_recurring_event.yaml
 metadata:
   description: Windows execution for calendar_create_recurring_event with code_adapter mode.

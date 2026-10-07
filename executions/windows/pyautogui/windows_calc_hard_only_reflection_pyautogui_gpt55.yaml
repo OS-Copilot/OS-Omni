@@ -6,8 +6,7 @@ history_window: 3
 max_steps: 100
 timeout: 120
 tasks:
-  - tasks/windows/calc_crosssheet_chart.yaml
-  - tasks/windows/calc_formulas_conditional.yaml
+  - tasks/v1/windows/calc_crosssheet_chart.yaml
 metadata:
   description: Windows Calc hard-only run for gpt5_5 high with code_adapter mode.
   scope: single_app

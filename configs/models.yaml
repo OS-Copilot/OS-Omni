@@ -1,4 +1,16 @@
 models:
+  qwen3_8_27b_local:
+    provider: openai
+    model_name: Qwen/Qwen3.8-27B
+    api_key_env: QWEN_LOCAL_API_KEY
+    base_url_env: QWEN_LOCAL_BASE_URL
+    temperature: 1.0
+    top_p: 0.95
+    max_output_tokens: 4096
+    metadata:
+      reasoning_effort: medium
+      computer_use_protocol: qwen
+
   gpt5_0:
     provider: openai
     model_name: gpt-5

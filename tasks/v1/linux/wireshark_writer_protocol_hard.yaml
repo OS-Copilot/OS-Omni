@@ -1,0 +1,133 @@
+task_id: linux.cross_app.wireshark_writer_protocol_hard
+platform: linux
+instruction: >
+  Open the seeded Wireshark capture /tmp/helloworld_wireshark/retail_mix.pcapng.
+  In the display filter bar at the top, type "udp" and press Enter or click
+  the Apply button to apply the filter. Count the number of displayed UDP
+  packets shown in the packet list.
+  Then clear the filter by clicking the Clear button (X icon) next to the
+  filter bar.
+  Now type "icmp" in the filter bar and apply it. Count the number of
+  displayed ICMP packets.
+  Then clear the filter again.
+  Now type "tcp.port == 80" in the filter bar and apply it. Count the
+  number of displayed packets.
+  Then switch to the already-open LibreOffice Writer window. Create a new
+  document with the heading "Protocol Analysis Report" and include:
+  "UDP Packets: [your count]
+  ICMP Packets: [your count]
+  TCP Port 80 Packets: [your count]"
+  Save the Writer document as /home/user/Documents/protocol_report.odt.
+  Finish after the document is saved.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f wireshark || true
+        pkill -f soffice.bin || true
+        mkdir -p /tmp/helloworld_wireshark /home/user/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        # The image does not ship this capture; seed the retail_mix capture
+        # embedded in initializers/linux/wireshark.py.
+        set -e
+        mkdir -p /tmp/helloworld_wireshark
+        base64 -d >/tmp/helloworld_wireshark/retail_mix.pcapng <<'B64'
+        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
+        AAAjKAAAAABQAiAAoyUAAAAAWAAAAA==
+        B64
+        test -s /tmp/helloworld_wireshark/retail_mix.pcapng
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f wireshark /tmp/helloworld_wireshark/retail_mix.pcapng >/dev/null 2>&1
+    - type: wait
+      ms: 10000
+    - type: run_bash
+      script: |
+        export DISPLAY=:0
+        setsid -f libreoffice --writer >/dev/null 2>&1
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      expected_headings = [
+          "Protocol Analysis Report",
+          "UDP Packets:",
+          "ICMP Packets:",
+          "TCP Port 80 Packets:"
+      ]
+
+      odt_path = os.path.expanduser("~/Documents/protocol_report.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      for value in expected_headings:
+          if value not in content:
+              raise SystemExit(f"MISSING_VALUE_{value.replace(' ', '_').replace(':', '')}")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - cross_app
+  - wireshark
+  - writer
+  - network
+  - filter
+  - protocol
+  - hard
+  app_name: wireshark + libreoffice_writer
+  difficulty: hard
+  description: Apply 3 different display filters in Wireshark (udp, icmp, tcp.port==80),
+    count packets for each, then create a protocol analysis report in Writer
+    with those counts.

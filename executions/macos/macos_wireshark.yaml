@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/wireshark_http_filter_export.yaml
-  - tasks/macos/wireshark_protocol_hierarchy_export.yaml
-  - tasks/macos/wireshark_http_objects_and_filtered_capture.yaml
+  - tasks/v1/macos/wireshark_http_objects_and_filtered_capture.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

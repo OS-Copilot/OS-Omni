@@ -1,0 +1,91 @@
+task_id: windows.oracle.cross_vm.prepare_roster_transfer_hard
+platform: windows
+instruction: Oracle sanity task for windows.cross_vm.prepare_roster_transfer_hard. The initializer already prepares
+  the expected transfer file. Wait briefly and finish.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: |
+        Get-Process notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        $targetPath = Join-Path $env:USERPROFILE "Desktop\roster_transfer.csv"
+        New-Item -ItemType Directory -Path (Split-Path $targetPath) -Force | Out-Null
+        @'
+        Name,Day,Shift,Hours
+        Avery Brooks,Mon,AM,8
+        Dana Ortiz,Thu,PM,6
+        Kenji Sato,Mon,PM,4
+        Lena Fischer,Wed,AM,8
+        Omar Haddad,Thu,AM,6
+        Rosa Lima,Fri,PM,8
+        Sam Patel,Wed,PM,6
+        Tariq Noor,Fri,AM,6
+        Mei Wong,Tue,AM,8
+        Ines Duarte,Mon,AM,6
+        Paul Okafor,Wed,AM,6
+        Priya Nair,Sat,AM,8
+        Theo Martin,Sat,PM,6
+        Maya Chen,Sun,AM,6
+        Jordan Lee,Thu,AM,8
+        Hugo Silva,Fri,PM,4
+        Nora Quinn,Sun,AM,4
+        Eli Novak,Tue,PM,6
+        Zara Ahmed,Wed,PM,8
+        Liam Doyle,Mon,PM,6
+        Ava Rossi,Sat,AM,4
+        Owen Price,Fri,AM,8
+        Hana Kim,Fri,AM,4
+        Leo Brandt,Sun,PM,8
+        '@ | Set-Content -Path $targetPath -Encoding UTF8
+      timeout: 30
+evaluation:
+  evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+  params:
+    timeout: 30
+    stdout_contains: EVAL_RESULT:PASS
+    command: |
+      $expected = @'
+      Name,Day,Shift,Hours
+      Avery Brooks,Mon,AM,8
+      Dana Ortiz,Thu,PM,6
+      Kenji Sato,Mon,PM,4
+      Lena Fischer,Wed,AM,8
+      Omar Haddad,Thu,AM,6
+      Rosa Lima,Fri,PM,8
+      Sam Patel,Wed,PM,6
+      Tariq Noor,Fri,AM,6
+      Mei Wong,Tue,AM,8
+      Ines Duarte,Mon,AM,6
+      Paul Okafor,Wed,AM,6
+      Priya Nair,Sat,AM,8
+      Theo Martin,Sat,PM,6
+      Maya Chen,Sun,AM,6
+      Jordan Lee,Thu,AM,8
+      Hugo Silva,Fri,PM,4
+      Nora Quinn,Sun,AM,4
+      Eli Novak,Tue,PM,6
+      Zara Ahmed,Wed,PM,8
+      Liam Doyle,Mon,PM,6
+      Ava Rossi,Sat,AM,4
+      Owen Price,Fri,AM,8
+      Hana Kim,Fri,AM,4
+      Leo Brandt,Sun,PM,8
+      '@
+      $expected = ($expected -replace "`r`n", "`n").Trim()
+      $targetPath = Join-Path $env:USERPROFILE "Desktop\roster_transfer.csv"
+      if (-not (Test-Path -LiteralPath $targetPath)) { Write-Output "MISSING_FILE"; exit 1 }
+      $actual = ((Get-Content -LiteralPath $targetPath -Raw) -replace "`r`n", "`n").Trim()
+      if ($actual -cne $expected) { Write-Output "CONTENT_MISMATCH"; exit 1 }
+      Write-Output "EVAL_RESULT:PASS"
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - windows
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: windows.cross_vm.prepare_roster_transfer_hard

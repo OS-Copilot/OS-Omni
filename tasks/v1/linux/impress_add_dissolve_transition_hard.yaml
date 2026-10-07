@@ -1,0 +1,53 @@
+task_id: linux.impress.add_dissolve_transition
+platform: linux
+instruction: Could you help me add the slide transition "dissolve" to the first four slides? The presentation should already be open in LibreOffice Impress. Save when finished.
+init:
+  initializer_id: initializers.linux.office_setup:LinuxOfficeSetupInitializer
+  params:
+    tool_source_dir: platforms/linux/office_tools
+    tool_names:
+    - libreoffice_writer.py
+    - libreoffice_calc.py
+    - libreoffice_impress.py
+    remote_tool_dir: "~"
+    uno_port: 2002
+    startup_wait_seconds: 6
+    seed_downloads:
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_impress/21760ecb-8f62-40d2-8d85-0cee5725cb72/Ch4%20Video%20Effect.pptx
+      path: /tmp/helloworld_office/impress_21760ecb_actual.pptx
+    open_documents_after_download:
+    - /tmp/helloworld_office/impress_21760ecb_actual.pptx
+    open_documents_wait_seconds: 5
+evaluation:
+  evaluator_id: evaluators.linux.pptx_transition_compare:PptxTransitionEvaluator
+  params:
+    actual_path: /tmp/helloworld_office/impress_21760ecb_actual.pptx
+    expected_path: ""
+    options:
+      rules:
+      - slide_idx: 0
+        transition_type: dissolve
+      - slide_idx: 1
+        transition_type: dissolve
+      - slide_idx: 2
+        transition_type: dissolve
+      - slide_idx: 3
+        transition_type: dissolve
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - libreoffice
+  - impress
+  - pptx
+  - transition
+  - hard
+  app: LibreOffice Impress
+  difficulty: hard
+  description: Add dissolve transitions to the first four slides of a prepared
+    Impress deck and save it.
+  oracle_task: tasks/v1/linux/oracle/impress_add_dissolve_transition_oracle.yaml
+  oracle_model: linux_oracle_wait

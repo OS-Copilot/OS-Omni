@@ -27,7 +27,7 @@ class WindowsOracleAdapter(ProviderAdapter):
     def __init__(self, spec_dir: str | None = None) -> None:
         default_dir = Path(__file__).resolve().parents[3] / "mine" / "oracle_agent" / "windows" / "specs"
         self._spec_dir = Path(spec_dir) if spec_dir else default_dir
-        self._tasks_dir = Path(__file__).resolve().parents[3] / "tasks" / "windows"
+        self._tasks_dir = Path(__file__).resolve().parents[3] / "tasks" / "v1"
         self._instruction_index: Dict[str, Dict[str, Any]] | None = None
 
     def invoke(self, request: ProviderRequest) -> ProviderResult:
@@ -147,6 +147,8 @@ class WindowsOracleAdapter(ProviderAdapter):
             with path.open("r", encoding="utf-8") as f:
                 task = yaml.safe_load(f) or {}
             if not isinstance(task, dict):
+                continue
+            if task.get("platform") != "windows":
                 continue
             task_id = str(task.get("task_id") or "").strip()
             instruction = str(task.get("instruction") or "").strip()

@@ -7,6 +7,10 @@ import inspect
 
 from .base import BaseInitializer
 
+# Reviewed release initializers are vendored here; they follow the release
+# initializer contract and are bridged by an adapter instead of subclassing.
+RELEASE_INITIALIZER_PREFIX = "evaluators.cua_review."
+
 
 def normalize_initializer_spec(spec: str) -> str:
     """Normalize and validate an import-path initializer spec."""
@@ -51,6 +55,16 @@ def load_initializer(spec) -> BaseInitializer:
             return obj
 
         if inspect.isclass(obj):
+            if (
+                not issubclass(obj, BaseInitializer)
+                and module_name.startswith(RELEASE_INITIALIZER_PREFIX)
+                and callable(getattr(obj, "initialize", None))
+            ):
+                from evaluators.cua_review.core.init_binding import (
+                    ReleaseInitializerAdapter,
+                )
+
+                return ReleaseInitializerAdapter(obj())
             if not issubclass(obj, BaseInitializer):
                 raise TypeError(
                     f"loaded class must inherit BaseInitializer: {spec!r}"

@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/gimp_rotate_export_png.yaml
-  - tasks/macos/gimp_transform_pipeline_export.yaml
-  - tasks/macos/gimp_overlay_layer_opacity_export.yaml
+  - tasks/v1/macos/gimp_transform_pipeline_export.yaml
 models:
   - gpt5_4
 action_mode: code_adapter

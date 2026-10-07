@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_TASK_ROOT = _REPO_ROOT / "tasks" / "linux"
+_TASK_ROOT = _REPO_ROOT / "tasks" / "v1"
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -31,6 +31,8 @@ def _task_index() -> dict[str, Path]:
         try:
             data = _load_yaml(path)
         except Exception:
+            continue
+        if data.get("platform") != "linux":
             continue
         task_id = str(data.get("task_id") or "").strip()
         if task_id:

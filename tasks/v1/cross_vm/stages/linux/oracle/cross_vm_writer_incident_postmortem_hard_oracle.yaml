@@ -1,0 +1,96 @@
+task_id: linux.oracle.cross_vm.writer_incident_postmortem_hard
+platform: linux
+instruction: Oracle sanity task for linux.cross_vm.writer_incident_postmortem_hard. The initializer already prepares
+  the expected document. Wait briefly and finish.
+init:
+  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        pkill -f '[s]office.bin' >/dev/null 2>&1 || true
+        pkill -f '/usr/lib/libreoffice/program/[s]office' >/dev/null 2>&1 || true
+        mkdir -p /home/user/Documents /home/user/Desktop
+        python3 - <<'PY'
+        from docx import Document
+        doc = Document()
+        for kind, value, style in [('p', 'INC-4821 Postmortem', 'heading 1'), ('p', 'Summary', 'heading 2'), ('p', 'Start: 14:05', ''), ('p', 'End: 15:02', ''), ('p', 'Duration: 57 minutes', ''), ('p', 'Peak error rate: 7.4%', ''), ('p', 'Timeline', 'heading 2'), ('tbl', [['Time', 'Service', 'Event'], ['14:05', 'monitoring', 'Alert fired for checkout p95 above 2s'], ['14:09', 'payments-gw', 'Timeouts to cart-service above 5%'], ['14:12', 'monitoring', 'On-call engineer acknowledged'], ['14:15', 'checkout-api', 'Retry storm detected on cart calls'], ['14:17', 'payments-gw', 'Circuit breaker opened for cart-service'], ['14:20', 'checkout-api', 'Error rate peaked at 7.4%'], ['14:23', 'monitoring', 'Incident channel opened'], ['14:26', 'cart-service', 'Bad config in cart-service 2.18 identified'], ['14:29', 'cart-service', 'Config diff posted for review'], ['14:32', 'cart-service', 'Rollback of cart-service 2.18 started'], ['14:38', 'cart-service', 'Rollback completed on all pods'], ['14:41', 'payments-gw', 'Circuit breaker closed'], ['14:44', 'checkout-api', 'Cache warm-up finished'], ['14:47', 'checkout-api', 'Error rate below 0.5%'], ['14:51', 'checkout-api', 'Latency back to baseline'], ['14:55', 'payments-gw', 'Timeout rate back to baseline'], ['14:58', 'monitoring', 'Status page set to monitoring'], ['15:02', 'monitoring', 'Alert resolved']], ''), ('p', 'Events by service', 'heading 2'), ('tbl', [['Service', 'Events', 'First', 'Last'], ['cart-service', '4', '14:26', '14:38'], ['checkout-api', '5', '14:15', '14:51'], ['monitoring', '5', '14:05', '15:02'], ['payments-gw', '4', '14:09', '14:55']], ''), ('p', 'Follow-ups', 'heading 2'), ('tbl', [['Owner', 'Task'], ['Rosa Lima', 'Add config schema validation to the cart-service deploy'], ['Kenji Sato', 'Lower the checkout retry budget'], ['Omar Haddad', 'Alert on circuit breaker state changes']], ''), ('p', 'Status', 'heading 2'), ('p', 'Resolved', '')]:
+            if kind == "tbl":
+                table = doc.add_table(rows=len(value), cols=len(value[0]))
+                for r, row in enumerate(value):
+                    for c, text in enumerate(row):
+                        table.cell(r, c).text = text
+            elif style.startswith("heading"):
+                doc.add_heading(value, level=int(style.split()[-1]))
+            else:
+                doc.add_paragraph(value)
+        doc.save("/home/user/Documents/incident_postmortem.docx")
+        print("ORACLE_OK")
+        PY
+      timeout: 120
+evaluation:
+  evaluator_id: evaluators.linux.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: PASS
+    command: |
+      python3 - <<'PY'
+      import zipfile
+      import xml.etree.ElementTree as ET
+
+      W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+      NS = {"w": W}
+
+      def read_docx(path):
+          with zipfile.ZipFile(path) as zf:
+              body = ET.fromstring(zf.read("word/document.xml")).find("w:body", NS)
+              names = {}
+              if "word/styles.xml" in zf.namelist():
+                  styles = ET.fromstring(zf.read("word/styles.xml"))
+                  for style in styles.findall("w:style", NS):
+                      name = style.find("w:name", NS)
+                      if name is not None:
+                          names[style.attrib.get("{%s}styleId" % W)] = name.attrib.get("{%s}val" % W, "")
+          items = []
+          for child in body:
+              tag = child.tag.split("}")[1]
+              if tag == "p":
+                  text = "".join(t.text or "" for t in child.findall(".//w:t", NS)).strip()
+                  if not text:
+                      continue
+                  style = child.find("w:pPr/w:pStyle", NS)
+                  style_id = style.attrib.get("{%s}val" % W) if style is not None else ""
+                  items.append(("p", text, names.get(style_id, style_id).lower()))
+              elif tag == "tbl":
+                  rows = []
+                  for tr in child.findall("w:tr", NS):
+                      rows.append(["".join(t.text or "" for t in tc.findall(".//w:t", NS)).strip()
+                                   for tc in tr.findall("w:tc", NS)])
+                  items.append(("tbl", rows, ""))
+          return items
+      def fail(message):
+          raise SystemExit(message)
+      items = read_docx("/home/user/Documents/incident_postmortem.docx")
+      expected = [('p', 'INC-4821 Postmortem', 'heading 1'), ('p', 'Summary', 'heading 2'), ('p', 'Start: 14:05', ''), ('p', 'End: 15:02', ''), ('p', 'Duration: 57 minutes', ''), ('p', 'Peak error rate: 7.4%', ''), ('p', 'Timeline', 'heading 2'), ('tbl', [['Time', 'Service', 'Event'], ['14:05', 'monitoring', 'Alert fired for checkout p95 above 2s'], ['14:09', 'payments-gw', 'Timeouts to cart-service above 5%'], ['14:12', 'monitoring', 'On-call engineer acknowledged'], ['14:15', 'checkout-api', 'Retry storm detected on cart calls'], ['14:17', 'payments-gw', 'Circuit breaker opened for cart-service'], ['14:20', 'checkout-api', 'Error rate peaked at 7.4%'], ['14:23', 'monitoring', 'Incident channel opened'], ['14:26', 'cart-service', 'Bad config in cart-service 2.18 identified'], ['14:29', 'cart-service', 'Config diff posted for review'], ['14:32', 'cart-service', 'Rollback of cart-service 2.18 started'], ['14:38', 'cart-service', 'Rollback completed on all pods'], ['14:41', 'payments-gw', 'Circuit breaker closed'], ['14:44', 'checkout-api', 'Cache warm-up finished'], ['14:47', 'checkout-api', 'Error rate below 0.5%'], ['14:51', 'checkout-api', 'Latency back to baseline'], ['14:55', 'payments-gw', 'Timeout rate back to baseline'], ['14:58', 'monitoring', 'Status page set to monitoring'], ['15:02', 'monitoring', 'Alert resolved']], ''), ('p', 'Events by service', 'heading 2'), ('tbl', [['Service', 'Events', 'First', 'Last'], ['cart-service', '4', '14:26', '14:38'], ['checkout-api', '5', '14:15', '14:51'], ['monitoring', '5', '14:05', '15:02'], ['payments-gw', '4', '14:09', '14:55']], ''), ('p', 'Follow-ups', 'heading 2'), ('tbl', [['Owner', 'Task'], ['Rosa Lima', 'Add config schema validation to the cart-service deploy'], ['Kenji Sato', 'Lower the checkout retry budget'], ['Omar Haddad', 'Alert on circuit breaker state changes']], ''), ('p', 'Status', 'heading 2'), ('p', 'Resolved', '')]
+      if len(items) != len(expected):
+          fail('ITEM_COUNT_MISMATCH:%r' % (items,))
+      for observed, (kind, value, style) in zip(items, expected):
+          if observed[0] != kind or observed[1] != value:
+              fail('CONTENT_MISMATCH:%r' % (observed,))
+          if kind == 'p' and style and observed[2] != style:
+              fail('STYLE_MISMATCH:%r' % (observed,))
+          if kind == 'p' and not style and observed[2].startswith('heading'):
+              fail('UNEXPECTED_HEADING:%r' % (observed,))
+      print("PASS")
+      PY
+limits:
+  max_steps: 2
+  step_timeout_seconds: 90
+metadata:
+  tags:
+  - linux
+  - cross_vm
+  - oracle
+  - hard
+  difficulty: hard
+  oracle_for: linux.cross_vm.writer_incident_postmortem_hard

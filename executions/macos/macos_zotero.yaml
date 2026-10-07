@@ -1,7 +1,5 @@
 tasks:
-  - tasks/macos/zotero_reading_queue_book.yaml
-  - tasks/macos/zotero_dual_collection_articles.yaml
-  - tasks/macos/zotero_reference_library_buildout.yaml
+  - tasks/v1/macos/zotero_dual_collection_articles.yaml
 models:
   - gpt5_4_local_responses
 action_mode: code_adapter

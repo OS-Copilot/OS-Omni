@@ -1,0 +1,88 @@
+task_id: android.cross_vm.prepare_reorder_transfer_hard
+platform: android
+instruction: The incomplete transfer CSV "reorder_transfer.csv" is open in Markor on Android, and the stock count
+  note "stock_count_source.txt" is in the same Markor folder. Using Markor only, make the transfer CSV contain the
+  header Item,OnHand,ReorderPoint,Supplier,UnitCost followed by one row for each of the sixteen items in the note,
+  in the same order, using plain numbers for OnHand, ReorderPoint, and UnitCost. Apply all five corrections at the
+  end of the note, fix any existing row that disagrees with the corrected data, and do not include any other lines.
+  Save the file and leave it ready to be transferred to Windows.
+init:
+  initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+  params:
+    source_path: /sdcard/Documents/markor/stock_count_source.txt
+    transfer_path: /sdcard/Documents/markor/reorder_transfer.csv
+    open_path: /sdcard/Documents/markor/reorder_transfer.csv
+    source_text: |
+      Aisle 4 stock count - Friday close (Item | on hand | reorder point | supplier | unit cost)
+      Packing tape | on hand 18 | reorder point 40 | Harbor Supply | unit cost 3
+      Shipping labels | on hand 260 | reorder point 200 | LabelWorks | unit cost 1
+      Bubble wrap rolls | on hand 6 | reorder point 12 | Harbor Supply | unit cost 14
+      Corrugated boxes M | on hand 95 | reorder point 150 | BoxCo | unit cost 2
+      Corrugated boxes L | on hand 140 | reorder point 120 | BoxCo | unit cost 3
+      Stretch film | on hand 9 | reorder point 10 | WrapRight | unit cost 22
+      Void fill paper | on hand 30 | reorder point 75 | WrapRight | unit cost 5
+      Thermal ribbons | on hand 12 | reorder point 10 | LabelWorks | unit cost 9
+      Pallet wrap tool | on hand 2 | reorder point 4 | Harbor Supply | unit cost 35
+      Edge protectors | on hand 48 | reorder point 100 | BoxCo | unit cost 1
+      Fragile stickers | on hand 300 | reorder point 250 | LabelWorks | unit cost 1
+      Mailer bags | on hand 75 | reorder point 200 | WrapRight | unit cost 2
+      Box cutters | on hand 4 | reorder point 12 | Harbor Supply | unit cost 6
+      Corrugated boxes S | on hand 210 | reorder point 180 | BoxCo | unit cost 1
+      Label printer rolls | on hand 3 | reorder point 8 | LabelWorks | unit cost 12
+      Strapping kits | on hand 5 | reorder point 6 | Harbor Supply | unit cost 28
+      Correction from shift lead: the recount found 22 packing tape, not 18.
+      Correction from shift lead: shipping labels on hand is 160, not 260.
+      Correction from purchasing: Stretch film is now supplied by Harbor Supply.
+      Correction from shift lead: box cutters are out of stock, on hand is 0.
+      Correction from shift lead: label printer rolls on hand is 0 after the audit.
+    transfer_text: |
+      Item,OnHand,ReorderPoint,Supplier,UnitCost
+      Packing tape,18,40,Harbor Supply,3
+      Shipping labels,260,200,LabelWorks,1
+      Bubble wrap rolls,6,12,Harbor Supply,14
+evaluation:
+  evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+  params:
+    path: /sdcard/Documents/markor/reorder_transfer.csv
+    expected_text: |
+      Item,OnHand,ReorderPoint,Supplier,UnitCost
+      Packing tape,22,40,Harbor Supply,3
+      Shipping labels,160,200,LabelWorks,1
+      Bubble wrap rolls,6,12,Harbor Supply,14
+      Corrugated boxes M,95,150,BoxCo,2
+      Corrugated boxes L,140,120,BoxCo,3
+      Stretch film,9,10,Harbor Supply,22
+      Void fill paper,30,75,WrapRight,5
+      Thermal ribbons,12,10,LabelWorks,9
+      Pallet wrap tool,2,4,Harbor Supply,35
+      Edge protectors,48,100,BoxCo,1
+      Fragile stickers,300,250,LabelWorks,1
+      Mailer bags,75,200,WrapRight,2
+      Box cutters,0,12,Harbor Supply,6
+      Corrugated boxes S,210,180,BoxCo,1
+      Label printer rolls,0,8,LabelWorks,12
+      Strapping kits,5,6,Harbor Supply,28
+limits:
+  max_steps: 150
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - android
+  - cross_vm
+  - markor
+  - hard
+  app_name: Markor
+  difficulty: hard
+  description: Convert a pipe-delimited 16-item stock count with five corrections into a transfer CSV on Android.
+  cross_vm_role: android_source_phase
+  composite_task: cross_vm.android_to_windows.reorder_plan_hard
+  source_platform: android
+  target_platform: windows
+  oracle_task: tasks/v1/cross_vm/stages/android/oracle/cross_vm_prepare_reorder_transfer_hard_oracle.yaml
+  human_steps: 81
+  human_steps_breakdown:
+  - 'open reference note and copy its lines: 8'
+  - 'paste into transfer note and clear old rows: 6'
+  - 'convert 16 data lines to CSV (3 each): 48'
+  - 'apply 5 corrections (3 each): 15'
+  - 'type header, save, leave note: 4'

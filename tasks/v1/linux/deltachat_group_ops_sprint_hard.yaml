@@ -1,0 +1,55 @@
+task_id: linux.deltachat.end_of_day_wrap
+platform: linux
+instruction: 'In Delta Chat, prepare the end-of-day wrap-up by reading the seeded
+  chats and sending every required message. Replace each placeholder with the correct
+  values from the conversations. 1. In Alice, send: Confirmed {meeting_time} in {meeting_room};
+  budget file {budget_filename} follows after. 2. In Bob, send: {budget_filename}
+  with initials {owner_initials} by {budget_deadline}; order {order_number} tracked.
+  3. In Nora, send: Order {order_number} from {vendor} will be sent before {order_deadline}.
+  4. In Support Desk, send: Ticket {ticket_id} hit {error_code}, recovered after second
+  launch, owner {owner}, window {deploy_window}. 5. In Ops Sprint, send: End-of-day
+  plan: Alice {meeting_time}/{meeting_room}, Bob {budget_filename} by {budget_deadline},
+  Nora {order_number} for {vendor} before {order_deadline}, Support {ticket_id}/{error_code}
+  owned by {owner} during {deploy_window}.'
+init:
+  initializer_id: initializers.linux.deltachat:DeltaChatInitializer
+  params:
+    app_command: deltachat-desktop
+evaluation:
+  evaluator_id: evaluators.linux.deltachat:DeltaChatMessageEvaluator
+  params:
+    expectations:
+    - chat_name: Alice
+      expected_text: Confirmed 3 PM in Cedar-3; budget file budget-april-v7.xlsx follows
+        after.
+    - chat_name: Bob
+      expected_text: budget-april-v7.xlsx with initials MK by 5 PM; order CFX-2048
+        tracked.
+    - chat_name: Nora
+      expected_text: Order CFX-2048 from Northwind Beans will be sent before 4:30
+        PM.
+    - chat_name: Support Desk
+      expected_text: Ticket SR-88 hit WX-17, recovered after second launch, owner
+        Malik, window 19:30-20:00.
+    - chat_name: Ops Sprint
+      expected_text: 'End-of-day plan: Alice 3 PM/Cedar-3, Bob budget-april-v7.xlsx
+        by 5 PM, Nora CFX-2048 for Northwind Beans before 4:30 PM, Support SR-88/WX-17
+        owned by Malik during 19:30-20:00.'
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - linux
+  - gui
+  - chat
+  - deltachat
+  - group
+  - wrapup
+  - hard
+  app: Delta Chat
+  description: Read the seeded Delta Chat network and send five end-of-day wrap-up
+    messages across direct and group chats.
+  oracle_task: tasks/v1/linux/oracle/deltachat_end_of_day_wrap_oracle.yaml
+  oracle_model: deltachat_oracle
+  difficulty: hard

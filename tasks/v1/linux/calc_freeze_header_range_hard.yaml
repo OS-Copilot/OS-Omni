@@ -1,0 +1,209 @@
+task_id: linux.calc.freeze_header_range
+platform: linux
+instruction: >
+  In the open LibreOffice Calc workbook, prepare the freeze-pane review sheet.
+  Freeze the range A1:B1 so the first row and first two columns remain visible,
+  set the worksheet zoom to exactly 67%, and rename the first sheet to "Freeze
+  Audit Final". Format header cells A1 through E1 with bold text, fill color
+  #FFF2CC, font color #9C6500, horizontal center alignment, and vertical center
+  alignment. Set row 1 height to exactly 24 pt, column A width to exactly 18,
+  and column B width to exactly 22. Then create
+  /tmp/helloworld_office/calc_freeze_review.csv with exactly these four
+  comma-separated lines in this order: check,state,owner;
+  freeze-pane,verified,ops; header-style,verified,ops; zoom,67,ops. Also create
+  /tmp/helloworld_office/calc_freeze_handoff.txt with exactly these four
+  non-empty lines in this order: workbook=calc_4188d3a4_actual.xlsx,
+  sheet=Freeze Audit Final, freeze=A1:B1, status=ready-for-review. Save the
+  workbook when finished.
+init:
+  initializer_id: initializers.linux.office_setup:LinuxOfficeSetupInitializer
+  params:
+    tool_source_dir: platforms/linux/office_tools
+    tool_names:
+    - libreoffice_writer.py
+    - libreoffice_calc.py
+    - libreoffice_impress.py
+    remote_tool_dir: "~"
+    uno_port: 2002
+    startup_wait_seconds: 6
+    cleanup_paths:
+    - /tmp/helloworld_office/calc_freeze_review.csv
+    - /tmp/helloworld_office/calc_freeze_handoff.txt
+    - /tmp/helloworld_office/calc_freeze_audit_export.csv
+    - /tmp/helloworld_office/calc_freeze_review_manifest.txt
+    - /tmp/helloworld_office/calc_freeze_dimension_manifest.txt
+    - /tmp/helloworld_office/calc_freeze_signoff_manifest.txt
+    - /tmp/helloworld_office/calc_freeze_review_packet.tsv
+    - /tmp/helloworld_office/calc_freeze_ui_checklist.txt
+    - /tmp/helloworld_office/calc_freeze_bundle_crosswalk.tsv
+    - /tmp/helloworld_office/calc_freeze_dependency_index.txt
+    seed_downloads:
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_calc/4188d3a4-077d-46b7-9c86-23e1a036f6c1/Freeze_row_column2.xlsx
+      path: /tmp/helloworld_office/calc_4188d3a4_actual.xlsx
+    - url: https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/libreoffice_calc/4188d3a4-077d-46b7-9c86-23e1a036f6c1/Freeze_row_column2_gold.xlsx
+      path: /tmp/helloworld_office/calc_4188d3a4_expected.xlsx
+    open_documents_after_download:
+    - /tmp/helloworld_office/calc_4188d3a4_actual.xlsx
+    open_documents_wait_seconds: 5
+evaluation:
+  evaluator_id: evaluators.linux.xlsx_rule_compare:XlsxRuleEvaluator
+  params:
+    actual_path: /tmp/helloworld_office/calc_4188d3a4_actual.xlsx
+    expected_path: /tmp/helloworld_office/calc_4188d3a4_expected.xlsx
+    rules:
+    - type: freeze
+      sheet_idx0: 0
+      sheet_idx1: EI0
+    - type: zoom
+      sheet_idx: 0
+      method: eq
+      ref: 67
+    - type: sheet_name
+      sheet_idx: 0
+      method: eq
+      ref: Freeze Audit Final
+    - type: check_cell
+      sheet_idx: 0
+      coordinate: A1
+      props:
+        font_bold:
+          method: eq
+          ref: true
+        bgcolor:
+          method: eq
+          ref: FFF2CC
+        font_color:
+          method: eq
+          ref: 9C6500
+        alignment_horizontal:
+          method: eq
+          ref: center
+        alignment_vertical:
+          method: eq
+          ref: center
+    - type: check_cell
+      sheet_idx: 0
+      coordinate: B1
+      props:
+        font_bold:
+          method: eq
+          ref: true
+        bgcolor:
+          method: eq
+          ref: FFF2CC
+        font_color:
+          method: eq
+          ref: 9C6500
+        alignment_horizontal:
+          method: eq
+          ref: center
+        alignment_vertical:
+          method: eq
+          ref: center
+    - type: check_cell
+      sheet_idx: 0
+      coordinate: C1
+      props:
+        font_bold:
+          method: eq
+          ref: true
+        bgcolor:
+          method: eq
+          ref: FFF2CC
+        font_color:
+          method: eq
+          ref: 9C6500
+        alignment_horizontal:
+          method: eq
+          ref: center
+        alignment_vertical:
+          method: eq
+          ref: center
+    - type: check_cell
+      sheet_idx: 0
+      coordinate: D1
+      props:
+        font_bold:
+          method: eq
+          ref: true
+        bgcolor:
+          method: eq
+          ref: FFF2CC
+        font_color:
+          method: eq
+          ref: 9C6500
+        alignment_horizontal:
+          method: eq
+          ref: center
+        alignment_vertical:
+          method: eq
+          ref: center
+    - type: check_cell
+      sheet_idx: 0
+      coordinate: E1
+      props:
+        font_bold:
+          method: eq
+          ref: true
+        bgcolor:
+          method: eq
+          ref: FFF2CC
+        font_color:
+          method: eq
+          ref: 9C6500
+        alignment_horizontal:
+          method: eq
+          ref: center
+        alignment_vertical:
+          method: eq
+          ref: center
+    - type: row_height
+      sheet_idx: 0
+      row: 1
+      method: eq
+      ref: 24
+    - type: column_width
+      sheet_idx: 0
+      column: A
+      method: eq
+      ref: 18
+    - type: column_width
+      sheet_idx: 0
+      column: B
+      method: eq
+      ref: 22
+    - type: sheet_data
+      sheet_idx0: 0
+      sheet_idx1: EI0
+    text_artifacts:
+    - path: /tmp/helloworld_office/calc_freeze_review.csv
+      equals: |
+        check,state,owner
+        freeze-pane,verified,ops
+        header-style,verified,ops
+        zoom,67,ops
+    - path: /tmp/helloworld_office/calc_freeze_handoff.txt
+      equals: |
+        workbook=calc_4188d3a4_actual.xlsx
+        sheet=Freeze Audit Final
+        freeze=A1:B1
+        status=ready-for-review
+limits:
+  max_steps: 100
+  timeout_seconds: 0
+metadata:
+  tags:
+  - linux
+  - gui
+  - libreoffice
+  - calc
+  - xlsx
+  - freeze
+  - file_handoff
+  - hard
+  app: LibreOffice Calc
+  difficulty: hard
+  description: Freeze and style the Calc header range, save the workbook, and
+    create a concise review CSV plus handoff note for the formatted sheet.
+  oracle_task: tasks/v1/linux/oracle/calc_freeze_header_range_oracle.yaml
+  oracle_model: linux_oracle_wait

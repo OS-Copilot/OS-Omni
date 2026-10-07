@@ -1,5 +1,5 @@
 tasks:
-- tasks/windows/impress_animation_transition.yaml
+- tasks/v1/windows/impress_animation_transition.yaml
 models:
 - gpt5_4
 action_mode: code_adapter
