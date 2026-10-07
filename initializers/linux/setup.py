@@ -32,6 +32,7 @@ class DesktopSetupInitializer(BaseInitializer):
         for index, step in enumerate(steps, start=1):
             try:
                 result = self._execute_step(controller, step, run_dir=run_dir)
+                self._raise_on_failed_command(result)
                 executed.append(
                     {
                         "index": index,
@@ -134,6 +135,23 @@ class DesktopSetupInitializer(BaseInitializer):
             return str((Path(run_dir) / path).resolve())
         return str(path.resolve())
 
+    @staticmethod
+    def _raise_on_failed_command(result: Any) -> None:
+        """Treat a non-zero guest exit code as a failed step, not just exceptions."""
+
+        if not isinstance(result, Mapping):
+            return
+        returncode = result.get("returncode", result.get("return_code"))
+        if returncode is None:
+            return
+        try:
+            returncode = int(returncode)
+        except (TypeError, ValueError):
+            return
+        if returncode != 0:
+            detail = str(result.get("error") or result.get("output") or "").strip()
+            raise RuntimeError(f"exit code {returncode}" + (f": {detail[-500:]}" if detail else ""))
+
     def _execute_step(self, controller: Any, step: Mapping[str, Any], *, run_dir: Any) -> Any:
         step_type = str(step.get("type") or "").strip()
         if step_type == "launch_app":
@@ -218,6 +236,24 @@ class DesktopSetupInitializer(BaseInitializer):
                 encoding=str(step.get("encoding") or "utf-8"),
                 overwrite=bool(step.get("overwrite", True)),
             )
+
+        if step_type == "openshop_current_app":
+            # The image ships OpenShop only as a static page; serve it with the
+            # benchmark API (/api/*) that cross-app tasks seed and evaluate.
+            from initializers.linux.openshop import OpenShopInitializer
+
+            port = int(step.get("port", OpenShopInitializer.DEFAULT_PORT) or OpenShopInitializer.DEFAULT_PORT)
+            launch_browser = bool(step.get("launch_browser", True))
+            OpenShopInitializer()._deploy_and_launch_current_app(controller, port=port, launch_browser=launch_browser)
+            return {"status": "success", "port": port, "launch_browser": launch_browser}
+
+        if step_type == "openshop_open_browser":
+            # Open the storefront after seeding so it loads the signed-in session.
+            from initializers.linux.openshop import OpenShopInitializer
+
+            port = int(step.get("port", OpenShopInitializer.DEFAULT_PORT) or OpenShopInitializer.DEFAULT_PORT)
+            OpenShopInitializer()._open_current_app_browser(controller, port=port)
+            return {"status": "success", "port": port}
 
         if step_type == "change_wallpaper":
             wallpaper_path = str(step.get("path") or "").strip()
