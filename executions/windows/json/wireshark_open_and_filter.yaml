@@ -1,9 +1,0 @@
-tasks:
-- tasks/windows/wireshark_open_and_filter.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: Windows execution for wireshark_open_and_filter

@@ -1,9 +1,0 @@
-tasks:
-- tasks/windows/spotube_one_ok_rock_queue_single_repeat_pause.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: Spotube Windows task - ONE OK ROCK queue preparation with single-track repeat and paused playback near thirty seconds

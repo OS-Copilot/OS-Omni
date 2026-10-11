@@ -1,9 +1,0 @@
-tasks:
-- tasks/windows/cross_app_writer_thunderbird_export_pdf_send_easy.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: "Windows cross-app easy task: export Writer PDF and send it through Thunderbird."

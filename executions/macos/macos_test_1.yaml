@@ -1,9 +1,0 @@
-tasks:
-  - tasks/macos/textedit_append_ops_note.yaml
-models:
-  - gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: test
