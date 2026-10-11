@@ -18,6 +18,10 @@ init:
       - type: run_bash
         script: tar -xzv --recursive-unlink -f /home/user/thunderbird-profile.tar.gz -C /home/user/
         timeout: 120
+      - type: run_bash
+        # The shared OSWorld profile ships the local Home calendar disabled; the task expects a usable calendar.
+        script: sed -i '/calendar\.registry\.[^.]*\.disabled/d' /home/user/.thunderbird/*/prefs.js
+        timeout: 60
       - type: openshop_current_app
         port: 4310
         launch_browser: false

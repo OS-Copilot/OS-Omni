@@ -105,6 +105,30 @@ evaluation:
 
       if "SUM" not in content:
           raise SystemExit("MISSING_SUM_FORMULA")
+      # Counts of the seeded retail_mix.pcapng under the instruction's display filters (verified with tshark).
+      import xml.etree.ElementTree as ET
+      ns = {"table": "urn:oasis:names:tc:opendocument:xmlns:table:1.0", "office": "urn:oasis:names:tc:opendocument:xmlns:office:1.0"}
+      rows = {}
+      for row in ET.fromstring(content).iter("{%s}table-row" % ns["table"]):
+          cells = []
+          for cell in row.findall("table:table-cell", ns):
+              repeat = min(int(cell.get("{%s}number-columns-repeated" % ns["table"], "1")), 8)
+              value = cell.get("{%s}value" % ns["office"])
+              text = " ".join("".join(p.itertext()) for p in cell.iter("{urn:oasis:names:tc:opendocument:xmlns:text:1.0}p"))
+              cells += [(value, text.strip())] * repeat
+          if cells and cells[0][1]:
+              rows.setdefault(cells[0][1], cells[1:])
+      for label, expected in {"DNS": 4, "HTTP": 2, "TCP": 8}.items():
+          rest = rows.get(label)
+          if not rest:
+              raise SystemExit(f"MISSING_ROW_{label}")
+          value, text = rest[0]
+          actual = float(value) if value is not None else float(text or "nan")
+          if actual != expected:
+              raise SystemExit(f"WRONG_COUNT_{label}: expected {expected}, got {actual}")
+      total = rows.get("Total")
+      if not total or float(total[0][0] or "nan") != 14:
+          raise SystemExit(f"WRONG_TOTAL: expected 14, got {total and total[0]}")
 
       print("PASS")
       PY
