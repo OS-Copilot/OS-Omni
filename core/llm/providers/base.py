@@ -33,6 +33,23 @@ from .utils import (
 )
 
 
+def _redact_inline_images(value: Any) -> Any:
+    """Replace inline base64 image data with its digest and size."""
+    if isinstance(value, str) and value.startswith("data:image/"):
+        return {"inline_image_sha256": hashlib.sha256(value.encode()).hexdigest(), "chars": len(value)}
+    if isinstance(value, dict):
+        return {key: _redact_inline_images(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_redact_inline_images(item) for item in value]
+    return value
+
+
+def _append_jsonl(path: str, record: Dict[str, Any]) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with Path(path).open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 @dataclass
 class ProviderRequest:
     """Provider-neutral request object for one model generation."""
@@ -135,12 +152,22 @@ class OpenAICompatibleAdapter(ProviderAdapter):
             Path(audit_path).parent.mkdir(parents=True, exist_ok=True)
             with Path(audit_path).open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps({**audit, "phase": "request_verified"}) + "\n")
-        data = self._request_json(
-            url,
-            request.credentials.api_key,
-            payload,
-            request.timeout_seconds,
-        )
+        exchange_path = os.environ.get("OS_OMNI_LLM_EXCHANGE_LOG")
+        exchange = {"timestamp": time.time(), "url": url, "api_mode": api_mode,
+                    "request": _redact_inline_images(payload)} if exchange_path else None
+        try:
+            data = self._request_json(
+                url,
+                request.credentials.api_key,
+                payload,
+                request.timeout_seconds,
+            )
+        except Exception as error:
+            if exchange is not None:
+                _append_jsonl(exchange_path, {**exchange, "error": f"{type(error).__name__}: {error}"})
+            raise
+        if exchange is not None:
+            _append_jsonl(exchange_path, {**exchange, "response": data})
         if audit is not None:
             reasoning_items = [item for item in data.get("output", []) if item.get("type") == "reasoning"]
             with Path(audit_path).open("a", encoding="utf-8") as handle:

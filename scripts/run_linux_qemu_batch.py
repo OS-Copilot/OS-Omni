@@ -101,6 +101,11 @@ def main() -> int:
     parser.add_argument("--runtime-token-env", default="OS_OMNI_LINUX_RUNTIME_TOKEN")
     parser.add_argument("--task-id", action="append", help="Run only these task IDs, in execution order")
     parser.add_argument("--resume", action="store_true", help="Reuse completed results with matching task/model/run settings")
+    parser.add_argument("--max-steps-cap", type=int, help="Lower step limits above this value; smaller TaskSpec limits are kept")
+    parser.add_argument("--llm-exchange-log", action="store_true",
+                        help="Save each model request and response to llm_exchange.jsonl, with inline images replaced by digests")
+    parser.add_argument("--deepseek-request-audit", action="store_true",
+                        help="Verify every request is deepseek-flash Responses with reasoning.effort=none")
     args = parser.parse_args()
     token = os.environ.get(args.runtime_token_env)
     if not token:
@@ -126,6 +131,7 @@ def main() -> int:
         "observation_mode": execution.observation_mode or "screenshot_only",
         "action_mode": execution.action_mode or "code_adapter",
         "history_window": execution.history_window or 3,
+        "max_steps_cap": args.max_steps_cap,
     }
     rows = []
     for index, (path, task) in enumerate(tasks, start=1):
@@ -136,6 +142,10 @@ def main() -> int:
             "models_sha256": hashlib.sha256((REPO_ROOT / "configs/models.yaml").read_bytes()).hexdigest(),
             **{key: run[key] for key in ("model", "snapshot", "observation_mode", "action_mode", "history_window")},
         }
+        max_steps = task.limits.max_steps
+        if args.max_steps_cap and max_steps > args.max_steps_cap:
+            max_steps = args.max_steps_cap
+            fingerprint["max_steps"] = max_steps
         marker = task_dir / "batch_run.json"
         result_path = task_dir / "result.json"
         if args.resume and result_path.is_file() and marker.is_file():
@@ -150,7 +160,8 @@ def main() -> int:
             raise RuntimeError(f"Task output already exists: {task_dir}; use --resume or a new directory")
         print(f"[{index}/{len(tasks)}] {task.task_id}: restoring {args.snapshot}", flush=True)
         started = time.monotonic()
-        row = {"task_id": task.task_id, "task_path": str(path), "output_dir": str(task_dir)}
+        row = {"task_id": task.task_id, "task_path": str(path), "output_dir": str(task_dir),
+               "task_sha256": fingerprint["task_sha256"], "max_steps": max_steps}
         try:
             restore_snapshot(args.qmp_socket, args.snapshot)
             wait_for_runtime_ready(f"http://{args.runtime_host}:{args.runtime_port}", token, timeout_seconds=90)
@@ -161,7 +172,13 @@ def main() -> int:
                 "--observation-mode", run["observation_mode"], "--history-window", str(run["history_window"]),
                 "--vm-ip", args.runtime_host, "--runtime-port", str(args.runtime_port), "--runtime-token", token,
             ]
+            if max_steps != task.limits.max_steps:
+                command += ["--max-steps", str(max_steps)]
             env = dict(os.environ, LINUX_OUTPUT_DIR=str(task_dir))
+            if args.llm_exchange_log:
+                env["OS_OMNI_LLM_EXCHANGE_LOG"] = str(task_dir / "llm_exchange.jsonl")
+            if args.deepseek_request_audit:
+                env["OS_OMNI_DEEPSEEK_REQUEST_AUDIT"] = str(task_dir / "deepseek_request_audit.jsonl")
             # The full per-task step limit and step timeout are taken from its TaskSpec.
             with (task_dir / "runner.log").open("w") as log:
                 process = subprocess.run(command, cwd=REPO_ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
