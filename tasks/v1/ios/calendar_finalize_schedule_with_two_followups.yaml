@@ -6,12 +6,16 @@ instruction: >
   Cedar Room. Delete the event Bench Outreach Draft Hold. Then create two new follow-up
   events: one for tomorrow titled Bench Outreach Supply Pickup from 08:45-09:15 at Market Hall,
   and one for the day after tomorrow titled Bench Outreach Debrief from 18:10-18:50 at Cedar Room.
-  Leave Bench Commute unchanged.
+  Leave Bench Commute unchanged. All times are device-local wall-clock times. The final
+  Calendar must contain exactly these four events - Bench Outreach Briefing Final,
+  Bench Outreach Supply Pickup, Bench Outreach Debrief, and Bench Commute - and no
+  other events.
 init:
   initializer_id: initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer
   params:
     bundle_id: com.apple.mobilecal
     purge_all_events: true
+    disable_subscribed_calendars: true
     purge_summaries:
       - "Bench Outreach Briefing Draft"
       - "Bench Outreach Briefing Final"
@@ -39,6 +43,7 @@ init:
 evaluation:
   evaluator_id: evaluators.ios.calendar_event_state:CalendarEventStateEvaluator
   params:
+    visible_calendars_only: true
     present_events:
       - summary: "Bench Outreach Briefing Final"
         day_offset: 0
@@ -60,9 +65,11 @@ evaluation:
         start_time: "18:30"
         end_time: "18:50"
         location: "Station"
+        exact_description: true
     absent_summaries:
       - "Bench Outreach Briefing Draft"
       - "Bench Outreach Draft Hold"
+    exact_count: 4
     timeout_seconds: 10
     poll_interval_seconds: 0.5
 limits:

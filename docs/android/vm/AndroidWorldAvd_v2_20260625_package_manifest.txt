@@ -1,0 +1,48 @@
+Generated: 2026-06-25T19:03:31.3772732-04:00
+Package: AndroidWorldAvd_v2_20260625.zip
+Source AVD: C:\Users\huish\.android\avd\AndroidWorldAvd.avd
+Target: android-33 google_apis x86_64
+
+Changes in this export:
+- Replaces android/v2 AndroidWorldAvd v2 image with the current locally verified AVD.
+- Includes updated OpenDriver, OpenNavigation, and OpenFood Android apps installed in the AVD.
+- OpenDriver Android build is configured for the host backend at http://10.0.2.2:4321 and uses the Linux-style /map/tiles backend proxy.
+- Verified OpenDriver map tiles were served by backend style osmde-retina with source online-osmde-retina before export.
+- Cleared app data for com.killt.opendriver, com.killt.openfood, and com.killt.opennavigation before packaging to avoid carrying interactive test state.
+
+Verified third-party/user packages from source AVD before shutdown:
+package:net.gsantner.markor
+package:org.fdroid.fdroid
+package:chat.delta
+package:org.fossify.gallery
+package:org.documentfoundation.libreoffice
+package:com.fsck.k9
+package:org.fossify.calendar
+package:com.github.emavgl.piggybankpro
+package:com.killt.quickshop
+package:org.tasks
+package:oss.krtirtho.spotube
+package:me.zhanghai.android.files
+package:app.organicmaps.web
+package:org.fossify.math
+package:com.killt.openbank
+package:com.killt.opendriver
+package:com.killt.openfood
+package:com.killt.opennavigation
+package:com.killt.opennote
+package:com.killt.openphotoedit
+package:com.killt.openshop
+package:com.killt.opentrip
+package:com.killt.opentwitter
+
+Runtime files intentionally excluded before packaging:
+- AndroidWorldAvd.avd/hardware-qemu.ini
+- AndroidWorldAvd.avd/hardware-qemu.ini.lock/
+- AndroidWorldAvd.avd/*.lock
+- AndroidWorldAvd.avd/snapshots/
+- AndroidWorldAvd.avd/bootcompleted.ini
+- AndroidWorldAvd.avd/emu-launch-params.txt
+- AndroidWorldAvd.avd/read-snapshot.txt
+- AndroidWorldAvd.avd/AVD.conf
+- AndroidWorldAvd.avd/quickbootChoice.ini
+- AndroidWorldAvd.avd/tmpAdbCmds/

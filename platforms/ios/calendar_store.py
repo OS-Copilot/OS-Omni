@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import shutil
+import os
 import sqlite3
 import tempfile
 import uuid
@@ -26,6 +26,7 @@ class CalendarEventSpec:
     end_time: str
     location: str = ""
     description: str = ""
+    exact_description: bool = False
 
 
 @dataclass(frozen=True)
@@ -40,10 +41,67 @@ class CalendarEventRecord:
     calendar_id: int
 
 
+def _extract_zoneinfo_name(value: Any) -> str:
+    """Return ``value`` when it names a real IANA zone, else ``""``.
+
+    Accepts bare IANA keys (``Asia/Singapore``), a leading-colon ``TZ``
+    form (``:Asia/Singapore``), and absolute zoneinfo paths
+    (``/usr/share/zoneinfo/America/Los_Angeles`` or the Darwin
+    ``/var/db/timezone/zoneinfo/...`` target of ``/etc/localtime``).
+    Anything that is not loadable via :class:`zoneinfo.ZoneInfo`
+    (POSIX ``TZ`` strings, typos, empty values) is rejected so callers
+    fall through to the next resolution source instead of silently
+    adopting a wrong zone.
+    """
+    text = str(value or "").strip()
+    if text.startswith(":"):
+        text = text[1:].strip()
+    if not text:
+        return ""
+    marker = "zoneinfo/"
+    if marker in text:
+        text = text.rsplit(marker, 1)[-1].strip()
+    if not text:
+        return ""
+    try:
+        ZoneInfo(text)
+    except Exception:
+        return ""
+    return text
+
+
 def default_timezone_name() -> str:
-    local_tz = datetime.now().astimezone().tzinfo
-    tz_name = getattr(local_tz, "key", "") if local_tz is not None else ""
-    return str(tz_name or DEFAULT_TIMEZONE_NAME)
+    # 1. Explicit host TZ environment. A valid IANA value wins because on
+    #    hosts where TZ is set, datetime.astimezone().tzinfo is typically a
+    #    fixed-offset tzinfo without a ``key`` (the original Shanghai
+    #    fallback bug). An invalid TZ value is ignored here so resolution
+    #    falls through; an invalid explicit task/initializer ``timezone``
+    #    param is still rejected visibly by ZoneInfo in IOSCalendarStore.
+    candidate = _extract_zoneinfo_name(os.environ.get("TZ", ""))
+    if candidate:
+        return candidate
+
+    # 2. tzinfo key when the platform provides one.
+    try:
+        local_tz = datetime.now().astimezone().tzinfo
+        candidate = _extract_zoneinfo_name(getattr(local_tz, "key", "") or "")
+        if candidate:
+            return candidate
+    except Exception:
+        pass
+
+    # 3. /etc/localtime zoneinfo symlink (Darwin and most Unix hosts).
+    #    Deliberately symlink-only: container images that copy (not link)
+    #    the zone file carry no zone name, so they keep the legacy default.
+    try:
+        target = os.readlink("/etc/localtime")
+    except OSError:
+        target = ""
+    candidate = _extract_zoneinfo_name(target)
+    if candidate:
+        return candidate
+
+    return DEFAULT_TIMEZONE_NAME
 
 
 def calendar_db_path_for_udid(udid: str) -> Path:
@@ -89,6 +147,7 @@ def coerce_event_specs(raw: Any) -> list[CalendarEventSpec]:
                 end_time=end_time,
                 location=str(item.get("location") or "").strip(),
                 description=str(item.get("description") or "").strip(),
+                exact_description=bool(item.get("exact_description", False)),
             )
         )
     return specs
@@ -149,6 +208,36 @@ class IOSCalendarStore:
             deleted_count = self._purge_event_rowids(conn, rowids)
             conn.commit()
             return deleted_count
+
+    def disable_subscribed_calendars(self) -> list[int]:
+        """Disable iOS's external subscription store for isolated benchmark tasks.
+
+        Some simulator images contain an active "Subscribed Calendars" store.
+        Calendar can populate it asynchronously after initialization, which
+        makes an exact event-count task nondeterministic even after its events
+        were purged. Call this only when a task explicitly requests isolation.
+        """
+        with self._connect_writable() as conn:
+            store_ids = [
+                int(row[0])
+                for row in conn.execute(
+                    """
+                    SELECT ROWID
+                    FROM Store
+                    WHERE lower(trim(coalesce(name, ''))) = 'subscribed calendars'
+                       OR lower(trim(coalesce(external_id, ''))) = 'subscribed calendars'
+                    """
+                ).fetchall()
+            ]
+            if not store_ids:
+                return []
+            placeholders = ", ".join("?" for _ in store_ids)
+            conn.execute(
+                f"UPDATE Store SET disabled = 1 WHERE ROWID IN ({placeholders})",
+                store_ids,
+            )
+            conn.commit()
+            return store_ids
 
     @staticmethod
     def _purge_event_rowids(conn: sqlite3.Connection, rowids: Sequence[int]) -> int:
@@ -314,13 +403,22 @@ class IOSCalendarStore:
 
         return inserted_rowids
 
-    def list_events(self, summaries: Sequence[str] | None = None) -> list[CalendarEventRecord]:
+    def list_events(
+        self,
+        summaries: Sequence[str] | None = None,
+        *,
+        visible_calendars_only: bool = False,
+    ) -> list[CalendarEventRecord]:
         with self._snapshot_db_path() as snapshot_db_path:
             conn = sqlite3.connect(snapshot_db_path)
             conn.row_factory = sqlite3.Row
             try:
                 where_clause = ""
+                calendar_join = ""
                 params: list[Any] = []
+                if visible_calendars_only:
+                    calendar_join = "JOIN Calendar cal ON cal.ROWID = ci.calendar_id JOIN Store st ON st.ROWID = cal.store_id"
+                    where_clause = "AND COALESCE(st.disabled, 0) = 0"
                 normalized_summaries = [
                     self._normalize_text(item)
                     for item in (summaries or [])
@@ -342,6 +440,7 @@ class IOSCalendarStore:
                         ci.end_date AS end_date,
                         ci.calendar_id AS calendar_id
                     FROM CalendarItem ci
+                    {calendar_join}
                     LEFT JOIN Location loc ON loc.ROWID = ci.location_id
                     WHERE ci.entity_type = 2
                       AND ci.summary IS NOT NULL
@@ -373,7 +472,10 @@ class IOSCalendarStore:
             return False
         if spec.location and self._normalize_text(record.location) != self._normalize_text(spec.location):
             return False
-        if spec.description and self._normalize_text(record.description) != self._normalize_text(spec.description):
+        if spec.exact_description:
+            if self._normalize_text(record.description) != self._normalize_text(spec.description):
+                return False
+        elif spec.description and self._normalize_text(record.description) != self._normalize_text(spec.description):
             return False
         return True
 
@@ -400,10 +502,15 @@ class IOSCalendarStore:
             def __enter__(self) -> str:
                 snapshot_root = Path(self._tmpdir.name)
                 base_name = self._store.db_path.name
-                for candidate in self._store.db_path.parent.glob(f"{base_name}*"):
-                    if candidate.is_file():
-                        shutil.copy2(candidate, snapshot_root / candidate.name)
-                return str(snapshot_root / base_name)
+                if not self._store.db_path.is_file():
+                    raise FileNotFoundError(self._store.db_path)
+                snapshot_path = snapshot_root / base_name
+                source_uri = self._store.db_path.as_uri() + "?mode=ro"
+                with sqlite3.connect(source_uri, uri=True, timeout=10.0) as source:
+                    source.execute("PRAGMA busy_timeout = 10000")
+                    with sqlite3.connect(snapshot_path) as snapshot:
+                        source.backup(snapshot, pages=256, sleep=0.01)
+                return str(snapshot_path)
 
             def __exit__(self, exc_type, exc, tb) -> bool:
                 self._tmpdir.cleanup()

@@ -430,12 +430,27 @@ class OpenTripHotelVoucherBookingEvaluator(BaseEvaluator):
     def _read(controller: Any, params: Mapping[str, Any]) -> tuple[dict[str, Any], EvalResult | None]:
         """Read the booking document, reporting an unreadable application."""
         try:
-            return OpenTripAndroidStore(
+            state = OpenTripAndroidStore(
                 controller,
                 app_package=str(params.get("app_package") or DEFAULT_APP_PACKAGE),
                 local_state_key=str(params.get("local_state_key") or LOCAL_STATE_KEY),
                 leveldb_path=str(params.get("leveldb_path") or "").strip() or None,
-            ).read_state(), None
+            ).read_state()
+            # APK hotel bookings keep hotel identity in item, room/date on booking.
+            # Adapt observed schema only; preserve exact requirements and duplicates.
+            state = __import__('copy').deepcopy(state)
+            for booking in state.get('bookings', []):
+                if booking.get('type') != 'hotel':
+                    continue
+                item = booking.get('item', {})
+                room = booking.get('room', {})
+                for key, value in {'hotelId': item.get('id'), 'hotelName': item.get('name'), 'city': item.get('city'), 'roomId': room.get('id'), 'roomName': room.get('name'), 'checkIn': booking.get('checkIn'), 'checkOut': booking.get('checkOut')}.items():
+                    if key not in item and value is not None:
+                        item[key] = value
+                charges = booking.get('charges', {})
+                if 'roomSubtotal' not in charges and 'baseFare' in charges:
+                    charges['roomSubtotal'] = charges['baseFare']
+            return state, None
         except Exception as exc:  # noqa: BLE001
             return {}, EvalResult(
                 status=EvalStatus.ERROR,
@@ -690,8 +705,14 @@ class OpenTripOrderAuditEvaluator(OpenTripHotelVoucherBookingEvaluator):
         history = expected.get("reschedule_history")
         if isinstance(history, Mapping):
             recorded = order.get("rescheduleHistory")
-            if not isinstance(recorded, Mapping):
+            if not isinstance(recorded, (Mapping, list)):
                 recorded = order_item.get("rescheduleHistory")
+            # APK history is an ordered list of {at, previous}; the first entry
+            # preserves the original pre-task itinerary, without searching for a
+            # conveniently matching later entry.
+            if isinstance(recorded, list):
+                first = recorded[0] if recorded else {}
+                recorded = first.get('previous', {}) if isinstance(first, Mapping) else {}
             recorded = recorded if isinstance(recorded, Mapping) else {}
             for key, value in sorted(history.items()):
                 observed = recorded.get(key)

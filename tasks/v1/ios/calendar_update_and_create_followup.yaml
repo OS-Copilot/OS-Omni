@@ -1,11 +1,12 @@
 task_id: ios.calendar.update_and_create_followup
 platform: ios
-instruction: "In Calendar, open today's event Bench Volunteer Briefing and edit it so the title becomes Bench Volunteer Briefing Updated, the time becomes 18:15-19:00, and the location becomes Cedar Room. Then create a new event for tomorrow titled Bench Volunteer Debrief from 09:30-10:00 at Cedar Room. Leave the other existing events unchanged."
+instruction: "In Calendar, open today's event Bench Volunteer Briefing and edit it so the title becomes Bench Volunteer Briefing Updated, the time becomes 18:15-19:00, and the location becomes Cedar Room. Then create a new event for tomorrow titled Bench Volunteer Debrief from 09:30-10:00 at Cedar Room. Leave the other existing events unchanged. All times are device-local wall-clock times. The final Calendar must contain exactly these four events - Bench Volunteer Briefing Updated, Bench Volunteer Debrief, Bench Pharmacy Run, and Bench Evening Walk - and no other events."
 init:
   initializer_id: initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer
   params:
     bundle_id: com.apple.mobilecal
     purge_all_events: true
+    disable_subscribed_calendars: true
     purge_summaries:
       - "Bench Volunteer Briefing"
       - "Bench Volunteer Briefing Updated"
@@ -32,6 +33,7 @@ init:
 evaluation:
   evaluator_id: evaluators.ios.calendar_event_state:CalendarEventStateEvaluator
   params:
+    visible_calendars_only: true
     present_events:
       - summary: "Bench Volunteer Briefing Updated"
         day_offset: 0
@@ -48,13 +50,16 @@ evaluation:
         start_time: "18:10"
         end_time: "18:30"
         location: "Market Street"
+        exact_description: true
       - summary: "Bench Evening Walk"
         day_offset: 0
         start_time: "20:00"
         end_time: "20:30"
         location: "Riverside"
+        exact_description: true
     absent_summaries:
       - "Bench Volunteer Briefing"
+    exact_count: 4
     timeout_seconds: 10
     poll_interval_seconds: 0.5
 limits:

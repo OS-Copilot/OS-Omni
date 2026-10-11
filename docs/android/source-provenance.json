@@ -1,0 +1,12 @@
+{
+  "source_archive": "OS-Omni-main (1).zip",
+  "sha256": "eeea6ca5b148baa979bcc4a0e38c610effe878b76539cd3e908fdf3b74747bd8",
+  "source_workspace": "Projects/os-omni-android-eval",
+  "publication_workspace": "Desktop/os-omni-handover/OS-Omni-main",
+  "text_export": "API credentials redacted; original evaluation workspace prefix replaced by dot. Business data, verdicts and binary screenshots unchanged.",
+  "runtime_exclusions": [
+    "Python virtualenvs and caches recreated from dependencies",
+    "Android SDK and JDK are vendor installations",
+    "API credentials are user supplied, never distributed"
+  ]
+}

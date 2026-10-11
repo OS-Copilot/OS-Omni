@@ -1,0 +1,17 @@
+{
+  "local_restore_verified": true,
+  "manifest_file_count": 11442,
+  "valid_runs": 48,
+  "pass": 7,
+  "fail": 41,
+  "final_run_png_count": 5499,
+  "final_agent_steps": 5452,
+  "git_reviewable_final_evidence_files": 353,
+  "secret_scans_passed": true,
+  "photo_v2_relocation_checks": 12,
+  "photo_v2_positive_negative_checks_passed": true,
+  "large_assets_remote_upload": "complete_remote_verified",
+  "verified_at_utc": "2026-10-09T15:10:10.006069+00:00",
+  "github_manifest_file_count": 11436,
+  "virtual_machine_delivery": "HF pending user instructions; excluded from GitHub"
+}

@@ -190,8 +190,9 @@ class BaseEpisodeRunner(ABC):
         step_images = None
         if include_screenshot:
             screenshot_path, step_images = self._capture_screenshot(f"step_{current_step}")
-            if not screenshot_path:
-                self._logger.warning("[Step %d] screenshot missing", current_step)
+            if not screenshot_path or not step_images:
+                self._logger.error("[Step %d] Fresh screenshot unavailable; stop before querying the model", current_step)
+                return None
 
         return observation, obs_latency, screenshot_path, step_images
 
@@ -442,6 +443,9 @@ class BaseEpisodeRunner(ABC):
             status=final_status,
             episode_result={
                 "status": episode_result["status"],
+                "terminal_reason": terminal_reason.value,
+                "execution_message": episode_message,
+                "execution_valid": terminal_reason not in {TerminalReason.FAIL_ERROR, TerminalReason.FAIL_PARSE},
                 "message": final_message if final_message is not None else episode_result["message"],
             },
             initializer=initialization_run.summary if initialization_run is not None else None,
@@ -520,6 +524,7 @@ class BaseEpisodeRunner(ABC):
         terminal_reason: Optional[TerminalReason] = None
         episode_message: Optional[str] = None
 
+        consecutive_parse_errors = 0
         while True:
             current_step = ep_logger.current_step + 1
             if current_step > task.max_steps:
@@ -539,6 +544,10 @@ class BaseEpisodeRunner(ABC):
                 observation=observation,
                 extra_step_prompt=self._build_extra_step_prompt(observation),
             )
+
+            if consecutive_parse_errors:
+                step_prompt += ('\nYour previous response was rejected: ' + str(last_parse_error) +
+                    '\nNo commands from that response were executed. Return at most THREE adb commands. Split longer edits over successive steps. Use a fenced adb block or DONE/FAIL/WAIT.')
 
             plan_result = self._plan_action(
                 current_step,
@@ -565,6 +574,8 @@ class BaseEpisodeRunner(ABC):
                 run_dir=run_dir,
             )
 
+            if parse_success:
+                consecutive_parse_errors = 0
             if not parse_success:
                 if self._is_provider_failure(parse_error):
                     terminal_reason = TerminalReason.FAIL_ERROR
@@ -595,6 +606,11 @@ class BaseEpisodeRunner(ABC):
                     latency_ms=obs_latency + llm_latency,
                 )
                 ep_logger.log_step(step_record)
+                last_parse_error = parse_error
+                consecutive_parse_errors += 1
+                if not self._is_provider_failure(parse_error) and consecutive_parse_errors <= 2:
+                    self._logger.warning('Retrying malformed output on next counted step')
+                    continue
                 break
 
             assert action_parsed is not None

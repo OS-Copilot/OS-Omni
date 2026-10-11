@@ -375,6 +375,16 @@ models:
     api_key_env: YUNWU_API_KEY
     base_url: https://yunwu.ai/v1
 
+  deepseek_flash:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
+    max_output_tokens: 4096
+    metadata:
+      api_mode: responses
+      reasoning_effort: none
+
   yunwu_claude_opus_4_7:
     provider: openai
     model_name: claude-opus-4-7

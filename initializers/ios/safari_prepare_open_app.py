@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from typing import Any, Mapping
 
+from appium.webdriver.common.appiumby import AppiumBy
 from core.init import BaseInitializer, InitResult, InitStatus
 from platforms.ios.safari_store import DEFAULT_BUNDLE_ID, IOSSafariStore, normalize_text, normalize_url
 
@@ -33,6 +34,7 @@ class SafariPrepareOpenAppInitializer(BaseInitializer):
         purge_tab_urls = self._coerce_url_list(params.get("purge_tab_urls"))
         launch_after_setup = self._coerce_bool(params.get("launch_after_setup"), default=True)
         terminate_after_setup = self._coerce_bool(params.get("terminate_after_setup"), default=False)
+        dismissed_start_page_onboarding = False
 
         try:
             store = self._build_store(controller=controller, params=params, bundle_id=bundle_id)
@@ -64,6 +66,7 @@ class SafariPrepareOpenAppInitializer(BaseInitializer):
                     time.sleep(wait_ms / 1000.0)
 
                 self._dismiss_alerts(controller)
+                dismissed_start_page_onboarding = self._dismiss_start_page_onboarding(controller)
 
             if terminate_after_setup:
                 if hasattr(controller, "terminate_app"):
@@ -97,6 +100,7 @@ class SafariPrepareOpenAppInitializer(BaseInitializer):
                 "purge_all_tabs": purge_all_tabs,
                 "launch_after_setup": launch_after_setup,
                 "terminate_after_setup": terminate_after_setup,
+                "dismissed_start_page_onboarding": dismissed_start_page_onboarding,
             },
         )
 
@@ -147,3 +151,51 @@ class SafariPrepareOpenAppInitializer(BaseInitializer):
                 time.sleep(0.6)
                 continue
             break
+
+    @staticmethod
+    def _dismiss_start_page_onboarding(controller: Any, attempts: int = 2) -> bool:
+        """Close Safari's first-run Start Page sheet when it is present.
+
+        This sheet is not a system alert, so alert_dismiss() does not handle it.
+        Only tap the accessible close button when the matching Start Page heading
+        is also visible; otherwise leave Safari's UI untouched.
+        """
+        dismissed = False
+        for _ in range(max(attempts, 0)):
+            observation = controller.observe(include_ui_tree=True)
+            nodes = list(getattr(observation, "ui_nodes", []) or [])
+
+            def node_value(node: Any, key: str) -> str:
+                if isinstance(node, dict):
+                    return str(node.get(key, "") or "")
+                return str(getattr(node, key, "") or "")
+
+            has_start_page = any(
+                node_value(node, "text").strip().casefold() == "start page"
+                for node in nodes
+            )
+            has_close_button = any(
+                node_value(node, "type").casefold() == "button"
+                and node_value(node, "text").strip().casefold() == "close"
+                for node in nodes
+            )
+            if not has_start_page:
+                return dismissed
+            if not has_close_button:
+                raise RuntimeError(
+                    "Safari Start Page onboarding is visible without an accessible close button"
+                )
+            controller.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "close").click()
+            dismissed = True
+            time.sleep(0.4)
+
+        observation = controller.observe(include_ui_tree=True)
+        if any(
+            (
+                str(node.get("text", "") or "") if isinstance(node, dict)
+                else str(getattr(node, "text", "") or "")
+            ).strip().casefold() == "start page"
+            for node in list(getattr(observation, "ui_nodes", []) or [])
+        ):
+            raise RuntimeError("Safari Start Page onboarding remained open after dismissal")
+        return dismissed

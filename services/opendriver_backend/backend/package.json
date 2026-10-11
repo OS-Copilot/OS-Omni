@@ -1,0 +1,16 @@
+{
+  "name": "opendriver-backend",
+  "version": "0.2.0",
+  "private": true,
+  "description": "opendriver cross-platform ride-hailing MVP backend.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "seed": "node -e \"require('./src/database/store').resetDb(); console.log('Seeded opendriver backend')\"",
+    "test": "node test/domain.test.js"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4"
+  }
+}

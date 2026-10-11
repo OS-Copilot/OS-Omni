@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
   - tasks/android/tasks_org_create_task_with_subtasks.yaml
 models:
   - android_oracle_wait

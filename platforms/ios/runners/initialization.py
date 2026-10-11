@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import json
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional
@@ -146,7 +148,17 @@ def run_task_initialization(
 ) -> Optional[InitializationRunResult]:
     """Execute the configured initializer."""
 
-    del model_id
+    # Establish the actual episode window before initialization/model actions.
+    # Reviewed evaluators use this timestamp instead of historical manual windows.
+    run_dir = Path(run_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    args_path = run_dir / "args.json"
+    if not args_path.exists():
+        args_path.write_text(json.dumps({
+            "task_id": getattr(task, "id", None) or getattr(task, "task_id", None),
+            "model_id": model_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }, indent=2) + "\n", encoding="utf-8")
     init = getattr(task, "init", None)
     if init is None:
         return None

@@ -222,7 +222,9 @@ def _websocket_connect(url: str, timeout: float = DEVTOOLS_TIMEOUT_SECONDS) -> t
 
     connection = socket.create_connection((host, port), timeout=timeout)
     connection.settimeout(timeout)
-    key = base64.b64encode(hashlib.sha1(str(port).encode()).digest()).decode()
+    # RFC 6455 requires a random 16-byte nonce, not a 20-byte SHA1 digest.
+    import os
+    key = base64.b64encode(os.urandom(16)).decode()
     handshake = (
         f"GET {resource} HTTP/1.1\r\n"
         f"Host: {host}:{port}\r\n"

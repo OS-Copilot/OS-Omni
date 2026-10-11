@@ -19,6 +19,8 @@ durable trace and are not judged.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -124,6 +126,9 @@ class DeltaChatAndroidEvaluator(BaseEvaluator):
                     "exception_type": type(exc).__name__,
                 },
             )
+
+        if context.get("run_dir"):
+            Path(context["run_dir"], "end-state.json").write_text(json.dumps({"read_only": True, "chats": chats, "messages": messages, "notes": [{"path": n.path, "text": n.text, "size": n.size} for n in notes]}, ensure_ascii=False, indent=2), encoding="utf-8")
 
         checks: list[dict[str, Any]] = []
         group_name = str(expected.get("group_name") or "")

@@ -333,3 +333,12 @@ platforms/windows/scripts/run_oracle_eval.py
 !apps/opendriver/public/assets/packages/
 !apps/opendriver/public/assets/packages/**
 !apps/opendriver/opendriver_windows/src/windows/runner/runner.exe.manifest
+
+# Local reproducible Android evaluation work
+local_eval/
+.venv/
+
+.runtime/
+
+# Android delivery download cache is reconstructed from the release manifest
+.android-delivery-cache/

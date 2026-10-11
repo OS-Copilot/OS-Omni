@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
   - tasks/android/spotube_queue_naina_zara.yaml
 models:
   - android_oracle_wait

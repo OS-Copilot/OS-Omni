@@ -16,6 +16,7 @@ judging.
 from __future__ import annotations
 
 import re
+import shlex
 import sqlite3
 import tempfile
 from dataclasses import dataclass
@@ -140,6 +141,11 @@ class DeltaChatAndroidStore:
         with tempfile.TemporaryDirectory(prefix="deltachat-store-") as tmpdir:
             local = Path(tmpdir) / DATABASE_FILE_NAME
             controller.execute_adb(["pull", remote, str(local)])
+            # Delta Chat uses SQLite WAL. The main database alone omits recent
+            # messages, including agent actions. Copy its sidecars for read-only
+            # evaluation against the current durable state.
+            for suffix in ("-wal", "-shm"):
+                controller.execute_adb(["pull", remote + suffix, str(local) + suffix])
             if not local.is_file() or local.stat().st_size == 0:
                 raise RuntimeError(
                     f"the Delta Chat database could not be read from {remote}"
@@ -228,6 +234,8 @@ class DeltaChatAndroidStore:
         with tempfile.TemporaryDirectory(prefix="deltachat-chats-") as tmpdir:
             local = Path(tmpdir) / "db.sqlite"
             controller.execute_adb(["pull", remote, str(local)])
+            for suffix in ("-wal", "-shm"):
+                controller.execute_adb(["pull", remote + suffix, str(local) + suffix])
             if not local.is_file() or local.stat().st_size == 0:
                 raise RuntimeError(
                     f"the Delta Chat database could not be read from {remote}"
@@ -243,12 +251,16 @@ class DeltaChatAndroidStore:
                 rows = connection.execute(
                     f"SELECT {', '.join(selected)} FROM chats ORDER BY id ASC"
                 ).fetchall()
+                descriptions = {}
+                if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='chats_descriptions'").fetchone():
+                    descriptions = {row[0]: row[1] for row in connection.execute("SELECT chat_id, description FROM chats_descriptions")}
             finally:
                 connection.close()
-        return [
-            {column: row[column] for column in selected}
-            for row in rows
-        ]
+        records = [{column: row[column] for column in selected} for row in rows]
+        for record in records:
+            if not record.get('description') and record.get('id') in descriptions:
+                record['description'] = descriptions[record['id']]
+        return records
 
     # ------------------------------------------------------------- notes
     def read_notes(self) -> list[MarkorNote]:
@@ -264,7 +276,7 @@ class DeltaChatAndroidStore:
                         "ls",
                         "-1",
                         "-p",
-                        directory,
+                        shlex.quote(directory),
                     ]
                 )
                 or ""
@@ -276,10 +288,11 @@ class DeltaChatAndroidStore:
                 if not name.lower().endswith((".md", ".markor", ".txt")):
                     continue
                 remote = f"{directory.rstrip('/')}/{name}"
-                if remote in seen:
+                canonical = remote.replace("/sdcard/", "/storage/emulated/0/", 1)
+                if canonical in seen:
                     continue
-                seen.add(remote)
-                text = str(controller.execute_adb(["shell", "cat", remote]) or "")
+                seen.add(canonical)
+                text = str(controller.execute_adb(["shell", "cat", shlex.quote(remote)]) or "")
                 found.append(
                     MarkorNote(path=remote, text=text, size=len(text.encode("utf-8")))
                 )

@@ -13,7 +13,7 @@ from platforms.android.core.runtime_types import ActionDecision
 
 from .base_planner import BaseJsonPlanner
 
-_FENCED_BLOCK_RE = re.compile(r"```(?:bash|sh|shell|text|adb)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
+_FENCED_BLOCK_RE = re.compile(r"```(?:(?:bash|sh|shell|text|adb)[ \t]*\r?\n)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
 _FENCED_SPECIAL_RE = re.compile(r"```(?:\s*)(WAIT|DONE|FAIL)\s*```", re.IGNORECASE | re.DOTALL)
 _MAX_ADB_SCRIPT_COMMANDS = 3
 _DEFAULT_SCREENSHOT_VISION_LONG_EDGE = 2048.0
@@ -77,12 +77,13 @@ def build_adb_action(raw: str) -> Tuple[Optional[Dict[str, Any]], bool, Optional
 
 def build_adb_script_commands(command: str) -> Tuple[Optional[List[Dict[str, Any]]], Optional[str]]:
     commands: List[Dict[str, Any]] = []
-    for line in _command_lines(command):
+    lines = list(_command_lines(command))
+    if sum(_parse_sleep_seconds(line) is None for line in lines) > _MAX_ADB_SCRIPT_COMMANDS or len(lines) > 6:
+        return None, 'too_many_script_commands'
+    for line in lines:
         sleep_seconds = _parse_sleep_seconds(line)
         if sleep_seconds is not None:
             commands.append({"type": "sleep", "seconds": sleep_seconds, "command": line})
-            if len(commands) >= _MAX_ADB_SCRIPT_COMMANDS:
-                break
             continue
 
         try:
@@ -95,8 +96,6 @@ def build_adb_script_commands(command: str) -> Tuple[Optional[List[Dict[str, Any
             return None, error
         commands.append({"type": "adb", "args": adb_args, "command": line})
 
-        if len(commands) >= _MAX_ADB_SCRIPT_COMMANDS:
-            break
 
     if not commands:
         return None, "empty_adb_command"

@@ -280,6 +280,13 @@ class FSNotesStore:
         if exact_content is not None and not _content_matches_exact(note, str(exact_content)):
             return False
 
+        content_ends_with = expected.get("content_ends_with")
+        if content_ends_with is not None:
+            actual = _normalize_newlines(note.content).rstrip("\n")
+            suffix = _normalize_newlines(str(content_ends_with)).rstrip("\n")
+            if actual != suffix and not actual.endswith("\n" + suffix):
+                return False
+
         content_contains = self._coerce_text_list(expected.get("content_contains"))
         for fragment in content_contains:
             if fragment not in note.content:
@@ -382,7 +389,7 @@ class FSNotesStore:
         payload = {
             key: value
             for key, value in spec.items()
-            if key in {"path", "folder", "title", "extension", "content_contains", "content_not_contains"}
+            if key in {"path", "folder", "title", "extension", "exact_content", "content_ends_with", "content_contains", "content_not_contains"}
         }
         return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 

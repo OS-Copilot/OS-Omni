@@ -50,6 +50,10 @@ evaluation:
         - "Carrier Updates"
       present_notes:
         - path: "Release Archive/Sprint Review Final.md"
+          content_ends_with: |
+            ## Follow-up
+            - Send summary
+            - Book retro room
           content_contains:
             - "Notes for the weekly sprint review."
             - "- Highlight release blockers"
@@ -64,6 +68,7 @@ evaluation:
             Status: Pending confirmation
             Bring: Printed agenda
         - path: "Carrier Updates/Shipping Followup.md"
+          content_ends_with: "ETA: Request by 4 PM"
           content_contains:
             - "Carrier:"
             - "Tracking pending"

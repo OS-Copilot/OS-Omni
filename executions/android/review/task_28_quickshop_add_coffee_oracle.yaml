@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
   - tasks/android/quickshop_add_coffee_to_cart.yaml
 models:
   - android_oracle_wait

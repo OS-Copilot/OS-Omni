@@ -27,6 +27,7 @@ class CalendarSeedOpenAppInitializer(BaseInitializer):
         timezone_name = str(params.get("timezone") or default_timezone_name()).strip() or default_timezone_name()
         wait_ms = int(params.get("wait_ms", self.DEFAULT_WAIT_MS) or 0)
         purge_all_events = bool(params.get("purge_all_events", False))
+        disable_subscribed_calendars = bool(params.get("disable_subscribed_calendars", False))
         seed_events = coerce_event_specs(params.get("seed_events"))
         purge_summaries = self._coerce_text_list(params.get("purge_summaries"))
         terminate_warning = ""
@@ -38,6 +39,11 @@ class CalendarSeedOpenAppInitializer(BaseInitializer):
             if hasattr(controller, "terminate_app"):
                 terminate_warning = self._best_effort_terminate_app(controller, bundle_id)
 
+            disabled_store_ids = (
+                store.disable_subscribed_calendars()
+                if disable_subscribed_calendars
+                else []
+            )
             if purge_all_events:
                 deleted_count = store.purge_all_events()
             else:
@@ -51,6 +57,15 @@ class CalendarSeedOpenAppInitializer(BaseInitializer):
             controller.activate_app(bundle_id)
             if wait_ms > 0:
                 time.sleep(wait_ms / 1000.0)
+
+            # iOS may recreate and sync its built-in subscribed-calendar store
+            # when Calendar first launches. Hide that store again after the
+            # synchronization service has had its initialization window.
+            disabled_store_ids_after_activation = (
+                store.disable_subscribed_calendars()
+                if disable_subscribed_calendars
+                else []
+            )
 
             self._dismiss_alerts(controller)
             self._ensure_month_list_mode(controller)
@@ -78,6 +93,9 @@ class CalendarSeedOpenAppInitializer(BaseInitializer):
                 "seeded_rowids": seeded_rowids,
                 "seed_event_count": len(seed_events),
                 "purge_all_events": purge_all_events,
+                "disable_subscribed_calendars": disable_subscribed_calendars,
+                "disabled_calendar_store_ids": disabled_store_ids,
+                "disabled_calendar_store_ids_after_activation": disabled_store_ids_after_activation,
                 "terminate_warning": terminate_warning,
             },
         )

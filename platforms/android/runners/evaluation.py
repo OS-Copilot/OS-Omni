@@ -87,6 +87,21 @@ def run_task_evaluation(
             run_dir=run_dir,
         )
         context = with_task_binding(context, task)
+        # Preserve actual end-state independently of the verdict for later audits.
+        package = evaluation.params.get('app_package', '')
+        if not package:
+            app_name = str(getattr(task, 'id', '')).split('.')
+            if len(app_name) > 1 and app_name[1].startswith('open'):
+                package = 'com.killt.' + app_name[1]
+        if package.startswith('com.killt.open') and package != 'com.killt.opendriver':
+            try:
+                from evaluators.cua_review.platforms.android.webview_devtools import WebViewDevTools
+                import json
+                page = WebViewDevTools(controller, package)
+                snapshot = page.evaluate('JSON.stringify({url:location.href,storage:Object.fromEntries(Object.entries(localStorage))})')
+                (run_dir/'end-state.json').write_text(snapshot, encoding='utf-8')
+            except Exception as exc:
+                (run_dir/'end-state-error.json').write_text(json.dumps({'error':str(exc)}), encoding='utf-8')
         result = evaluator.evaluate(context)
         if not isinstance(result, EvalResult):
             raise TypeError(

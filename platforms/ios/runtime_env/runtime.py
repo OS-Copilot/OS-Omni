@@ -3,6 +3,7 @@ Low-level Appium runtime operations for iOS simulator control.
 """
 
 import logging
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -37,8 +38,12 @@ def get_device_capabilities(
         "appium:noReset": True,
         "appium:newCommandTimeout": 1200,
         "appium:udid": udid,
-        "appium:usePrebuiltWDA": False,
+        "appium:usePrebuiltWDA": os.environ.get("OS_OMNI_WDA_USE_PREBUILT", "0").strip() == "1",
         "appium:useSimpleBuildTest": True,
+        # A fresh per-run WDA build can exceed Appium's 60-second default
+        # on Xcode 27. This startup budget does not change action timeouts
+        # or any model step limit.
+        "appium:wdaLaunchTimeout": 300000,
     }
 
     if wda_local_port is not None:
