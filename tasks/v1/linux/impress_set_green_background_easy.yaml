@@ -1,6 +1,6 @@
 task_id: linux.impress.set_green_background
 platform: linux
-instruction: Move to slide 1 and give it a green background color. The presentation should already be open in LibreOffice Impress. Save when finished.
+instruction: Move to slide 1 and give it a green background color, using the standard palette color Green (#00A933). The presentation should already be open in LibreOffice Impress. Save when finished.
 init:
   initializer_id: initializers.linux.office_setup:LinuxOfficeSetupInitializer
   params:

@@ -6,15 +6,16 @@ instruction: In Blender, open `/tmp/helloworld_blender_workspace/blender_product
   The render settings must use Render Engine Eevee with 96 render samples and Film Transparent enabled,
   and the Output properties must have Resolution X 1800, Resolution Y 1200, Resolution Percentage 100,
   File Format PNG, Color RGBA, and Output path `//renders/product_gallery/`. The Camera must have Lens
-  52 and Clip Start 0.10. RimLight must have Power 900 with a warm white color, and FillLight must have
-  Power 420 with a pale blue color. FeatureCube must have Location X 1.05, Y -0.55, Z 1.45, Rotation Z
-  -22, Scale X 1.45, Y 0.82, Z 1.75, and a warm red Base Color. AccentCylinder must have Location X -1.95,
-  Y 0.75, Z 0.95, Rotation Z 18, and a deep blue Base Color. A new mesh Plane named GalleryTitlePlate
+  52 and Clip Start 0.10. RimLight must have Power 900 with a warm white color (about RGB 1.0, 0.86, 0.68),
+  and FillLight must have Power 420 with a pale blue color (about RGB 0.55, 0.75, 1.0). FeatureCube must
+  have Location X 1.05, Y -0.55, Z 1.45, Rotation Z -22, Scale X 1.45, Y 0.82, Z 1.75, and a warm red
+  Base Color (about RGB 0.9, 0.28, 0.18). AccentCylinder must have Location X -1.95, Y 0.75, Z 0.95, Rotation
+  Z 18, and a deep blue Base Color (about RGB 0.05, 0.12, 0.45). A new mesh Plane named GalleryTitlePlate
   must be at Location X -1.45, Y 2.72, Z 0.07 with Scale X 2.25, Y 0.22, Z 1.0 and a new material named
-  TitlePlateBlue with a cyan blue Base Color. A new mesh Cube named ReviewBlock must be at Location X
-  -2.85, Y -1.75, Z 0.48 with Scale X 1.0, Y 1.0, Z 1.0 and a new material named ReviewGreen with a green
-  Base Color. Save to the exact path above and finish with ReviewBlock selected as the active object in
-  the Outliner.
+  TitlePlateBlue with a cyan blue Base Color (about RGB 0.0, 0.62, 0.85). A new mesh Cube named ReviewBlock
+  must be at Location X -2.85, Y -1.75, Z 0.48 with Scale X 1.0, Y 1.0, Z 1.0 and a new material named
+  ReviewGreen with a green Base Color (about RGB 0.12, 0.75, 0.28). Make ReviewBlock the selected active
+  object in the Outliner, then save to the exact path above so the saved file keeps ReviewBlock active.
 init:
   initializer_id: initializers.linux.blender:BlenderInitializer
   params:
