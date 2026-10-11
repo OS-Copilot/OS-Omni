@@ -91,6 +91,24 @@ tracks progress and separates task verdicts from initialization, evaluation,
 execution, and VM infrastructure errors. A completed batch is not necessarily
 a successful benchmark; inspect the summary counts.
 
+After each restore the runner clears keycode 94 with `xmodmap`. The guest uses a
+pc105 keymap where `less` is the extra ISO key, so pyautogui would otherwise type
+`<` as `>` in any agent code. Optional per-task evidence:
+
+* `--max-steps-cap N` lowers only TaskSpec limits above `N`.
+* `--capture-end-state` archives guest files under `/home/user` and `/tmp` that
+  changed during the task to `end_state.tar.gz`, before the next restore.
+* `--llm-exchange-log` writes every model request and response to
+  `llm_exchange.jsonl`, with inline images replaced by their SHA-256 and size.
+* `--deepseek-request-audit` checks every transmitted request is `deepseek-flash`
+  on the Responses API with `reasoning.effort=none` and records the result.
+
+To check a task without a model, `scripts/linux_task_probe.py` restores the
+snapshot, runs the initializer, optional reference `--bash`/`--python` scripts
+inside the guest, and the evaluator, saving screenshots after each stage. Use it
+for a negative check (initialize, then evaluate) and an independent positive
+reference before trusting a verifier.
+
 Some imported v1 tasks still reference unavailable initializer or evaluator
 modules. These produce errors and cannot contribute a valid model success-rate
 measurement until the original implementations and prerequisites are available.
