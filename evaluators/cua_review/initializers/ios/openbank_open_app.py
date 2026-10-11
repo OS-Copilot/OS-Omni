@@ -9,7 +9,68 @@ initializer launches the client and gives that screen time to settle.
 
 from __future__ import annotations
 
+import json
+import sqlite3
+import subprocess
+from pathlib import Path
+from typing import Any, Mapping
+
 from evaluators.cua_review.core.initialization import BaseInitializer
+from evaluators.cua_review.core.evaluation import EvalResult, EvalStatus
+from evaluators.cua_review.platforms.ios.openbank_store import OpenBankStore
+from evaluators.cua_review.platforms.ios.webview_state import (
+    ITEM_TABLE,
+    stored_value,
+)
+
+
+def _prepare_logged_in_session(db_path: Path, state_key: str) -> dict[str, Any]:
+    """Set the task's documented Jordan Lee session in the seeded app state.
+
+    The restored iOS image has the correct business data but opens on the
+    sign-in screen. The task contract starts signed in, so establish that
+    precondition without changing any business records or recording a task
+    action.
+    """
+    store = OpenBankStore(db_path, local_state_key=state_key)
+    state = store.read_state()
+    customer = state.get("customer")
+    if not isinstance(customer, Mapping) or customer.get("id") != "cust-jordan":
+        raise ValueError("OpenBank does not contain the seeded Jordan Lee customer")
+    user_fields = ("id", "displayName", "preferredName", "email", "phone")
+    user = {field: customer[field] for field in user_fields if field in customer}
+    if tuple(user) != user_fields:
+        raise ValueError("OpenBank seed is missing required signed-in customer fields")
+    state["session"] = {"loggedIn": True, "user": user}
+    encoded = json.dumps(state, ensure_ascii=False, separators=(",", ":")).encode(
+        "utf-16-le"
+    )
+    with sqlite3.connect(db_path, timeout=10) as connection:
+        cursor = connection.execute(
+            f"UPDATE {ITEM_TABLE} SET value = ? WHERE key = ?",
+            (sqlite3.Binary(encoded), state_key),
+        )
+        if cursor.rowcount != 1:
+            raise ValueError("OpenBank local-storage state row was not updated")
+        connection.commit()
+    if stored_value(db_path, state_key) != encoded:
+        raise ValueError("OpenBank signed-in session did not persist")
+    return state["session"]
+
+
+def _baseline_max_event_seq(state: Mapping[str, Any]) -> int:
+    """Return the last persisted app-event sequence before the task starts."""
+    events = state.get("evaluationEvents")
+    if not isinstance(events, list):
+        return -1
+    values = [
+        int(event["seq"])
+        for event in events
+        if isinstance(event, Mapping)
+        and isinstance(event.get("seq"), int)
+        and not isinstance(event.get("seq"), bool)
+    ]
+    return max(values, default=-1)
 
 
 class OpenBankOpenAppInitializer(BaseInitializer):
@@ -20,3 +81,64 @@ class OpenBankOpenAppInitializer(BaseInitializer):
     BUNDLE_ID = "com.killt.openbank"
 
     SETTLE_MS = 1200
+
+    def initialize(self, context: Mapping[str, Any]) -> EvalResult:
+        params = {**dict(self.TASK_PARAMS), **dict(context.get("params") or {})}
+        udid = str(params.get("udid") or context.get("udid") or "").strip()
+        bundle_id = str(params.get("bundle_id") or self.BUNDLE_ID).strip()
+        if not udid or bundle_id != self.BUNDLE_ID:
+            return super().initialize(context)
+        try:
+            store = OpenBankStore.from_simulator(udid, bundle_id=bundle_id)
+            state = store.read_state()
+            session = state.get("session")
+            if not (
+                isinstance(session, Mapping)
+                and session.get("loggedIn") is True
+                and isinstance(session.get("user"), Mapping)
+                and session["user"].get("id") == "cust-jordan"
+            ):
+                # SQLite must be quiescent while the initializer writes the
+                # WebKit local-storage row. Stop only this app; keep the VM and
+                # every other installed app/session intact.
+                if self._app_is_running(udid, bundle_id):
+                    stopped = subprocess.run(
+                        ["xcrun", "simctl", "terminate", udid, bundle_id],
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
+                    )
+                    if stopped.returncode != 0:
+                        raise RuntimeError(
+                            f"could not stop OpenBank before preparing its session: "
+                            f"{(stopped.stderr or stopped.stdout).strip()}"
+                        )
+                session = _prepare_logged_in_session(store.db_path, store.local_state_key)
+                state = store.read_state()
+            baseline_max_event_seq = _baseline_max_event_seq(state)
+            if not (
+                session.get("loggedIn") is True
+                and session.get("user", {}).get("id") == "cust-jordan"
+            ):
+                raise ValueError("OpenBank session does not match the task precondition")
+        except Exception as exc:
+            return self._result(
+                EvalStatus.ERROR,
+                f"could not prepare the seeded OpenBank session: {type(exc).__name__}: {exc}",
+                {"udid": udid, "bundle_id": bundle_id},
+            )
+        result = super().initialize(context)
+        result.metadata["session_prepared"] = True
+        result.metadata["session_user_id"] = "cust-jordan"
+        result.metadata["baseline_max_event_seq"] = baseline_max_event_seq
+        return result
+
+    @staticmethod
+    def _app_is_running(udid: str, bundle_id: str) -> bool:
+        result = subprocess.run(
+            ["xcrun", "simctl", "spawn", udid, "launchctl", "list"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return result.returncode == 0 and bundle_id in result.stdout

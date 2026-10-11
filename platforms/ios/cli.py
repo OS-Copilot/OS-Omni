@@ -17,8 +17,7 @@ import yaml
 
 # Ensure repository root is importable when executed as a script.
 repo_root = Path(__file__).resolve().parents[2]
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
+sys.path = [str(repo_root)] + [item for item in sys.path if item != str(repo_root)]
 
 try:
     from dotenv import load_dotenv

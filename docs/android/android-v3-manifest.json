@@ -1,0 +1,28 @@
+{
+  "version": "android_V3",
+  "filename": "android_V3.zip",
+  "size": 8693023008,
+  "sha256": "746eb8f40998866d85a8a595358c26fb8d5c930ee964b6dc475b124c03d9fa90",
+  "source_v2_sha256": "32eac37f815ffa5c205c1ad53279e24cf8eef6d7cd0871ab188cf0ac28df656f",
+  "validation": {
+    "android_api": "33",
+    "abi": "x86_64",
+    "fixtures": [
+      {
+        "path": "/sdcard/OSOmniFixtures/author-photo-v2/indoor-cooking-v2.jpg",
+        "sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d"
+      },
+      {
+        "path": "/sdcard/OSOmniFixtures/author-photo-v2/outdoor-cooking-v2.jpg",
+        "sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d"
+      }
+    ],
+    "installed_repairs": [
+      "openfood-events-v1",
+      "opennavigation-records-v1.1"
+    ],
+    "task_specific_initialization": "Required via included host code; never bake completed task state",
+    "ds_rerun": false,
+    "cold_boot_verified": true
+  }
+}

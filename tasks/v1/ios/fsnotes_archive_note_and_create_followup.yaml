@@ -43,6 +43,10 @@ evaluation:
         - "Bench Archive"
       present_notes:
         - path: "Bench Archive/Launch Retrospective Final.md"
+          content_ends_with: |
+            ## Decisions
+            - Send recap by noon
+            - Confirm postmortem room
           content_contains:
             - "Launch retrospective notes."
             - "- Review shipping delays"

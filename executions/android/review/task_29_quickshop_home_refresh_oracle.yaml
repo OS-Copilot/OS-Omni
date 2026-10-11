@@ -1,4 +1,4 @@
-﻿tasks:
+tasks:
   - tasks/android/quickshop_home_refresh_checkout.yaml
 models:
   - android_oracle_wait

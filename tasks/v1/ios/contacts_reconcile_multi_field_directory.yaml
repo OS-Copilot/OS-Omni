@@ -1,14 +1,16 @@
 task_id: ios.contacts.reconcile_multi_field_directory
 platform: ios
 instruction: >
-  Clean up the seeded contacts list. Update Bench Logistics so its company becomes
-  Bench Logistics Desk, its phone numbers are 555-010-4400 and 555-010-4401, its email
-  address is logistics@bench-example.test, and its note is Use loading dock entrance.
-  Update Bench Catering Lead so its phone number becomes 555-010-4510 and its email
-  address becomes catering-lead@bench-example.test. Delete the outdated contact Bench Venue Old.
-  Then create a new contact named Bench Security with company North Gate Team, phone numbers
-  555-010-4620 and 555-010-4621, email security@bench-example.test, and note Badge desk closes at 21:00.
-  Leave Bench Office unchanged.
+  Clean up the seeded contacts list. Update the contact with first name Bench and last name Logistics
+  so its company (Organization field) becomes Bench Logistics Desk, its phone numbers are 555-010-4400
+  and 555-010-4401, its email address is logistics@bench-example.test, and its note is "Use loading dock entrance."
+  Update the contact with first name Bench and last name Catering Lead so its phone number becomes 555-010-4510
+  and its email address becomes catering-lead@bench-example.test, leaving its company unchanged as Bench Catering.
+  Delete the outdated contact with first name Bench and last name Venue Old.
+  Then create a new contact with first name Bench and last name Security with company (Organization field)
+  North Gate Team, phone numbers 555-010-4620 and 555-010-4621, email security@bench-example.test,
+  and note "Badge desk closes at 21:00."
+  Leave the contact with first name Bench and last name Office unchanged.
 init:
   initializer_id: initializers.ios.contacts_seed_open_app:ContactsSeedOpenAppInitializer
   params:
@@ -49,23 +51,31 @@ evaluation:
         phones: ["555-010-4400", "555-010-4401"]
         emails: ["logistics@bench-example.test"]
         note: "Use loading dock entrance."
+        exact_phones: true
+        exact_emails: true
       - first_name: "Bench"
         last_name: "Catering Lead"
         organization: "Bench Catering"
         phones: ["555-010-4510"]
         emails: ["catering-lead@bench-example.test"]
+        exact_phones: true
+        exact_emails: true
       - first_name: "Bench"
         last_name: "Security"
         organization: "North Gate Team"
         phones: ["555-010-4620", "555-010-4621"]
         emails: ["security@bench-example.test"]
         note: "Badge desk closes at 21:00."
+        exact_phones: true
+        exact_emails: true
       - first_name: "Bench"
         last_name: "Office"
         organization: "Bench HQ"
         phones: ["555-010-4333"]
         emails: ["office@bench-example.test"]
         note: "Keep this record unchanged."
+        exact_phones: true
+        exact_emails: true
     absent_contacts:
       - first_name: "Bench"
         last_name: "Venue Old"

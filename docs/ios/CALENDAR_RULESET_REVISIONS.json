@@ -1,0 +1,90 @@
+{
+  "audit_basis": "docs/ios/NATIVE_CALENDAR_FSNOTES_SEMANTIC_AUDIT.md (independent, instruction-only blind audit; real defects R1 extra-event leniency and R2 host-dependent timezone; no model outputs read)",
+  "authorization": "Benchmark author authorizes semantic repairs; independent source-only audit and author review precede all Calendar formal runs.",
+  "compatibility": "revised instructions strengthen the disclosed business intent and evaluation is strictly harder (closed-world count, unchanged-note equality); v1 scores under the original open-world/subset semantics cannot be claimed unchanged",
+  "option_chosen": "preserve original date/time/location/deletion semantics; do NOT invent a hidden event count and do NOT force a specific timezone; visible instruction now states the four-event closed world and device-local times",
+  "preserved": [
+    "exact summary match and exact date/start/end matching (comparator date/time strictness unchanged)",
+    "normalized location compare, checked only when the spec states one (all eight present specs state one)",
+    "absent_summaries stale-summary guards as plain summary lists (subset semantics, never affected by opt-in flags)",
+    "default legacy behavior when opt-in flags are absent (open-world count, subset description matching)",
+    "instruction silence on edited/new-event notes where unmentioned (no note bans added there)",
+    "seed/purge reconstruction (purge_all_events plus explicit seed_events) and simulator-timezone-defaults-to-host posture",
+    "labels, UI/schema parameters, timeouts and step limits"
+  ],
+  "repairs": [
+    {
+      "audit_findings": [
+        "R1: instruction 'leave unchanged / delete X / create exactly two' business intent is stricter than the checker, which accepts arbitrary extra events and extra description text",
+        "R2: default_timezone_name always falls back to Asia/Shanghai when datetime.astimezone().tzinfo is a fixed-offset tzinfo without a key, while the visible instruction never names a zone"
+      ],
+      "evaluator": "evaluators/ios/calendar_event_state.py",
+      "instruction_fix": "instruction now states all times are device-local wall-clock times and that the final Calendar must contain exactly the four named events and no other events; business requirements only, no UI steps or paths",
+      "new": {
+        "eval_sha256": "c4d9fdf9be75b6b0b80b366620bb30ede874089ee2cf284425183355119d22b7",
+        "source_sha256": "1d8f998aef5a2d365a5bffc0b0fda9835a563a8d2a680f1c953202ba2fc4e905",
+        "task_sha256": "062bcc4a4ab96beef7b87512ded08b6373575c8ce49808384417a1f5dd6df09d"
+      },
+      "original": {
+        "eval_sha256": "0929f37b112f3d27f95446b62c51ac8c461555da3f75a830d1b914d9ce21e43c",
+        "source_sha256": "ada539450373aa5e7b4136480a7084e9fffaa2424609c878f3ef00dca2037b1b",
+        "task_sha256": "966cf96a9142d5981f8bd9b29161602e01f1cf615d3af60f6b46567ceff"
+      },
+      "reason": "R1: instruction never forbade unrelated new events as written, so the visible instruction now states the four-event closed world and the present spec set opts in to exact_count 4 against an unfiltered native-directory count. Only the originally unchanged Pharmacy/EveningWalk specs opt in to exact_description equality (their seeds carry empty notes), so edited/new events keep the stated-field-only check.",
+      "source_eval_binding": "platforms/ios/calendar_store.py (CalendarEventSpec gains opt-in exact_description defaulting false; event_matches_spec enforces normalized description equality only under the flag) + evaluators/ios/calendar_event_state.py (opt-in exact_count against unfiltered store.list_events(); flag-absent runs keep legacy open-world behavior)",
+      "store_change": "CalendarEventSpec gains opt-in exact_description (default false = legacy subset); coerce_event_specs parses the flag; event_matches_spec enforces normalized string equality when the flag is set, including empty-equals-empty for the unchanged seeds",
+      "task": "tasks/v1/ios/calendar_update_and_create_followup.yaml",
+      "task_id": "ios.calendar.update_and_create_followup",
+      "test_binding": "tests/test_ios_calendar_semantic_repair.py",
+      "timezone_fix": "default_timezone_name now resolves the real IANA host zone from a valid TZ env, then tzinfo.key, then the /etc/localtime zoneinfo symlink (Darwin); Asia/Shanghai remains only as the unresolvable fallback; invalid explicit timezone params are rejected visibly by ZoneInfo (evaluator/initializer surface ERROR, never silent fallthrough); no timezone pinned in this task (device-local reading preserved)"
+    },
+    {
+      "audit_findings": [
+        "R1: same closed-world gap for the finalize task (extra events and extra notes on Bench Commute accepted)",
+        "R2: same host-timezone portability defect (shared store helper)"
+      ],
+      "evaluator": "evaluators/ios/calendar_event_state.py (shared repair, unchanged per task)",
+      "instruction_fix": "instruction now states all times are device-local wall-clock times and that the final Calendar must contain exactly the four named events (Briefing Final, Supply Pickup, Debrief, Commute) and no other events",
+      "new": {
+        "eval_sha256": "c4d9fdf9be75b6b0b80b366620bb30ede874089ee2cf284425183355119d22b7",
+        "source_sha256": "1d8f998aef5a2d365a5bffc0b0fda9835a563a8d2a680f1c953202ba2fc4e905",
+        "task_sha256": "f92ab312ee60058d5f31e781f5accc492aa84b2d7351b16abb7e2318bd562745"
+      },
+      "original": {
+        "eval_sha256": "0929f37b112f3d27f95446b62c51ac8c461555da3f75a830d1b914d9ce21e43c",
+        "source_sha256": "ada539450373aa5e7b4136480a7084e9fffaa2424609c878f3ef00dca2037b1b",
+        "task_sha256": "c7e66097ac619771e776c171d3b726921d0aeb398af665cf15fa5f809c01861f"
+      },
+      "reason": "R1: same closed-world clarification; only the originally unchanged Bench Commute spec opts in to exact_description equality. Deletion guards (both Draft summaries absent) and date/time/location checks are unchanged.",
+      "source_eval_binding": "same shared repair as update_and_create_followup (exact_count + exact_description opt-ins, legacy defaults retained)",
+      "store_change": "same shared repair as update_and_create_followup (initializer file unmodified: dd1ddbff0a8c561dd74ad1d17deb48ec2df7973c593ab4a60f05850f6980daf5 both before and after; explicit timezone already recorded in its metadata)",
+      "task": "tasks/v1/ios/calendar_finalize_schedule_with_two_followups.yaml",
+      "task_id": "ios.calendar.finalize_schedule_with_two_followups",
+      "test_binding": "tests/test_ios_calendar_semantic_repair.py",
+      "timezone_fix": "same shared default_timezone_name repair; no timezone pinned in this task"
+    }
+  ],
+  "ruleset_policy": {
+    "absent_semantics": "absent_summaries stay plain stale-summary guards with exact summary matching; no exact flags there",
+    "binding": "both tasks set exact_count 4; only the originally unchanged specs (Pharmacy Run, Evening Walk, Commute) carry exact_description true",
+    "default": "exact_count absent means legacy open-world (extra events ungraded); exact_description absent/false means legacy subset description matching",
+    "description_semantics": "normalized string equality under exact_description, including empty-equals-empty; edited/new events without the flag keep stated-field-only checks",
+    "no_new_constraints": "no note, label, formatting, or timezone constraints beyond the stated instruction; no forced zone in either task",
+    "timezone_semantics": "simulator timezone defaults to host; host zone resolved via valid TZ env, tzinfo.key, /etc/localtime symlink, else legacy Asia/Shanghai fallback; invalid explicit timezone config errors visibly",
+    "versioning": "original task/source/eval digests preserved above so past results stay interpretable; stricter closed-world/count semantics mean v1 scores cannot be claimed unchanged"
+  },
+  "independent_verification": {
+    "basis": "device-free fixtures only; no model failure inputs were supplied and none were inspected",
+    "expected4_correct_ref": "PASS (both tasks, canonical four-event refs)",
+    "extra5th_event": "FAIL (count_mismatch via unfiltered native-directory count)",
+    "unchanged_note_modified": "FAIL (Pharmacy/EveningWalk/Commute description equality)",
+    "legacy_absent_flag": "PASS retained (open-world behavior without exact_count)",
+    "test_command": "execution/source/.venv/bin/python -m pytest tests/test_ios_calendar_semantic_repair.py -q (24 passed; 13 fail pre-fix)",
+    "formal_retest_required": true
+  },
+  "known_limitation": {
+    "anchor_date": "no anchor-date redesign: day_offset still anchors to the device-local calendar day at evaluation time, so an init/eval midnight-boundary crossover or host/simulator date skew can move the day boundary; Root avoids midnight boundaries in formal runs and records timezone/anchor in the experiment",
+    "gui_validation": "Root performs actual GUI precheck and reference checks before formal runs, including Calendar List/Today landing and same-offset rendering verified with a real screenshot"
+  },
+  "author_review": "Original leave-existing-unchanged wording does not explicitly forbid unrelated NEW events. The four-event count is an author clarification and a stricter disclosed revised ruleset, not claimed as an already stated original constraint. Empty description equality applies only to the unchanged seeded events. Actual host IANA timezone resolution is an environment portability repair."
+}

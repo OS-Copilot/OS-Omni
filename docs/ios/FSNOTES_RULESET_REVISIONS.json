@@ -1,0 +1,26 @@
+{
+  "version": "author-fsnotes-append-r1",
+  "reason": "Independent instruction-only review: exact appended section/line must remain ordered at the end; original substring-only matcher accepts reversed/prepended completion. No model outputs for either task exist.",
+  "changes": "Opt-in content_ends_with validates newline-normalized exact suffix with a line boundary. Existing exact-content, original fragments, count, folder and absence checks retained. Task instructions and step caps unchanged.",
+  "original_revision": "8183e1079d51586c49ca3c95d7b8005532c02f44",
+  "source_hashes": {
+    "platforms/ios/fsnotes_store.py": {
+      "original_sha256": "c5ae429a932f90f5404baec713d8bae91920020161d7f6ae7f2160af03d1343e",
+      "revised_sha256": "43c2d75eea98441d6286e67f477c040c94e14ecaaeb4fcd60cfab51db74623d9"
+    },
+    "tasks/v1/ios/fsnotes_archive_note_and_create_followup.yaml": {
+      "original_sha256": "1a6c654327c13b3f11f921f1556e7204964d8d165200bf2f898a6c65691156b3",
+      "revised_sha256": "a481ca578752b9586367c2eed11c1a0ab56a12962a85d0925d22e121aa433171"
+    },
+    "tasks/v1/ios/fsnotes_move_rename_and_update_note.yaml": {
+      "original_sha256": "bcfbcf9cfb3514db8cd61a4359610838967836ae07436ea80e48e0a4455e4463",
+      "revised_sha256": "1e0fbf7ccb531f2b1f50b45715da124d4ebf9103d1b6c7e98217162750b26f55"
+    }
+  },
+  "validation": {
+    "unit_tests": "7 PASS; correct append and CRLF PASS; prepended/reversed/footer/partial-line FAIL; legacy contains preserved",
+    "real_simulator": "Native file checks complete; actual GUI and fresh initializer/initial FAIL under revised evaluator still PENDING. No formal FSNotes runs until these pass.",
+    "real_native_references": "Both tasks: hardcoded correct native files PASS; prepended sections FAIL; reversed Decisions section FAIL; prepended ETA line FAIL. All independent references written only in shutdown audit simulator and reset to original incomplete seed afterward."
+  },
+  "score_policy": "Revised evaluation scores must disclose this stricter correction; no original scores exist for these tasks in this experiment."
+}

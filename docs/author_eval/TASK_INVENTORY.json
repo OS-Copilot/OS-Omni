@@ -1,0 +1,871 @@
+{
+  "source_main": "c365f9d606b67e3dc14a04da95e1e417bb7a5b28",
+  "model": "deepseek_flash",
+  "reasoning_effort": "none",
+  "tasks": [
+    {
+      "platform": "ios",
+      "task_id": "ios.calendar.finalize_schedule_with_two_followups",
+      "task_file": "tasks/v1/ios/calendar_finalize_schedule_with_two_followups.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.calendar_event_state:CalendarEventStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.calendar.update_and_create_followup",
+      "task_file": "tasks/v1/ios/calendar_update_and_create_followup.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.calendar_event_state:CalendarEventStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.contacts.add_contact_card",
+      "task_file": "tasks/v1/ios/contacts_add_contact_card.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.contacts_seed_open_app:ContactsSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.contacts_state:ContactsStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.contacts.reconcile_multi_field_directory",
+      "task_file": "tasks/v1/ios/contacts_reconcile_multi_field_directory.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.contacts_seed_open_app:ContactsSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.contacts_state:ContactsStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.deltachat.launch_checklist_saved_messages_4_3",
+      "task_file": "tasks/v1/ios/deltachat_launch_checklist_saved_messages_4_3.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "initializers.ios.open_app:OpenAppInitializer",
+      "evaluator": "evaluators.ios.deltachat_launch_checklist_saved_messages_4_3:DeltaChatLaunchChecklistStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.deltachat.mobile_qa_brief_saved_messages_4_1",
+      "task_file": "tasks/v1/ios/deltachat_mobile_qa_brief_saved_messages_4_1.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "initializers.ios.open_app:OpenAppInitializer",
+      "evaluator": "evaluators.ios.deltachat_mobile_qa_brief_saved_messages_4_1:DeltaChatMobileQABriefStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.deltachat.route_approval_saved_messages_4_2",
+      "task_file": "tasks/v1/ios/deltachat_route_approval_saved_messages_4_2.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "initializers.ios.open_app:OpenAppInitializer",
+      "evaluator": "evaluators.ios.deltachat_route_approval_saved_messages_4_2:DeltaChatRouteApprovalStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.deltachat.route_handoff_saved_messages_4_4",
+      "task_file": "tasks/v1/ios/deltachat_route_handoff_saved_messages_4_4.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "initializers.ios.open_app:OpenAppInitializer",
+      "evaluator": "evaluators.ios.deltachat_route_handoff_saved_messages_4_4:DeltaChatRouteHandoffStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.flow.add_expense_transaction",
+      "task_file": "tasks/v1/ios/flow_add_expense_transaction.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.flow_seed_open_app:FlowSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.flow_state:FlowStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.flow.rework_budget_with_transfer_and_income",
+      "task_file": "tasks/v1/ios/flow_rework_budget_with_transfer_and_income.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.flow_seed_open_app:FlowSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.flow_state:FlowStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.fsnotes.archive_note_and_create_followup",
+      "task_file": "tasks/v1/ios/fsnotes_archive_note_and_create_followup.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.fsnotes_seed_open_app:FSNotesSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.fsnotes_state:FSNotesStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.fsnotes.move_rename_and_update_note",
+      "task_file": "tasks/v1/ios/fsnotes_move_rename_and_update_note.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.fsnotes_seed_open_app:FSNotesSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.fsnotes_state:FSNotesStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.habit.manage_seeded_habits",
+      "task_file": "tasks/v1/ios/habit_manage_seeded_habits.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.habit_seed_open_app:HabitSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.habit_state:HabitStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.habit.rework_seeded_routine",
+      "task_file": "tasks/v1/ios/habit_rework_seeded_routine.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.habit_seed_open_app:HabitSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.habit_state:HabitStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.maily.instruction_3_1",
+      "task_file": "tasks/v1/ios/maily_instruction_3_1.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.maily_open_app:MailyOpenAppInitializer",
+      "evaluator": "evaluators.ios.maily_instruction_3_1:MailyInstruction31StateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.maily.instruction_3_2",
+      "task_file": "tasks/v1/ios/maily_instruction_3_2.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.maily_open_app:MailyOpenAppInitializer",
+      "evaluator": "evaluators.ios.maily_instruction_3_2:MailyInstruction32StateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.maily.instruction_3_3",
+      "task_file": "tasks/v1/ios/maily_instruction_3_3.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.maily_open_app:MailyOpenAppInitializer",
+      "evaluator": "evaluators.ios.maily_instruction_3_3:MailyInstruction33Round9StateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openbank.2_2.transfer_security_448872",
+      "task_file": "tasks/v1/ios/openbank_2_2_transfer_security_448872.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openbank_open_app:OpenBankOpenAppInitializer",
+      "evaluator": "evaluators.ios.openbank_2_2_transfer_security_448872:OpenBankTransferSecurity448872Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openbank.card_rebate_dispute_183183",
+      "task_file": "tasks/v1/ios/openbank_card_rebate_dispute_183183.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openbank_open_app:OpenBankOpenAppInitializer",
+      "evaluator": "evaluators.ios.openbank_card_rebate_dispute_183183:OpenBankCardRebateDispute183183Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openbank.lena_marco_dispute_security_086132",
+      "task_file": "tasks/v1/ios/openbank_lena_marco_dispute_security_086132.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openbank_open_app:OpenBankOpenAppInitializer",
+      "evaluator": "evaluators.ios.openbank_lena_marco_dispute_security_086132:OpenBankLenaMarcoDisputeSecurity086132Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opendriver.11-1",
+      "task_file": "tasks/v1/ios/opendriver_11-1.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opendriver_open_app:OpenDriverOpenAppInitializer",
+      "evaluator": "evaluators.ios.opendriver_11-1:OpenDriverStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opendriver.11-2",
+      "task_file": "tasks/v1/ios/opendriver_11-2.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opendriver_open_app:OpenDriverOpenAppInitializer",
+      "evaluator": "evaluators.ios.opendriver_11-2:OpenDriverState112Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opendriver.driver_payout_trip_support_profile",
+      "task_file": "tasks/v1/ios/opendriver_driver_payout_trip_support_profile.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opendriver:OpenDriverIOSInitializer",
+      "evaluator": "evaluators.ios.opendriver_driver_payout_trip_support_profile:OpenDriverIOSDriverWorkflowEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opendriver.driver_requests_insurance_support_payout",
+      "task_file": "tasks/v1/ios/opendriver_driver_requests_insurance_support_payout.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opendriver:OpenDriverIOSInitializer",
+      "evaluator": "evaluators.ios.opendriver_driver_requests_insurance_support_payout:OpenDriverIOSDriverWorkflowEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opennote.community_meal_three_notes_618106",
+      "task_file": "tasks/v1/ios/opennote_community_meal_three_notes_618106.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opennote_open_app:OpenNoteOpenAppInitializer",
+      "evaluator": "evaluators.ios.opennote_community_meal_three_notes_618106:OpenNoteCommunityMealThreeNotes618106Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opennote.forum_outfit_three_notes_194503",
+      "task_file": "tasks/v1/ios/opennote_forum_outfit_three_notes_194503.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opennote_open_app:OpenNoteOpenAppInitializer",
+      "evaluator": "evaluators.ios.opennote_forum_outfit_three_notes_194503:OpenNoteForumOutfitThreeNotes194503Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opennote.live_music_visuals_three_notes_495011",
+      "task_file": "tasks/v1/ios/opennote_live_music_visuals_three_notes_495011.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opennote_open_app:OpenNoteOpenAppInitializer",
+      "evaluator": "evaluators.ios.opennote_live_music_visuals_three_notes_495011:OpenNoteLiveMusicVisualsThreeNotes495011Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opennote.stage_makeup_three_notes_870344",
+      "task_file": "tasks/v1/ios/opennote_stage_makeup_three_notes_870344.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opennote_open_app:OpenNoteOpenAppInitializer",
+      "evaluator": "evaluators.ios.opennote_stage_makeup_three_notes_870344:OpenNoteStageMakeupThreeNotes870344Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openphotoedit.community_activity_cards_memory_482863",
+      "task_file": "tasks/v1/ios/openphotoedit_community_activity_cards_memory_482863.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openphotoedit_community_activity_cards_memory_482863:OpenPhotoEditCommunityActivityCardsMemory482863Initializer",
+      "evaluator": "evaluators.ios.openphotoedit_community_activity_cards_memory_482863:OpenPhotoEditCommunityActivityCardsMemory482863Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openphotoedit.music_media_portraits_four_exports_186365",
+      "task_file": "tasks/v1/ios/openphotoedit_music_media_portraits_four_exports_186365.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openphotoedit_music_media_portraits_four_exports_186365:OpenPhotoEditMusicMediaPortraitsFourExports186365Initializer",
+      "evaluator": "evaluators.ios.openphotoedit_music_media_portraits_four_exports_186365:OpenPhotoEditMusicMediaPortraitsFourExports186365Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openphotoedit.outdoor_brand_four_exports_memory_enhanced_429078",
+      "task_file": "tasks/v1/ios/openphotoedit_outdoor_brand_four_exports_memory_enhanced_429078.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openphotoedit_outdoor_brand_four_exports_memory_enhanced_429078:OpenPhotoEditOutdoorBrandFourExportsMemoryEnhanced429078Initializer",
+      "evaluator": "evaluators.ios.openphotoedit_outdoor_brand_four_exports_memory_enhanced_429078:OpenPhotoEditOutdoorBrandFourExportsMemoryEnhanced429078Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openphotoedit.theater_visuals_four_exports_137027",
+      "task_file": "tasks/v1/ios/openphotoedit_theater_visuals_four_exports_137027.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openphotoedit_theater_visuals_four_exports_137027:OpenPhotoEditTheaterVisualsFourExports137027Initializer",
+      "evaluator": "evaluators.ios.openphotoedit_theater_visuals_four_exports_137027:OpenPhotoEditTheaterVisualsFourExports137027Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openshop.beauty_office_checkout_review_807073",
+      "task_file": "tasks/v1/ios/openshop_beauty_office_checkout_review_807073.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openshop_login_entry:OpenShopLoginEntryInitializer",
+      "evaluator": "evaluators.ios.openshop_beauty_office_checkout_review_807073:OpenShopBeautyOfficeCheckoutReview807073Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openshop.coffee_baby_dual_checkout_958608",
+      "task_file": "tasks/v1/ios/openshop_coffee_baby_dual_checkout_958608.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openshop_login_entry:OpenShopLoginEntryInitializer",
+      "evaluator": "evaluators.ios.openshop_coffee_baby_dual_checkout_958608:OpenShopCoffeeBabyDualCheckout958608Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openshop.home_four_item_cart_checkout_368575",
+      "task_file": "tasks/v1/ios/openshop_home_four_item_cart_checkout_368575.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "initializers.ios.open_app:OpenAppInitializer",
+      "evaluator": "evaluators.ios.openshop_home_four_item_cart_checkout_368575:OpenShopHomeFourItemCartCheckout368575Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.openshop.trip_gear_dual_checkout_review_263796",
+      "task_file": "tasks/v1/ios/openshop_trip_gear_dual_checkout_review_263796.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.openshop_instruction_entry:OpenShopInstructionEntryInitializer",
+      "evaluator": "evaluators.ios.openshop_trip_gear_dual_checkout_review_263796:OpenShopTripGearDualCheckoutReview263796Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentrip.nr2269_sanya_seabreeze_booking_158915",
+      "task_file": "tasks/v1/ios/opentrip_nr2269_sanya_seabreeze_booking_158915.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentrip_instruction_entry:OpenTripInstructionEntryInitializer",
+      "evaluator": "evaluators.ios.opentrip_nr2269_sanya_seabreeze_booking_158915:OpenTripNr2269SanyaSeabreezeBooking158915Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentrip.review_flight_hotel_reschedule_234497",
+      "task_file": "tasks/v1/ios/opentrip_review_flight_hotel_reschedule_234497.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentrip_instruction_entry:OpenTripInstructionEntryInitializer",
+      "evaluator": "evaluators.ios.opentrip_review_flight_hotel_reschedule_234497:OpenTripReviewFlightHotelReschedule234497Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentrip.sanya_parkline_review_mj2158_638214",
+      "task_file": "tasks/v1/ios/opentrip_sanya_parkline_review_mj2158_638214.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentrip_sanya_parkline_review_mj2158_638214:OpenTripSanyaParklineReviewMj2158638214Initializer",
+      "evaluator": "evaluators.ios.opentrip_sanya_parkline_review_mj2158_638214:OpenTripSanyaParklineReviewMj2158638214Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentrip.sc2306_grand_axis_booking_284952",
+      "task_file": "tasks/v1/ios/opentrip_sc2306_grand_axis_booking_284952.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentrip_sc2306_grand_axis_entry_284952:OpenTripSc2306GrandAxisEntry284952Initializer",
+      "evaluator": "evaluators.ios.opentrip_sc2306_grand_axis_booking_284952:OpenTripSc2306GrandAxisBooking284952Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentwitter.accessibility_audit_engagement_567657",
+      "task_file": "tasks/v1/ios/opentwitter_accessibility_audit_engagement_567657.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentwitter_accessibility_audit_engagement_567657:OpenTwitterAccessibilityAuditEngagement567657Initializer",
+      "evaluator": "evaluators.ios.opentwitter_accessibility_audit_engagement_567657:OpenTwitterAccessibilityAuditEngagement567657Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentwitter.incident_engagement_profile_451238",
+      "task_file": "tasks/v1/ios/opentwitter_incident_engagement_profile_451238.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentwitter_open_app:OpenTwitterOpenAppInitializer",
+      "evaluator": "evaluators.ios.opentwitter_incident_engagement_profile_451238:OpenTwitterIncidentEngagementProfile451238Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentwitter.release_gate_engagement_245250",
+      "task_file": "tasks/v1/ios/opentwitter_release_gate_engagement_245250.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentwitter_open_app:OpenTwitterOpenAppInitializer",
+      "evaluator": "evaluators.ios.opentwitter_release_gate_engagement_245250:OpenTwitterReleaseGateEngagement245250Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.opentwitter.transit_signal_engagement_483271",
+      "task_file": "tasks/v1/ios/opentwitter_transit_signal_engagement_483271.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.ios.opentwitter_open_app:OpenTwitterOpenAppInitializer",
+      "evaluator": "evaluators.ios.opentwitter_transit_signal_engagement_483271:OpenTwitterTransitSignalEngagement483271Evaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.reminders.manage_seeded_list",
+      "task_file": "tasks/v1/ios/reminders_manage_seeded_list.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.reminder_seed_open_app:ReminderSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.reminder_list_state:ReminderListStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.reminders.rework_seeded_agenda",
+      "task_file": "tasks/v1/ios/reminders_rework_seeded_agenda.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.reminder_seed_open_app:ReminderSeedOpenAppInitializer",
+      "evaluator": "evaluators.ios.reminder_list_state:ReminderListStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.safari.build_two_reading_folders",
+      "task_file": "tasks/v1/ios/safari_build_two_reading_folders.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.safari_prepare_open_app:SafariPrepareOpenAppInitializer",
+      "evaluator": "evaluators.ios.safari_state:SafariStateEvaluator"
+    },
+    {
+      "platform": "ios",
+      "task_id": "ios.safari.organize_tabs_and_bookmarks",
+      "task_file": "tasks/v1/ios/safari_organize_tabs_and_bookmarks.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.ios.safari_prepare_open_app:SafariPrepareOpenAppInitializer",
+      "evaluator": "evaluators.ios.safari_state:SafariStateEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.actual_budget.create_travel_fund_account",
+      "task_file": "tasks/v1/macos/actual_budget_add_transactions.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.actual_budget:ActualBudgetInitializer",
+      "evaluator": "evaluators.macos.actual_budget:ActualBudgetEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.actual_budget.create_emergency_fund_account",
+      "task_file": "tasks/v1/macos/actual_budget_full_setup.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.actual_budget:ActualBudgetInitializer",
+      "evaluator": "evaluators.macos.actual_budget:ActualBudgetEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.blender.prepare_social_render",
+      "task_file": "tasks/v1/macos/blender_prepare_social_render.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.blender:BlenderInitializer",
+      "evaluator": "evaluators.macos.blender:BlenderSceneEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.blender.restage_product_objects",
+      "task_file": "tasks/v1/macos/blender_restage_product_objects.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.blender:BlenderInitializer",
+      "evaluator": "evaluators.macos.blender:BlenderSceneEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.deltachat.atlas_access_fixes",
+      "task_file": "tasks/v1/macos/deltachat_atlas_access_fixes.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.deltachat_snapshot:DeltaChatSnapshotInitializer",
+      "evaluator": "evaluators.macos.deltachat_atlas_access_fixes:DeltaChatAtlasAccessFixesEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.deltachat.harbor_migration_brief",
+      "task_file": "tasks/v1/macos/deltachat_harbor_migration_brief.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.deltachat_snapshot:DeltaChatSnapshotInitializer",
+      "evaluator": "evaluators.macos.deltachat_harbor_migration_brief:DeltaChatHarborMigrationBriefEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.deltachat.nova_command_event_clearance",
+      "task_file": "tasks/v1/macos/deltachat_nova_command_event_clearance.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.deltachat_snapshot:DeltaChatSnapshotInitializer",
+      "evaluator": "evaluators.macos.deltachat_nova_command_event_clearance:DeltaChatNovaCommandEventClearanceEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.drawio.launch_matrix_sync",
+      "task_file": "tasks/v1/macos/drawio_launch_matrix_sync.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.drawio:DrawIODiagramEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.gimp.rotate_flip_export",
+      "task_file": "tasks/v1/macos/gimp_transform_pipeline_export.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.gimp:GimpInitializer",
+      "evaluator": "evaluators.macos.gimp:GimpFileEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.libreoffice.calc.add_formulas",
+      "task_file": "tasks/v1/macos/libreoffice_calc_add_formulas.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.libreoffice_calc_cells:LibreOfficeCalcCellEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.maps.sf_landmark_briefing_hard",
+      "task_file": "tasks/v1/macos/maps_sf_landmark_briefing_hard.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.maps:MapsInitializer",
+      "evaluator": "evaluators.macos.maps:MapsStateEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openbank.macos1_june_home_bills_transfer_textedit",
+      "task_file": "tasks/v1/macos/openbank_macos1_june_home_bills_transfer_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openbank:OpenBankSnapshotInitializer",
+      "evaluator": "evaluators.macos.openbank_macos1_june_home_bills_transfer_textedit:OpenBankJuneHomeTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openbank.macos1_reserve_plan_bills_transfers_textedit",
+      "task_file": "tasks/v1/macos/openbank_macos1_reserve_plan_bills_transfers_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openbank:OpenBankSnapshotInitializer",
+      "evaluator": "evaluators.macos.openbank_macos1_reserve_plan_bills_transfers_textedit:OpenBankReservePlanTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openbank.macos1_studio_recipients_transfers_textedit",
+      "task_file": "tasks/v1/macos/openbank_macos1_studio_recipients_transfers_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openbank:OpenBankSnapshotInitializer",
+      "evaluator": "evaluators.macos.openbank_macos1_studio_recipients_transfers_textedit:OpenBankStudioRecipientsTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opendriver.driver_docs_support_payout_textedit",
+      "task_file": "tasks/v1/macos/opendriver_driver_docs_support_payout_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opendriver:OpenDriverInitializer",
+      "evaluator": "evaluators.macos.opendriver_driver_docs_support_payout_textedit:OpenDriverMacOSDriverDocsSupportPayoutTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opendriver.driver_weekly_closeout_textedit",
+      "task_file": "tasks/v1/macos/opendriver_driver_weekly_closeout_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opendriver:OpenDriverInitializer",
+      "evaluator": "evaluators.macos.opendriver_driver_weekly_closeout_textedit:OpenDriverMacOSWeeklyCloseoutEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opendriver.rider_commute_fare_review_textedit",
+      "task_file": "tasks/v1/macos/opendriver_rider_commute_fare_review_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opendriver:OpenDriverInitializer",
+      "evaluator": "evaluators.macos.opendriver_rider_commute_fare_review_textedit:OpenDriverMacOSRiderCommuteFareReviewTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opendriver.rider_priority_lost_textedit",
+      "task_file": "tasks/v1/macos/opendriver_rider_priority_lost_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opendriver:OpenDriverInitializer",
+      "evaluator": "evaluators.macos.opendriver_rider_priority_lost_textedit:OpenDriverMacOSRiderPriorityLostTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opennote.macos1_canal_train_walk_liked_profile_workflow",
+      "task_file": "tasks/v1/macos/opennote_macos1_canal_train_walk_liked_profile_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opennote:OpenNoteSnapshotInitializer",
+      "evaluator": "evaluators.macos.opennote_macos1_canal_train_walk_liked_profile_workflow:OpenNoteGameTripSavedProfileEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opennote.macos1_coat_swap_saved_workflow",
+      "task_file": "tasks/v1/macos/opennote_macos1_coat_swap_saved_workflow.yaml",
+      "original_max_steps": 180,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opennote:OpenNoteSnapshotInitializer",
+      "evaluator": "evaluators.macos.opennote_macos1_coat_swap_saved_workflow:OpenNoteCoatSwapSavedEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opennote.macos1_harbor_coffee_saved_workflow",
+      "task_file": "tasks/v1/macos/opennote_macos1_harbor_coffee_saved_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opennote:OpenNoteSnapshotInitializer",
+      "evaluator": "evaluators.macos.opennote_macos1_harbor_coffee_saved_workflow:OpenNoteHarborCoffeeSavedEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opennote.macos1_weekend_reset_saved_workflow",
+      "task_file": "tasks/v1/macos/opennote_macos1_weekend_reset_saved_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opennote:OpenNoteSnapshotInitializer",
+      "evaluator": "evaluators.macos.opennote_macos1_weekend_reset_saved_workflow:OpenNoteWeekendResetSavedEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openphotoedit.macos1_anime_clean_floral_cool_exports",
+      "task_file": "tasks/v1/macos/openphotoedit_macos1_anime_clean_floral_cool_exports.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openphotoedit:OpenPhotoEditInitializer",
+      "evaluator": "evaluators.macos.openphotoedit_macos1_anime_clean_floral_cool_exports:OpenPhotoEditAnimeCleanFloralCoolEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openphotoedit.macos1_anime_soft_cream_exports",
+      "task_file": "tasks/v1/macos/openphotoedit_macos1_anime_soft_cream_exports.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openphotoedit:OpenPhotoEditInitializer",
+      "evaluator": "evaluators.macos.openphotoedit_macos1_anime_soft_cream_exports:OpenPhotoEditAnimeSoftCreamEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openphotoedit.macos1_floral_warm_night_exports",
+      "task_file": "tasks/v1/macos/openphotoedit_macos1_floral_warm_night_exports.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openphotoedit:OpenPhotoEditInitializer",
+      "evaluator": "evaluators.macos.openphotoedit_macos1_floral_warm_night_exports:OpenPhotoEditFloralWarmNightEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openphotoedit.macos1_fruit_product_film_exports",
+      "task_file": "tasks/v1/macos/openphotoedit_macos1_fruit_product_film_exports.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openphotoedit:OpenPhotoEditInitializer",
+      "evaluator": "evaluators.macos.openphotoedit_macos1_fruit_product_film_exports:OpenPhotoEditFruitProductFilmEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openshop.lucas_client_room_hybrid_work_two_orders_five_reviews",
+      "task_file": "tasks/v1/macos/openshop_lucas_client_room_hybrid_work_two_orders_five_reviews.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openshop:OpenShopSnapshotInitializer",
+      "evaluator": "evaluators.macos.openshop_lucas_client_room_hybrid_work_two_orders_five_reviews:OpenShopLucasClientRoomHybridWorkTwoOrdersFiveReviewsEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openshop.lucas_coffee_trailmix_backpack_reviews",
+      "task_file": "tasks/v1/macos/openshop_lucas_coffee_trailmix_backpack_reviews.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openshop:OpenShopSnapshotInitializer",
+      "evaluator": "evaluators.macos.openshop_lucas_coffee_trailmix_backpack_reviews:OpenShopLucasCoffeeTrailmixBackpackReviewsEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openshop.lucas_team_starter_set_order_six_reviews",
+      "task_file": "tasks/v1/macos/openshop_lucas_team_starter_set_order_six_reviews.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openshop:OpenShopSnapshotInitializer",
+      "evaluator": "evaluators.macos.openshop_lucas_team_starter_set_order_six_reviews:OpenShopLucasTeamStarterSetOrderSixReviewsEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.openshop.lucas_workshop_pantry_mobile_work_two_orders_five_reviews",
+      "task_file": "tasks/v1/macos/openshop_lucas_workshop_pantry_mobile_work_two_orders_five_reviews.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.openshop:OpenShopSnapshotInitializer",
+      "evaluator": "evaluators.macos.openshop_lucas_workshop_pantry_mobile_work_two_orders_five_reviews:OpenShopLucasWorkshopPantryMobileWorkTwoOrdersFiveReviewsEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentrip.macos1_sanya_family_flights_textedit",
+      "task_file": "tasks/v1/macos/opentrip_macos1_sanya_family_flights_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentrip:OpenTripInitializer",
+      "evaluator": "evaluators.macos.opentrip_macos1_sanya_family_flights_textedit:OpenTripFamilyFlightsTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentrip.macos1_sanya_family_jw1294_textedit",
+      "task_file": "tasks/v1/macos/opentrip_macos1_sanya_family_jw1294_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentrip:OpenTripInitializer",
+      "evaluator": "evaluators.macos.opentrip_macos1_sanya_family_jw1294_textedit:OpenTripFamilyJw1294TextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentrip.macos1_sanya_jun15_roundtrip_hotel_textedit",
+      "task_file": "tasks/v1/macos/opentrip_macos1_sanya_jun15_roundtrip_hotel_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentrip:OpenTripInitializer",
+      "evaluator": "evaluators.macos.opentrip_macos1_sanya_jun15_roundtrip_hotel_textedit:OpenTripJun15RoundtripHotelTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentrip.macos1_sanya_roundtrip_hotel_textedit",
+      "task_file": "tasks/v1/macos/opentrip_macos1_sanya_roundtrip_hotel_textedit.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentrip:OpenTripInitializer",
+      "evaluator": "evaluators.macos.opentrip_macos1_sanya_roundtrip_hotel_textedit:OpenTripRoundtripHotelTextEditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentwitter.alex_community_handoff_social_workflow",
+      "task_file": "tasks/v1/macos/opentwitter_alex_community_handoff_social_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentwitter:OpenTwitterInitializer",
+      "evaluator": "evaluators.macos.opentwitter_alex_community_handoff_social_workflow:OpenTwitterAlexCommunityHandoffEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentwitter.alex_control_guide_runbook_workflow",
+      "task_file": "tasks/v1/macos/opentwitter_alex_control_guide_runbook_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentwitter:OpenTwitterInitializer",
+      "evaluator": "evaluators.macos.opentwitter_alex_control_guide_runbook_workflow:OpenTwitterAlexControlGuideEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentwitter.alex_launch_audit_social_workflow",
+      "task_file": "tasks/v1/macos/opentwitter_alex_launch_audit_social_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentwitter:OpenTwitterInitializer",
+      "evaluator": "evaluators.macos.opentwitter_alex_launch_audit_social_workflow:OpenTwitterAlexLaunchAuditEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.opentwitter.alex_security_closure_social_workflow",
+      "task_file": "tasks/v1/macos/opentwitter_alex_security_closure_social_workflow.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.opentwitter:OpenTwitterInitializer",
+      "evaluator": "evaluators.macos.opentwitter_alex_security_closure_social_workflow:OpenTwitterAlexSecurityClosureEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.photos.favorite_receipts_hard",
+      "task_file": "tasks/v1/macos/photos_favorite_receipts_hard.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.photos:PhotosInitializer",
+      "evaluator": "evaluators.macos.photos:PhotosStateEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.cross_app.safari_writer_research_hard",
+      "task_file": "tasks/v1/macos/safari_writer_research_hard.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.command_check:CommandCheckEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.spotube.dark_profile_with_plugins",
+      "task_file": "tasks/v1/macos/spotube_dark_profile_with_plugins.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.spotube:SpotubeInitializer",
+      "evaluator": "evaluators.macos.spotube:SpotubeEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.textedit.config_rewrite",
+      "task_file": "tasks/v1/macos/textedit_config_rewrite.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.textedit:TextEditFileEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.thunderbird.calendar.budget_release_schedule",
+      "task_file": "tasks/v1/macos/thunderbird_calendar_budget_release_schedule.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.thunderbird_snapshot_app:ThunderbirdSnapshotAppInitializer",
+      "evaluator": "evaluators.macos.thunderbird_calendar_budget_release_schedule:ThunderbirdCalendarBudgetReleaseEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.thunderbird.calendar.inventory_client_schedule",
+      "task_file": "tasks/v1/macos/thunderbird_calendar_inventory_client_schedule.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.thunderbird_snapshot_app:ThunderbirdSnapshotAppInitializer",
+      "evaluator": "evaluators.macos.thunderbird_calendar_inventory_client_schedule:ThunderbirdCalendarInventoryEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.thunderbird.email.rn2041_trip_correspondence",
+      "task_file": "tasks/v1/macos/thunderbird_email_rn2041_trip_correspondence.yaml",
+      "original_max_steps": 240,
+      "effective_max_steps": 180,
+      "initializer": "evaluators.cua_review.initializers.macos.thunderbird_rn2041_snapshot:ThunderbirdRN2041SnapshotInitializer",
+      "evaluator": "evaluators.macos.thunderbird_email_rn2041_trip_correspondence:ThunderbirdRN2041TripCorrespondenceEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.vscodium.incident_handoff_refresh",
+      "task_file": "tasks/v1/macos/vscodium_incident_handoff_refresh.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.vscodium:VSCodiumInitializer",
+      "evaluator": "evaluators.macos.vscodium:VSCodiumWorkspaceEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.wireshark.conversations_triage",
+      "task_file": "tasks/v1/macos/wireshark_http_objects_and_filtered_capture.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.wireshark:WiresharkObservationEvaluator"
+    },
+    {
+      "platform": "macos",
+      "task_id": "macos.zotero.dual_collection_articles",
+      "task_file": "tasks/v1/macos/zotero_dual_collection_articles.yaml",
+      "original_max_steps": 100,
+      "effective_max_steps": 100,
+      "initializer": "initializers.macos.setup:DesktopSetupInitializer",
+      "evaluator": "evaluators.macos.zotero:ZoteroLibraryEvaluator"
+    }
+  ]
+}

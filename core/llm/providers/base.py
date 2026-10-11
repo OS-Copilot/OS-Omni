@@ -5,6 +5,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 import time
+import os
+import json
+import hashlib
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
 import httpx
@@ -100,12 +104,50 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         else:
             url = resolve_chat_completions_url(request.credentials.base_url)
         payload = self._build_payload(request, api_mode=api_mode)
+        audit_path = os.environ.get("OS_OMNI_DEEPSEEK_REQUEST_AUDIT")
+        audit = None
+        if audit_path:
+            # Author evaluation guard: check the actual transmitted body.
+            # Never record headers, credentials, prompts or image data.
+            if payload.get("model") != "deepseek-flash" or api_mode != "responses" or payload.get("reasoning", {}).get("effort") != "none":
+                raise ValueError("Author evaluation requires deepseek-flash Responses with reasoning.effort=none")
+            audit = {"timestamp": time.time(), "model": payload["model"],
+                     "api_mode": api_mode, "reasoning": payload["reasoning"],
+                     "request_sent": False}
+            # Fingerprint the actual wire-level instructions without logging
+            # their text. This distinguishes model policy violations from a
+            # dropped system prompt in the benchmark/provider adapter.
+            system_texts = []
+            if isinstance(payload.get("instructions"), str):
+                system_texts.append(payload["instructions"])
+            for message in payload.get("input", []):
+                if isinstance(message, dict) and message.get("role") in {"system", "developer"}:
+                    content = message.get("content", [])
+                    if isinstance(content, str):
+                        system_texts.append(content)
+                    elif isinstance(content, list):
+                        system_texts.append("\n".join(str(part.get("text", "")) for part in content if isinstance(part, dict)))
+            audit["system_instruction_sha256"] = [hashlib.sha256(text.encode()).hexdigest() for text in system_texts]
+            audit["ios_import_prohibition_transmitted"] = any(
+                "Appium/XCUITest" in text and "import modules" in text and "Do not create a new driver" in text
+                for text in system_texts
+            )
+            Path(audit_path).parent.mkdir(parents=True, exist_ok=True)
+            with Path(audit_path).open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps({**audit, "phase": "request_verified"}) + "\n")
         data = self._request_json(
             url,
             request.credentials.api_key,
             payload,
             request.timeout_seconds,
         )
+        if audit is not None:
+            reasoning_items = [item for item in data.get("output", []) if item.get("type") == "reasoning"]
+            with Path(audit_path).open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps({**audit, "phase": "response_received", "request_sent": True,
+                    "response_id": data.get("id"), "reasoning_items": len(reasoning_items)}) + "\n")
+            if reasoning_items:
+                raise ValueError("DeepSeek returned reasoning despite reasoning.effort=none")
         return self._build_result(data, api_mode=api_mode)
 
     def _build_payload(

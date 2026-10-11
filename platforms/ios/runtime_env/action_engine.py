@@ -279,6 +279,7 @@ class iOSActionEngine:
             "min": min,
             "print": print,
             "range": range,
+            "repr": repr,
             "round": round,
             "set": set,
             "sorted": sorted,

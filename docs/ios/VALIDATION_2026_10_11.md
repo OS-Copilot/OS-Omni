@@ -1,0 +1,11 @@
+# Author validation checkpoint, 11 October 2026
+
+This is an ongoing author repair and evaluation run, not a completed benchmark score. The current v1 manifest contains 48 iOS and 48 macOS tasks; see `../author_eval/TASK_INVENTORY.json`.
+
+The Contacts add-card task has one independently audited revised PASS: DeepSeek Flash, reasoning effort none, screenshot-only observations, 15 steps. All 15 transmitted requests specify none and return zero reasoning items. Final screenshot, verifier details and an independently reopened archived AddressBook SQLite agree on first Bench, last Courier, company Bench Logistics, phone 5550102486 and the specified email. The prior original-instruction FAIL is retained and excluded as independently confirmed name-field underspecification. Revised results must not be presented as unchanged v1 results. See CONTACTS_RULESET_REVISIONS.json and CONTACTS_SEMANTIC_AUDIT.md.
+
+Both Contacts and both Flow tasks passed real audit-simulator initializer checks and unfinished-state FAIL checks. Contacts correct references PASS and incorrect extra channels FAIL on the actual simulator database. Repair-focused tests passed (65 tests plus the Flow binary regression); the queue stale-source test correctly rejected a concurrent edit and passed on stable source. Mail seeder has 22 isolated tests; live SMTP seeding passed but recipient mailbox provisioning still requires repair and GUI validation. None of these prechecks are model scores.
+
+Environment: arm64 macOS 27.0.1, Xcode 27.0, exact iOS 26.5 23F77 runtime, Appium 3.8.0 / XCUITest 12.16.0. Flow helper uses Flutter 3.41.9 / Dart 3.11.5. Original HF source revision is 5a9120a10e30918949264713ce730c282295984b; iOS archive SHA256 ca779a1a7d86c9b89e726d97c7f2182cf69d9c36f7b473b012f6bb67c839f8a6. All current Maily photo and Markdown attachment bytes were recovered from that official image and match original evaluator hashes.
+
+Formal runs use fresh clones of the official baseline, separate from the audit simulator. Opt-in terminal capture saves relevant native SQLite and app state before clone cleanup. DS request auditing excludes prompts, images, credentials and headers. Evidence publication and remaining task evaluation are still in progress.

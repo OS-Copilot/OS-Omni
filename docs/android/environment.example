@@ -1,0 +1,10 @@
+# Actual provider endpoint used for this experiment; credentials are user supplied.
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_API_KEY=
+# Set these for the receiving machine. Do not commit a completed file.
+ANDROID_SDK_ROOT=
+JAVA_EXE=
+# Optional: Android AVD directory (default is ~/.android/avd).
+ANDROID_AVD_HOME=
+# Optional: external JSON file containing DEEPSEEK_API_KEY and DEEPSEEK_BASE_URL.
+OS_OMNI_SECRET_FILE=

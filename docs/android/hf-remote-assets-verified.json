@@ -1,0 +1,12 @@
+{
+  "status": "complete_remote_verified",
+  "repo": "Cloudriver/OS-Omni-VM",
+  "revision": "refs/pr/7",
+  "commit": "2991c2ed0aa03d4a79d9c3253689361bb0032968",
+  "pr_url": "https://huggingface.co/datasets/Cloudriver/OS-Omni-VM/discussions/7",
+  "pr_status": "open",
+  "size": 8693023008,
+  "sha256": "746eb8f40998866d85a8a595358c26fb8d5c930ee964b6dc475b124c03d9fa90",
+  "verified_at": 1791580655.9839156,
+  "manifest_validation_readme_hashes_match": true
+}

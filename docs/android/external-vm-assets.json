@@ -1,0 +1,85 @@
+{
+  "status": "complete_remote_verified",
+  "destination": "https://huggingface.co/datasets/Cloudriver/OS-Omni-VM",
+  "files": [
+    {
+      "path": "local_eval/vm-original-disks/cache.img",
+      "size": 69206016,
+      "sha256": "93219c83ba9245e347f23bd2e975a2458e29140041ea2ef6630d9168d2382cc6"
+    },
+    {
+      "path": "local_eval/vm-original-disks/cache.img.qcow2",
+      "size": 364642304,
+      "sha256": "4b50a9408bedd8f2a5528bdbdb4a4f0db4a9dd0673230ecd3eb7cac6aa0f6c64"
+    },
+    {
+      "path": "local_eval/vm-original-disks/encryptionkey.img",
+      "size": 18874368,
+      "sha256": "522bd0b6a2c92e37de465059bb9487bb9597a9aae032b469a8ebe0b38146d8c3"
+    },
+    {
+      "path": "local_eval/vm-original-disks/encryptionkey.img.qcow2",
+      "size": 2359296,
+      "sha256": "2ad278b871684ac7cf6dacba72f0054187f0d78598e4d233e178e108691d479a"
+    },
+    {
+      "path": "local_eval/vm-original-disks/userdata-qemu.img",
+      "size": 6488064,
+      "sha256": "37803233d5762747d1c049957334b4ee90789525558d7cb12e1ee8ee0af47469"
+    },
+    {
+      "path": "local_eval/vm-original-disks/userdata-qemu.img.qcow2",
+      "size": 8571977728,
+      "sha256": "92d0869fd5fdea16651d1c6d50b1193ce912ca01e3853f0da9db1823ab0964f6"
+    }
+  ],
+  "bytes": 9033547776,
+  "local_copies_preserved": true,
+  "instruction": "VM image is delivered exclusively through Hugging Face. PR exists; image upload and remote SHA256 validation are still pending. Original six disks below remain historical v2 provenance, not V3 hashes.",
+  "path_in_repo": "android_V3",
+  "pull_request": "https://huggingface.co/datasets/Cloudriver/OS-Omni-VM/discussions/7",
+  "revision": "refs/pr/7",
+  "source_inventory_version": "original_v2",
+  "v3_local_state": "hf-android-v3/build-status.json and hf-upload-status.json outside Git",
+  "v3": {
+    "version": "android_V3",
+    "filename": "android_V3.zip",
+    "size": 8693023008,
+    "sha256": "746eb8f40998866d85a8a595358c26fb8d5c930ee964b6dc475b124c03d9fa90",
+    "source_v2_sha256": "32eac37f815ffa5c205c1ad53279e24cf8eef6d7cd0871ab188cf0ac28df656f",
+    "validation": {
+      "android_api": "33",
+      "abi": "x86_64",
+      "fixtures": [
+        {
+          "path": "/sdcard/OSOmniFixtures/author-photo-v2/indoor-cooking-v2.jpg",
+          "sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d"
+        },
+        {
+          "path": "/sdcard/OSOmniFixtures/author-photo-v2/outdoor-cooking-v2.jpg",
+          "sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d"
+        }
+      ],
+      "installed_repairs": [
+        "openfood-events-v1",
+        "opennavigation-records-v1.1"
+      ],
+      "task_specific_initialization": "Required via included host code; never bake completed task state",
+      "ds_rerun": false,
+      "cold_boot_verified": true
+    }
+  },
+  "remote_verified": true,
+  "hf_verification": {
+    "status": "complete_remote_verified",
+    "repo": "Cloudriver/OS-Omni-VM",
+    "revision": "refs/pr/7",
+    "commit": "2991c2ed0aa03d4a79d9c3253689361bb0032968",
+    "pr_url": "https://huggingface.co/datasets/Cloudriver/OS-Omni-VM/discussions/7",
+    "pr_status": "open",
+    "size": 8693023008,
+    "sha256": "746eb8f40998866d85a8a595358c26fb8d5c930ee964b6dc475b124c03d9fa90",
+    "verified_at": 1791580655.9839156,
+    "manifest_validation_readme_hashes_match": true
+  }
+}

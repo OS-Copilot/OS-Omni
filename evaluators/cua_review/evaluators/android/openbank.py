@@ -101,8 +101,8 @@ def matches(record: Mapping[str, Any] | None, expected: Mapping[str, Any]) -> bo
         return False
     for key, value in expected.items():
         actual = record.get(key)
-        if isinstance(value, Decimal):
-            if money(actual) != value:
+        if key == 'amount' or isinstance(value, Decimal):
+            if money(value) is None or money(actual) != money(value):
                 return False
         elif isinstance(value, list):
             if not isinstance(actual, list) or list(actual) != list(value):
@@ -267,6 +267,7 @@ class OpenBankAndroidEvaluator(BaseEvaluator):
         failures = [check["name"] for check in checks if not check["passed"]]
         metadata = {
             "read_only": True,
+            "transaction_reference_compatibility": "Dispute transactionId is joined to the ledger; human labels match exact merchant, description or note. ID links must be unique and dispute cardinality remains exact.",
             "task_id": str(context.get("task_id") or ""),
             "ruleset_sha256": self.RULESET_SHA256,
             "ruleset_spec": json_safe(self.RULESET_SPEC),
@@ -315,7 +316,20 @@ class OpenBankAndroidEvaluator(BaseEvaluator):
             collection = str(spec["collection"])
             lookup = dict(spec["lookup"])
             required = dict(spec["required"])
-            found, count = unique(rows(state, collection), **lookup)
+            records = rows(state, collection)
+            if collection == 'disputes' and lookup.get('transactionId'):
+                label = lookup['transactionId']
+                transactions = rows(state, 'transactions')
+                if not any(t.get('id') == label for t in transactions):
+                    # The contract names a merchant, not one dated transaction.
+                    # Join each dispute's ID to exactly one transaction, then
+                    # compare merchant labels without weakening cardinality.
+                    for dispute in records:
+                        links = [t for t in transactions if t.get('id') == dispute.get('transactionId')]
+                        if len(links) == 1 and label in (links[0].get('merchant'), links[0].get('description'), links[0].get('note')):
+                            dispute['sourceTransactionId'] = dispute['transactionId']
+                            dispute['transactionId'] = label
+            found, count = unique(records, **lookup)
             checks.append(
                 record(
                     f"{collection}_{name}",

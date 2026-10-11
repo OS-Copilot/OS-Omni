@@ -201,8 +201,6 @@ class IOSFlowStore:
         target_dir = self.flow_repo_path / "lib"
         target_dir.mkdir(parents=True, exist_ok=True)
         target_path = target_dir / "libobjectbox.dylib"
-        if target_path.exists():
-            return
 
         source_candidates = [
             self.flow_repo_path
@@ -211,6 +209,8 @@ class IOSFlowStore:
             / "ObjectBox.xcframework"
             / "macos-arm64_x86_64"
             / "ObjectBox.framework"
+            / "Versions"
+            / "A"
             / "ObjectBox",
             self.flow_repo_path
             / "build"
@@ -226,6 +226,15 @@ class IOSFlowStore:
         source_path = next((candidate for candidate in source_candidates if candidate.exists()), None)
         if source_path is None:
             raise FileNotFoundError("Could not locate Flow's macOS ObjectBox binary for benchmark helper")
+
+        # The vendored framework's top-level link was flattened into a text
+        # file. Bind the helper directly to its actual versioned binary.
+        if target_path.is_symlink():
+            if target_path.resolve() == source_path.resolve():
+                return
+            target_path.unlink()
+        elif target_path.exists():
+            return
 
         try:
             target_path.symlink_to(source_path)

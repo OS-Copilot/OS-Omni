@@ -44,14 +44,25 @@ def _find_free_tcp_port(host: str = "127.0.0.1") -> int:
 def _build_wda_runtime_options(udid: str, run_dir: Optional[Path] = None) -> dict[str, object]:
     """Generate isolated WDA/Appium runtime options for one simulator session."""
     safe_udid = (udid or "").strip() or "unknown_udid"
-    if run_dir is not None:
+    shared_derived_data = os.environ.get("OS_OMNI_WDA_DERIVED_DATA", "").strip()
+    if shared_derived_data:
+        # The author-eval queue is strictly serial, so it can safely reuse
+        # Xcode's simulator-generic WDA build products across fresh clones.
+        # This avoids a cold xcodebuild for every task without sharing any
+        # simulator state or Appium session.
+        derived_data_path = Path(shared_derived_data).expanduser().resolve()
+    elif run_dir is not None:
         derived_data_path = run_dir / "wda_derived_data"
     else:
         derived_data_path = REPO_ROOT / "results" / "ios" / "wda_derived_data" / safe_udid
     derived_data_path.mkdir(parents=True, exist_ok=True)
+    # Reuse an already-running local WDA when explicitly requested. This is
+    # useful for a single-simulator author queue and avoids another xcodebuild.
+    wda_port = os.environ.get("OS_OMNI_WDA_LOCAL_PORT", "").strip()
+    mjpeg_port = os.environ.get("OS_OMNI_WDA_MJPEG_PORT", "").strip()
     return {
-        "wda_local_port": _find_free_tcp_port(),
-        "mjpeg_server_port": _find_free_tcp_port(),
+        "wda_local_port": int(wda_port) if wda_port else _find_free_tcp_port(),
+        "mjpeg_server_port": int(mjpeg_port) if mjpeg_port else _find_free_tcp_port(),
         "derived_data_path": str(derived_data_path),
     }
 

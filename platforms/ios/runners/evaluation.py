@@ -26,14 +26,18 @@ def build_evaluator_context(
     params: Optional[Mapping[str, Any]],
     controller: Any,
     final_observation: Any,
+    initialization: Optional[Mapping[str, Any]] = None,
 ) -> dict[str, Any]:
     """Build the minimal iOS evaluator context."""
 
-    return {
+    context = {
         "params": dict(params or {}),
         "controller": controller,
         "final_observation": final_observation,
     }
+    if initialization is not None:
+        context["initialization"] = dict(initialization)
+    return context
 
 
 def evaluation_to_episode_outcome(
@@ -66,11 +70,12 @@ def run_task_evaluation(
     model_id: str,
     run_dir: Path,
     trajectory_path: Optional[Path] = None,
+    initialization: Optional[Mapping[str, Any]] = None,
     logger_obj: Optional[logging.Logger] = None,
 ) -> Optional[EvaluationRunResult]:
     """Execute the configured evaluator."""
 
-    del model_id, run_dir, trajectory_path
+    del model_id
     evaluation = getattr(task, "evaluation", None)
     if evaluation is None:
         return None
@@ -82,8 +87,12 @@ def run_task_evaluation(
             params=evaluation.params,
             controller=controller,
             final_observation=final_observation,
+            initialization=initialization,
         )
         context = with_task_binding(context, task)
+        context["run_dir"] = Path(run_dir)
+        if trajectory_path is not None:
+            context["trajectory_path"] = Path(trajectory_path)
         runtime_udid = getattr(getattr(controller, "runtime", None), "udid", None)
         if runtime_udid and not context["params"].get("udid"):
             # Reviewed iOS evaluators read the run-bound simulator from params.

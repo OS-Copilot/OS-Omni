@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import shutil
+import shlex
 import tempfile
 import time
 import unicodedata
@@ -316,7 +317,11 @@ class AdbController:
         but on Chinese Windows the default subprocess encoding is GBK
         which causes UnicodeDecodeError on non-ASCII characters.
         """
-        cmd = [self.adb_path, "-s", self.adb_device] + args
+        # ADB rejoins shell argv; retain literal text after action parsing.
+        wire_args = args
+        if args[:3] == ["shell", "input", "text"]:
+            wire_args = args[:3] + [shlex.quote(value) for value in args[3:]]
+        cmd = [self.adb_path, "-s", self.adb_device] + wire_args
         logger.debug("ADB command: %s", " ".join(cmd))
         try:
             result = subprocess.run(
@@ -330,9 +335,13 @@ class AdbController:
             )
             if result.returncode != 0 and result.stderr.strip():
                 logger.warning("ADB stderr: %s", result.stderr.strip())
+            if result.returncode != 0 and len(args) > 1 and args[:2] == ['shell', 'input']:
+                raise RuntimeError(f'ADB GUI input failed ({result.returncode}): {result.stderr.strip()}')
             return result.stdout.strip()
         except subprocess.TimeoutExpired:
             logger.error("ADB command timed out: %s", " ".join(cmd))
+            if len(args) > 1 and args[:2] == ['shell', 'input']:
+                raise RuntimeError('ADB GUI input timed out')
             return ""
 
     # -----------------------------------------------------------------------
@@ -402,20 +411,29 @@ class AdbController:
         filepath = self.screenshot_dir / filename
         self.screenshot_dir.mkdir(parents=True, exist_ok=True)
 
-        remote_path = self._remote_screenshot_path(prefix)
-        self.execute_adb(["shell", "screencap", "-p", remote_path])
-        self._pull_remote_file(remote_path, filepath)
-        self.execute_adb(["shell", "rm", remote_path])
+        self.screenshot(filepath)
 
         return str(filepath)
 
     def screenshot(self, save_path: Path) -> Path:
         """Take a screenshot and save it to a specific path (legacy interface)."""
-        remote_path = self._remote_screenshot_path(save_path.stem)
-        self.execute_adb(["shell", "screencap", "-p", remote_path])
-        self._pull_remote_file(remote_path, save_path)
-        self.execute_adb(["shell", "rm", remote_path])
-        return save_path
+        from io import BytesIO
+        from PIL import Image
+        last_error = None
+        for attempt in range(2):
+            try:
+                result = subprocess.run([self.adb_path, '-s', self.adb_device,
+                                         'exec-out', 'screencap', '-p'],
+                                        capture_output=True, timeout=45,
+                                        env=android_tool_env(apply_to_process=True), check=True)
+                with Image.open(BytesIO(result.stdout)) as image:
+                    image.verify()
+                save_path.parent.mkdir(parents=True, exist_ok=True)
+                save_path.write_bytes(result.stdout)
+                return save_path
+            except Exception as exc:
+                last_error = exc
+        raise RuntimeError(f'Unable to capture a fresh valid screenshot: {last_error}')
 
     def disable_touch_debug_overlays(self) -> None:
         """Hide Android developer touch overlays that contaminate screenshots."""

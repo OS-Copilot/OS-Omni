@@ -24,6 +24,11 @@ class IOSContactSpec:
     note: str = ""
     phones: tuple[str, ...] = ()
     emails: tuple[str, ...] = ()
+    # Opt-in exact channel equality for present_contacts specs with stated
+    # phone/email sets. Default False preserves legacy subset behavior.
+    # Absent-contact stale-value guards must never set these flags.
+    exact_phones: bool = False
+    exact_emails: bool = False
 
     @property
     def full_name(self) -> str:
@@ -79,6 +84,8 @@ def coerce_contact_specs(raw: Any) -> list[IOSContactSpec]:
         note = _normalize_text(item.get("note"))
         phones = _coerce_phone_values(item)
         emails = _coerce_email_values(item)
+        exact_phones = _coerce_flag(item.get("exact_phones"))
+        exact_emails = _coerce_flag(item.get("exact_emails"))
 
         if not any((first_name, last_name, organization)):
             continue
@@ -91,6 +98,8 @@ def coerce_contact_specs(raw: Any) -> list[IOSContactSpec]:
                 note=note,
                 phones=phones,
                 emails=emails,
+                exact_phones=exact_phones,
+                exact_emails=exact_emails,
             )
         )
     return specs
@@ -332,13 +341,21 @@ class IOSContactsStore:
 
         expected_phones = {cls._normalize_phone(value) for value in spec.phones if cls._normalize_phone(value)}
         observed_phones = {cls._normalize_phone(value) for value in record.phones if cls._normalize_phone(value)}
-        if expected_phones and not expected_phones.issubset(observed_phones):
-            return False
+        if expected_phones:
+            if spec.exact_phones:
+                if observed_phones != expected_phones:
+                    return False
+            elif not expected_phones.issubset(observed_phones):
+                return False
 
         expected_emails = {cls._normalize_email(value) for value in spec.emails if cls._normalize_email(value)}
         observed_emails = {cls._normalize_email(value) for value in record.emails if cls._normalize_email(value)}
-        if expected_emails and not expected_emails.issubset(observed_emails):
-            return False
+        if expected_emails:
+            if spec.exact_emails:
+                if observed_emails != expected_emails:
+                    return False
+            elif not expected_emails.issubset(observed_emails):
+                return False
 
         wanted_full_name = cls._normalize_text(spec.full_name)
         if wanted_full_name and cls._normalize_text(record.full_name) != wanted_full_name:
@@ -376,6 +393,10 @@ class IOSContactsStore:
             parts.append(f"phones={list(spec.phones)}")
         if spec.emails:
             parts.append(f"emails={list(spec.emails)}")
+        if spec.exact_phones:
+            parts.append("exact_phones=true")
+        if spec.exact_emails:
+            parts.append("exact_emails=true")
         return ", ".join(parts)
 
     def _delete_contacts_by_rowid(self, conn: sqlite3.Connection, rowids: Sequence[int]) -> int:
@@ -519,6 +540,16 @@ def _coerce_email_values(item: Mapping[str, Any]) -> tuple[str, ...]:
 
 def _normalize_text(value: Any) -> str:
     return " ".join(str(value or "").strip().split())
+
+
+def _coerce_flag(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().casefold() in ("1", "true", "yes", "y", "on")
+    return False
 
 
 def _coerce_int(value: Any) -> int | None:

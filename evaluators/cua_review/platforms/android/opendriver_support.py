@@ -179,6 +179,17 @@ def read_app_credential(controller: Any, app_package: str) -> str:
     The application's own storage is searched, so the credential is the one the
     application is actually using rather than one supplied out of band.
     """
+    # The packaged v2 application is native Flutter. Its recovered TokenStore
+    # writes under Directory.systemTemp/opendriver rather than WebView storage.
+    # On the released Android APK Directory.systemTemp resolves to code_cache.
+    # Read the client's actual file, never substitute a backend session token.
+    for path in ("code_cache/opendriver/auth_token.txt", "cache/opendriver/auth_token.txt", "files/.opendriver/auth_token.txt"):
+        try:
+            raw = str(controller.execute_adb(["shell", "run-as", app_package, "cat", path]) or "").strip()
+            if raw and len(raw) >= 20 and not any(char.isspace() for char in raw):
+                return raw
+        except Exception:
+            pass
     devtools = WebViewDevTools(controller, app_package)
     for pattern in TOKEN_KEY_PATTERNS:
         try:
@@ -198,6 +209,12 @@ def read_app_credential(controller: Any, app_package: str) -> str:
 
 def _fetch_json(url: str, token: str = "") -> tuple[str, Any]:
     """Request one endpoint and return ``(status, decoded_body)``."""
+    # 10.0.2.2 is the emulator's alias for the host. This reader executes on
+    # the host itself, so it must reach that same service via local loopback.
+    from urllib.parse import urlsplit, urlunsplit
+    parsed = urlsplit(url)
+    if parsed.hostname == "10.0.2.2":
+        url = urlunsplit(parsed._replace(netloc="127.0.0.1" + (f":{parsed.port}" if parsed.port else "")))
     headers = {"Accept": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -217,6 +234,13 @@ def _fetch_json(url: str, token: str = "") -> tuple[str, Any]:
         return status, body
 
 
+def _service_payload(body: Any) -> Any:
+    """Unwrap the native API envelope while retaining unsuccessful responses."""
+    if isinstance(body, dict) and body.get("success") is True and isinstance(body.get("data"), dict):
+        return body["data"]
+    return body
+
+
 def read_public_backend_snapshot(
     paths: Sequence[str], *, api_base_url: str = DEFAULT_API_BASE_URL
 ) -> dict[str, Any]:
@@ -234,7 +258,7 @@ def read_public_backend_snapshot(
         if not path:
             continue
         status, body = _fetch_json(f"{base}/{path.lstrip('/')}")
-        responses[path] = {"status": status, "data": body}
+        responses[path] = {"status": status, "data": _service_payload(body), "raw_body": body}
     return {"api_base_url": base, "responses": responses, "authenticated": False}
 
 
@@ -256,7 +280,7 @@ def read_backend_snapshot(
     responses: dict[str, Any] = {}
     for path in requested:
         status, body = _fetch_json(f"{base}/{str(path).lstrip('/')}", token)
-        responses[str(path)] = {"status": status, "data": body}
+        responses[str(path)] = {"status": status, "data": _service_payload(body), "raw_body": body}
     return {
         "api_base_url": base,
         "app_package": app_package,

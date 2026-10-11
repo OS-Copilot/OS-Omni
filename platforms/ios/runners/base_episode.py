@@ -394,6 +394,11 @@ class BaseEpisodeRunner(ABC):
                 model_id=self.model_id,
                 run_dir=run_dir,
                 trajectory_path=ep_logger.trajectory_path,
+                initialization=(
+                    initialization_run.summary
+                    if initialization_run is not None
+                    else None
+                ),
                 logger_obj=self._logger,
             )
 
