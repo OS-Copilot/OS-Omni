@@ -32,6 +32,38 @@ START_MARKER = "/tmp/.os_omni_task_start"
 # The guest uses a pc105 keymap where "less" is the extra ISO key, so pyautogui types "<" as
 # Shift+that key and gets ">". Clearing the key lets "<" resolve to Shift+comma.
 ISO_LESS_KEY_FIX = "xmodmap -e 'keycode 94 = NoSymbol'"
+# Most ~/Desktop/webpage entries are symlinks to HTML redirect pages that open the app in
+# Chrome. OpenBlender, OpenCode, OpenFinance and OpenWireshark are extension-less .desktop
+# files instead, which Nautilus 42 opens in a text editor. Give them the same kind of
+# redirect page (target taken from the launcher's --app URL) and keep the launcher aside.
+WEBPAGE_LAUNCHER_FIX = r"""
+set -e
+dir="$HOME/Desktop/webpage"; pages="$HOME/Applications/webpage_shortcuts"; mkdir -p "$pages/legacy-webpage-items"
+n=0
+for f in "$dir"/*; do
+  [ -f "$f" ] && [ ! -L "$f" ] && grep -q '^\[Desktop Entry\]' "$f" || continue
+  name=$(basename "$f"); url=$(sed -n 's/^Exec=.*--app=\([^ ]*\).*/\1/p' "$f")
+  [ -n "$url" ] || continue
+  if [ ! -f "$pages/$name.html" ]; then
+    cat > "$pages/$name.html" <<HTML
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0; url=$url">
+    <title>$name</title>
+    <script>window.location.replace('$url');</script>
+  </head>
+  <body>
+    <a href="$url">$name</a>
+  </body>
+</html>
+HTML
+  fi
+  mv "$f" "$pages/legacy-webpage-items/$name.desktop"; ln -s "$pages/$name.html" "$dir/$name"; n=$((n+1))
+done
+echo "$n"
+"""
 END_STATE_ARCHIVE = "/tmp/os_omni_end_state.tar.gz"
 # Files under these guest roots that changed after the task started are archived.
 END_STATE_SCRIPT = f"""set -u
@@ -131,6 +163,8 @@ def main() -> int:
     parser.add_argument("--max-steps-cap", type=int, help="Lower step limits above this value; smaller TaskSpec limits are kept")
     parser.add_argument("--llm-exchange-log", action="store_true",
                         help="Save each model request and response to llm_exchange.jsonl, with inline images replaced by digests")
+    parser.add_argument("--fix-webpage-launchers", action="store_true",
+                        help="Replace extension-less .desktop entries in ~/Desktop/webpage with HTML redirect pages")
     parser.add_argument("--capture-end-state", action="store_true",
                         help="Archive guest files changed during each task to end_state.tar.gz")
     parser.add_argument("--deepseek-request-audit", action="store_true",
@@ -198,6 +232,9 @@ def main() -> int:
             controller = LinuxRuntimeController(runtime_url=runtime_url, token=token, timeout=60.0)
             keymap = controller.run_bash_script(ISO_LESS_KEY_FIX, timeout=30)
             row["iso_less_key_fix"] = keymap.get("returncode")
+            if args.fix_webpage_launchers:
+                launchers = controller.run_bash_script(WEBPAGE_LAUNCHER_FIX, timeout=30)
+                row["webpage_launcher_fix"] = (launchers.get("output") or "").strip() or launchers.get("returncode")
             if args.capture_end_state:
                 controller.run_bash_script(f"touch {START_MARKER}", timeout=30)
             command = [

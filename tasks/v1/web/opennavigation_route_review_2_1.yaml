@@ -24,7 +24,7 @@ instruction: Execute a comprehensive multi-route navigation review within the Op
   utilizes the Route, Current location, Drive, Walk, Bike, and Transit controls, and strictly avoids selecting
   any Coffee Option or Hotels Option entries.
 init:
-  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  initializer_id: initializers.linux.opennavigation_review:OpenNavigationReviewInitializer
   params:
     steps:
     - type: run_bash
@@ -171,32 +171,53 @@ init:
       timeout: 120
     - type: wait
       ms: 8000
+# The web build keeps navigation sessions only in page memory; the initializer records them
+# (Start/End with destination and mode, Overview/Voice presses) and this verifier checks each
+# session the instruction requires. The previous term-based verifier read the Electron profile.
 evaluation:
-  evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation:OpenNavigationRouteReviewEvaluator
+  evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator
   params:
-    app_identity_terms:
-    - OpenNavigation
-    required_terms:
-    - Route
-    - Current location
-    - Meta Headquarters
-    - Googleplex
-    - Mountain View Transit Center
-    - Stanford University
-    - Drive
-    - Walk
-    - Bike
-    - Transit
-    - Start
-    - Overview
-    - End
+    ordered: true
+    expected_sessions:
+    - destination: Meta Headquarters
+      mode: drive
+      origin: Current location
+      overview: true
+      voice: true
+    - destination: Googleplex
+      mode: walk
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Mountain View Transit Center
+      mode: bike
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Stanford University
+      mode: transit
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Meta Headquarters
+      mode: drive
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Stanford University
+      mode: walk
+      origin: Current location
+      overview: false
+      voice: true
+    - destination: Googleplex
+      mode: bike
+      origin: Current location
+      overview: true
+      voice: false
     forbidden_terms:
-    - Coffee Option
-    - Hotels Option
+    - Coffee
+    - Hotel
     min_trajectory_records: 60
-    min_navigation_starts: 3
-    min_navigation_ends: 3
-    min_overview_uses: 3
 limits:
   max_steps: 150
   step_timeout_seconds: 120

@@ -16,22 +16,30 @@ instruction: |-
 
   The toolbar must reflect the Zoom Out button selected after the Zoom In button, and the Colorize button selected. The Preferences dialog must be closed.
 init:
-  initializer_id: initializers.linux.open_app:OpenAppInitializer
+  # OpenAppInitializer ignored the shortcut, resolution and foreground parameters, called
+  # launch_app('openwireshark') (which opens nothing on this image) and still passed.
+  # Use the OpenWireshark initializer that 9_1 uses.
+  initializer_id: initializers.linux.openwireshark:OpenWiresharkInitializer
   params:
-    app_name: openwireshark
-    app_shortcut: /home/user/Desktop/webpage/OpenWireshark
-    resolution_width: 1360
-    resolution_height: 768
-    wait_ms: 30000
-    launch_method: desktop_double_click
-    require_screenshot_width: 1360
-    require_screenshot_height: 768
-    require_foreground_contains: OpenWireshark
+    launch_url: file:///home/user/Applications/openwireshark_web/public/index.html
+    wait_ms: 5000
 evaluation:
-  evaluator_id: evaluators.cua_review.evaluators.linux.command_and_trajectory:CommandAndTrajectoryEvaluator
+  evaluator_id: evaluators.cua_review.evaluators.linux.openwireshark:OpenWiresharkWorkflowEvaluator
   params:
-    command: 'true'
-    min_steps: 65
+    # The imported check was `true` plus a step count. The stored workspace records the
+    # terminal view: the POST /api/cart/confirm packet (no. 29) under tcp.port == 80, in
+    # ASCII, with IO Graph shown. Brand title, interface card, dialogs, zoom and the
+    # Colorize toggle are not stored and are not checked.
+    expected_profile: Retail Incident Review
+    expected_byte_view: ascii
+    expected_stat_view: iograph
+    expected_state:
+      filter: tcp.port == 80
+      selectedNo: 29
+    expected_app_terms:
+    - openwireshark
+    - OpenWireshark
+    required_final_terms: []
 limits:
   max_steps: 120
   step_timeout_seconds: 180

@@ -102,6 +102,10 @@ pc105 keymap where `less` is the extra ISO key, so pyautogui would otherwise typ
   `llm_exchange.jsonl`, with inline images replaced by their SHA-256 and size.
 * `--deepseek-request-audit` checks every transmitted request is `deepseek-flash`
   on the Responses API with `reasoning.effort=none` and records the result.
+* `--fix-webpage-launchers` is needed for the Web track. Nautilus on the image
+  opens the extension-less `.desktop` entries in `~/Desktop/webpage` in a text
+  editor instead of launching them. The option replaces each entry with an HTML
+  page that redirects to the app's URL, so double-clicking it opens Chrome.
 
 To check a task without a model, `scripts/linux_task_probe.py` restores the
 snapshot, runs the initializer, optional reference `--bash`/`--python` scripts

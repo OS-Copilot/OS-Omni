@@ -13,6 +13,12 @@ init:
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.openwireshark:OpenWiresharkWorkflowEvaluator
   params:
+    # The evaluator derives these from the original Chinese instruction; the
+    # English brief no longer matches its patterns, so they are stated here.
+    # Terminal state: profile, and the Link health step (ARP in ASCII, Endpoints).
+    expected_profile: Retail Incident Review
+    expected_byte_view: ascii
+    expected_stat_view: endpoints
     min_steps: 50
     expected_app_terms:
     - openwireshark

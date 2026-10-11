@@ -179,6 +179,10 @@ class OpenWiresharkWorkflowEvaluator(BaseEvaluator):
                 self._verdict("coloring", bool(expected_coloring), observed_coloring, observed_coloring == bool(expected_coloring))
             )
 
+        for field, expected in dict(params.get("expected_state") or {}).items():
+            observed_value = state.get(field)
+            checks.append(self._verdict("state:%s" % field, expected, observed_value, observed_value == expected))
+
         corpus = json.dumps(state, ensure_ascii=False)
         for term in list(params.get("required_final_terms") or []):
             wanted = str(term)
@@ -263,11 +267,12 @@ class OpenWiresharkWorkflowEvaluator(BaseEvaluator):
         nodes = getattr(observation, "ui_nodes", None)
         if nodes is None and isinstance(observation, Mapping):
             nodes = observation.get("ui_nodes")
-        foreground = ""
+        # OpenWireshark runs in Chrome, so the app is named by the window title, not the app.
+        fields = ("foreground_app", "foreground_window")
         if isinstance(observation, Mapping):
-            foreground = str(observation.get("foreground_app") or "")
+            foreground = " ".join(str(observation.get(field) or "") for field in fields).strip()
         else:
-            foreground = str(getattr(observation, "foreground_app", "") or "")
+            foreground = " ".join(str(getattr(observation, field, "") or "") for field in fields).strip()
         if not foreground and not nodes:
             return None
         haystack = (foreground + " " + json.dumps(nodes or [], ensure_ascii=False)).lower()

@@ -24,6 +24,10 @@ class OpenShopInitializer(BaseInitializer):
     MODERN_GUEST_ARCHIVE = "/tmp/helloworld_openshop_current.tgz"
     MODERN_GUEST_SERVER = "/tmp/helloworld_openshop_current_server.py"
     SNAPSHOT_GUEST_PUBLIC_DIR = "/home/user/Applications/openshop_web/public"
+    # The snapshot catalog predates the build the v1 tasks were written against: these
+    # products offer only colours there. Restore the default spec the tasks require, at
+    # the product's base price (the tasks' expected subtotals already use that price).
+    SNAPSHOT_DEFAULT_SPECS = {"p1001": "Bluetooth 5.4", "p1006": "Magnetic mount"}
 
     def initialize(self, context: Mapping[str, Any]) -> InitResult:
         controller = context.get("controller")
@@ -214,9 +218,23 @@ class OpenShopInitializer(BaseInitializer):
                     "prefix = 'window.openshopSeed = '",
                     "assert text.startswith(prefix) and text.endswith(';'), 'unsupported OpenShop seed-data.js format'",
                     "payload = text[len(prefix):-1].strip()",
+                    f"default_specs = {self.SNAPSHOT_DEFAULT_SPECS!r}",
+                    "seed = json.loads(payload)",
+                    "def restore_specs(node):",
+                    "    if isinstance(node, dict):",
+                    "        spec = default_specs.get(node.get('id'))",
+                    "        if spec and isinstance(node.get('specs'), list) and spec not in node['specs']:",
+                    "            node['specs'].insert(0, spec)",
+                    "            node.setdefault('optionPrices', {})[spec] = node['price']",
+                    "        for value in node.values():",
+                    "            restore_specs(value)",
+                    "    elif isinstance(node, list):",
+                    "        for value in node:",
+                    "            restore_specs(value)",
+                    "restore_specs(seed)",
                     f"target = Path({self.MODERN_GUEST_APP_DIR!r}) / 'shared' / 'seed-data.json'",
                     "target.parent.mkdir(parents=True, exist_ok=True)",
-                    "target.write_text(json.dumps(json.loads(payload), ensure_ascii=False), encoding='utf-8')",
+                    "target.write_text(json.dumps(seed, ensure_ascii=False), encoding='utf-8')",
                 ]
             )
             prepare_assets = [
