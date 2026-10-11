@@ -1,9 +1,0 @@
-models:
-  - gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 5
-tasks:
-  - tasks/linux/vscode_apply_theme_ticket_hard.yaml
-  - tasks/linux/vscode_prepare_release_packet_hard.yaml
-  - tasks/linux/vscode_update_heading_easy.yaml

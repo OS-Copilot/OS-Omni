@@ -1,8 +1,0 @@
-tasks:
-  - tasks/android/spotube_queue_naina_zara.yaml
-models:
-  - android_oracle_wait
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-

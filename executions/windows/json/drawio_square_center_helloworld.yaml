@@ -1,9 +1,0 @@
-tasks:
-  - tasks/windows/drawio_square_center_helloworld.yaml
-models:
-  - gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: Windows draw.io task - create one square with centered Helloworld text
