@@ -8,7 +8,7 @@ instruction: |-
 
   The fifth session returns to Stanford University from the Saved locations list, requiring the Bike travel mode and the first cycling route card, with the Overview opened before ending the session. The sixth session returns to Meta Headquarters from the Recent locations list, requiring the Walk travel mode and the first walking route card, with the Overview opened, the voice icon near the Report option interacted with, and the session ended. The seventh session returns to Googleplex from the Recent locations list, requiring the Drive travel mode and the first driving route card, with the Overview opened before ending the session. The eighth and final session returns to Mountain View Transit Center from the Recent locations list, requiring the Transit travel mode with the departure time configured via the Other time option to Leave now, and the first transit route card selected, with the Overview opened to view the route before ending the session. Throughout the entire process, no options related to Coffee Option or Hotels Option may be selected.
 init:
-  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  initializer_id: initializers.linux.opennavigation_review:OpenNavigationReviewInitializer
   params:
     steps:
     - type: run_bash
@@ -155,32 +155,57 @@ init:
       timeout: 120
     - type: wait
       ms: 8000
+# The web build keeps navigation sessions only in page memory; the initializer records them
+# (Start/End with destination and mode, Overview/Voice presses) and this verifier checks each
+# session the instruction requires. The previous term-based verifier read the Electron profile.
 evaluation:
-  evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation:OpenNavigationRouteReviewEvaluator
+  evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator
   params:
-    app_identity_terms:
-    - OpenNavigation
-    required_terms:
-    - Route
-    - Current location
-    - Meta Headquarters
-    - Googleplex
-    - Mountain View Transit Center
-    - Stanford University
-    - Drive
-    - Walk
-    - Bike
-    - Transit
-    - Start
-    - Overview
-    - End
+    ordered: true
+    expected_sessions:
+    - destination: Stanford University
+      mode: walk
+      origin: Current location
+      overview: true
+      voice: true
+    - destination: Meta Headquarters
+      mode: drive
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Googleplex
+      mode: bike
+      origin: Current location
+      overview: true
+      voice: true
+    - destination: Mountain View Transit Center
+      mode: transit
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Stanford University
+      mode: bike
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Meta Headquarters
+      mode: walk
+      origin: Current location
+      overview: true
+      voice: true
+    - destination: Googleplex
+      mode: drive
+      origin: Current location
+      overview: true
+      voice: false
+    - destination: Mountain View Transit Center
+      mode: transit
+      origin: Current location
+      overview: true
+      voice: false
     forbidden_terms:
-    - Coffee Option
-    - Hotels Option
-    min_trajectory_records: 60
-    min_navigation_starts: 3
-    min_navigation_ends: 3
-    min_overview_uses: 3
+    - Coffee
+    - Hotel
 limits:
   max_steps: 150
   step_timeout_seconds: 120

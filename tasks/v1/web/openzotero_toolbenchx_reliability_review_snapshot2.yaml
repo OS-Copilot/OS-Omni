@@ -12,7 +12,9 @@ instruction: 'Update the OpenZotero library to reflect the review status of the 
   This new item must be assigned to the "Agent Reliability Review" collection, tagged with "tool-reliability"
   and "notes", and have the abstract field containing the text "Companion log for ToolBench-X reliability
   reading." The final state of the library must reflect these specific changes to the existing paper and
-  the creation of the new report item, without adding, deleting, or modifying any other items.'
+  the creation of the new report item, without adding, deleting, or modifying any other items. OpenZotero
+  is a web app: open it from the OpenZotero icon in the webpage folder on the desktop, which opens it
+  in Chrome.'
 init:
   initializer_id: initializers.linux.openzotero:OpenZoteroInitializer
   params:
@@ -38,51 +40,15 @@ init:
     require_seed_evidence: false
     timeout: 30
 evaluation:
-  evaluator_id: evaluators.cua_review.evaluators.linux.openzotero:OpenZoteroEvidenceEvaluator
+  # The imported OpenZoteroEvidenceEvaluator matched these strings anywhere in files or
+  # UI text, so duplicate items and collections passed although the task forbids other
+  # changes. This evaluator checks the persisted library state; the baseline is the
+  # other 79 references of the snapshot state (count and sha256).
+  evaluator_id: evaluators.linux.openzotero_toolbenchx_reliability_review_snapshot2:OpenZoteroToolbenchxReliabilityReviewEvaluator
   params:
-    timeout: 12
-    poll_interval: 0.5
-    scan_timeout: 25
-    script_time_budget: 18
-    http_probe_timeout: 0.03
-    max_http_requests: 0
-    max_file_bytes: 15000000
-    max_files: 180
-    use_ui_evidence: true
-    allow_aggregate_group_match: true
-    scan_roots:
-    - /home/user/Desktop/webpage
-    - /home/user/.config/google-chrome
-    - /home/user/.config/chromium
-    required_global_text:
-    - Agent Reliability Review
-    - Tool Hazard Reading Log
-    - Maya Chen
-    - tool-reliability
-    - notes
-    - ToolBench-X reliability hazards reviewed.
-    - Companion log for ToolBench-X reliability reading.
-    required_groups:
-    - name: updated_toolbenchx_item
-      all:
-      - 'Beyond Function Calling: Benchmarking Tool-Using Agents under Tool-Environment Unreliability'
-      - - In Review
-        - in_review
-        - in-review
-      - tool-reliability
-      - ToolBench-X reliability hazards reviewed.
-      - Agent Reliability Review
-    - name: tool_hazard_reading_log_item
-      all:
-      - Tool Hazard Reading Log
-      - Maya Chen
-      - - Report
-        - report
-      - '2026'
-      - Agent Reliability Review
-      - tool-reliability
-      - notes
-      - Companion log for ToolBench-X reliability reading.
+    timeout: 60
+    baseline_other_count: 79
+    baseline_other_sha256: f42d6ed7d80828e43226b6134e9bfb1601a2529596cd2cf4a6ae140faa6978d4
 limits:
   max_steps: 240
   step_timeout_seconds: 180
