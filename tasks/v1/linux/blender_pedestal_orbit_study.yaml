@@ -12,9 +12,9 @@ instruction: Starting from a fresh General scene in Blender, build a product ped
   X/Y/Z 1.55, be shaded smooth, and use a new material named OrbitOrange with an orange Base Color (about
   RGB 1.0, 0.45, 0.05), Metallic 0.55, and Roughness 0.30. An Area light named ProductKeyLight must be
   placed at Location X 4.00, Y -3.00, Z 6.00 with Power 850. The Output properties must have Resolution
-  X 1600, Resolution Y 1200, File Format PNG, and Output path `//renders/pedestal_study/`. Save the scene
-  with Save As to the exact path above and finish with HeroSphere selected as the active object in the
-  Outliner.
+  X 1600, Resolution Y 1200, File Format PNG, and Output path `//renders/pedestal_study/`. Make HeroSphere
+  the selected active object in the Outliner, then save the scene with Save As to the exact path above
+  so the saved file keeps HeroSphere active.
 init:
   initializer_id: initializers.linux.blender:BlenderInitializer
   params:

@@ -107,6 +107,24 @@ evaluation:
       for protocol in ["DNS Packets:", "HTTP Packets:", "TCP Packets:"]:
           if protocol not in content:
               raise SystemExit(f"MISSING_{protocol.replace(':', '').replace(' ', '_')}")
+      import re
+      import html
+
+      def plain_text(xml):
+          return html.unescape(re.sub(r"<[^>]+>", " ", xml))
+
+      def count_after(text, label):
+          match = re.search(re.escape(label) + r"\s*(\d+)", text)
+          if not match:
+              raise SystemExit(f"MISSING_COUNT_{label.replace(' ', '_').replace(':', '')}")
+          return int(match.group(1))
+      # Counts of the seeded retail_mix.pcapng under the instruction's display filters (verified with tshark).
+      expected_counts = {"DNS Packets:": 4, "HTTP Packets:": 2, "TCP Packets:": 8}
+      text = plain_text(content)
+      for label, expected in expected_counts.items():
+          actual = count_after(text, label)
+          if actual != expected:
+              raise SystemExit(f"WRONG_COUNT_{label.replace(' ', '_').replace(':', '')}: expected {expected}, got {actual}")
 
       print("PASS")
       PY

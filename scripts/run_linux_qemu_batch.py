@@ -26,6 +26,22 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from core.specs.loader import load_execution_spec, load_task_spec  # noqa: E402
 from platforms.linux.runners.episode import wait_for_runtime_ready  # noqa: E402
+from platforms.linux.runtime_env.controller import LinuxRuntimeController  # noqa: E402
+
+START_MARKER = "/tmp/.os_omni_task_start"
+# The guest uses a pc105 keymap where "less" is the extra ISO key, so pyautogui types "<" as
+# Shift+that key and gets ">". Clearing the key lets "<" resolve to Shift+comma.
+ISO_LESS_KEY_FIX = "xmodmap -e 'keycode 94 = NoSymbol'"
+END_STATE_ARCHIVE = "/tmp/os_omni_end_state.tar.gz"
+# Files under these guest roots that changed after the task started are archived.
+END_STATE_SCRIPT = f"""set -u
+cd /
+find home/user tmp -xdev -type f -newer {START_MARKER} -size -50M \\
+  -not -path '*/.cache/*' -not -path '*/Cache/*' -not -path '*/cache2/*' \\
+  -not -path 'tmp/os_omni_live_runtime/*' -not -path '{END_STATE_ARCHIVE[1:]}' 2>/dev/null | sort > /tmp/os_omni_end_state.list
+tar -czf {END_STATE_ARCHIVE} --ignore-failed-read -T /tmp/os_omni_end_state.list 2>/dev/null
+wc -l < /tmp/os_omni_end_state.list
+"""
 
 
 def qmp_command(socket_path: Path, command: str, arguments: dict | None = None):
@@ -80,6 +96,17 @@ def classify_result(result: dict) -> str:
     return "EXECUTION_ERROR"
 
 
+def capture_end_state(controller: LinuxRuntimeController, task_dir: Path) -> dict:
+    """Archive guest files changed during the task, before the next snapshot restore."""
+    try:
+        result = controller.run_bash_script(END_STATE_SCRIPT, timeout=180)
+        (task_dir / "end_state.tar.gz").write_bytes(controller.get_file(END_STATE_ARCHIVE))
+        (task_dir / "end_state_files.txt").write_bytes(controller.get_file("/tmp/os_omni_end_state.list"))
+        return {"status": "captured", "files": int((result.get("output") or "0").strip() or 0)}
+    except Exception as error:
+        return {"status": "error", "error": f"{type(error).__name__}: {error}"}
+
+
 def write_summary(path: Path, run: dict, rows: list[dict]) -> None:
     counts = Counter(row["classification"] for row in rows)
     payload = dict(run, completed=len(rows), counts=dict(counts), tasks=rows)
@@ -101,6 +128,13 @@ def main() -> int:
     parser.add_argument("--runtime-token-env", default="OS_OMNI_LINUX_RUNTIME_TOKEN")
     parser.add_argument("--task-id", action="append", help="Run only these task IDs, in execution order")
     parser.add_argument("--resume", action="store_true", help="Reuse completed results with matching task/model/run settings")
+    parser.add_argument("--max-steps-cap", type=int, help="Lower step limits above this value; smaller TaskSpec limits are kept")
+    parser.add_argument("--llm-exchange-log", action="store_true",
+                        help="Save each model request and response to llm_exchange.jsonl, with inline images replaced by digests")
+    parser.add_argument("--capture-end-state", action="store_true",
+                        help="Archive guest files changed during each task to end_state.tar.gz")
+    parser.add_argument("--deepseek-request-audit", action="store_true",
+                        help="Verify every request is deepseek-flash Responses with reasoning.effort=none")
     args = parser.parse_args()
     token = os.environ.get(args.runtime_token_env)
     if not token:
@@ -126,6 +160,7 @@ def main() -> int:
         "observation_mode": execution.observation_mode or "screenshot_only",
         "action_mode": execution.action_mode or "code_adapter",
         "history_window": execution.history_window or 3,
+        "max_steps_cap": args.max_steps_cap,
     }
     rows = []
     for index, (path, task) in enumerate(tasks, start=1):
@@ -136,6 +171,10 @@ def main() -> int:
             "models_sha256": hashlib.sha256((REPO_ROOT / "configs/models.yaml").read_bytes()).hexdigest(),
             **{key: run[key] for key in ("model", "snapshot", "observation_mode", "action_mode", "history_window")},
         }
+        max_steps = task.limits.max_steps
+        if args.max_steps_cap and max_steps > args.max_steps_cap:
+            max_steps = args.max_steps_cap
+            fingerprint["max_steps"] = max_steps
         marker = task_dir / "batch_run.json"
         result_path = task_dir / "result.json"
         if args.resume and result_path.is_file() and marker.is_file():
@@ -150,10 +189,17 @@ def main() -> int:
             raise RuntimeError(f"Task output already exists: {task_dir}; use --resume or a new directory")
         print(f"[{index}/{len(tasks)}] {task.task_id}: restoring {args.snapshot}", flush=True)
         started = time.monotonic()
-        row = {"task_id": task.task_id, "task_path": str(path), "output_dir": str(task_dir)}
+        row = {"task_id": task.task_id, "task_path": str(path), "output_dir": str(task_dir),
+               "task_sha256": fingerprint["task_sha256"], "max_steps": max_steps}
         try:
             restore_snapshot(args.qmp_socket, args.snapshot)
-            wait_for_runtime_ready(f"http://{args.runtime_host}:{args.runtime_port}", token, timeout_seconds=90)
+            runtime_url = f"http://{args.runtime_host}:{args.runtime_port}"
+            wait_for_runtime_ready(runtime_url, token, timeout_seconds=90)
+            controller = LinuxRuntimeController(runtime_url=runtime_url, token=token, timeout=60.0)
+            keymap = controller.run_bash_script(ISO_LESS_KEY_FIX, timeout=30)
+            row["iso_less_key_fix"] = keymap.get("returncode")
+            if args.capture_end_state:
+                controller.run_bash_script(f"touch {START_MARKER}", timeout=30)
             command = [
                 sys.executable, "-m", "platforms.linux.cli", "__benchmark_task",
                 "--task-file", str(path), "--execution-file", str(args.execution.resolve()),
@@ -161,11 +207,19 @@ def main() -> int:
                 "--observation-mode", run["observation_mode"], "--history-window", str(run["history_window"]),
                 "--vm-ip", args.runtime_host, "--runtime-port", str(args.runtime_port), "--runtime-token", token,
             ]
+            if max_steps != task.limits.max_steps:
+                command += ["--max-steps", str(max_steps)]
             env = dict(os.environ, LINUX_OUTPUT_DIR=str(task_dir))
+            if args.llm_exchange_log:
+                env["OS_OMNI_LLM_EXCHANGE_LOG"] = str(task_dir / "llm_exchange.jsonl")
+            if args.deepseek_request_audit:
+                env["OS_OMNI_DEEPSEEK_REQUEST_AUDIT"] = str(task_dir / "deepseek_request_audit.jsonl")
             # The full per-task step limit and step timeout are taken from its TaskSpec.
             with (task_dir / "runner.log").open("w") as log:
                 process = subprocess.run(command, cwd=REPO_ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
             row["return_code"] = process.returncode
+            if args.capture_end_state:
+                row["end_state"] = capture_end_state(controller, task_dir)
             if result_path.is_file():
                 result = json.loads(result_path.read_text())
                 row.update(classification=classify_result(result), status=result.get("status"),
