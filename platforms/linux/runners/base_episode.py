@@ -262,6 +262,16 @@ class BaseEpisodeRunner(ABC):
                     "pyautogui.PAUSE = 0\n"
                     "pyautogui.FAILSAFE = False\n"
                 )
+                # Text typed into a mirrored phone (scrcpy) loses characters when keys are sent
+                # back to back; OS_OMNI_MIN_TYPE_INTERVAL sets a minimum per-character interval.
+                min_interval = float(os.environ.get("OS_OMNI_MIN_TYPE_INTERVAL", "0") or 0)
+                if min_interval > 0:
+                    prelude += (
+                        "_osomni_write = pyautogui.write\n"
+                        "def _osomni_paced_write(message, interval=0.0, *args, **kwargs):\n"
+                        f"    return _osomni_write(message, max(float(interval or 0), {min_interval!r}), *args, **kwargs)\n"
+                        "pyautogui.write = pyautogui.typewrite = _osomni_paced_write\n"
+                    )
                 raw_result = self.controller.run_python_script(f"{prelude}\n{code}\n", timeout=timeout_seconds)
                 stdout = str(raw_result.get("output") or "").strip()
                 stderr = str(raw_result.get("error") or "").strip()

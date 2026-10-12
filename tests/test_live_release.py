@@ -17,7 +17,9 @@ MANIFEST = json.loads((RELEASE_ROOT / "manifest.json").read_text())
 
 
 TRACKS = ("android", "ios", "linux", "macos", "web", "windows")
-ALL_TRACKS = (*TRACKS, "cross_vm")
+ALL_TRACKS = (*TRACKS, "cross_vm", "cross_device")
+# Single-screen cross-device tasks run on the platform whose desktop shows the companion device.
+CROSS_DEVICE_SCREENS = {"linux_android": "linux"}
 
 
 def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
@@ -26,14 +28,16 @@ def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
     assert MANIFEST["task_count"] == len(entries) == 300
     assert len({entry["task_id"] for entry in entries}) == 300
     assert Counter(entry["track"] for entry in entries) == MANIFEST["track_counts"] == {
-        **{track: 48 for track in TRACKS}, "cross_vm": 12,
+        **{track: 48 for track in TRACKS}, "cross_vm": 6, "cross_device": 6,
     }
     assert Counter(entry["platform"] for entry in entries) == MANIFEST["platform_counts"] == {
-        "android": 48, "ios": 48, "linux": 96, "macos": 48, "windows": 48, "cross_vm": 12,
+        "android": 48, "ios": 48, "linux": 102, "macos": 48, "windows": 48, "cross_vm": 6,
     }
     assert all(
         entry["track"] == entry["platform"]
         or (entry["track"] == "web" and entry["platform"] == "linux")
+        or (entry["track"] == "cross_device"
+            and entry["platform"] == CROSS_DEVICE_SCREENS["_".join(Path(entry["task_path"]).stem.split("_")[:2])])
         for entry in entries
     )
     assert Counter(entry["category"] for entry in entries) == MANIFEST["category_counts"]
@@ -53,7 +57,9 @@ def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
 
 def test_retired_tasks_are_gone_and_two_per_track() -> None:
     retired = MANIFEST["retired"]
-    assert Counter(entry["track"] for entry in retired) == {track: 2 for track in TRACKS}
+    # Two per single-platform track; the six Android-to-Windows cross-VM workflows were replaced
+    # by single-screen Linux + Android cross-device tasks.
+    assert Counter(entry["track"] for entry in retired) == {**{track: 2 for track in TRACKS}, "cross_vm": 6}
     listed = {entry["task_id"] for entry in MANIFEST["tasks"]}
     for entry in retired:
         assert entry["task_id"] not in listed
@@ -87,7 +93,13 @@ def test_cross_vm_workflows_are_complete() -> None:
         for stage_path in (oracle.source_task_path, oracle.target_task_path):
             assert stage_path in reserved
             load_task_spec(stage_path)
-    assert routes == {("android", "windows"): 6, ("windows", "linux"): 6}
+    assert routes == {("windows", "linux"): 6}
+    # The Android and Windows stages of the retired Android-to-Windows route are the sources
+    # the Linux + Android cross-device tasks were converted from.
+    for path in sorted((RELEASE_ROOT / "cross_device").glob("linux_android_*.yaml")):
+        for stage in yaml.safe_load(path.read_text())["metadata"]["source_stages"]:
+            assert REPO_ROOT / stage in supporting
+            referenced_stages.add(REPO_ROOT / stage)
     assert referenced_stages == supporting
 
 
