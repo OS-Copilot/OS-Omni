@@ -30,8 +30,10 @@ from platforms.linux.runtime_env.controller import LinuxRuntimeController  # noq
 
 START_MARKER = "/tmp/.os_omni_task_start"
 # The guest uses a pc105 keymap where "less" is the extra ISO key, so pyautogui types "<" as
-# Shift+that key and gets ">". Clearing the key lets "<" resolve to Shift+comma.
-ISO_LESS_KEY_FIX = "xmodmap -e 'keycode 94 = NoSymbol'"
+# Shift+that key and gets ">". Clearing the key lets "<" resolve to Shift+comma. The keypad
+# paren keys (187/188) are cleared too: pyautogui types "(" and ")" through them, which a
+# mirrored phone drops; without them it uses Shift+9 and Shift+0.
+ISO_LESS_KEY_FIX = "xmodmap -e 'keycode 94 = NoSymbol' -e 'keycode 187 = NoSymbol' -e 'keycode 188 = NoSymbol'"
 # Most ~/Desktop/webpage entries are symlinks to HTML redirect pages that open the app in
 # Chrome. OpenBlender, OpenCode, OpenFinance and OpenWireshark are extension-less .desktop
 # files instead, which Nautilus 42 opens in a text editor. Give them the same kind of

@@ -2,13 +2,25 @@
 
 The six `tasks/v1/cross_device/linux_android_*.yaml` tasks run on the Linux VM. A
 companion Android phone is shown in a scrcpy window on the Linux desktop. The agent sees
-only the Linux screen. It works on the phone through that window, moves the file to the
-desktop itself (the harness does not copy it), and finishes in LibreOffice. The evaluator
-then checks three things:
+only the Linux screen and works on the phone through that window. Each task is a round
+trip: the agent edits a file on the phone, moves it to the desktop itself (the harness
+does not copy it), finishes the deliverable in LibreOffice, and sends results back to the
+phone. The return channels are a Markor note, Tasks (`org.tasks`) items, Fossify Calendar
+events, and a desktop file dropped onto the phone window (scrcpy pushes dropped files to
+`/sdcard/Download`).
 
-* the phone's file, read from the host over adb;
+The evaluator checks four things:
+
+* the phone's records, read from the host over adb: Markor files, and the Tasks and
+  Calendar databases via `su 0 sqlite3`;
+* that each phone copy has the desktop file's SHA-256;
 * the file on the Linux desktop and the finished document, checked in the guest;
 * that no executed action invokes or types `adb` or `scrcpy`.
+
+Tasks items and Calendar events must exist exactly once, and the live count must equal
+the snapshot baseline (7 tasks, 1 event) plus the expected records. Due dates and event
+times are compared in UTC, the phone's time zone. The Tasks GUI stores a date-only due
+date as noon UTC in milliseconds; Calendar stores start and end in seconds.
 
 ## Components
 
@@ -50,6 +62,11 @@ Ubuntu 22.04's scrcpy 1.21 cannot sync the Android 13 clipboard. Its server fail
    * add a `/usr/local/bin/scrcpy` wrapper that sets `SCRCPY_SERVER_PATH` and `ADB`;
    * link `/usr/local/bin/adb`.
 3. Save a new QEMU snapshot, for example `savevm os_omni_v3_android`.
+
+Before opening the window, the initializer clears X keycodes 94, 187 and 188 with
+`xmodmap` (the batch runner does the same for every Linux task). pyautogui otherwise types
+`<` through the ISO key and `(`/`)` through the keypad paren keys. Linux apps accept those
+keys, but the phone shows `|` for the first and drops the parens.
 
 The phone window opens with `--keyboard=uhid`, which presents a hardware keyboard to the phone. Even so, text typed with no gap between keys loses characters: at 0 ms most of a 780-character CSV was lost, at 10 ms one chunk was lost, and 20 ms was reliable in every trial. The harness therefore paces `pyautogui.write` when `OS_OMNI_MIN_TYPE_INTERVAL` is set. Use `0.02` for these tasks.
 

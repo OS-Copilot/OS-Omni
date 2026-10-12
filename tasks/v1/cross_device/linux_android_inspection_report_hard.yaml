@@ -10,7 +10,7 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   Fix any existing row that disagrees with the corrected data and do not include the log title, the re-test lines, or any
   other lines. Save the file and leave it ready to bring to this computer. Then put the finished "inspection_transfer.csv"
   on this computer as ~/Desktop/inspection_transfer.csv with exactly the same content (for example, copy its text on the phone
-  and paste it into a text editor here). Last, on this computer: A blank LibreOffice Writer document named "inspection_report.docx"
+  and paste it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "inspection_report.docx"
   is open. Use only LibreOffice Writer. Build the report in this exact order: "Harborview Inspection Follow-up" in Heading
   1; "Failed items" in Heading 2 followed by a four-column table with the header row Unit, Item, Action, Priority and one
   row for every FAIL finding in CSV order, where Priority is "High" for Smoke detector, Carbon monoxide alarm, Fire extinguisher,
@@ -20,7 +20,10 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   by one paragraph listing those units in CSV order separated by ", "; and "Totals" in Heading 2 followed by the paragraphs
   "Open items: <count>" and "High priority: <count>". All non-heading paragraphs use body text styles and the document must
   contain nothing else. Save the document in Word format, then also export it to PDF as "inspection_report.pdf" in the same
-  Documents folder. Apart from creating the file on the Desktop, do not use a text editor.'
+  Documents folder. Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: put a
+  copy of the exported "inspection_report.pdf" onto the phone so it is in the phone''s Download folder (for example, drag
+  it from the file manager onto the phone window). In the Tasks app on the phone, add one task for every High-priority failed
+  item, titled "Fix <Item> - <Unit>" with the due date October 16, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -119,7 +122,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/inspection_transfer.csv
         expected_text: 'Unit,Item,Result,Action
@@ -173,6 +176,23 @@ evaluation:
           Unit 5B,Smoke detector,FAIL,replace detector
 
           '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Fix Fire extinguisher - Unit 2A
+          due: '2026-10-16'
+        - title: Fix Smoke detector - Unit 2B
+          due: '2026-10-16'
+        - title: Fix Carbon monoxide alarm - Unit 3B
+          due: '2026-10-16'
+        - title: Fix Electrical outlet - Unit 5B
+          due: '2026-10-16'
+        - title: Fix Smoke detector - Unit 5B
+          due: '2026-10-16'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: /home/user/Documents/inspection_report.pdf
+      phone_path: /sdcard/Download/inspection_report.pdf
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -226,7 +246,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 350
+  max_steps: 450
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -241,8 +261,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 210
   converted_from: cross_vm.android_to_windows.inspection_report_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_inspection_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_writer_inspection_report_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.inspection_report_hard: phone in a scrcpy window on the
-    Linux desktop; the agent moves inspection_transfer.csv itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.inspection_report_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves inspection_transfer.csv to the desktop and returns results to the phone.'

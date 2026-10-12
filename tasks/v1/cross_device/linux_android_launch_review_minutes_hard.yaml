@@ -7,11 +7,16 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   only, replace the transfer note so it exactly matches the reference note, preserving every non-empty line and order, then
   save it and leave it ready to bring to this computer. Then put the finished "launch_review_transfer.txt" on this computer
   as ~/Desktop/launch_review_transfer.txt with exactly the same content (for example, copy its text on the phone and paste
-  it into a text editor here). Last, on this computer: A blank LibreOffice Writer document named "launch_review_minutes.docx"
+  it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "launch_review_minutes.docx"
   is open. Use only LibreOffice Writer. Bring every non-empty line from the note on the Desktop into the document as separate
   paragraphs in the same order. In the same Writer document, also add seven tables: Routing Matrix, Evidence Reconciliation,
   Cross-VM Delivery Chain, Final Escalation Summary, Reviewer Rotation, Acceptance Criteria, and Cross-VM Consistency Checks.
-  The tables must summarize only information from the note on the Desktop. Save the document.'
+  The tables must summarize only information from the note on the Desktop. Save the document. Then, back on the phone: put
+  a copy of the saved "launch_review_minutes.docx" onto the phone so it is in the phone''s Download folder (for example, drag
+  it from the file manager onto the phone window). In the Calendar app on the phone, add a 30-minute event for each meeting
+  in the note''s "Follow-up Schedule" and "Next Checkpoint" sections, in the week starting Monday, October 19, 2026, at the
+  time given in the note. Title each event with the meeting description from the note, capitalized and without the final period
+  (for example "Vendor access checkpoint"), and add no other new events.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -334,7 +339,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/launch_review_transfer.txt
         expected_text: 'Launch Readiness Review
@@ -604,6 +609,22 @@ evaluation:
           Handoff status: queued after packet receipt.
 
           '
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: Vendor access checkpoint
+          start: 2026-10-19 11:00
+          end: 2026-10-19 11:30
+        - title: Demo-room audio validation
+          start: 2026-10-21 15:30
+          end: 2026-10-21 16:00
+        - title: Readiness sync with launch leads
+          start: 2026-10-23 09:30
+          end: 2026-10-23 10:00
+        baseline_count: 1
+    phone_copies:
+    - desktop_path: /home/user/Documents/launch_review_minutes.docx
+      phone_path: /sdcard/Download/launch_review_minutes.docx
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -724,7 +745,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 200
+  max_steps: 300
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -739,8 +760,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 406
   converted_from: cross_vm.android_to_windows.launch_review_minutes_hard
+  round_trip:
+  - CalendarEventsEvaluator
+  - phone_copy
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_launch_review_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_writer_launch_review_minutes_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.launch_review_minutes_hard: phone in a scrcpy window
-    on the Linux desktop; the agent moves launch_review_transfer.txt itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.launch_review_minutes_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves launch_review_transfer.txt to the desktop and returns results to the phone.'

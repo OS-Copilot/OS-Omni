@@ -77,7 +77,11 @@ def test_linux_android_tasks_are_single_screen(path):
     assert task["platform"] == "linux"
     assert task["init"]["initializer_id"] == "initializers.linux.android_companion:LinuxAndroidCompanionInitializer"
     assert task["evaluation"]["evaluator_id"] == "evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator"
-    name = Path(task["evaluation"]["params"]["android"]["params"]["path"]).name
+    params = task["evaluation"]["params"]
+    name = Path(params["android"][0]["params"]["path"]).name
+    # Round trip: results computed on the desktop must also go back to the phone.
+    assert len(params["android"]) > 1 or params["phone_copies"]
+    assert "back on the phone" in task["instruction"]
     assert f"~/Desktop/{name}" in task["instruction"]
     assert "Windows" not in task["instruction"] and "Notepad" not in task["instruction"]
     # The agent brings the file over itself: the initializer must not pre-place it.
@@ -88,3 +92,56 @@ def test_linux_android_tasks_are_single_screen(path):
 def test_min_type_interval_prelude(monkeypatch):
     source = (ROOT / "platforms/linux/runners/base_episode.py").read_text()
     assert "OS_OMNI_MIN_TYPE_INTERVAL" in source and "pyautogui.write = pyautogui.typewrite" in source
+
+
+class _Phone:
+    def __init__(self, outputs):
+        self.outputs = outputs
+
+    def execute_adb(self, args):
+        command = args[-1]
+        return next(value for key, value in self.outputs.items() if key in command)
+
+
+def _hex(text):
+    return text.encode().hex().upper()
+
+
+def test_tasks_items_need_exact_titles_dates_and_no_extras():
+    from evaluators.android.companion_records import TasksAppItemsEvaluator
+    rows = f"{_hex('Old task')}|0\n{_hex('Fix A - 1')}|1792152000000\n"
+    params = {"tasks": [{"title": "Fix A - 1", "due": "2026-10-16"}], "baseline_count": 1}
+    ok = TasksAppItemsEvaluator().evaluate({"controller": _Phone({"tasks": rows}), "params": params})
+    assert ok.status == EvalStatus.PASS
+    wrong_day = TasksAppItemsEvaluator().evaluate(
+        {"controller": _Phone({"tasks": rows}), "params": {**params, "tasks": [{"title": "Fix A - 1", "due": "2026-10-17"}]}})
+    assert wrong_day.status == EvalStatus.FAIL
+    extra = TasksAppItemsEvaluator().evaluate(
+        {"controller": _Phone({"tasks": rows + f"{_hex('Fix A - 1')}|1792152000000\n"}), "params": params})
+    assert extra.status == EvalStatus.FAIL
+
+
+def test_calendar_events_compare_utc_start_and_end():
+    from evaluators.android.companion_records import CalendarEventsEvaluator
+    rows = f"{_hex('Keynote (Room A)')}|1792054800|1792058400\n"
+    params = {"events": [{"title": "Keynote (Room A)", "start": "2026-10-15 09:00", "end": "2026-10-15 10:00"}],
+              "baseline_count": 0}
+    assert CalendarEventsEvaluator().evaluate({"controller": _Phone({"events": rows}), "params": params}).status == EvalStatus.PASS
+    params["events"][0]["end"] = "2026-10-15 09:30"
+    assert CalendarEventsEvaluator().evaluate({"controller": _Phone({"events": rows}), "params": params}).status == EvalStatus.FAIL
+
+
+class _Desktop:
+    def __init__(self, sha):
+        self.sha = sha
+
+    def run_bash_script(self, script, timeout=30):
+        return {"output": self.sha}
+
+
+def test_phone_copy_must_match_desktop_file():
+    sha = "a" * 64
+    item = {"desktop_path": "/home/user/Documents/x.pdf", "phone_path": "/sdcard/Download/x.pdf"}
+    assert composite._phone_copy(_Phone({"sha256sum": sha}), _Desktop(sha), item)["status"] == "PASS"
+    assert composite._phone_copy(_Phone({"sha256sum": ""}), _Desktop(sha), item)["status"] == "FAIL"
+    assert composite._phone_copy(_Phone({"sha256sum": sha}), _Desktop(""), item)["status"] == "FAIL"

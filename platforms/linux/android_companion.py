@@ -114,6 +114,9 @@ def scrcpy_script(settings: CompanionSettings, *, x: int, y: int, height: int) -
     title = shlex.quote(WINDOW_TITLE)
     return "\n".join([
         "export DISPLAY=${DISPLAY:-:0}",
+        # pyautogui types < ( ) through keycodes 94/187/188 (ISO and keypad keys), which the
+        # phone drops or remaps; clearing them makes it use the main-keyboard keys.
+        "xmodmap -e 'keycode 94 = NoSymbol' -e 'keycode 187 = NoSymbol' -e 'keycode 188 = NoSymbol' || true",
         "for attempt in 1 2 3; do",
         "  pkill -f /opt/scrcpy/scrcpy || true",
         f"  adb disconnect {target} >/dev/null 2>&1 || true",

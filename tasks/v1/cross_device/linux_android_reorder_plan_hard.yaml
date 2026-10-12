@@ -9,7 +9,7 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   the end of the note, fix any existing row that disagrees with the corrected data, and do not include any other lines. Save
   the file and leave it ready to bring to this computer. Then put the finished "reorder_transfer.csv" on this computer as
   ~/Desktop/reorder_transfer.csv with exactly the same content (for example, copy its text on the phone and paste it into
-  a text editor here). Last, on this computer: A blank LibreOffice Calc workbook named "reorder_plan.xlsx" is open. Use only
+  a text editor here). Next, on this computer: A blank LibreOffice Calc workbook named "reorder_plan.xlsx" is open. Use only
   LibreOffice Calc. Sheet 1 must be named "Reorder": put the CSV header and sixteen item rows in A1:E17 with numbers kept
   numeric, then add F1 "Shortfall" with =MAX(0;C2-B2), G1 "OrderQty" with =ROUNDUP(F2/10;0)*10, H1 "LineCost" with =G2*E2,
   and I1 "Priority" with =IF(B2=0;"Critical";IF(F2>0;"Reorder";"OK")), each filled down to row 17; in row 18 put "Total" in
@@ -21,7 +21,10 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   Value in A1:B1 and these rows: "Items to reorder" with =COUNTIF($Reorder.$G$2:$G$17;">0"); "Critical items" with =COUNTIF($Reorder.$I$2:$I$17;"Critical");
   "Total order cost" with =$Reorder.H18; "Largest supplier" with =INDEX($BySupplier.A2:A5;MATCH(MAX($BySupplier.D2:D5);$BySupplier.D2:D5;0));
   and "Largest supplier cost" with =MAX($BySupplier.D2:D5). Leave everything else empty and save the workbook in xlsx format.
-  Finally, export the BySupplier sheet as a comma-separated CSV file named "supplier_po.csv" in the same Documents folder.'
+  Finally, export the BySupplier sheet as a comma-separated CSV file named "supplier_po.csv" in the same Documents folder.
+  Then, back on the phone: put a copy of the exported "supplier_po.csv" onto the phone so it is in the phone''s Download folder
+  (for example, drag it from the file manager onto the phone window). In the Tasks app on the phone, add one task for every
+  Critical item, titled "Expedite <Item> from <Supplier>" with the due date October 14, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -106,7 +109,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/reorder_transfer.csv
         expected_text: 'Item,OnHand,ReorderPoint,Supplier,UnitCost
@@ -144,6 +147,17 @@ evaluation:
           Strapping kits,5,6,Harbor Supply,28
 
           '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Expedite Box cutters from Harbor Supply
+          due: '2026-10-14'
+        - title: Expedite Label printer rolls from LabelWorks
+          due: '2026-10-14'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: /home/user/Documents/supplier_po.csv
+      phone_path: /sdcard/Download/supplier_po.csv
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -222,7 +236,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 350
+  max_steps: 450
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -237,8 +251,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 217
   converted_from: cross_vm.android_to_windows.reorder_plan_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_reorder_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_calc_reorder_plan_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.reorder_plan_hard: phone in a scrcpy window on the Linux
-    desktop; the agent moves reorder_transfer.csv itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.reorder_plan_hard: phone in a scrcpy window
+    on the Linux desktop; the agent moves reorder_transfer.csv to the desktop and returns results to the phone.'

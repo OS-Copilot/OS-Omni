@@ -8,7 +8,7 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   order, with Revenue and Target as plain numbers and Owner as the person''s name. Apply all three finance corrections, fix
   any existing row that disagrees with the corrected data, and do not include any other lines. Save the file and leave it
   ready to bring to this computer. Then put the finished "regional_transfer.csv" on this computer as ~/Desktop/regional_transfer.csv
-  with exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Last, on this
+  with exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this
   computer: A LibreOffice Impress presentation named "regional_review.pptx" is open with one empty title slide. Use only LibreOffice
   Impress. Make the deck exactly twelve slides. Slide 1 uses the title layout with the title "Q3 Regional Review" and the
   subtitle "Revenue vs target (k USD)". Slide 2 has the title "Agenda" and one content line per region name in CSV order.
@@ -19,7 +19,10 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   (<variance>)" for each region below target, in CSV order. Slide 12 has the title "Summary" and the five content lines "Total
   revenue: <sum>", "Total target: <sum>", "Above target: <count>", "On target: <count>", and "Below target: <count>". Put
   no other text on any slide and save the presentation in pptx format. Apart from creating the file on the Desktop, do not
-  use a text editor.'
+  use a text editor. Then, back on the phone: in Markor create the note "regional_followups.txt" in the same folder as the
+  CSV, containing exactly the follow-up lines of slide 11 in the same order and form, followed by the lines "Total revenue:
+  <sum>" and "Total target: <sum>" from slide 12. In the Tasks app on the phone, add one task for each region below target,
+  titled "Follow up <Region> with <Owner>" with the due date October 20, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -83,7 +86,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/regional_transfer.csv
         expected_text: 'Region,Revenue,Target,Owner
@@ -105,6 +108,29 @@ evaluation:
           Capital,505,505,Kenji Sato
 
           '
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/regional_followups.txt
+        expected_text: 'South - Omar Haddad (-25)
+
+          Central - Lena Fischer (-8)
+
+          Mountain - Rosa Lima (-41)
+
+          Total revenue: 2828
+
+          Total target: 2855'
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Follow up South with Omar Haddad
+          due: '2026-10-20'
+        - title: Follow up Central with Lena Fischer
+          due: '2026-10-20'
+        - title: Follow up Mountain with Rosa Lima
+          due: '2026-10-20'
+        baseline_count: 7
+    phone_copies: []
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -144,7 +170,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 350
+  max_steps: 450
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -159,8 +185,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 175
   converted_from: cross_vm.android_to_windows.regional_review_deck_hard
+  round_trip:
+  - AndroidTextFileEvaluator
+  - TasksAppItemsEvaluator
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_regional_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_impress_regional_review_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.regional_review_deck_hard: phone in a scrcpy window on
-    the Linux desktop; the agent moves regional_transfer.csv itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.regional_review_deck_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves regional_transfer.csv to the desktop and returns results to the phone.'

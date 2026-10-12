@@ -8,7 +8,7 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   CSV so it has the header Time,Room,Session,Speaker followed by one row per remaining session after every change is applied,
   sorted by Time and then by Room, with no spaces around commas and no other lines. Save the file and leave it ready to bring
   to this computer. Then put the finished "schedule_transfer.csv" on this computer as ~/Desktop/schedule_transfer.csv with
-  exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Last, on this computer:
+  exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
   A blank LibreOffice Writer document named "conference_schedule.docx" is open. Use only LibreOffice Writer. Build the document
   in this exact order: "DevSummit 2026 Day 1" in the paragraph style Heading 1; then for each of Room A, Room B, and Room
   C a Heading 2 paragraph with the room name followed by a three-column table with the header row Time, Session, Speaker and
@@ -17,7 +17,10 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   then "Totals" in Heading 2 followed by the paragraphs "Sessions: <count>", "Speakers: <distinct speakers>", and "Busiest
   room: <room> (<count> sessions)". All non-heading paragraphs use body text styles and the document must contain nothing
   else. Save the document in Word format, then also export it to PDF as "conference_schedule.pdf" in the same Documents folder.
-  Apart from creating the file on the Desktop, do not use a text editor.'
+  Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: put a copy of the exported
+  "conference_schedule.pdf" onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager
+  onto the phone window). In the Calendar app on the phone, add one event for each session Maya Chen speaks at, titled "<Session>
+  (<Room>)", on October 15, 2026, starting at the session time and lasting one hour, and no other new events.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -106,7 +109,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/schedule_transfer.csv
         expected_text: 'Time,Room,Session,Speaker
@@ -144,6 +147,19 @@ evaluation:
           16:00,Room C,Platform roadmap,Jordan Lee
 
           '
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: Opening keynote (Room A)
+          start: 2026-10-15 09:00
+          end: 2026-10-15 10:00
+        - title: Closing panel (Room A)
+          start: 2026-10-15 16:00
+          end: 2026-10-15 17:00
+        baseline_count: 1
+    phone_copies:
+    - desktop_path: /home/user/Documents/conference_schedule.pdf
+      phone_path: /sdcard/Download/conference_schedule.pdf
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -199,7 +215,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 350
+  max_steps: 450
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -214,8 +230,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 220
   converted_from: cross_vm.android_to_windows.conference_schedule_hard
+  round_trip:
+  - CalendarEventsEvaluator
+  - phone_copy
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_schedule_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_writer_conference_schedule_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.conference_schedule_hard: phone in a scrcpy window on
-    the Linux desktop; the agent moves schedule_transfer.csv itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.conference_schedule_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves schedule_transfer.csv to the desktop and returns results to the phone.'

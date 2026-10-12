@@ -24,30 +24,49 @@ platform (`platform_counts`).
 
 ## Cross-device tasks
 
-Each cross-device task runs on one screen. The Linux desktop shows a companion
-Android phone in a scrcpy window. The agent edits a file on the phone, moves it
-to the desktop itself (for example through the synced clipboard), and finishes
-the deliverable in LibreOffice. The result is decided by the phone's file, the
-desktop copy, and the document. Any agent action that invokes or types `adb`
-or `scrcpy` fails the task. The six tasks replace the Android → Windows
+Each cross-device task runs on one screen and makes a round trip. The Linux
+desktop shows a companion Android phone in a scrcpy window. The agent:
+
+1. edits a file in Markor on the phone;
+2. moves it to the desktop itself (for example through the synced clipboard);
+3. builds the deliverable in LibreOffice;
+4. sends results computed on the desktop back to the phone. Depending on the
+   task, these are a Markor note, items in the Tasks app, events in the Calendar
+   app, or the exported file dropped onto the phone window.
+
+The result is decided by:
+
+* the phone's source file, return note, Tasks items and Calendar events
+  (exactly the expected ones and no others);
+* the copies on the phone, which must match the desktop files;
+* the desktop copy and the document.
+
+Any agent action that invokes or types `adb` or `scrcpy` fails the task. The six tasks replace the Android → Windows
 cross-VM workflows and keep their Markor sources and LibreOffice targets; the
 retired workflows are listed under `retired`, and their stage files remain under
 `cross_vm/stages/` as provenance. Environment setup:
 [`docs/linux_android_companion.md`](../../docs/linux_android_companion.md).
 
-| Screen + device | Workflow | Desktop app | Deliverables | Human steps (phone + desktop, excluding the transfer) |
-|---|---|---|---|---|
-| Linux + Android | `budget_review` | Calc | six-sheet review workbook | 96 + 232 = 328 |
-| Linux + Android | `conference_schedule` | Writer | three room tables, speaker index, derived totals, PDF export | 88 + 132 = 220 |
-| Linux + Android | `inspection_report` | Writer | prioritized failure table, item and unit rollups, PDF export | 102 + 108 = 210 |
-| Linux + Android | `launch_review_minutes` | Writer | minutes with seven summary tables | 148 + 258 = 406 |
-| Linux + Android | `regional_review_deck` | Impress | twelve slides with variance, status, follow-ups, summary | 51 + 124 = 175 |
-| Linux + Android | `reorder_plan` | Calc | three sheets with priorities, supplier rollups, INDEX/MATCH summary, CSV export | 81 + 136 = 217 |
+| Screen + device | Workflow | Desktop app | Deliverables | Back on the phone | Human steps (phone + desktop, excluding the transfer and return) |
+|---|---|---|---|---|---|
+| Linux + Android | `budget_review` | Calc | six-sheet review workbook | Markor control note; 4 Tasks items | 96 + 232 = 328 |
+| Linux + Android | `conference_schedule` | Writer | three room tables, speaker index, derived totals, PDF export | PDF onto the phone; 2 Calendar events | 88 + 132 = 220 |
+| Linux + Android | `inspection_report` | Writer | prioritized failure table, item and unit rollups, PDF export | PDF onto the phone; 5 Tasks items | 102 + 108 = 210 |
+| Linux + Android | `launch_review_minutes` | Writer | minutes with seven summary tables | DOCX onto the phone; 3 Calendar events | 148 + 258 = 406 |
+| Linux + Android | `regional_review_deck` | Impress | twelve slides with variance, status, follow-ups, summary | Markor follow-up note; 3 Tasks items | 51 + 124 = 175 |
+| Linux + Android | `reorder_plan` | Calc | three sheets with priorities, supplier rollups, INDEX/MATCH summary, CSV export | CSV onto the phone; 2 Tasks items | 81 + 136 = 217 |
 
-The step limit is the sum of the two source stages' limits (200 or 350). The
-phone stages run on the Android V3 image. Their positive references do the
-phone edit and the clipboard transfer through the real GUI, and the documents
-come from the stage oracles.
+The step limit is the sum of the two source stages' limits plus 100 for the
+return (300 or 450). The phone stages run on the Android V3 image. Each task is
+validated three ways:
+
+* a negative check (initializer only) fails;
+* the deliverables without the return part fail;
+* a positive reference passes. It does the phone edit and the clipboard
+  transfer through the real GUI, and the documents come from the stage
+  oracles. For `budget_review` and `conference_schedule` the return part (Markor
+  note, Tasks items, Calendar events) is also done through the real GUI; the
+  other tasks apply it at state level in the format the apps' GUIs store.
 
 ## Cross-VM workflows
 

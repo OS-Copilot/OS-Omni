@@ -91,9 +91,10 @@ tracks progress and separates task verdicts from initialization, evaluation,
 execution, and VM infrastructure errors. A completed batch is not necessarily
 a successful benchmark; inspect the summary counts.
 
-After each restore the runner clears keycode 94 with `xmodmap`. The guest uses a
-pc105 keymap where `less` is the extra ISO key, so pyautogui would otherwise type
-`<` as `>` in any agent code. Optional per-task evidence:
+After each restore the runner clears keycodes 94, 187 and 188 with `xmodmap`. The guest
+uses a pc105 keymap where `less` is the extra ISO key, so pyautogui would otherwise type
+`<` as `>` in any agent code. Keycodes 187/188 are the keypad paren keys: pyautogui types
+`(` and `)` through them, and a mirrored phone drops those keys. Optional per-task evidence:
 
 * `--max-steps-cap N` lowers only TaskSpec limits above `N`.
 * `--capture-end-state` archives guest files under `/home/user` and `/tmp` that

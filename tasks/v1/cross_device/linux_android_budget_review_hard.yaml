@@ -7,7 +7,7 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   transfer CSV so it exactly matches the reference CSV, then save it and leave it ready to bring to this computer. The finished
   transfer CSV must contain the header Category, Planned, Actual, Owner, Region, DueDate and all sixteen rows in the same
   order. Then put the finished "budget_transfer.csv" on this computer as ~/Desktop/budget_transfer.csv with exactly the same
-  content (for example, copy its text on the phone and paste it into a text editor here). Last, on this computer: A blank
+  content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer: A blank
   LibreOffice Calc workbook named "budget_review.xlsx" is open. Use only LibreOffice Calc. Build a six-sheet workbook from
   the CSV on the Desktop. Sheet 1 must be named RawBudget and contain all sixteen rows with columns Category, Planned, Actual,
   Owner, Region, DueDate. Sheet 2 must be named VarianceReview and use formulas to reference RawBudget, compute Variance,
@@ -16,7 +16,11 @@ instruction: 'An Android phone is shown in the "Android phone" window on this Li
   100, using formulas that reference VarianceReview. Sheet 4 must be OwnerSummary with SUMIF/COUNTIFS formulas by owner. Sheet
   5 must be RegionalSummary with SUMIF/COUNTIFS formulas by region. Sheet 6 must be ControlPanel with imported row count,
   total planned, total actual, net variance, absolute variance, escalation count, critical count, and Android Transfer Status.
-  Save the workbook.'
+  Save the workbook. Then, back on the phone: in Markor create the note "budget_control.txt" in the same folder as the CSV,
+  containing exactly these five lines with the values from your workbook: "Rows: <imported row count>", "Total planned: <total>",
+  "Total actual: <total>", "Net variance: <total actual minus total planned>", and "Escalations: <number of EscalationQueue
+  rows>". In the Tasks app on the phone, add one task for every budget row whose Variance Abs is at least 200, titled "Recheck
+  <Category> - <Owner>" with the due date October 19, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -91,7 +95,7 @@ evaluation:
   evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
   params:
     android:
-      evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
       params:
         path: /sdcard/Documents/markor/budget_transfer.csv
         expected_text: 'Category,Planned,Actual,Owner,Region,DueDate
@@ -129,6 +133,31 @@ evaluation:
           Accessibility,520,750,Priya Nair,Central,2026-07-19
 
           '
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/budget_control.txt
+        expected_text: 'Rows: 16
+
+          Total planned: 14600
+
+          Total actual: 15860
+
+          Net variance: 1260
+
+          Escalations: 11'
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Recheck Travel - Jordan Lee
+          due: '2026-10-19'
+        - title: Recheck Venue - Jordan Lee
+          due: '2026-10-19'
+        - title: Recheck Transport - Theo Martin
+          due: '2026-10-19'
+        - title: Recheck Accessibility - Priya Nair
+          due: '2026-10-19'
+        baseline_count: 7
+    phone_copies: []
     linux:
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
@@ -314,7 +343,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 200
+  max_steps: 300
   step_timeout_seconds: 120
 metadata:
   tags:
@@ -329,8 +358,11 @@ metadata:
   companion_device: android (scrcpy window)
   human_steps: 328
   converted_from: cross_vm.android_to_windows.budget_review_hard
+  round_trip:
+  - AndroidTextFileEvaluator
+  - TasksAppItemsEvaluator
   source_stages:
   - tasks/v1/cross_vm/stages/android/cross_vm_prepare_budget_transfer_hard.yaml
   - tasks/v1/cross_vm/stages/windows/cross_vm_calc_budget_review_hard.yaml
-  description: 'Single-screen version of cross_vm.android_to_windows.budget_review_hard: phone in a scrcpy window on the Linux
-    desktop; the agent moves budget_transfer.csv itself.'
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.budget_review_hard: phone in a scrcpy window
+    on the Linux desktop; the agent moves budget_transfer.csv to the desktop and returns results to the phone.'

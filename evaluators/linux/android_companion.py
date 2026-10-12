@@ -6,8 +6,10 @@ through its window, so any executed action that invokes or types ``adb``/``scrcp
 fails the task.
 
 params:
-  android: {evaluator_id, params}
-  linux:   {evaluator_id, params} or a list of them (all must pass)
+  android: {evaluator_id, params} or a list of them, run against the phone (all must pass)
+  linux:   {evaluator_id, params} or a list of them, run against the desktop (all must pass)
+  phone_copies: [{desktop_path, phone_path}] files the agent must copy from the desktop to the
+           phone; each phone copy must have the desktop file's SHA-256
   forbidden_patterns: regexes checked against each executed action (default: adb, scrcpy)
 """
 
@@ -15,6 +17,7 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 from typing import Any, Mapping
 
 from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -52,6 +55,35 @@ def forbidden_actions(trajectory_path: Any, patterns: list[str]) -> list[dict[st
     return hits
 
 
+def _run_all(specs: Any, context: Mapping[str, Any]) -> dict[str, Any]:
+    specs = [specs] if isinstance(specs, Mapping) else list(specs or [])
+    results = []
+    for spec in specs:
+        result = load_evaluator(spec["evaluator_id"]).evaluate({**context, "params": dict(spec.get("params") or {})})
+        results.append({"status": _status(result), "message": result.message, "metadata": result.metadata})
+    statuses = [item["status"] for item in results]
+    status = "ERROR" if "ERROR" in statuses else ("PASS" if results and all(s == "PASS" for s in statuses) else "FAIL")
+    return {"status": status, "message": "; ".join(item["message"] for item in results if item["status"] != "PASS"),
+            "checks": results}
+
+
+def _phone_copy(phone: Any, desktop: Any, item: dict[str, Any]) -> dict[str, Any]:
+    """The phone file must exist and have the desktop file's SHA-256."""
+    desktop_path, phone_path = str(item["desktop_path"]), str(item["phone_path"])
+    try:
+        reply = desktop.run_bash_script(f"sha256sum {shlex.quote(desktop_path)} 2>/dev/null | cut -c1-64", timeout=30)
+        desktop_sha = str(reply.get("output") or "").strip()
+        phone_sha = str(phone.execute_adb(["shell", f"sha256sum {shlex.quote(phone_path)} 2>/dev/null | cut -c1-64"]) or "").strip()
+    except Exception as exc:
+        return {"status": "ERROR", "message": f"copy check failed: {exc}", "metadata": item}
+    metadata = {**item, "desktop_sha256": desktop_sha, "phone_sha256": phone_sha}
+    if len(desktop_sha) != 64:
+        return {"status": "FAIL", "message": f"desktop file missing: {desktop_path}", "metadata": metadata}
+    if phone_sha != desktop_sha:
+        return {"status": "FAIL", "message": f"phone copy missing or different: {phone_path}", "metadata": metadata}
+    return {"status": "PASS", "message": "phone copy matches", "metadata": metadata}
+
+
 class LinuxAndroidCompositeEvaluator(BaseEvaluator):
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -64,21 +96,18 @@ class LinuxAndroidCompositeEvaluator(BaseEvaluator):
             phone = phone_controller(CompanionSettings.from_env())
         except Exception as exc:
             return EvalResult(status=EvalStatus.ERROR, message=f"Companion phone is not reachable: {exc}", metadata=checks)
-        android = dict(params.get("android") or {})
-        result = load_evaluator(android["evaluator_id"]).evaluate(
-            {**context, "controller": phone, "params": dict(android.get("params") or {})})
-        checks["android"] = {"status": _status(result), "message": result.message, "metadata": result.metadata}
-
-        linux_specs = params.get("linux") or []
-        linux_specs = [linux_specs] if isinstance(linux_specs, Mapping) else list(linux_specs)
-        results = []
-        for spec in linux_specs:
-            result = load_evaluator(spec["evaluator_id"]).evaluate({**context, "params": dict(spec.get("params") or {})})
-            results.append({"status": _status(result), "message": result.message, "metadata": result.metadata})
-        statuses = [item["status"] for item in results]
-        status = "ERROR" if "ERROR" in statuses else ("PASS" if results and all(s == "PASS" for s in statuses) else "FAIL")
-        checks["linux"] = {"status": status, "message": "; ".join(item["message"] for item in results if item["status"] != "PASS"),
-                           "checks": results}
+        checks["android"] = _run_all(params.get("android"), {**context, "controller": phone})
+        checks["linux"] = _run_all(params.get("linux"), context)
+        copies = [_phone_copy(phone, context.get("controller"), dict(item)) for item in params.get("phone_copies") or []]
+        if copies:
+            statuses = [item["status"] for item in copies]
+            checks["android"]["checks"].extend(copies)
+            if "ERROR" in statuses:
+                checks["android"]["status"] = "ERROR"
+            elif "FAIL" in statuses and checks["android"]["status"] == "PASS":
+                checks["android"]["status"] = "FAIL"
+            checks["android"]["message"] = "; ".join(item["message"] for item in checks["android"]["checks"]
+                                                     if item["status"] != "PASS")
 
         errors = [name for name in ("android", "linux") if checks[name]["status"] == "ERROR"]
         if errors:
