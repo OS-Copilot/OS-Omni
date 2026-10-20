@@ -1,0 +1,302 @@
+# Generated from tasks/v1/cross_vm/windows_to_linux_contract_renewals_hard.yaml; see metadata.converted_from.
+task_id: cross_device.windows_android.contract_renewals_hard
+platform: windows
+instruction: 'An Android phone is shown in the "Android phone" window on this Windows desktop. Use the phone only through
+  that window; in it, a right-click works as the phone''s Back button and a middle-click as Home. If the window is closed,
+  the "Android phone" shortcut on the Desktop opens it again. Do not use a terminal or adb. First, on the phone: The contract
+  register "contracts_source.csv" is open in Markor on the phone, and the same folder has the transfer file "renewals_transfer.csv",
+  which so far holds only the header. Using Markor only, complete "renewals_transfer.csv" so that it keeps the header and
+  all five columns but contains only the contracts whose EndDate falls in Q4 2026 (2026-10-01 through 2026-12-31 inclusive),
+  sorted by EndDate from earliest to latest and by Contract when dates are equal, with values written exactly as in the register.
+  Save it. Then put the finished "renewals_transfer.csv" on this computer as C:\Users\User\Desktop\renewals_transfer.csv with
+  exactly the same content (for example, copy its text on the phone and paste it into Notepad here). Next, on this computer:
+  A blank LibreOffice Writer document named renewal_brief.docx is already open. Write the brief in this exact order: "Q4 2026
+  Contract Renewals" in Heading 1; a six-column table with the header row Contract, Vendor, Owner, End date, Notice by, Annual
+  value and every CSV row in order, where Notice by is the date 60 days before the end date in YYYY-MM-DD form; "By owner"
+  in Heading 2 followed by a three-column table with the header row Owner, Contracts, Total and one row per owner ordered
+  from the largest total to the smallest; "By month" in Heading 2 followed by the paragraphs "October 2026: <n> contracts,
+  <total>", "November 2026: <n> contracts, <total>", and "December 2026: <n> contracts, <total>" by end date; and "Totals"
+  in Heading 2 followed by the paragraphs "Total annual value up for renewal: <sum>" and "First notice deadline: <earliest
+  notice date> (<contract> <vendor>)". Write numbers as plain digits without separators. All non-heading paragraphs use body
+  text styles and the document must contain nothing else. Save the document in Word format. Then, back on the phone: in the
+  Calendar app on the phone, add a 30-minute event at 09:00 on the Notice by date of every contract in the brief with an annual
+  value of at least 30000, titled "Renewal notice: <Contract> <Vendor>" (for example "Renewal notice: C-101 Atlas Freight"),
+  and no other new events.'
+init:
+  initializer_id: initializers.windows.android_companion:WindowsAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/contracts_source.csv
+        transfer_path: /sdcard/Documents/markor/renewals_transfer.csv
+        open_path: /sdcard/Documents/markor/contracts_source.csv
+        source_text: 'Contract,Vendor,Owner,EndDate,AnnualValue
+
+          C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+
+          C-102,Brightline Print,Jordan Lee,2027-02-15,12500
+
+          C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+
+          C-104,Delta Office,Maya Chen,2026-12-15,9600
+
+          C-105,Evergreen IT,Theo Martin,2027-01-31,61000
+
+          C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+
+          C-107,Granite Security,Priya Nair,2026-12-31,37200
+
+          C-108,Harbor Supply,Theo Martin,2026-09-30,8800
+
+          C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+
+          C-110,Juniper Travel,Lena Fischer,2027-03-31,19900
+
+          C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+
+          C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+
+          C-113,Meridian Payroll,Omar Haddad,2027-01-01,54000
+
+          C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+
+          C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+
+          C-116,Pinnacle Elevators,Priya Nair,2026-08-31,26500
+
+          C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+
+          C-118,Redwood Insurance,Maya Chen,2027-02-28,72000
+
+          C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+
+          C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+
+          C-121,Umber Printing,Jordan Lee,2026-09-15,6400
+
+          C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+
+          C-123,Willow Wellness,Priya Nair,2027-01-15,14800
+
+          C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+
+          '
+        transfer_text: 'Contract,Vendor,Owner,EndDate,AnnualValue
+
+          '
+    windows:
+      steps:
+      - type: run_powershell
+        timeout: 180
+        script: '$ErrorActionPreference = ''Stop''
+
+          Get-Process soffice, soffice.bin, notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+
+          Start-Sleep 1
+
+          New-Item -ItemType Directory -Force ''C:\Users\User\Documents'', ''C:\Users\User\Desktop'' | Out-Null
+
+          Remove-Item -LiteralPath ''C:\Users\User\Desktop\renewals_transfer.csv'' -ErrorAction SilentlyContinue
+
+          $soffice = ''C:\Program Files\LibreOffice\program\soffice.exe''
+
+          $tmp = Join-Path $env:TEMP (''osomni_'' + [guid]::NewGuid().ToString(''N''))
+
+          New-Item -ItemType Directory $tmp | Out-Null
+
+          [IO.File]::WriteAllText((Join-Path $tmp ''empty.txt''), "")
+
+          $p = Start-Process -FilePath $soffice -ArgumentList ''--headless'', ''--convert-to'', ''docx'', ''--outdir'', $tmp,
+          (Join-Path $tmp ''empty.txt'') -WindowStyle Hidden -PassThru
+
+          $p.WaitForExit(120000) | Out-Null
+
+          $blank = Join-Path $tmp ''empty.docx''
+
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $blank); $i++) { Start-Sleep 1 }
+
+          Move-Item -Force $blank ''C:\Users\User\Documents\renewal_brief.docx''
+
+          Remove-Item -Recurse -Force $tmp
+
+          ''INIT_OK'''
+      - type: run_powershell
+        timeout: 30
+        script: Start-Process -FilePath 'C:\Program Files\LibreOffice\program\soffice.exe' -ArgumentList '--writer', '"C:\Users\User\Documents\renewal_brief.docx"'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.android_companion:WindowsAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/renewals_transfer.csv
+        expected_text: 'Contract,Vendor,Owner,EndDate,AnnualValue
+
+          C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+
+          C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+
+          C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+
+          C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+
+          C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+
+          C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+
+          C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+
+          C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+
+          C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+
+          C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+
+          C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+
+          C-104,Delta Office,Maya Chen,2026-12-15,9600
+
+          C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+
+          C-107,Granite Security,Priya Nair,2026-12-31,37200
+
+          C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+
+          '
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: 'Renewal notice: C-109 Ironclad Legal'
+          start: 2026-09-16 09:00
+          end: 2026-09-16 09:30
+        - title: 'Renewal notice: C-117 Quarry Analytics'
+          start: 2026-09-21 09:00
+          end: 2026-09-21 09:30
+        - title: 'Renewal notice: C-101 Atlas Freight'
+          start: 2026-10-01 09:00
+          end: 2026-10-01 09:30
+        - title: 'Renewal notice: C-124 Xenon Labs'
+          start: 2026-10-11 09:00
+          end: 2026-10-11 09:30
+        - title: 'Renewal notice: C-107 Granite Security'
+          start: 2026-11-01 09:00
+          end: 2026-11-01 09:30
+        baseline_count: 1
+    phone_copies: []
+    windows:
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: '$expected = @''
+
+          Contract,Vendor,Owner,EndDate,AnnualValue
+
+          C-111,Keystone Couriers,Lena Fischer,2026-10-01,11200
+
+          C-106,Fjord Catering,Jordan Lee,2026-10-15,15400
+
+          C-119,Summit Telecom,Omar Haddad,2026-10-20,18900
+
+          C-103,Cobalt Cleaning,Priya Nair,2026-10-31,22800
+
+          C-122,Vista Parking,Lena Fischer,2026-10-31,5200
+
+          C-114,Northwind Water,Omar Haddad,2026-11-01,4800
+
+          C-109,Ironclad Legal,Maya Chen,2026-11-15,30500
+
+          C-117,Quarry Analytics,Lena Fischer,2026-11-20,41000
+
+          C-101,Atlas Freight,Maya Chen,2026-11-30,48000
+
+          C-112,Lumen Lighting,Theo Martin,2026-12-01,7300
+
+          C-124,Xenon Labs,Omar Haddad,2026-12-10,33300
+
+          C-104,Delta Office,Maya Chen,2026-12-15,9600
+
+          C-115,Orchid Florals,Jordan Lee,2026-12-20,3600
+
+          C-107,Granite Security,Priya Nair,2026-12-31,37200
+
+          C-120,Tidewater Waste,Theo Martin,2026-12-31,9900
+
+          ''@
+
+          $path = ''C:\Users\User\Desktop\renewals_transfer.csv''
+
+          if (-not (Test-Path -LiteralPath $path)) { ''DESKTOP_FILE_MISSING''; exit 1 }
+
+          $norm = { param($s) (($s -replace "`r`n", "`n") -replace "`r", "`n").Trim() }
+
+          if ((& $norm ([IO.File]::ReadAllText($path))) -cne (& $norm $expected)) { ''DESKTOP_FILE_MISMATCH''; exit 1 }
+
+          ''EVAL_RESULT:PASS'''
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: "$OutputEncoding = New-Object System.Text.UTF8Encoding $false\n@'\nimport zipfile\nimport xml.etree.ElementTree\
+          \ as ET\n\nW = \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\nNS = {\"w\": W}\n\ndef read_docx(path):\n\
+          \    with zipfile.ZipFile(path) as zf:\n        body = ET.fromstring(zf.read(\"word/document.xml\")).find(\"w:body\"\
+          , NS)\n        names = {}\n        if \"word/styles.xml\" in zf.namelist():\n            styles = ET.fromstring(zf.read(\"\
+          word/styles.xml\"))\n            for style in styles.findall(\"w:style\", NS):\n                name = style.find(\"\
+          w:name\", NS)\n                if name is not None:\n                    names[style.attrib.get(\"{%s}styleId\"\
+          \ % W)] = name.attrib.get(\"{%s}val\" % W, \"\")\n    items = []\n    for child in body:\n        tag = child.tag.split(\"\
+          }\")[1]\n        if tag == \"p\":\n            text = \"\".join(t.text or \"\" for t in child.findall(\".//w:t\"\
+          , NS)).strip()\n            if not text:\n                continue\n            style = child.find(\"w:pPr/w:pStyle\"\
+          , NS)\n            style_id = style.attrib.get(\"{%s}val\" % W) if style is not None else \"\"\n            items.append((\"\
+          p\", text, names.get(style_id, style_id).lower()))\n        elif tag == \"tbl\":\n            rows = []\n      \
+          \      for tr in child.findall(\"w:tr\", NS):\n                rows.append([\"\".join(t.text or \"\" for t in tc.findall(\"\
+          .//w:t\", NS)).strip()\n                             for tc in tr.findall(\"w:tc\", NS)])\n            items.append((\"\
+          tbl\", rows, \"\"))\n    return items\ndef fail(message):\n    raise SystemExit(message)\nitems = read_docx(\"C:/Users/User/Documents/renewal_brief.docx\"\
+          )\nexpected = [('p', 'Q4 2026 Contract Renewals', 'heading 1'), ('tbl', [['Contract', 'Vendor', 'Owner', 'End date',\
+          \ 'Notice by', 'Annual value'], ['C-111', 'Keystone Couriers', 'Lena Fischer', '2026-10-01', '2026-08-02', '11200'],\
+          \ ['C-106', 'Fjord Catering', 'Jordan Lee', '2026-10-15', '2026-08-16', '15400'], ['C-119', 'Summit Telecom', 'Omar\
+          \ Haddad', '2026-10-20', '2026-08-21', '18900'], ['C-103', 'Cobalt Cleaning', 'Priya Nair', '2026-10-31', '2026-09-01',\
+          \ '22800'], ['C-122', 'Vista Parking', 'Lena Fischer', '2026-10-31', '2026-09-01', '5200'], ['C-114', 'Northwind\
+          \ Water', 'Omar Haddad', '2026-11-01', '2026-09-02', '4800'], ['C-109', 'Ironclad Legal', 'Maya Chen', '2026-11-15',\
+          \ '2026-09-16', '30500'], ['C-117', 'Quarry Analytics', 'Lena Fischer', '2026-11-20', '2026-09-21', '41000'], ['C-101',\
+          \ 'Atlas Freight', 'Maya Chen', '2026-11-30', '2026-10-01', '48000'], ['C-112', 'Lumen Lighting', 'Theo Martin',\
+          \ '2026-12-01', '2026-10-02', '7300'], ['C-124', 'Xenon Labs', 'Omar Haddad', '2026-12-10', '2026-10-11', '33300'],\
+          \ ['C-104', 'Delta Office', 'Maya Chen', '2026-12-15', '2026-10-16', '9600'], ['C-115', 'Orchid Florals', 'Jordan\
+          \ Lee', '2026-12-20', '2026-10-21', '3600'], ['C-107', 'Granite Security', 'Priya Nair', '2026-12-31', '2026-11-01',\
+          \ '37200'], ['C-120', 'Tidewater Waste', 'Theo Martin', '2026-12-31', '2026-11-01', '9900']], ''), ('p', 'By owner',\
+          \ 'heading 2'), ('tbl', [['Owner', 'Contracts', 'Total'], ['Maya Chen', '3', '88100'], ['Priya Nair', '2', '60000'],\
+          \ ['Lena Fischer', '3', '57400'], ['Omar Haddad', '3', '57000'], ['Jordan Lee', '2', '19000'], ['Theo Martin', '2',\
+          \ '17200']], ''), ('p', 'By month', 'heading 2'), ('p', 'October 2026: 5 contracts, 73500', ''), ('p', 'November\
+          \ 2026: 4 contracts, 124300', ''), ('p', 'December 2026: 6 contracts, 100900', ''), ('p', 'Totals', 'heading 2'),\
+          \ ('p', 'Total annual value up for renewal: 298700', ''), ('p', 'First notice deadline: 2026-08-02 (C-111 Keystone\
+          \ Couriers)', '')]\nif len(items) != len(expected):\n    fail('ITEM_COUNT_MISMATCH:%r' % (items,))\nfor observed,\
+          \ (kind, value, style) in zip(items, expected):\n    if observed[0] != kind or observed[1] != value:\n        fail('CONTENT_MISMATCH:%r'\
+          \ % (observed,))\n    if kind == 'p' and style and observed[2] != style:\n        fail('STYLE_MISMATCH:%r' % (observed,))\n\
+          \    if kind == 'p' and not style and observed[2].startswith('heading'):\n        fail('UNEXPECTED_HEADING:%r' %\
+          \ (observed,))\nprint(\"PASS\")\n'@ | py -3 -W ignore -"
+        timeout: 180
+        stdout_contains: PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - windows_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: windows
+  companion_device: android (scrcpy window)
+  human_steps: 219
+  converted_from: cross_vm.windows_to_linux.contract_renewals_hard
+  round_trip:
+  - CalendarEventsEvaluator
+  source_stages:
+  - tasks/v1/cross_vm/stages/windows/cross_vm_prepare_contract_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_writer_contract_renewals_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.windows_to_linux.contract_renewals_hard: phone in a scrcpy window
+    on the Windows desktop; the agent prepares renewals_transfer.csv on the phone, moves it to the desktop, and returns results
+    to the phone.'

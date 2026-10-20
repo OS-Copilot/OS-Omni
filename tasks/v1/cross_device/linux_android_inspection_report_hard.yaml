@@ -2,28 +2,29 @@
 task_id: cross_device.linux_android.inspection_report_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The transfer CSV "inspection_transfer.csv" is open in Markor on
-  the phone, and the inspector''s log "inspection_source.txt" is in the same Markor folder. Each finding in the log is written
-  as Unit | Item | Result | Action, and the last four lines are re-test results that override earlier findings. Using Markor
-  only, make the transfer CSV a comma-separated copy of all twenty-four findings with the re-test results applied: keep the
-  header Unit,Item,Result,Action, then one row per finding in the same order as the log, with no spaces around the commas.
-  Fix any existing row that disagrees with the corrected data and do not include the log title, the re-test lines, or any
-  other lines. Save the file and leave it ready to bring to this computer. Then put the finished "inspection_transfer.csv"
-  on this computer as ~/Desktop/inspection_transfer.csv with exactly the same content (for example, copy its text on the phone
-  and paste it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "inspection_report.docx"
-  is open. Use only LibreOffice Writer. Build the report in this exact order: "Harborview Inspection Follow-up" in Heading
-  1; "Failed items" in Heading 2 followed by a four-column table with the header row Unit, Item, Action, Priority and one
-  row for every FAIL finding in CSV order, where Priority is "High" for Smoke detector, Carbon monoxide alarm, Fire extinguisher,
-  and Electrical outlet items and "Normal" otherwise; "Failures by item" in Heading 2 followed by one paragraph per failed
-  item type in alphabetical order in the form "<item>: <count>"; "Open items by unit" in Heading 2 followed by one paragraph
-  per unit that has failures, in CSV order, in the form "<unit>: <count> open"; "Units with no failures" in Heading 2 followed
-  by one paragraph listing those units in CSV order separated by ", "; and "Totals" in Heading 2 followed by the paragraphs
-  "Open items: <count>" and "High priority: <count>". All non-heading paragraphs use body text styles and the document must
-  contain nothing else. Save the document in Word format, then also export it to PDF as "inspection_report.pdf" in the same
-  Documents folder. Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: put a
-  copy of the exported "inspection_report.pdf" onto the phone so it is in the phone''s Download folder (for example, drag
-  it from the file manager onto the phone window). In the Tasks app on the phone, add one task for every High-priority failed
-  item, titled "Fix <Item> - <Unit>" with the due date October 16, 2026, and no other new tasks.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "inspection_transfer.csv" is open in Markor on the phone, and the inspector''s log
+  "inspection_source.txt" is in the same Markor folder. Each finding in the log is written as Unit | Item | Result | Action,
+  and the last four lines are re-test results that override earlier findings. Using Markor only, make the transfer CSV a comma-separated
+  copy of all twenty-four findings with the re-test results applied: keep the header Unit,Item,Result,Action, then one row
+  per finding in the same order as the log, with no spaces around the commas. Fix any existing row that disagrees with the
+  corrected data and do not include the log title, the re-test lines, or any other lines. Save the file and leave it ready
+  to bring to this computer. Then put the finished "inspection_transfer.csv" on this computer as ~/Desktop/inspection_transfer.csv
+  with exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this
+  computer: A blank LibreOffice Writer document named "inspection_report.docx" is open. Use only LibreOffice Writer. Build
+  the report in this exact order: "Harborview Inspection Follow-up" in Heading 1; "Failed items" in Heading 2 followed by
+  a four-column table with the header row Unit, Item, Action, Priority and one row for every FAIL finding in CSV order, where
+  Priority is "High" for Smoke detector, Carbon monoxide alarm, Fire extinguisher, and Electrical outlet items and "Normal"
+  otherwise; "Failures by item" in Heading 2 followed by one paragraph per failed item type in alphabetical order in the form
+  "<item>: <count>"; "Open items by unit" in Heading 2 followed by one paragraph per unit that has failures, in CSV order,
+  in the form "<unit>: <count> open"; "Units with no failures" in Heading 2 followed by one paragraph listing those units
+  in CSV order separated by ", "; and "Totals" in Heading 2 followed by the paragraphs "Open items: <count>" and "High priority:
+  <count>". All non-heading paragraphs use body text styles and the document must contain nothing else. Save the document
+  in Word format, then also export it to PDF as "inspection_report.pdf" in the same Documents folder. Apart from creating
+  the file on the Desktop, do not use a text editor. Then, back on the phone: put a copy of the exported "inspection_report.pdf"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Tasks app on the phone, add one task for every High-priority failed item, titled "Fix <Item> - <Unit>" with the due
+  date October 16, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:

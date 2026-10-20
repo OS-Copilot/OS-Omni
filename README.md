@@ -17,17 +17,20 @@ The [v1 task inventory](tasks/v1/manifest.json) contains **300 benchmark tasks**
 | macOS | 48 |
 | Windows | 48 |
 | Web (browser on the Linux VM) | 48 |
-| Cross-VM | 12 |
+| Cross-device (single screen) | 12 |
 | **Total** | **300** |
 
 Selection prioritizes the recently added Open-series applications, including
 OpenBank, OpenShop, OpenTrip, OpenNote, and OpenTwitter. Other reviewed tasks
 and earlier tasks fill the remaining slots. v1 includes 181 Open-series tasks.
 
-The 12 cross-VM workflows each run a stage on one VM, move a file through the
-host, and finish on another VM: six Android-to-Windows and six Windows-to-Linux
-workflows, all at hard difficulty. Their stage definitions and oracle companions are supporting files
-and do not count as additional benchmark tasks.
+The 12 cross-device workflows each run on one screen: the Linux or Windows
+desktop shows a companion Android phone in a scrcpy window, and the agent works
+on both, moves the file between them, and returns results to the phone. There
+are six Linux + Android and six Windows + Android workflows, all at hard
+difficulty. They replace the earlier cross-VM workflows, whose stage
+definitions remain as supporting files and do not count as additional
+benchmark tasks.
 
 Task definitions and required local assets live under `tasks/v1/`. The
 [release guide](tasks/v1/README.md) explains the layout and selection rules.

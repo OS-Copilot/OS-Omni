@@ -203,3 +203,27 @@ def test_code_prompt_uses_current_screen_coordinate_bounds():
     assert "x ranges from 0 to 1919, y from 0 to 1079" in prompt
     resized = builder.build_step_prompt(observation=SimpleNamespace(width=1280, height=800))
     assert "x ranges from 0 to 1279, y from 0 to 799" in resized
+
+
+def test_run_log_appends_one_record_per_run(tmp_path):
+    from scripts.run_linux_qemu_batch import append_run_log
+
+    path = tmp_path / "logs" / "runs.jsonl"
+    rows = [{"task_id": "a", "status": "PASS", "classification": "PASS"},
+            {"task_id": "b", "status": "FAIL", "classification": "FAIL"}]
+    for _ in range(2):
+        append_run_log(path, {"model": "m", "started_at": "t"}, rows, tmp_path / "out", tmp_path / "out/summary.json")
+    records = [json.loads(line) for line in path.read_text().splitlines()]
+    assert len(records) == 2
+    assert records[0]["score"] == "1/2" and records[0]["platform"] == "linux" and records[0]["task_ids"] == ["a", "b"]
+    assert records[0]["counts"] == {"PASS": 1, "FAIL": 1}
+
+
+def test_windows_end_state_skips_appdata_and_copies_open_files():
+    from scripts.run_linux_qemu_batch import WINDOWS_END_STATE_SCRIPT
+
+    # PowerShell receives a valid regex for the literal \AppData\ path segment.
+    assert r"-notmatch '\\AppData\\'" in WINDOWS_END_STATE_SCRIPT
+    # Open documents are copied with read/write sharing, then zipped from the staging folder.
+    assert "'Read', 'ReadWrite'" in WINDOWS_END_STATE_SCRIPT and "CreateFromDirectory" in WINDOWS_END_STATE_SCRIPT
+    assert "Compress-Archive -LiteralPath" not in WINDOWS_END_STATE_SCRIPT

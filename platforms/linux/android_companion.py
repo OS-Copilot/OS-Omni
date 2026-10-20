@@ -109,7 +109,11 @@ def reset_phone(settings: CompanionSettings, *, boot_timeout: int = 180) -> None
 
 
 def scrcpy_script(settings: CompanionSettings, *, x: int, y: int, height: int) -> str:
-    """Guest bash that (re)connects adb to the phone and opens the scrcpy window."""
+    """Guest bash that (re)connects adb to the phone and opens the scrcpy window.
+
+    scrcpy's shortcut modifier is moved from its default (left Alt or left Super) to right
+    Super: agents press Alt+Left as "back", which with the default rotates the phone view.
+    """
     target = f"{settings.forward_host}:{settings.forward_port}"
     title = shlex.quote(WINDOW_TITLE)
     return "\n".join([
@@ -123,7 +127,7 @@ def scrcpy_script(settings: CompanionSettings, *, x: int, y: int, height: int) -
         f"  for i in $(seq 20); do adb connect {target} | grep -q connected && break; sleep 1; done",
         f"  timeout 30 adb -s {target} wait-for-device",
         f"  setsid -f scrcpy -s {target} --window-title {title} --window-x {x} --window-y {y} "
-        f"--window-height {height} --keyboard=uhid --no-audio >/tmp/osomni_scrcpy.log 2>&1 </dev/null",
+        f"--window-height {height} --keyboard=uhid --no-audio --shortcut-mod=rsuper >/tmp/osomni_scrcpy.log 2>&1 </dev/null",
         # Ready only if the window appears and is still open a few seconds later.
         f"  for i in $(seq 30); do wmctrl -l | grep -q {title} && break; sleep 1; done",
         f"  sleep 4; wmctrl -l | grep -q {title} && echo SCRCPY_READY && exit 0",

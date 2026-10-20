@@ -32,6 +32,16 @@ def phone_controller(settings: CompanionSettings) -> AdbController:
 
 
 class LinuxAndroidCompanionInitializer(BaseInitializer):
+    # The desktop half: params key, setup initializer, and how the phone window is opened.
+    DESKTOP = "linux"
+    DEFAULT_WINDOW = DEFAULT_WINDOW
+
+    def desktop_setup(self) -> BaseInitializer:
+        return DesktopSetupInitializer()
+
+    def open_phone_window(self, controller: Any, settings: CompanionSettings, window: dict[str, int]) -> dict[str, Any]:
+        return controller.run_bash_script(scrcpy_script(settings, **window), timeout=200)
+
     def initialize(self, context: Mapping[str, Any]) -> InitResult:
         params = dict(context.get("params") or {})
         controller = context.get("controller")
@@ -53,15 +63,15 @@ class LinuxAndroidCompanionInitializer(BaseInitializer):
             if result.status != InitStatus.PASS:
                 return InitResult(result.status, f"Android setup failed: {result.message}", metadata)
 
-        linux = dict(params.get("linux") or {})
-        if linux.get("steps"):
-            result = DesktopSetupInitializer().initialize({**context, "params": linux})
-            metadata["linux"] = {"status": result.status.value, "message": result.message}
+        desktop = dict(params.get(self.DESKTOP) or {})
+        if desktop.get("steps"):
+            result = self.desktop_setup().initialize({**context, "params": desktop})
+            metadata[self.DESKTOP] = {"status": result.status.value, "message": result.message}
             if result.status != InitStatus.PASS:
-                return InitResult(result.status, f"Linux setup failed: {result.message}", metadata)
+                return InitResult(result.status, f"{self.DESKTOP.capitalize()} setup failed: {result.message}", metadata)
 
-        window = {**DEFAULT_WINDOW, **dict(params.get("window") or {})}
-        reply = controller.run_bash_script(scrcpy_script(settings, **window), timeout=200)
+        window = {**self.DEFAULT_WINDOW, **dict(params.get("window") or {})}
+        reply = self.open_phone_window(controller, settings, window)
         output = str(reply.get("output") or "")
         if "SCRCPY_READY" not in output:
             metadata["scrcpy"] = output[-2000:] + str(reply.get("error") or "")[-2000:]

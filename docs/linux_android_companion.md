@@ -68,6 +68,11 @@ Before opening the window, the initializer clears X keycodes 94, 187 and 188 wit
 `<` through the ISO key and `(`/`)` through the keypad paren keys. Linux apps accept those
 keys, but the phone shows `|` for the first and drops the parens.
 
+scrcpy's shortcut modifier is moved to right Super (`--shortcut-mod=rsuper`). With the default (left Alt or left
+Super), agents pressing Alt+Left as "back" rotated the phone view. The instruction tells the agent that a right-click
+in the phone window is Back and a middle-click is Home (scrcpy's default mouse bindings); the phone uses gesture
+navigation and shows no Back button.
+
 The phone window opens with `--keyboard=uhid`, which presents a hardware keyboard to the phone. Even so, text typed with no gap between keys loses characters: at 0 ms most of a 780-character CSV was lost, at 10 ms one chunk was lost, and 20 ms was reliable in every trial. The harness therefore paces `pyautogui.write` when `OS_OMNI_MIN_TYPE_INTERVAL` is set. Use `0.02` for these tasks.
 
 ## Run settings
@@ -81,10 +86,13 @@ export ANDROID_ADB_SERVER_PORT=5037                  # host adb server that sees
 export OS_OMNI_ANDROID_FORWARD=172.17.0.1:15571      # guest-reachable address forwarded to adbd (5571)
 export OS_OMNI_ANDROID_SNAPSHOT=osomni_cross_ready
 export OS_OMNI_MIN_TYPE_INTERVAL=0.02
-python scripts/run_linux_qemu_batch.py --execution executions/v1/cross_device.yaml \
+python scripts/run_linux_qemu_batch.py --execution executions/v1/cross_device_linux_android.yaml \
   --snapshot os_omni_v3_android ...
 ```
 
 To probe a task without a model, run `scripts/linux_task_probe.py` with the same environment. A negative check runs the initializer and then the evaluator directly. For the positive check, the phone edit and the transfer are done in the real GUI (copy on the phone, paste into a text editor on Linux), and the document is built by the Windows stage oracle's Python with `USERPROFILE=/home/user`.
+
+The Windows + Android tasks reuse this setup on the Windows desktop; see
+[windows_android_companion.md](windows_android_companion.md).
 
 The six tasks were generated from the Android→Windows cross-VM workflows they replace. Their stage files under `tasks/v1/cross_vm/stages/` are kept as provenance.

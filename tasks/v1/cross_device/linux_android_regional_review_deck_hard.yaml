@@ -2,27 +2,28 @@
 task_id: cross_device.linux_android.regional_review_deck_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The transfer CSV "regional_transfer.csv" is open in Markor on the
-  phone, and the finance note "regional_source.txt" is in the same Markor folder. Using Markor only, make the transfer CSV
-  contain the header Region,Revenue,Target,Owner followed by one row for each of the eight regions in the note, in the same
-  order, with Revenue and Target as plain numbers and Owner as the person''s name. Apply all three finance corrections, fix
-  any existing row that disagrees with the corrected data, and do not include any other lines. Save the file and leave it
-  ready to bring to this computer. Then put the finished "regional_transfer.csv" on this computer as ~/Desktop/regional_transfer.csv
-  with exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this
-  computer: A LibreOffice Impress presentation named "regional_review.pptx" is open with one empty title slide. Use only LibreOffice
-  Impress. Make the deck exactly twelve slides. Slide 1 uses the title layout with the title "Q3 Regional Review" and the
-  subtitle "Revenue vs target (k USD)". Slide 2 has the title "Agenda" and one content line per region name in CSV order.
-  Slides 3 to 10 cover one region each in CSV order, using a title and content layout: the title is the region name and the
-  content has exactly five lines, "Revenue: <revenue>", "Target: <target>", "Variance: <revenue minus target>" (with a leading
-  + when positive, a leading - when negative, and 0 when equal), "Owner: <owner>", and "Status: <status>", where status is
-  "Above target", "Below target", or "On target". Slide 11 has the title "Follow-ups" and one content line "<region> - <owner>
-  (<variance>)" for each region below target, in CSV order. Slide 12 has the title "Summary" and the five content lines "Total
-  revenue: <sum>", "Total target: <sum>", "Above target: <count>", "On target: <count>", and "Below target: <count>". Put
-  no other text on any slide and save the presentation in pptx format. Apart from creating the file on the Desktop, do not
-  use a text editor. Then, back on the phone: in Markor create the note "regional_followups.txt" in the same folder as the
-  CSV, containing exactly the follow-up lines of slide 11 in the same order and form, followed by the lines "Total revenue:
-  <sum>" and "Total target: <sum>" from slide 12. In the Tasks app on the phone, add one task for each region below target,
-  titled "Follow up <Region> with <Owner>" with the due date October 20, 2026, and no other new tasks.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "regional_transfer.csv" is open in Markor on the phone, and the finance note "regional_source.txt"
+  is in the same Markor folder. Using Markor only, make the transfer CSV contain the header Region,Revenue,Target,Owner followed
+  by one row for each of the eight regions in the note, in the same order, with Revenue and Target as plain numbers and Owner
+  as the person''s name. Apply all three finance corrections, fix any existing row that disagrees with the corrected data,
+  and do not include any other lines. Save the file and leave it ready to bring to this computer. Then put the finished "regional_transfer.csv"
+  on this computer as ~/Desktop/regional_transfer.csv with exactly the same content (for example, copy its text on the phone
+  and paste it into a text editor here). Next, on this computer: A LibreOffice Impress presentation named "regional_review.pptx"
+  is open with one empty title slide. Use only LibreOffice Impress. Make the deck exactly twelve slides. Slide 1 uses the
+  title layout with the title "Q3 Regional Review" and the subtitle "Revenue vs target (k USD)". Slide 2 has the title "Agenda"
+  and one content line per region name in CSV order. Slides 3 to 10 cover one region each in CSV order, using a title and
+  content layout: the title is the region name and the content has exactly five lines, "Revenue: <revenue>", "Target: <target>",
+  "Variance: <revenue minus target>" (with a leading + when positive, a leading - when negative, and 0 when equal), "Owner:
+  <owner>", and "Status: <status>", where status is "Above target", "Below target", or "On target". Slide 11 has the title
+  "Follow-ups" and one content line "<region> - <owner> (<variance>)" for each region below target, in CSV order. Slide 12
+  has the title "Summary" and the five content lines "Total revenue: <sum>", "Total target: <sum>", "Above target: <count>",
+  "On target: <count>", and "Below target: <count>". Put no other text on any slide and save the presentation in pptx format.
+  Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: in Markor create the note
+  "regional_followups.txt" in the same folder as the CSV, containing exactly the follow-up lines of slide 11 in the same order
+  and form, followed by the lines "Total revenue: <sum>" and "Total target: <sum>" from slide 12. In the Tasks app on the
+  phone, add one task for each region below target, titled "Follow up <Region> with <Owner>" with the due date October 20,
+  2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:

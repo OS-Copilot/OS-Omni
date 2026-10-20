@@ -2,29 +2,30 @@
 task_id: cross_device.linux_android.reorder_plan_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The incomplete transfer CSV "reorder_transfer.csv" is open in Markor
-  on the phone, and the stock count note "stock_count_source.txt" is in the same Markor folder. Using Markor only, make the
-  transfer CSV contain the header Item,OnHand,ReorderPoint,Supplier,UnitCost followed by one row for each of the sixteen items
-  in the note, in the same order, using plain numbers for OnHand, ReorderPoint, and UnitCost. Apply all five corrections at
-  the end of the note, fix any existing row that disagrees with the corrected data, and do not include any other lines. Save
-  the file and leave it ready to bring to this computer. Then put the finished "reorder_transfer.csv" on this computer as
-  ~/Desktop/reorder_transfer.csv with exactly the same content (for example, copy its text on the phone and paste it into
-  a text editor here). Next, on this computer: A blank LibreOffice Calc workbook named "reorder_plan.xlsx" is open. Use only
-  LibreOffice Calc. Sheet 1 must be named "Reorder": put the CSV header and sixteen item rows in A1:E17 with numbers kept
-  numeric, then add F1 "Shortfall" with =MAX(0;C2-B2), G1 "OrderQty" with =ROUNDUP(F2/10;0)*10, H1 "LineCost" with =G2*E2,
-  and I1 "Priority" with =IF(B2=0;"Critical";IF(F2>0;"Reorder";"OK")), each filled down to row 17; in row 18 put "Total" in
-  A18, =SUM(G2:G17) in G18, and =SUM(H2:H17) in H18. Sheet 2 must be named "BySupplier" with the header Supplier, Lines, Units,
-  Cost, Critical in A1:E1 and one row per supplier sorted alphabetically from row 2, where B uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17;">0"),
-  C uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17), D uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$H$2:$H$17), and
-  E uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$I$2:$I$17;"Critical"), filled down; the row after the last supplier has
-  "Total" in A and SUM formulas over the supplier rows in B through E. Sheet 3 must be named "Summary" with the header Metric,
-  Value in A1:B1 and these rows: "Items to reorder" with =COUNTIF($Reorder.$G$2:$G$17;">0"); "Critical items" with =COUNTIF($Reorder.$I$2:$I$17;"Critical");
-  "Total order cost" with =$Reorder.H18; "Largest supplier" with =INDEX($BySupplier.A2:A5;MATCH(MAX($BySupplier.D2:D5);$BySupplier.D2:D5;0));
-  and "Largest supplier cost" with =MAX($BySupplier.D2:D5). Leave everything else empty and save the workbook in xlsx format.
-  Finally, export the BySupplier sheet as a comma-separated CSV file named "supplier_po.csv" in the same Documents folder.
-  Then, back on the phone: put a copy of the exported "supplier_po.csv" onto the phone so it is in the phone''s Download folder
-  (for example, drag it from the file manager onto the phone window). In the Tasks app on the phone, add one task for every
-  Critical item, titled "Expedite <Item> from <Supplier>" with the due date October 14, 2026, and no other new tasks.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The incomplete transfer CSV "reorder_transfer.csv" is open in Markor on the phone, and the stock count
+  note "stock_count_source.txt" is in the same Markor folder. Using Markor only, make the transfer CSV contain the header
+  Item,OnHand,ReorderPoint,Supplier,UnitCost followed by one row for each of the sixteen items in the note, in the same order,
+  using plain numbers for OnHand, ReorderPoint, and UnitCost. Apply all five corrections at the end of the note, fix any existing
+  row that disagrees with the corrected data, and do not include any other lines. Save the file and leave it ready to bring
+  to this computer. Then put the finished "reorder_transfer.csv" on this computer as ~/Desktop/reorder_transfer.csv with exactly
+  the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
+  A blank LibreOffice Calc workbook named "reorder_plan.xlsx" is open. Use only LibreOffice Calc. Sheet 1 must be named "Reorder":
+  put the CSV header and sixteen item rows in A1:E17 with numbers kept numeric, then add F1 "Shortfall" with =MAX(0;C2-B2),
+  G1 "OrderQty" with =ROUNDUP(F2/10;0)*10, H1 "LineCost" with =G2*E2, and I1 "Priority" with =IF(B2=0;"Critical";IF(F2>0;"Reorder";"OK")),
+  each filled down to row 17; in row 18 put "Total" in A18, =SUM(G2:G17) in G18, and =SUM(H2:H17) in H18. Sheet 2 must be
+  named "BySupplier" with the header Supplier, Lines, Units, Cost, Critical in A1:E1 and one row per supplier sorted alphabetically
+  from row 2, where B uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17;">0"), C uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17),
+  D uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$H$2:$H$17), and E uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$I$2:$I$17;"Critical"),
+  filled down; the row after the last supplier has "Total" in A and SUM formulas over the supplier rows in B through E. Sheet
+  3 must be named "Summary" with the header Metric, Value in A1:B1 and these rows: "Items to reorder" with =COUNTIF($Reorder.$G$2:$G$17;">0");
+  "Critical items" with =COUNTIF($Reorder.$I$2:$I$17;"Critical"); "Total order cost" with =$Reorder.H18; "Largest supplier"
+  with =INDEX($BySupplier.A2:A5;MATCH(MAX($BySupplier.D2:D5);$BySupplier.D2:D5;0)); and "Largest supplier cost" with =MAX($BySupplier.D2:D5).
+  Leave everything else empty and save the workbook in xlsx format. Finally, export the BySupplier sheet as a comma-separated
+  CSV file named "supplier_po.csv" in the same Documents folder. Then, back on the phone: put a copy of the exported "supplier_po.csv"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Tasks app on the phone, add one task for every Critical item, titled "Expedite <Item> from <Supplier>" with the due
+  date October 14, 2026, and no other new tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:

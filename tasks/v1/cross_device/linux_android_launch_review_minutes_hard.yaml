@@ -2,21 +2,22 @@
 task_id: cross_device.linux_android.launch_review_minutes_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The reference note "launch_review_source.txt" and the incomplete
-  transfer note "launch_review_transfer.txt" are in Markor on the phone, and the transfer note is already open. Using Markor
-  only, replace the transfer note so it exactly matches the reference note, preserving every non-empty line and order, then
-  save it and leave it ready to bring to this computer. Then put the finished "launch_review_transfer.txt" on this computer
-  as ~/Desktop/launch_review_transfer.txt with exactly the same content (for example, copy its text on the phone and paste
-  it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "launch_review_minutes.docx"
-  is open. Use only LibreOffice Writer. Bring every non-empty line from the note on the Desktop into the document as separate
-  paragraphs in the same order. In the same Writer document, also add seven tables: Routing Matrix, Evidence Reconciliation,
-  Cross-VM Delivery Chain, Final Escalation Summary, Reviewer Rotation, Acceptance Criteria, and Cross-VM Consistency Checks.
-  The tables must summarize only information from the note on the Desktop. Save the document. Then, back on the phone: put
-  a copy of the saved "launch_review_minutes.docx" onto the phone so it is in the phone''s Download folder (for example, drag
-  it from the file manager onto the phone window). In the Calendar app on the phone, add a 30-minute event for each meeting
-  in the note''s "Follow-up Schedule" and "Next Checkpoint" sections, in the week starting Monday, October 19, 2026, at the
-  time given in the note. Title each event with the meeting description from the note, capitalized and without the final period
-  (for example "Vendor access checkpoint"), and add no other new events.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The reference note "launch_review_source.txt" and the incomplete transfer note "launch_review_transfer.txt"
+  are in Markor on the phone, and the transfer note is already open. Using Markor only, replace the transfer note so it exactly
+  matches the reference note, preserving every non-empty line and order, then save it and leave it ready to bring to this
+  computer. Then put the finished "launch_review_transfer.txt" on this computer as ~/Desktop/launch_review_transfer.txt with
+  exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
+  A blank LibreOffice Writer document named "launch_review_minutes.docx" is open. Use only LibreOffice Writer. Bring every
+  non-empty line from the note on the Desktop into the document as separate paragraphs in the same order. In the same Writer
+  document, also add seven tables: Routing Matrix, Evidence Reconciliation, Cross-VM Delivery Chain, Final Escalation Summary,
+  Reviewer Rotation, Acceptance Criteria, and Cross-VM Consistency Checks. The tables must summarize only information from
+  the note on the Desktop. Save the document. Then, back on the phone: put a copy of the saved "launch_review_minutes.docx"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Calendar app on the phone, add a 30-minute event for each meeting in the note''s "Follow-up Schedule" and "Next Checkpoint"
+  sections, in the week starting Monday, October 19, 2026, at the time given in the note. Title each event with the meeting
+  description from the note, capitalized and without the final period (for example "Vendor access checkpoint"), and add no
+  other new events.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -745,7 +746,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 300
+  max_steps: 650
   step_timeout_seconds: 120
 metadata:
   tags:

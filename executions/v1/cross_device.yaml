@@ -5,6 +5,12 @@ tasks:
 - tasks/v1/cross_device/linux_android_launch_review_minutes_hard.yaml
 - tasks/v1/cross_device/linux_android_regional_review_deck_hard.yaml
 - tasks/v1/cross_device/linux_android_reorder_plan_hard.yaml
+- tasks/v1/cross_device/windows_android_budget_review_hard.yaml
+- tasks/v1/cross_device/windows_android_contract_renewals_hard.yaml
+- tasks/v1/cross_device/windows_android_incident_postmortem_hard.yaml
+- tasks/v1/cross_device/windows_android_launch_review_minutes_hard.yaml
+- tasks/v1/cross_device/windows_android_payables_ledger_hard.yaml
+- tasks/v1/cross_device/windows_android_shift_coverage_hard.yaml
 models:
 - gpt5_4
 action_mode: code_adapter
@@ -12,5 +18,5 @@ observation_mode: screenshot_only
 history_window: 3
 metadata:
   release: v1
-  description: 'OS-Omni Live v1: the 6 single-screen Linux + Android cross-device tasks. Run on the Linux VM with
-    a companion phone; see docs/linux_android_companion.md.'
+  description: 'OS-Omni Live v1: all 12 single-screen cross-device tasks (index of the track). The tasks run on
+    two platforms; run them with cross_device_linux_android.yaml and cross_device_windows_android.yaml.'

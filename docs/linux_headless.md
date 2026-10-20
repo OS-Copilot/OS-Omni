@@ -91,6 +91,11 @@ tracks progress and separates task verdicts from initialization, evaluation,
 execution, and VM infrastructure errors. A completed batch is not necessarily
 a successful benchmark; inspect the summary counts.
 
+When a batch finishes, the runner appends one JSON line (run settings, output directory,
+`passed`/`completed` score and verdict counts) to `logs/runs.jsonl` in the repository. `logs/` is
+git-ignored and holds the local experiment record. Use `--run-log PATH` to write elsewhere or
+`--no-run-log` to skip it. A sharded run writes one line per worker.
+
 After each restore the runner clears keycodes 94, 187 and 188 with `xmodmap`. The guest
 uses a pc105 keymap where `less` is the extra ISO key, so pyautogui would otherwise type
 `<` as `>` in any agent code. Keycodes 187/188 are the keypad paren keys: pyautogui types

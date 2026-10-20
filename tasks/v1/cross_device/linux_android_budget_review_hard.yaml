@@ -2,25 +2,26 @@
 task_id: cross_device.linux_android.budget_review_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The reference CSV "budget_source.csv" and the incomplete transfer
-  CSV "budget_transfer.csv" are in Markor on the phone, and the transfer CSV is already open. Using Markor only, replace the
-  transfer CSV so it exactly matches the reference CSV, then save it and leave it ready to bring to this computer. The finished
-  transfer CSV must contain the header Category, Planned, Actual, Owner, Region, DueDate and all sixteen rows in the same
-  order. Then put the finished "budget_transfer.csv" on this computer as ~/Desktop/budget_transfer.csv with exactly the same
-  content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer: A blank
-  LibreOffice Calc workbook named "budget_review.xlsx" is open. Use only LibreOffice Calc. Build a six-sheet workbook from
-  the CSV on the Desktop. Sheet 1 must be named RawBudget and contain all sixteen rows with columns Category, Planned, Actual,
-  Owner, Region, DueDate. Sheet 2 must be named VarianceReview and use formulas to reference RawBudget, compute Variance,
-  Variance Abs, Status, Severity, Review Flag, Disposition, Recheck Owner, Review Slot, Audit ID, Cross-VM Trace, Evidence
-  Link, and Packet Type for every row. Sheet 3 must be named EscalationQueue and list only rows whose Variance Abs is at least
-  100, using formulas that reference VarianceReview. Sheet 4 must be OwnerSummary with SUMIF/COUNTIFS formulas by owner. Sheet
-  5 must be RegionalSummary with SUMIF/COUNTIFS formulas by region. Sheet 6 must be ControlPanel with imported row count,
-  total planned, total actual, net variance, absolute variance, escalation count, critical count, and Android Transfer Status.
-  Save the workbook. Then, back on the phone: in Markor create the note "budget_control.txt" in the same folder as the CSV,
-  containing exactly these five lines with the values from your workbook: "Rows: <imported row count>", "Total planned: <total>",
-  "Total actual: <total>", "Net variance: <total actual minus total planned>", and "Escalations: <number of EscalationQueue
-  rows>". In the Tasks app on the phone, add one task for every budget row whose Variance Abs is at least 200, titled "Recheck
-  <Category> - <Owner>" with the due date October 19, 2026, and no other new tasks.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The reference CSV "budget_source.csv" and the incomplete transfer CSV "budget_transfer.csv" are in
+  Markor on the phone, and the transfer CSV is already open. Using Markor only, replace the transfer CSV so it exactly matches
+  the reference CSV, then save it and leave it ready to bring to this computer. The finished transfer CSV must contain the
+  header Category, Planned, Actual, Owner, Region, DueDate and all sixteen rows in the same order. Then put the finished "budget_transfer.csv"
+  on this computer as ~/Desktop/budget_transfer.csv with exactly the same content (for example, copy its text on the phone
+  and paste it into a text editor here). Next, on this computer: A blank LibreOffice Calc workbook named "budget_review.xlsx"
+  is open. Use only LibreOffice Calc. Build a six-sheet workbook from the CSV on the Desktop. Sheet 1 must be named RawBudget
+  and contain all sixteen rows with columns Category, Planned, Actual, Owner, Region, DueDate. Sheet 2 must be named VarianceReview
+  and use formulas to reference RawBudget, compute Variance, Variance Abs, Status, Severity, Review Flag, Disposition, Recheck
+  Owner, Review Slot, Audit ID, Cross-VM Trace, Evidence Link, and Packet Type for every row. Sheet 3 must be named EscalationQueue
+  and list only rows whose Variance Abs is at least 100, using formulas that reference VarianceReview. Sheet 4 must be OwnerSummary
+  with SUMIF/COUNTIFS formulas by owner. Sheet 5 must be RegionalSummary with SUMIF/COUNTIFS formulas by region. Sheet 6 must
+  be ControlPanel with imported row count, total planned, total actual, net variance, absolute variance, escalation count,
+  critical count, and Android Transfer Status. Save the workbook. Then, back on the phone: in Markor create the note "budget_control.txt"
+  in the same folder as the CSV, containing exactly these five lines with the values from your workbook: "Rows: <imported
+  row count>", "Total planned: <total>", "Total actual: <total>", "Net variance: <total actual minus total planned>", and
+  "Escalations: <number of EscalationQueue rows>". In the Tasks app on the phone, add one task for every budget row whose
+  Variance Abs is at least 200, titled "Recheck <Category> - <Owner>" with the due date October 19, 2026, and no other new
+  tasks.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:
@@ -343,7 +344,7 @@ evaluation:
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
-  max_steps: 300
+  max_steps: 500
   step_timeout_seconds: 120
 metadata:
   tags:

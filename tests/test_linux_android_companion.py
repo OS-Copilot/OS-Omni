@@ -30,6 +30,23 @@ def test_forbidden_actions_flags_adb_and_scrcpy(tmp_path):
     assert [hit["step"] for hit in hits] == [2, 3]
 
 
+def test_forbidden_actions_reads_recorded_trajectories(tmp_path):
+    # Episode trajectories store the action as the repr of the parsed action dict.
+    def record(step, code):
+        action = {"type": "python_code", "language": "python", "code": code, "timeout_seconds": 120}
+        return json.dumps({"step_index": step, "action_parse": {"status": "SUCCESS", "action": repr(action), "error": "None"}})
+
+    path = tmp_path / "trajectory.jsonl"
+    path.write_text("\n".join([
+        record(1, "pyautogui.click(995, 67)\npyautogui.typewrite('scrcpy', interval=0.05)"),
+        record(2, "# bring the scrcpy window to the front\npyautogui.click(1460, 600)"),
+        record(3, "pyautogui.click(10, 10)  # adb is not used"),
+        record(4, "pyautogui.write('adb devices')"),
+    ]))
+    hits = composite.forbidden_actions(path, composite.DEFAULT_FORBIDDEN)
+    assert [hit["step"] for hit in hits] == [1, 4]
+
+
 class _Fixed(BaseEvaluator):
     status = EvalStatus.PASS
 
@@ -69,6 +86,8 @@ def test_scrcpy_script_targets_forwarded_adbd():
     script = scrcpy_script(settings, x=1240, y=60, height=990)
     assert "adb connect 172.17.0.1:15571" in script
     assert "--keyboard=uhid" in script and "SCRCPY_READY" in script
+    # Alt+Left (the agents' "back") must not rotate the phone view.
+    assert "--shortcut-mod=rsuper" in script
 
 
 @pytest.mark.parametrize("path", TASKS, ids=[path.stem for path in TASKS])

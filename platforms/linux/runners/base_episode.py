@@ -20,6 +20,66 @@ from platforms.linux.runners.evaluation import evaluation_to_episode_outcome, ru
 from platforms.linux.runners.initialization import initialization_to_episode_failure_message
 
 
+# Windows keyboard events from pyautogui carry scan code 0, so apps that read scan codes (SDL,
+# hence the scrcpy phone window) drop letters, digits and shortcuts. OS_OMNI_KEY_SCANCODES fills
+# in the real scan code (and the extended-key flag for navigation keys) on Windows guests.
+_WINDOWS_SCANCODE_PRELUDE = """import sys
+if sys.platform == 'win32':
+    import ctypes
+    _osomni_user32 = ctypes.windll.user32
+    _osomni_keybd_event = _osomni_user32.keybd_event
+    _osomni_extended = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x2D, 0x2E, 0x5B, 0x5C, 0x5D, 0x6F, 0x90, 0xA3, 0xA5}
+    def _osomni_scancode_keybd_event(vk, scan, flags, extra):
+        if not scan:
+            scan = _osomni_user32.MapVirtualKeyW(vk, 0)
+            if vk in _osomni_extended:
+                flags |= 0x1
+        return _osomni_keybd_event(vk, scan, flags, extra)
+    _osomni_user32.keybd_event = _osomni_scancode_keybd_event
+"""
+
+
+def code_prelude() -> str:
+    """Python run in the guest before each action's code."""
+    prelude = (
+        "import pyautogui, time\n"
+        "pyautogui.PAUSE = 0\n"
+        "pyautogui.FAILSAFE = False\n"
+    )
+    if os.environ.get("OS_OMNI_KEY_SCANCODES", "").strip() in {"1", "true", "yes"}:
+        prelude += _WINDOWS_SCANCODE_PRELUDE
+    # SDL windows (the scrcpy phone) read a button press at the last cursor position they were told
+    # about; on Windows the move message can arrive after the press. OS_OMNI_POINTER_SETTLE moves the
+    # cursor first and waits this many seconds before every press and release, also when the cursor
+    # was moved by an earlier call (moveTo, then click or dragTo).
+    settle = float(os.environ.get("OS_OMNI_POINTER_SETTLE", "0") or 0)
+    if settle > 0:
+        prelude += (
+            "def _osomni_settled(press):\n"
+            "    def settled(x=None, y=None, *args, **kwargs):\n"
+            "        if x is not None or y is not None:\n"
+            "            pyautogui.moveTo(*pyautogui._normalizeXYArgs(x, y))\n"
+            "            x = y = None\n"
+            f"        time.sleep({settle!r})\n"
+            "        return press(x, y, *args, **kwargs)\n"
+            "    return settled\n"
+            "pyautogui.click = _osomni_settled(pyautogui.click)\n"
+            "pyautogui.mouseDown = _osomni_settled(pyautogui.mouseDown)\n"
+            "pyautogui.mouseUp = _osomni_settled(pyautogui.mouseUp)\n"
+        )
+    # Text typed into a mirrored phone (scrcpy) loses characters when keys are sent
+    # back to back; OS_OMNI_MIN_TYPE_INTERVAL sets a minimum per-character interval.
+    min_interval = float(os.environ.get("OS_OMNI_MIN_TYPE_INTERVAL", "0") or 0)
+    if min_interval > 0:
+        prelude += (
+            "_osomni_write = pyautogui.write\n"
+            "def _osomni_paced_write(message, interval=0.0, *args, **kwargs):\n"
+            f"    return _osomni_write(message, max(float(interval or 0), {min_interval!r}), *args, **kwargs)\n"
+            "pyautogui.write = pyautogui.typewrite = _osomni_paced_write\n"
+        )
+    return prelude
+
+
 class BaseEpisodeRunner(ABC):
     """Executes one task episode with platform-specific environment hooks."""
 
@@ -257,21 +317,7 @@ class BaseEpisodeRunner(ABC):
             if str(action_parsed.get("type") or "").strip() == "python_code":
                 timeout_seconds = max(1, int(action_parsed.get("timeout_seconds", 30) or 30))
                 code = str(action_parsed.get("code") or "").strip()
-                prelude = (
-                    "import pyautogui, time\n"
-                    "pyautogui.PAUSE = 0\n"
-                    "pyautogui.FAILSAFE = False\n"
-                )
-                # Text typed into a mirrored phone (scrcpy) loses characters when keys are sent
-                # back to back; OS_OMNI_MIN_TYPE_INTERVAL sets a minimum per-character interval.
-                min_interval = float(os.environ.get("OS_OMNI_MIN_TYPE_INTERVAL", "0") or 0)
-                if min_interval > 0:
-                    prelude += (
-                        "_osomni_write = pyautogui.write\n"
-                        "def _osomni_paced_write(message, interval=0.0, *args, **kwargs):\n"
-                        f"    return _osomni_write(message, max(float(interval or 0), {min_interval!r}), *args, **kwargs)\n"
-                        "pyautogui.write = pyautogui.typewrite = _osomni_paced_write\n"
-                    )
+                prelude = code_prelude()
                 raw_result = self.controller.run_python_script(f"{prelude}\n{code}\n", timeout=timeout_seconds)
                 stdout = str(raw_result.get("output") or "").strip()
                 stderr = str(raw_result.get("error") or "").strip()

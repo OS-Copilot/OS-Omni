@@ -56,7 +56,7 @@ def _split_code_semicolons(line: str) -> List[str]:
     quote: Optional[str] = None
     escaped = False
 
-    for char in line:
+    for index, char in enumerate(line):
         if escaped:
             current.append(char)
             escaped = False
@@ -72,6 +72,10 @@ def _split_code_semicolons(line: str) -> List[str]:
             elif quote is None:
                 quote = char
             continue
+        if char == "#" and quote is None:
+            # A comment runs to the end of the line; semicolons in it do not split statements.
+            current.append(line[index:])
+            break
         if char == ";" and quote is None:
             part = "".join(current).strip()
             if part:

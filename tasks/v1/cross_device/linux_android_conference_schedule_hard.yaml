@@ -2,25 +2,26 @@
 task_id: cross_device.linux_android.conference_schedule_hard
 platform: linux
 instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
-  window, without a terminal or adb. First, on the phone: The transfer CSV "schedule_transfer.csv" is open in Markor on the
-  phone, and the organizer''s note "schedule_source.txt" is in the same Markor folder. Each session in the note is written
-  as Time | Room | Session | Speaker, and the last four lines are changes to apply. Using Markor only, rewrite the transfer
-  CSV so it has the header Time,Room,Session,Speaker followed by one row per remaining session after every change is applied,
-  sorted by Time and then by Room, with no spaces around commas and no other lines. Save the file and leave it ready to bring
-  to this computer. Then put the finished "schedule_transfer.csv" on this computer as ~/Desktop/schedule_transfer.csv with
-  exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
-  A blank LibreOffice Writer document named "conference_schedule.docx" is open. Use only LibreOffice Writer. Build the document
-  in this exact order: "DevSummit 2026 Day 1" in the paragraph style Heading 1; then for each of Room A, Room B, and Room
-  C a Heading 2 paragraph with the room name followed by a three-column table with the header row Time, Session, Speaker and
-  one row per session in that room in time order; then "Speaker index" in Heading 2 followed by one paragraph per distinct
-  speaker in alphabetical order in the form "<speaker>: <session>; <session>" listing that speaker''s sessions in time order;
-  then "Totals" in Heading 2 followed by the paragraphs "Sessions: <count>", "Speakers: <distinct speakers>", and "Busiest
-  room: <room> (<count> sessions)". All non-heading paragraphs use body text styles and the document must contain nothing
-  else. Save the document in Word format, then also export it to PDF as "conference_schedule.pdf" in the same Documents folder.
-  Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: put a copy of the exported
-  "conference_schedule.pdf" onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager
-  onto the phone window). In the Calendar app on the phone, add one event for each session Maya Chen speaks at, titled "<Session>
-  (<Room>)", on October 15, 2026, starting at the session time and lasting one hour, and no other new events.'
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "schedule_transfer.csv" is open in Markor on the phone, and the organizer''s note
+  "schedule_source.txt" is in the same Markor folder. Each session in the note is written as Time | Room | Session | Speaker,
+  and the last four lines are changes to apply. Using Markor only, rewrite the transfer CSV so it has the header Time,Room,Session,Speaker
+  followed by one row per remaining session after every change is applied, sorted by Time and then by Room, with no spaces
+  around commas and no other lines. Save the file and leave it ready to bring to this computer. Then put the finished "schedule_transfer.csv"
+  on this computer as ~/Desktop/schedule_transfer.csv with exactly the same content (for example, copy its text on the phone
+  and paste it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "conference_schedule.docx"
+  is open. Use only LibreOffice Writer. Build the document in this exact order: "DevSummit 2026 Day 1" in the paragraph style
+  Heading 1; then for each of Room A, Room B, and Room C a Heading 2 paragraph with the room name followed by a three-column
+  table with the header row Time, Session, Speaker and one row per session in that room in time order; then "Speaker index"
+  in Heading 2 followed by one paragraph per distinct speaker in alphabetical order in the form "<speaker>: <session>; <session>"
+  listing that speaker''s sessions in time order; then "Totals" in Heading 2 followed by the paragraphs "Sessions: <count>",
+  "Speakers: <distinct speakers>", and "Busiest room: <room> (<count> sessions)". All non-heading paragraphs use body text
+  styles and the document must contain nothing else. Save the document in Word format, then also export it to PDF as "conference_schedule.pdf"
+  in the same Documents folder. Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone:
+  put a copy of the exported "conference_schedule.pdf" onto the phone so it is in the phone''s Download folder (for example,
+  drag it from the file manager onto the phone window). In the Calendar app on the phone, add one event for each session Maya
+  Chen speaks at, titled "<Session> (<Room>)", on October 15, 2026, starting at the session time and lasting one hour, and
+  no other new events.'
 init:
   initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
   params:

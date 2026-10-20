@@ -1,0 +1,207 @@
+# Generated from tasks/v1/cross_vm/windows_to_linux_launch_review_minutes_hard.yaml; see metadata.converted_from.
+task_id: cross_device.windows_android.launch_review_minutes_hard
+platform: windows
+instruction: 'An Android phone is shown in the "Android phone" window on this Windows desktop. Use the phone only through
+  that window; in it, a right-click works as the phone''s Back button and a middle-click as Home. If the window is closed,
+  the "Android phone" shortcut on the Desktop opens it again. Do not use a terminal or adb. First, on the phone: The launch-review
+  note "launch_review_source.txt" and the incomplete copy "launch_review_transfer.txt" are in Markor on the phone, and the
+  copy is already open. Using Markor only, complete the copy so it contains every line of the source note exactly and in order,
+  from "Launch Readiness Review" through "Next checkpoint: Friday 09:30 readiness sync with launch leads". Save it. Then put
+  the finished "launch_review_transfer.txt" on this computer as C:\Users\User\Desktop\launch_review_transfer.txt with exactly
+  the same content (for example, copy its text on the phone and paste it into Notepad here). Next, on this computer: A blank
+  LibreOffice Writer document named launch_review_minutes.docx is already open. Use the note on the Desktop to create concise
+  launch review minutes in the Writer document. The document must contain these paragraphs in this exact order: "Launch Readiness
+  Review"; "Source: launch_review_transfer.txt"; "Attendees:"; "Maya Chen"; "Jordan Lee"; "Priya Nair"; "Theo Martin"; "Decisions:";
+  "Keep the launch window on July 18."; "Publish the final checklist after the dry run."; "Action Items:"; "Jordan Lee - confirm
+  vendor staging access by Tuesday."; "Priya Nair - send revised demo script to the field team."; "Theo Martin - lock the
+  final travel roster at 18 people."; "Risks:"; "Vendor staging account owners are not final."; "Demo recording depends on
+  the dry-run room audio."; "Next Checkpoint:"; "Friday 09:30 readiness sync with launch leads.". Save the Writer document.
+  Then create C:\Users\User\Documents\launch_review_owner_matrix.csv with exactly these four lines: owner,area,status; Jordan
+  Lee,vendor staging,blocked; Priya Nair,demo script,ready; Theo Martin,travel roster,locked. Also create C:\Users\User\Desktop\launch_review_archive_manifest.txt
+  with exactly these four lines: document=launch_review_minutes.docx, source=launch_review_transfer.txt, archive=Launch/Readiness/Final,
+  status=ready. Then, back on the phone: put a copy of "launch_review_owner_matrix.csv" onto the phone so it is in the phone''s
+  Download folder (for example, drag it from File Explorer onto the phone window). In the Tasks app on the phone, add one
+  task for each row of the owner matrix whose status is not "locked", titled "Check <area> with <owner>" (for example "Check
+  travel roster with Theo Martin") with the due date October 20, 2026, and no other new tasks.'
+init:
+  initializer_id: initializers.windows.android_companion:WindowsAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/launch_review_source.txt
+        transfer_path: /sdcard/Documents/markor/launch_review_transfer.txt
+        open_path: /sdcard/Documents/markor/launch_review_transfer.txt
+        source_text: 'Launch Readiness Review
+
+          Attendees: Maya Chen; Jordan Lee; Priya Nair; Theo Martin
+
+          Decisions: Keep the launch window on July 18; publish the final checklist after the dry run
+
+          Actions: Jordan owns vendor staging access by Tuesday; Priya owns revised demo script; Theo owns final travel roster
+          at 18 people
+
+          Risks: vendor staging account owners are not final; demo recording depends on the dry-run room audio
+
+          Next checkpoint: Friday 09:30 readiness sync with launch leads
+
+          '
+        transfer_text: 'Launch Readiness Review
+
+          Attendees: Maya Chen; Jordan Lee; Priya Nair; Theo Martin
+
+          '
+    windows:
+      steps:
+      - type: run_powershell
+        timeout: 180
+        script: '$ErrorActionPreference = ''Stop''
+
+          Get-Process soffice, soffice.bin, notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+
+          Start-Sleep 1
+
+          New-Item -ItemType Directory -Force ''C:\Users\User\Documents'', ''C:\Users\User\Desktop'' | Out-Null
+
+          Remove-Item -LiteralPath ''C:\Users\User\Desktop\launch_review_transfer.txt'', ''C:\Users\User\Documents\launch_review_owner_matrix.csv'',
+          ''C:\Users\User\Desktop\launch_review_archive_manifest.txt'' -ErrorAction SilentlyContinue
+
+          $soffice = ''C:\Program Files\LibreOffice\program\soffice.exe''
+
+          $tmp = Join-Path $env:TEMP (''osomni_'' + [guid]::NewGuid().ToString(''N''))
+
+          New-Item -ItemType Directory $tmp | Out-Null
+
+          [IO.File]::WriteAllText((Join-Path $tmp ''blank.txt''), "`n")
+
+          $p = Start-Process -FilePath $soffice -ArgumentList ''--headless'', ''--convert-to'', ''docx'', ''--outdir'', $tmp,
+          (Join-Path $tmp ''blank.txt'') -WindowStyle Hidden -PassThru
+
+          $p.WaitForExit(120000) | Out-Null
+
+          $blank = Join-Path $tmp ''blank.docx''
+
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $blank); $i++) { Start-Sleep 1 }
+
+          Move-Item -Force $blank ''C:\Users\User\Documents\launch_review_minutes.docx''
+
+          Remove-Item -Recurse -Force $tmp
+
+          ''INIT_OK'''
+      - type: run_powershell
+        timeout: 30
+        script: Start-Process -FilePath 'C:\Program Files\LibreOffice\program\soffice.exe' -ArgumentList '--writer', '"C:\Users\User\Documents\launch_review_minutes.docx"'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.android_companion:WindowsAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/launch_review_transfer.txt
+        expected_text: 'Launch Readiness Review
+
+          Attendees: Maya Chen; Jordan Lee; Priya Nair; Theo Martin
+
+          Decisions: Keep the launch window on July 18; publish the final checklist after the dry run
+
+          Actions: Jordan owns vendor staging access by Tuesday; Priya owns revised demo script; Theo owns final travel roster
+          at 18 people
+
+          Risks: vendor staging account owners are not final; demo recording depends on the dry-run room audio
+
+          Next checkpoint: Friday 09:30 readiness sync with launch leads
+
+          '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Check vendor staging with Jordan Lee
+          due: '2026-10-20'
+        - title: Check demo script with Priya Nair
+          due: '2026-10-20'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: C:\Users\User\Documents\launch_review_owner_matrix.csv
+      phone_path: /sdcard/Download/launch_review_owner_matrix.csv
+    windows:
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: '$expected = @''
+
+          Launch Readiness Review
+
+          Attendees: Maya Chen; Jordan Lee; Priya Nair; Theo Martin
+
+          Decisions: Keep the launch window on July 18; publish the final checklist after the dry run
+
+          Actions: Jordan owns vendor staging access by Tuesday; Priya owns revised demo script; Theo owns final travel roster
+          at 18 people
+
+          Risks: vendor staging account owners are not final; demo recording depends on the dry-run room audio
+
+          Next checkpoint: Friday 09:30 readiness sync with launch leads
+
+          ''@
+
+          $path = ''C:\Users\User\Desktop\launch_review_transfer.txt''
+
+          if (-not (Test-Path -LiteralPath $path)) { ''DESKTOP_FILE_MISSING''; exit 1 }
+
+          $norm = { param($s) (($s -replace "`r`n", "`n") -replace "`r", "`n").Trim() }
+
+          if ((& $norm ([IO.File]::ReadAllText($path))) -cne (& $norm $expected)) { ''DESKTOP_FILE_MISMATCH''; exit 1 }
+
+          ''EVAL_RESULT:PASS'''
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: "$OutputEncoding = New-Object System.Text.UTF8Encoding $false\n@'\nimport zipfile\nimport xml.etree.ElementTree\
+          \ as ET\nfrom pathlib import Path\n\nwith zipfile.ZipFile(\"C:/Users/User/Documents/launch_review_minutes.docx\"\
+          ) as zf:\n    root = ET.fromstring(zf.read(\"word/document.xml\"))\nns = {\"w\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\
+          }\nlines = []\nfor paragraph in root.findall(\".//w:body/w:p\", ns):\n    text = \"\".join(node.text or \"\" for\
+          \ node in paragraph.findall(\".//w:t\", ns)).strip()\n    if text:\n        lines.append(text)\nexpected = [\n \
+          \   \"Launch Readiness Review\",\n    \"Source: launch_review_transfer.txt\",\n    \"Attendees:\",\n    \"Maya Chen\"\
+          ,\n    \"Jordan Lee\",\n    \"Priya Nair\",\n    \"Theo Martin\",\n    \"Decisions:\",\n    \"Keep the launch window\
+          \ on July 18.\",\n    \"Publish the final checklist after the dry run.\",\n    \"Action Items:\",\n    \"Jordan\
+          \ Lee - confirm vendor staging access by Tuesday.\",\n    \"Priya Nair - send revised demo script to the field team.\"\
+          ,\n    \"Theo Martin - lock the final travel roster at 18 people.\",\n    \"Risks:\",\n    \"Vendor staging account\
+          \ owners are not final.\",\n    \"Demo recording depends on the dry-run room audio.\",\n    \"Next Checkpoint:\"\
+          ,\n    \"Friday 09:30 readiness sync with launch leads.\",\n]\nif lines != expected:\n    raise SystemExit(f\"LINES_MISMATCH:{lines}\"\
+          )\n\nsidecars = {\n    \"C:/Users/User/Documents/launch_review_owner_matrix.csv\": [\n        \"owner,area,status\"\
+          ,\n        \"Jordan Lee,vendor staging,blocked\",\n        \"Priya Nair,demo script,ready\",\n        \"Theo Martin,travel\
+          \ roster,locked\",\n    ],\n    \"C:/Users/User/Desktop/launch_review_archive_manifest.txt\": [\n        \"document=launch_review_minutes.docx\"\
+          ,\n        \"source=launch_review_transfer.txt\",\n        \"archive=Launch/Readiness/Final\",\n        \"status=ready\"\
+          ,\n    ],\n}\nfor path, expected_lines in sidecars.items():\n    actual_lines = [\n        line.strip()\n      \
+          \  for line in Path(path).read_text(encoding=\"utf-8\").splitlines()\n        if line.strip()\n    ]\n    if actual_lines\
+          \ != expected_lines:\n        raise SystemExit(f\"SIDECAR_MISMATCH:{path}:{actual_lines}\")\nprint(\"PASS\")\n'@\
+          \ | py -3 -W ignore -"
+        timeout: 180
+        stdout_contains: PASS
+limits:
+  max_steps: 300
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - windows_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: windows
+  companion_device: android (scrcpy window)
+  human_steps: 166
+  converted_from: cross_vm.windows_to_linux.launch_review_minutes_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/windows/cross_vm_prepare_launch_review_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_writer_launch_review_minutes_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.windows_to_linux.launch_review_minutes_hard: phone in a scrcpy
+    window on the Windows desktop; the agent prepares launch_review_transfer.txt on the phone, moves it to the desktop, and
+    returns results to the phone.'

@@ -7,7 +7,6 @@ from pathlib import Path
 import yaml
 
 from core.specs.loader import load_execution_spec, load_task_spec
-from platforms.cross_vm.types import load_cross_vm_task
 from tools.import_cua_tasks_review import _walk_strings
 
 
@@ -17,21 +16,21 @@ MANIFEST = json.loads((RELEASE_ROOT / "manifest.json").read_text())
 
 
 TRACKS = ("android", "ios", "linux", "macos", "web", "windows")
-ALL_TRACKS = (*TRACKS, "cross_vm", "cross_device")
+ALL_TRACKS = (*TRACKS, "cross_device")
 # Single-screen cross-device tasks run on the platform whose desktop shows the companion device.
-CROSS_DEVICE_SCREENS = {"linux_android": "linux"}
+CROSS_DEVICE_SCREENS = {"linux_android": "linux", "windows_android": "windows"}
 
 
-def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
+def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_device() -> None:
     entries = MANIFEST["tasks"]
     assert MANIFEST["release"] == "v1"
     assert MANIFEST["task_count"] == len(entries) == 300
     assert len({entry["task_id"] for entry in entries}) == 300
     assert Counter(entry["track"] for entry in entries) == MANIFEST["track_counts"] == {
-        **{track: 48 for track in TRACKS}, "cross_vm": 6, "cross_device": 6,
+        **{track: 48 for track in TRACKS}, "cross_device": 12,
     }
     assert Counter(entry["platform"] for entry in entries) == MANIFEST["platform_counts"] == {
-        "android": 48, "ios": 48, "linux": 102, "macos": 48, "windows": 48, "cross_vm": 6,
+        "android": 48, "ios": 48, "linux": 102, "macos": 48, "windows": 54,
     }
     assert all(
         entry["track"] == entry["platform"]
@@ -47,9 +46,6 @@ def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
     for entry in entries:
         path = REPO_ROOT / entry["task_path"]
         assert path.parent.name == entry["track"]
-        if entry["platform"] == "cross_vm":
-            assert load_cross_vm_task(path).task_id == entry["task_id"]
-            continue
         spec = load_task_spec(path)
         assert spec.task_id == entry["task_id"]
         assert spec.platform == entry["platform"]
@@ -57,49 +53,37 @@ def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_vm() -> None:
 
 def test_retired_tasks_are_gone_and_two_per_track() -> None:
     retired = MANIFEST["retired"]
-    # Two per single-platform track; the six Android-to-Windows cross-VM workflows were replaced
-    # by single-screen Linux + Android cross-device tasks.
-    assert Counter(entry["track"] for entry in retired) == {**{track: 2 for track in TRACKS}, "cross_vm": 6}
+    # Two per single-platform track; the twelve cross-VM workflows were replaced by single-screen
+    # cross-device tasks (Android-to-Windows by Linux + Android, Windows-to-Linux by Windows + Android).
+    assert Counter(entry["track"] for entry in retired) == {**{track: 2 for track in TRACKS}, "cross_vm": 12}
     listed = {entry["task_id"] for entry in MANIFEST["tasks"]}
     for entry in retired:
         assert entry["task_id"] not in listed
         assert not (REPO_ROOT / entry["task_path"]).exists()
 
 
-def test_cross_vm_workflows_are_complete() -> None:
+def test_cross_vm_stages_back_the_cross_device_tasks() -> None:
     support = {REPO_ROOT / path for path in MANIFEST["supporting"]["cross_vm_stages"]}
     assert support == set((RELEASE_ROOT / "cross_vm" / "stages").rglob("*.yaml"))
     supporting = set((RELEASE_ROOT / "cross_vm" / "stages").glob("*/*.yaml"))
     assert len(supporting) == 24
-    reserved = support | set((RELEASE_ROOT / "cross_vm" / "oracle").glob("*.yaml"))
-    routes = Counter()
+    # No cross-VM workflow is left in the release; only the stages the cross-device tasks came from.
+    assert not set((RELEASE_ROOT / "cross_vm").glob("*.yaml"))
+    assert not set((RELEASE_ROOT / "cross_vm" / "oracle").glob("*.yaml"))
+    for oracle in (RELEASE_ROOT / "cross_vm" / "stages").glob("*/oracle/*.yaml"):
+        load_task_spec(oracle)
     referenced_stages = set()
-    for path in sorted((RELEASE_ROOT / "cross_vm").glob("*.yaml")):
-        task = load_cross_vm_task(path)
-        routes[(task.source_platform, task.target_platform)] += 1
-        assert task.metadata["difficulty"] == "hard"
-        assert task.metadata["human_steps"] >= 100
-        assert sum(task.metadata["human_steps_by_stage"].values()) == task.metadata["human_steps"]
-        for stage_path, platform in (
-            (task.source_task_path, task.source_platform),
-            (task.target_task_path, task.target_platform),
-        ):
-            assert stage_path in supporting
-            assert load_task_spec(stage_path).platform == platform
-            referenced_stages.add(stage_path)
-        oracle = load_cross_vm_task(path.parent / "oracle" / f"{path.stem}_oracle.yaml")
-        assert oracle.source_platform == task.source_platform
-        assert oracle.target_platform == task.target_platform
-        for stage_path in (oracle.source_task_path, oracle.target_task_path):
-            assert stage_path in reserved
-            load_task_spec(stage_path)
-    assert routes == {("windows", "linux"): 6}
-    # The Android and Windows stages of the retired Android-to-Windows route are the sources
-    # the Linux + Android cross-device tasks were converted from.
-    for path in sorted((RELEASE_ROOT / "cross_device").glob("linux_android_*.yaml")):
-        for stage in yaml.safe_load(path.read_text())["metadata"]["source_stages"]:
-            assert REPO_ROOT / stage in supporting
-            referenced_stages.add(REPO_ROOT / stage)
+    for path in sorted((RELEASE_ROOT / "cross_device").glob("*.yaml")):
+        task = yaml.safe_load(path.read_text())
+        assert task["metadata"]["difficulty"] == "hard"
+        assert task["metadata"]["human_steps"] >= 100
+        assert task["limits"]["max_steps"] >= 1.5 * task["metadata"]["human_steps"]
+        stages = [REPO_ROOT / stage for stage in task["metadata"]["source_stages"]]
+        assert len(stages) == 2
+        for stage in stages:
+            assert stage in supporting
+            load_task_spec(stage)
+        referenced_stages.update(stages)
     assert referenced_stages == supporting
 
 
