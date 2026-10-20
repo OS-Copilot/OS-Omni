@@ -4,33 +4,32 @@
  "task_count": 300,
  "track_counts": {
   "android": 48,
+  "cross_device": 12,
   "ios": 48,
   "linux": 48,
   "macos": 48,
   "web": 48,
-  "windows": 48,
-  "cross_vm": 12
+  "windows": 48
  },
  "platform_counts": {
   "android": 48,
-  "cross_vm": 12,
   "ios": 48,
-  "linux": 96,
+  "linux": 102,
   "macos": 48,
-  "windows": 48
+  "windows": 54
  },
  "category_counts": {
-  "cross_vm": 12,
+  "cross_device": 12,
   "legacy_supplement": 76,
   "open_series": 181,
   "reviewed_supplement": 31
  },
  "selection_policy": [
-  "Seven tracks: 48 tasks each for Android, iOS, Linux desktop, macOS, Windows, and Web, plus 12 cross-VM workflows. Web tasks run in a browser on the Linux VM (the Open-series web apps and diagrams.net); Linux desktop tasks use native applications.",
-  "Cross-VM workflows run one stage on a source VM, transfer a file through the host, and finish on a target VM: six Android-to-Windows and six Windows-to-Linux workflows, all hard (two of each route carried over from the original catalog, four of each added for v1). Stage definitions and oracle companions are supporting files listed under supporting.cross_vm_stages and do not count as tasks.",
+  "Seven tracks: 48 tasks each for Android, iOS, Linux desktop, macOS, Windows, and Web, plus 12 single-screen cross-device workflows. Web tasks run in a browser on the Linux VM (the Open-series web apps and diagrams.net); Linux desktop tasks use native applications.",
+  "Cross-device workflows run on one screen: the desktop shows a companion Android phone in a scrcpy window, and the agent works on the phone and on the desktop, moves the file between them itself, and returns results to the phone. The six Linux + Android workflows replace the six Android-to-Windows cross-VM workflows (same Markor sources and LibreOffice targets); the six Windows + Android workflows replace the six Windows-to-Linux cross-VM workflows (the Notepad stage moves to Markor on the phone, the LibreOffice stage to the Windows desktop). The cross-VM stage definitions they were converted from, and their oracle companions, are supporting files listed under supporting.cross_vm_stages and do not count as tasks.",
   "Each single-platform track takes tasks from the reviewed CUA-Tasks-Review import first and fills the remainder from earlier OS-Omni tasks (iOS, macOS, Windows from the previous v1 selection; Linux desktop from the original Linux catalog, excluding duplicates of reviewed tasks and tasks without a resolvable evaluator or initializer).",
   "Within a track, tasks are drawn round-robin across applications for coverage; ties favor implementation-ready tasks, tasks already reviewed for v1, more recent tasks, oracle companions and hard difficulty, then task ID.",
-  "To make room for cross-VM workflows, two tasks were retired from each single-platform track (listed under retired). A track with tasks missing a resolvable initializer retires those first; Linux desktop, which has none, retires tasks whose declared oracle companion is missing; Web, which has no dependency gaps, retires by coverage only. Within those candidates, tasks come from the application with the most tasks in the track (Open-series photo-edit variants count as one application), preferring non-Open-series applications on ties, then non-hard tasks without an oracle companion."
+  "To make room for the cross-platform workflows, two tasks were retired from each single-platform track (listed under retired). A track with tasks missing a resolvable initializer retires those first; Linux desktop, which has none, retires tasks whose declared oracle companion is missing; Web, which has no dependency gaps, retires by coverage only. Within those candidates, tasks come from the application with the most tasks in the track (Open-series photo-edit variants count as one application), preferring non-Open-series applications on ties, then non-hard tasks without an oracle companion."
  ],
  "tasks": [
   {
@@ -2338,100 +2337,100 @@
    "source": "cua_tasks_review"
   },
   {
-   "task_id": "cross_vm.android_to_windows.budget_review_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_budget_review_hard.yaml",
-   "category": "cross_vm",
-   "source": "original_catalog"
+   "task_id": "cross_device.linux_android.budget_review_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_budget_review_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.android_to_windows.conference_schedule_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_conference_schedule_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.linux_android.conference_schedule_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_conference_schedule_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.android_to_windows.inspection_report_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_inspection_report_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.linux_android.inspection_report_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_inspection_report_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.android_to_windows.launch_review_minutes_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_launch_review_minutes_hard.yaml",
-   "category": "cross_vm",
-   "source": "original_catalog"
+   "task_id": "cross_device.linux_android.launch_review_minutes_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_launch_review_minutes_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.android_to_windows.regional_review_deck_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_regional_review_deck_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.linux_android.regional_review_deck_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_regional_review_deck_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.android_to_windows.reorder_plan_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/android_to_windows_reorder_plan_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.linux_android.reorder_plan_hard",
+   "platform": "linux",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/linux_android_reorder_plan_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.budget_review_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_budget_review_hard.yaml",
-   "category": "cross_vm",
-   "source": "original_catalog"
+   "task_id": "cross_device.windows_android.budget_review_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_budget_review_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.contract_renewals_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_contract_renewals_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.windows_android.contract_renewals_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_contract_renewals_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.incident_postmortem_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_incident_postmortem_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.windows_android.incident_postmortem_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_incident_postmortem_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.launch_review_minutes_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_launch_review_minutes_hard.yaml",
-   "category": "cross_vm",
-   "source": "original_catalog"
+   "task_id": "cross_device.windows_android.launch_review_minutes_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_launch_review_minutes_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.payables_ledger_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_payables_ledger_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.windows_android.payables_ledger_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_payables_ledger_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   },
   {
-   "task_id": "cross_vm.windows_to_linux.shift_coverage_hard",
-   "platform": "cross_vm",
-   "track": "cross_vm",
-   "task_path": "tasks/v1/cross_vm/windows_to_linux_shift_coverage_hard.yaml",
-   "category": "cross_vm",
-   "source": "v1_cross_vm"
+   "task_id": "cross_device.windows_android.shift_coverage_hard",
+   "platform": "windows",
+   "track": "cross_device",
+   "task_path": "tasks/v1/cross_device/windows_android_shift_coverage_hard.yaml",
+   "category": "cross_device",
+   "source": "converted_from_cross_vm"
   }
  ],
  "oracle_tasks": [
@@ -2470,19 +2469,7 @@
   "tasks/v1/macos/oracle/zotero_dual_collection_articles_oracle.yaml",
   "tasks/v1/windows/oracle/actual_budget_add_transactions_oracle.yaml",
   "tasks/v1/windows/oracle/blender_robot_tower_layout_scene_oracle.yaml",
-  "tasks/v1/windows/oracle/calc_crosssheet_chart_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_budget_review_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_conference_schedule_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_inspection_report_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_launch_review_minutes_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_regional_review_deck_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/android_to_windows_reorder_plan_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_budget_review_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_contract_renewals_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_incident_postmortem_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_launch_review_minutes_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_payables_ledger_hard_oracle.yaml",
-  "tasks/v1/cross_vm/oracle/windows_to_linux_shift_coverage_hard_oracle.yaml"
+  "tasks/v1/windows/oracle/calc_crosssheet_chart_oracle.yaml"
  ],
  "supporting": {
   "cross_vm_stages": [
@@ -2608,6 +2595,78 @@
    "track": "windows",
    "task_path": "tasks/v1/windows/deltachat_orion_coordination_snap1.yaml",
    "reason": "missing initializer"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.budget_review_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_budget_review_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.budget_review_hard"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.conference_schedule_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_conference_schedule_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.conference_schedule_hard"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.inspection_report_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_inspection_report_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.inspection_report_hard"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.launch_review_minutes_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_launch_review_minutes_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.launch_review_minutes_hard"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.regional_review_deck_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_regional_review_deck_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.regional_review_deck_hard"
+  },
+  {
+   "task_id": "cross_vm.android_to_windows.reorder_plan_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/android_to_windows_reorder_plan_hard.yaml",
+   "reason": "replaced by the single-screen cross_device.linux_android.reorder_plan_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.budget_review_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_budget_review_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.budget_review_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.contract_renewals_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_contract_renewals_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.contract_renewals_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.incident_postmortem_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_incident_postmortem_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.incident_postmortem_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.launch_review_minutes_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_launch_review_minutes_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.launch_review_minutes_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.payables_ledger_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_payables_ledger_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.payables_ledger_hard"
+  },
+  {
+   "task_id": "cross_vm.windows_to_linux.shift_coverage_hard",
+   "track": "cross_vm",
+   "task_path": "tasks/v1/cross_vm/windows_to_linux_shift_coverage_hard.yaml",
+   "reason": "replaced by the single-screen Windows + Android cross-device task cross_device.windows_android.shift_coverage_hard"
   }
  ]
 }

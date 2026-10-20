@@ -1,0 +1,391 @@
+# Generated from tasks/v1/cross_vm/windows_to_linux_shift_coverage_hard.yaml; see metadata.converted_from.
+task_id: cross_device.windows_android.shift_coverage_hard
+platform: windows
+instruction: 'An Android phone is shown in the "Android phone" window on this Windows desktop. Use the phone only through
+  that window; in it, a right-click works as the phone''s Back button and a middle-click as Home. If the window is closed,
+  the "Android phone" shortcut on the Desktop opens it again. Do not use a terminal or adb. First, on the phone: The shift
+  roster "roster_source.csv" is open in Markor on the phone; its last six lines are correction notes. The same folder has
+  "roster_transfer.csv", which so far holds only the header Name,Day,Shift,Hours. Using Markor only, complete it with the
+  corrected roster: apply every correction to the data rows (changing, removing, or appending rows exactly as instructed),
+  leave out the correction lines, and keep all remaining rows in their original order. Save it. Then put the finished "roster_transfer.csv"
+  on this computer as C:\Users\User\Desktop\roster_transfer.csv with exactly the same content (for example, copy its text
+  on the phone and paste it into Notepad here). Next, on this computer: A blank LibreOffice Calc workbook named shift_coverage.xlsx
+  is already open. Sheet 1 must be named "Roster" with the CSV header and all roster rows in A1:D25 and Hours as numbers.
+  Sheet 2 must be named "Coverage" with the header Day, AM Staff, PM Staff, Hours, Min AM, Min PM, Gap, Status in A1:H1 and
+  the days Mon, Tue, Wed, Thu, Fri, Sat, Sun in A2:A8. B uses =COUNTIFS($Roster.$B$2:$B$25;A2;$Roster.$C$2:$C$25;"AM"), C
+  uses the same formula with "PM", D uses =SUMIF($Roster.$B$2:$B$25;A2;$Roster.$D$2:$D$25), G uses =MAX(0;E2-B2)+MAX(0;F2-C2),
+  and H uses =IF(G2>0;"Short";"OK"), all filled down to row 8. E and F hold the minimum AM/PM staff: Mon 2/2, Tue 2/1, Wed
+  2/2, Thu 2/2, Fri 2/2, Sat 2/1, Sun 1/2. Row 9 has "Total" in A9 and =SUM(B2:B8), =SUM(C2:C8), =SUM(D2:D8), and =SUM(G2:G8)
+  in B9, C9, D9, and G9, with E9, F9, and H9 empty. Sheet 3 must be named "Summary" with the header Metric, Value in A1:B1
+  and the rows "Short days" with =COUNTIF($Coverage.$H$2:$H$8;"Short"), "Total hours" with =$Coverage.D9, "Total gap" with
+  =$Coverage.G9, and "Staff on roster" with =COUNTA($Roster.$A$2:$A$25). Leave everything else empty and save the workbook
+  in xlsx format. Finally, export the Coverage sheet as a comma-separated CSV file named coverage.csv in the same Documents
+  folder. Then, back on the phone: in Markor create the note "coverage_gaps.txt" in the same folder as the CSV, containing
+  one line "<Day>: gap <Gap>" for every Short day in the Coverage sheet, in Coverage order (for example "Mon: gap 1"), followed
+  by the line "Total gap: <total gap>". In the Calendar app on the phone, add a 30-minute event at 08:00 for every Short day,
+  on that weekday in the week starting Monday, October 19, 2026, titled "Fill <Day> coverage gap", and no other new events.'
+init:
+  initializer_id: initializers.windows.android_companion:WindowsAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/roster_source.csv
+        transfer_path: /sdcard/Documents/markor/roster_transfer.csv
+        open_path: /sdcard/Documents/markor/roster_source.csv
+        source_text: 'Name,Day,Shift,Hours
+
+          Avery Brooks,Mon,AM,8
+
+          Dana Ortiz,Tue,PM,6
+
+          Kenji Sato,Mon,PM,4
+
+          Lena Fischer,Wed,AM,8
+
+          Omar Haddad,Thu,AM,6
+
+          Rosa Lima,Fri,PM,8
+
+          Sam Patel,Wed,PM,4
+
+          Tariq Noor,Fri,AM,6
+
+          Mei Wong,Tue,AM,8
+
+          Jonas Berg,Thu,PM,4
+
+          Ines Duarte,Mon,AM,6
+
+          Paul Okafor,Wed,AM,6
+
+          Priya Nair,Sat,AM,8
+
+          Theo Martin,Sat,PM,6
+
+          Maya Chen,Sun,AM,6
+
+          Jordan Lee,Thu,AM,8
+
+          Hugo Silva,Fri,PM,4
+
+          Nora Quinn,Sun,PM,4
+
+          Eli Novak,Tue,PM,6
+
+          Zara Ahmed,Wed,PM,8
+
+          Liam Doyle,Mon,PM,6
+
+          Ava Rossi,Sat,AM,4
+
+          Owen Price,Fri,AM,8
+
+          # Correction: Dana Ortiz moves from Tue PM to Thu PM.
+
+          # Correction: Sam Patel works 6 hours, not 4.
+
+          # Correction: remove Jonas Berg, he has left the team.
+
+          # Correction: add Hana Kim,Fri,AM,4 as the last row.
+
+          # Correction: Nora Quinn switches to the Sun AM shift.
+
+          # Correction: add Leo Brandt,Sun,PM,8 as the last row, after Hana Kim.
+
+          '
+        transfer_text: 'Name,Day,Shift,Hours
+
+          '
+    windows:
+      steps:
+      - type: run_powershell
+        timeout: 180
+        script: '$ErrorActionPreference = ''Stop''
+
+          Get-Process soffice, soffice.bin, notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+
+          Start-Sleep 1
+
+          New-Item -ItemType Directory -Force ''C:\Users\User\Documents'', ''C:\Users\User\Desktop'' | Out-Null
+
+          Remove-Item -LiteralPath ''C:\Users\User\Desktop\roster_transfer.csv'' -ErrorAction SilentlyContinue
+
+          $soffice = ''C:\Program Files\LibreOffice\program\soffice.exe''
+
+          $tmp = Join-Path $env:TEMP (''osomni_'' + [guid]::NewGuid().ToString(''N''))
+
+          New-Item -ItemType Directory $tmp | Out-Null
+
+          [IO.File]::WriteAllText((Join-Path $tmp ''blank.csv''), "`n")
+
+          $p = Start-Process -FilePath $soffice -ArgumentList ''--headless'', ''--convert-to'', ''xlsx'', ''--outdir'', $tmp,
+          (Join-Path $tmp ''blank.csv'') -WindowStyle Hidden -PassThru
+
+          $p.WaitForExit(120000) | Out-Null
+
+          $blank = Join-Path $tmp ''blank.xlsx''
+
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $blank); $i++) { Start-Sleep 1 }
+
+          Move-Item -Force $blank ''C:\Users\User\Documents\shift_coverage.xlsx''
+
+          Remove-Item -Recurse -Force $tmp
+
+          ''INIT_OK'''
+      - type: run_powershell
+        timeout: 30
+        script: Start-Process -FilePath 'C:\Program Files\LibreOffice\program\soffice.exe' -ArgumentList '--calc', '"C:\Users\User\Documents\shift_coverage.xlsx"'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.android_companion:WindowsAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/roster_transfer.csv
+        expected_text: 'Name,Day,Shift,Hours
+
+          Avery Brooks,Mon,AM,8
+
+          Dana Ortiz,Thu,PM,6
+
+          Kenji Sato,Mon,PM,4
+
+          Lena Fischer,Wed,AM,8
+
+          Omar Haddad,Thu,AM,6
+
+          Rosa Lima,Fri,PM,8
+
+          Sam Patel,Wed,PM,6
+
+          Tariq Noor,Fri,AM,6
+
+          Mei Wong,Tue,AM,8
+
+          Ines Duarte,Mon,AM,6
+
+          Paul Okafor,Wed,AM,6
+
+          Priya Nair,Sat,AM,8
+
+          Theo Martin,Sat,PM,6
+
+          Maya Chen,Sun,AM,6
+
+          Jordan Lee,Thu,AM,8
+
+          Hugo Silva,Fri,PM,4
+
+          Nora Quinn,Sun,AM,4
+
+          Eli Novak,Tue,PM,6
+
+          Zara Ahmed,Wed,PM,8
+
+          Liam Doyle,Mon,PM,6
+
+          Ava Rossi,Sat,AM,4
+
+          Owen Price,Fri,AM,8
+
+          Hana Kim,Fri,AM,4
+
+          Leo Brandt,Sun,PM,8
+
+          '
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/coverage_gaps.txt
+        expected_text: 'Tue: gap 1
+
+          Thu: gap 1
+
+          Sun: gap 1
+
+          Total gap: 3'
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: Fill Tue coverage gap
+          start: 2026-10-20 08:00
+          end: 2026-10-20 08:30
+        - title: Fill Thu coverage gap
+          start: 2026-10-22 08:00
+          end: 2026-10-22 08:30
+        - title: Fill Sun coverage gap
+          start: 2026-10-25 08:00
+          end: 2026-10-25 08:30
+        baseline_count: 1
+    phone_copies: []
+    windows:
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: '$expected = @''
+
+          Name,Day,Shift,Hours
+
+          Avery Brooks,Mon,AM,8
+
+          Dana Ortiz,Thu,PM,6
+
+          Kenji Sato,Mon,PM,4
+
+          Lena Fischer,Wed,AM,8
+
+          Omar Haddad,Thu,AM,6
+
+          Rosa Lima,Fri,PM,8
+
+          Sam Patel,Wed,PM,6
+
+          Tariq Noor,Fri,AM,6
+
+          Mei Wong,Tue,AM,8
+
+          Ines Duarte,Mon,AM,6
+
+          Paul Okafor,Wed,AM,6
+
+          Priya Nair,Sat,AM,8
+
+          Theo Martin,Sat,PM,6
+
+          Maya Chen,Sun,AM,6
+
+          Jordan Lee,Thu,AM,8
+
+          Hugo Silva,Fri,PM,4
+
+          Nora Quinn,Sun,AM,4
+
+          Eli Novak,Tue,PM,6
+
+          Zara Ahmed,Wed,PM,8
+
+          Liam Doyle,Mon,PM,6
+
+          Ava Rossi,Sat,AM,4
+
+          Owen Price,Fri,AM,8
+
+          Hana Kim,Fri,AM,4
+
+          Leo Brandt,Sun,PM,8
+
+          ''@
+
+          $path = ''C:\Users\User\Desktop\roster_transfer.csv''
+
+          if (-not (Test-Path -LiteralPath $path)) { ''DESKTOP_FILE_MISSING''; exit 1 }
+
+          $norm = { param($s) (($s -replace "`r`n", "`n") -replace "`r", "`n").Trim() }
+
+          if ((& $norm ([IO.File]::ReadAllText($path))) -cne (& $norm $expected)) { ''DESKTOP_FILE_MISMATCH''; exit 1 }
+
+          ''EVAL_RESULT:PASS'''
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: "$OutputEncoding = New-Object System.Text.UTF8Encoding $false\n@'\nimport re\nimport zipfile\nimport xml.etree.ElementTree\
+          \ as ET\n\nNS = {\n    \"a\": \"http://schemas.openxmlformats.org/spreadsheetml/2006/main\",\n    \"r\": \"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"\
+          ,\n    \"p\": \"http://schemas.openxmlformats.org/package/2006/relationships\",\n}\n\ndef col_to_idx(ref):\n   \
+          \ letters = re.match(r\"([A-Z]+)\", ref).group(1)\n    value = 0\n    for ch in letters:\n        value = value\
+          \ * 26 + (ord(ch) - ord(\"A\") + 1)\n    return value\n\ndef read_workbook(path, width):\n    with zipfile.ZipFile(path)\
+          \ as zf:\n        names = zf.namelist()\n        shared = []\n        if \"xl/sharedStrings.xml\" in names:\n  \
+          \          sst = ET.fromstring(zf.read(\"xl/sharedStrings.xml\"))\n            for si in sst.findall(\"a:si\", NS):\n\
+          \                shared.append(\"\".join(t.text or \"\" for t in si.findall(\".//a:t\", NS)))\n        workbook\
+          \ = ET.fromstring(zf.read(\"xl/workbook.xml\"))\n        rels = ET.fromstring(zf.read(\"xl/_rels/workbook.xml.rels\"\
+          ))\n        targets = {rel.attrib[\"Id\"]: rel.attrib[\"Target\"] for rel in rels.findall(\"p:Relationship\", NS)}\n\
+          \        sheets = []\n        for sheet in workbook.findall(\"a:sheets/a:sheet\", NS):\n            rid = sheet.attrib[\"\
+          {%s}id\" % NS[\"r\"]]\n            target = targets[rid].lstrip(\"/\")\n            if not target.startswith(\"\
+          xl/\"):\n                target = \"xl/\" + target\n            root = ET.fromstring(zf.read(target))\n        \
+          \    rows = {}\n            for row in root.findall(\".//a:sheetData/a:row\", NS):\n                cells = [None]\
+          \ * width\n                for cell in row.findall(\"a:c\", NS):\n                    idx = col_to_idx(cell.attrib[\"\
+          r\"]) - 1\n                    if not 0 <= idx < width:\n                        continue\n                    formula\
+          \ = cell.find(\"a:f\", NS)\n                    if formula is not None and (formula.text or \"\").strip():\n   \
+          \                     cells[idx] = \"=\" + formula.text\n                        continue\n                    kind\
+          \ = cell.attrib.get(\"t\")\n                    if kind == \"inlineStr\":\n                        node = cell.find(\"\
+          a:is\", NS)\n                        cells[idx] = \"\".join(t.text or \"\" for t in node.findall(\".//a:t\", NS))\n\
+          \                        continue\n                    value = cell.find(\"a:v\", NS)\n                    if value\
+          \ is None or value.text is None:\n                        continue\n                    if kind == \"s\":\n    \
+          \                    cells[idx] = shared[int(value.text)]\n                    elif kind in (\"str\", \"b\", \"\
+          e\"):\n                        cells[idx] = value.text\n                    else:\n                        cells[idx]\
+          \ = float(value.text)\n                rows[int(row.attrib[\"r\"])] = cells\n            sheets.append((sheet.attrib[\"\
+          name\"], rows))\n    return sheets\ndef norm(value):\n    if isinstance(value, str):\n        text = value.strip()\n\
+          \        if text.startswith('='):\n            return '=' + text[1:].replace(' ', '').replace('$', '').replace(\"\
+          '\", '').upper()\n        return text\n    if isinstance(value, bool) or value is None:\n        return value\n\
+          \    number = float(value)\n    return int(number) if number.is_integer() else round(number, 4)\nsheets = read_workbook(\"\
+          C:/Users/User/Documents/shift_coverage.xlsx\", 8)\nexpected_sheets = [('Roster', [['Name', 'Day', 'Shift', 'Hours'],\
+          \ ['Avery Brooks', 'Mon', 'AM', 8], ['Dana Ortiz', 'Thu', 'PM', 6], ['Kenji Sato', 'Mon', 'PM', 4], ['Lena Fischer',\
+          \ 'Wed', 'AM', 8], ['Omar Haddad', 'Thu', 'AM', 6], ['Rosa Lima', 'Fri', 'PM', 8], ['Sam Patel', 'Wed', 'PM', 6],\
+          \ ['Tariq Noor', 'Fri', 'AM', 6], ['Mei Wong', 'Tue', 'AM', 8], ['Ines Duarte', 'Mon', 'AM', 6], ['Paul Okafor',\
+          \ 'Wed', 'AM', 6], ['Priya Nair', 'Sat', 'AM', 8], ['Theo Martin', 'Sat', 'PM', 6], ['Maya Chen', 'Sun', 'AM', 6],\
+          \ ['Jordan Lee', 'Thu', 'AM', 8], ['Hugo Silva', 'Fri', 'PM', 4], ['Nora Quinn', 'Sun', 'AM', 4], ['Eli Novak',\
+          \ 'Tue', 'PM', 6], ['Zara Ahmed', 'Wed', 'PM', 8], ['Liam Doyle', 'Mon', 'PM', 6], ['Ava Rossi', 'Sat', 'AM', 4],\
+          \ ['Owen Price', 'Fri', 'AM', 8], ['Hana Kim', 'Fri', 'AM', 4], ['Leo Brandt', 'Sun', 'PM', 8]]), ('Coverage', [['Day',\
+          \ 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,\"\
+          AM\")', '=COUNTIFS(Roster!B2:B25,A2,Roster!C2:C25,\"PM\")', '=SUMIF(Roster!B2:B25,A2,Roster!D2:D25)', 2, 2, '=MAX(0,E2-B2)+MAX(0,F2-C2)',\
+          \ '=IF(G2>0,\"Short\",\"OK\")'], ['Tue', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,\"AM\")', '=COUNTIFS(Roster!B2:B25,A3,Roster!C2:C25,\"\
+          PM\")', '=SUMIF(Roster!B2:B25,A3,Roster!D2:D25)', 2, 1, '=MAX(0,E3-B3)+MAX(0,F3-C3)', '=IF(G3>0,\"Short\",\"OK\"\
+          )'], ['Wed', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,\"AM\")', '=COUNTIFS(Roster!B2:B25,A4,Roster!C2:C25,\"PM\"\
+          )', '=SUMIF(Roster!B2:B25,A4,Roster!D2:D25)', 2, 2, '=MAX(0,E4-B4)+MAX(0,F4-C4)', '=IF(G4>0,\"Short\",\"OK\")'],\
+          \ ['Thu', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,\"AM\")', '=COUNTIFS(Roster!B2:B25,A5,Roster!C2:C25,\"PM\")',\
+          \ '=SUMIF(Roster!B2:B25,A5,Roster!D2:D25)', 2, 2, '=MAX(0,E5-B5)+MAX(0,F5-C5)', '=IF(G5>0,\"Short\",\"OK\")'], ['Fri',\
+          \ '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,\"AM\")', '=COUNTIFS(Roster!B2:B25,A6,Roster!C2:C25,\"PM\")', '=SUMIF(Roster!B2:B25,A6,Roster!D2:D25)',\
+          \ 2, 2, '=MAX(0,E6-B6)+MAX(0,F6-C6)', '=IF(G6>0,\"Short\",\"OK\")'], ['Sat', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,\"\
+          AM\")', '=COUNTIFS(Roster!B2:B25,A7,Roster!C2:C25,\"PM\")', '=SUMIF(Roster!B2:B25,A7,Roster!D2:D25)', 2, 1, '=MAX(0,E7-B7)+MAX(0,F7-C7)',\
+          \ '=IF(G7>0,\"Short\",\"OK\")'], ['Sun', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,\"AM\")', '=COUNTIFS(Roster!B2:B25,A8,Roster!C2:C25,\"\
+          PM\")', '=SUMIF(Roster!B2:B25,A8,Roster!D2:D25)', 1, 2, '=MAX(0,E8-B8)+MAX(0,F8-C8)', '=IF(G8>0,\"Short\",\"OK\"\
+          )'], ['Total', '=SUM(B2:B8)', '=SUM(C2:C8)', '=SUM(D2:D8)', None, None, '=SUM(G2:G8)', None]]), ('Summary', [['Metric',\
+          \ 'Value'], ['Short days', '=COUNTIF(Coverage!H2:H8,\"Short\")'], ['Total hours', '=Coverage!D9'], ['Total gap',\
+          \ '=Coverage!G9'], ['Staff on roster', '=COUNTA(Roster!A2:A25)']])]\nif len(sheets) < len(expected_sheets):\n  \
+          \  raise SystemExit(\"SHEET_COUNT_MISMATCH:%r\" % [name for name, _ in sheets])\nif True and [name for name, _ in\
+          \ sheets[:len(expected_sheets)]] != [name for name, _ in expected_sheets]:\n    raise SystemExit(\"SHEET_NAMES_MISMATCH:%r\"\
+          \ % [name for name, _ in sheets])\nfor (name, observed_rows), (_, rows) in zip(sheets, expected_sheets):\n    for\
+          \ r in range(1, len(rows) + 2):\n        expected = [norm(v) for v in rows[r - 1]] if r <= len(rows) else [None]\
+          \ * 8\n        expected += [None] * (8 - len(expected))\n        observed = [norm(v) for v in observed_rows.get(r,\
+          \ [None] * 8)]\n        observed = [None if v == \"\" else v for v in observed]\n        if observed != expected:\n\
+          \            raise SystemExit(\"ROW_MISMATCH:%s:%d:%r\" % (name, r, observed))\nimport os\n\ndef fail(message):\n\
+          \    raise SystemExit(message)\ndef norm_csv(value):\n    text = (value or '').strip()\n    try:\n        number\
+          \ = float(text)\n    except ValueError:\n        return text\n    return int(number) if number.is_integer() else\
+          \ round(number, 2)\nimport csv\ncsv_path = \"C:/Users/User/Documents/coverage.csv\"\nif not os.path.exists(csv_path):\n\
+          \    fail('MISSING_CSV')\ndef trim(row):\n    row = [norm_csv(v) for v in row]\n    while row and row[-1] == '':\n\
+          \        row.pop()\n    return row\nwith open(csv_path, newline='', encoding='utf-8-sig') as handle:\n    observed_csv\
+          \ = [trim(row) for row in csv.reader(handle) if any(v.strip() for v in row)]\nexpected_csv = [trim(row) for row\
+          \ in [['Day', 'AM Staff', 'PM Staff', 'Hours', 'Min AM', 'Min PM', 'Gap', 'Status'], ['Mon', '2', '2', '24', '2',\
+          \ '2', '0', 'OK'], ['Tue', '1', '1', '14', '2', '1', '1', 'Short'], ['Wed', '2', '2', '28', '2', '2', '0', 'OK'],\
+          \ ['Thu', '2', '1', '20', '2', '2', '1', 'Short'], ['Fri', '3', '2', '30', '2', '2', '0', 'OK'], ['Sat', '2', '1',\
+          \ '18', '2', '1', '0', 'OK'], ['Sun', '2', '1', '18', '1', '2', '1', 'Short'], ['Total', '14', '10', '152', '',\
+          \ '', '3', '']]]\nif observed_csv != expected_csv:\n    fail('CSV_MISMATCH:%r' % (observed_csv,))\nprint(\"PASS\"\
+          )\n'@ | py -3 -W ignore -"
+        timeout: 180
+        stdout_contains: PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - windows_android
+  - markor
+  - libreoffice
+  - calc
+  - hard
+  difficulty: hard
+  screen: windows
+  companion_device: android (scrcpy window)
+  human_steps: 163
+  converted_from: cross_vm.windows_to_linux.shift_coverage_hard
+  round_trip:
+  - AndroidTextFileEvaluator
+  - CalendarEventsEvaluator
+  source_stages:
+  - tasks/v1/cross_vm/stages/windows/cross_vm_prepare_roster_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_calc_shift_coverage_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.windows_to_linux.shift_coverage_hard: phone in a scrcpy window
+    on the Windows desktop; the agent prepares roster_transfer.csv on the phone, moves it to the desktop, and returns results
+    to the phone.'

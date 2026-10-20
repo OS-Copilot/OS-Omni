@@ -1,0 +1,16 @@
+tasks:
+- tasks/v1/cross_device/linux_android_budget_review_hard.yaml
+- tasks/v1/cross_device/linux_android_conference_schedule_hard.yaml
+- tasks/v1/cross_device/linux_android_inspection_report_hard.yaml
+- tasks/v1/cross_device/linux_android_launch_review_minutes_hard.yaml
+- tasks/v1/cross_device/linux_android_regional_review_deck_hard.yaml
+- tasks/v1/cross_device/linux_android_reorder_plan_hard.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: the 6 single-screen Linux + Android cross-device tasks. Run on the Linux VM with
+    a companion phone; see docs/linux_android_companion.md.'

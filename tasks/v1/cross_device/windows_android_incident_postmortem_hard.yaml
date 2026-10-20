@@ -1,0 +1,324 @@
+# Generated from tasks/v1/cross_vm/windows_to_linux_incident_postmortem_hard.yaml; see metadata.converted_from.
+task_id: cross_device.windows_android.incident_postmortem_hard
+platform: windows
+instruction: 'An Android phone is shown in the "Android phone" window on this Windows desktop. Use the phone only through
+  that window; in it, a right-click works as the phone''s Back button and a middle-click as Home. If the window is closed,
+  the "Android phone" shortcut on the Desktop opens it again. Do not use a terminal or adb. First, on the phone: The raw incident
+  log "incident_source.txt" is open in Markor on the phone. Each timeline entry is written as Time | Service | Event, some
+  entries are exact duplicates, and the last three lines are follow-ups written as Follow-up | Owner | Task. The same folder
+  has "incident_transfer.csv", which so far holds only the header Time,Service,Event. Using Markor only, complete it with
+  each distinct timeline entry exactly once sorted from earliest to latest time, then the three follow-ups in their original
+  order as Follow-up,<owner>,<task>. Use no spaces around commas and include no title line or other lines. Save it. Then put
+  the finished "incident_transfer.csv" on this computer as C:\Users\User\Desktop\incident_transfer.csv with exactly the same
+  content (for example, copy its text on the phone and paste it into Notepad here). Next, on this computer: A blank LibreOffice
+  Writer document named incident_postmortem.docx is already open. Write the postmortem in this exact order: "INC-4821 Postmortem"
+  in Heading 1; "Summary" in Heading 2 followed by the paragraphs "Start: <first entry time>", "End: <last entry time>", "Duration:
+  <minutes from start to end> minutes", and "Peak error rate: 7.4%"; "Timeline" in Heading 2 followed by a three-column table
+  with the header row Time, Service, Event and every timeline entry in order; "Events by service" in Heading 2 followed by
+  a four-column table with the header row Service, Events, First, Last and one row per service in alphabetical order giving
+  its number of entries and its first and last entry times; "Follow-ups" in Heading 2 followed by a two-column table with
+  the header row Owner, Task and the three follow-ups in order; and "Status" in Heading 2 followed by the paragraph "Resolved".
+  All non-heading paragraphs use body text styles and the document must contain nothing else. Save the document in Word format.
+  Then, back on the phone: put a copy of the saved "incident_postmortem.docx" onto the phone so it is in the phone''s Download
+  folder (for example, drag it from File Explorer onto the phone window). In the Tasks app on the phone, add one task for
+  each follow-up, titled "<Task> (<Owner>)" with the due date October 22, 2026, and no other new tasks.'
+init:
+  initializer_id: initializers.windows.android_companion:WindowsAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/incident_source.txt
+        transfer_path: /sdcard/Documents/markor/incident_transfer.csv
+        open_path: /sdcard/Documents/markor/incident_source.txt
+        source_text: 'INC-4821 checkout latency - raw log export (Time | Service | Event)
+
+          14:32 | cart-service | Rollback of cart-service 2.18 started
+
+          14:05 | monitoring | Alert fired for checkout p95 above 2s
+
+          15:02 | monitoring | Alert resolved
+
+          14:51 | checkout-api | Latency back to baseline
+
+          14:05 | monitoring | Alert fired for checkout p95 above 2s
+
+          14:12 | monitoring | On-call engineer acknowledged
+
+          14:20 | checkout-api | Error rate peaked at 7.4%
+
+          14:38 | cart-service | Rollback completed on all pods
+
+          14:26 | cart-service | Bad config in cart-service 2.18 identified
+
+          14:12 | monitoring | On-call engineer acknowledged
+
+          14:44 | checkout-api | Cache warm-up finished
+
+          14:09 | payments-gw | Timeouts to cart-service above 5%
+
+          14:15 | checkout-api | Retry storm detected on cart calls
+
+          14:17 | payments-gw | Circuit breaker opened for cart-service
+
+          14:12 | monitoring | On-call engineer acknowledged
+
+          14:23 | monitoring | Incident channel opened
+
+          14:29 | cart-service | Config diff posted for review
+
+          14:09 | payments-gw | Timeouts to cart-service above 5%
+
+          14:41 | payments-gw | Circuit breaker closed
+
+          14:47 | checkout-api | Error rate below 0.5%
+
+          14:55 | payments-gw | Timeout rate back to baseline
+
+          14:58 | monitoring | Status page set to monitoring
+
+          14:29 | cart-service | Config diff posted for review
+
+          Follow-up | Rosa Lima | Add config schema validation to the cart-service deploy
+
+          Follow-up | Kenji Sato | Lower the checkout retry budget
+
+          Follow-up | Omar Haddad | Alert on circuit breaker state changes
+
+          '
+        transfer_text: 'Time,Service,Event
+
+          '
+    windows:
+      steps:
+      - type: run_powershell
+        timeout: 180
+        script: '$ErrorActionPreference = ''Stop''
+
+          Get-Process soffice, soffice.bin, notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+
+          Start-Sleep 1
+
+          New-Item -ItemType Directory -Force ''C:\Users\User\Documents'', ''C:\Users\User\Desktop'' | Out-Null
+
+          Remove-Item -LiteralPath ''C:\Users\User\Desktop\incident_transfer.csv'' -ErrorAction SilentlyContinue
+
+          $soffice = ''C:\Program Files\LibreOffice\program\soffice.exe''
+
+          $tmp = Join-Path $env:TEMP (''osomni_'' + [guid]::NewGuid().ToString(''N''))
+
+          New-Item -ItemType Directory $tmp | Out-Null
+
+          [IO.File]::WriteAllText((Join-Path $tmp ''empty.txt''), "")
+
+          $p = Start-Process -FilePath $soffice -ArgumentList ''--headless'', ''--convert-to'', ''docx'', ''--outdir'', $tmp,
+          (Join-Path $tmp ''empty.txt'') -WindowStyle Hidden -PassThru
+
+          $p.WaitForExit(120000) | Out-Null
+
+          $blank = Join-Path $tmp ''empty.docx''
+
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $blank); $i++) { Start-Sleep 1 }
+
+          Move-Item -Force $blank ''C:\Users\User\Documents\incident_postmortem.docx''
+
+          Remove-Item -Recurse -Force $tmp
+
+          ''INIT_OK'''
+      - type: run_powershell
+        timeout: 30
+        script: Start-Process -FilePath 'C:\Program Files\LibreOffice\program\soffice.exe' -ArgumentList '--writer', '"C:\Users\User\Documents\incident_postmortem.docx"'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.android_companion:WindowsAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/incident_transfer.csv
+        expected_text: 'Time,Service,Event
+
+          14:05,monitoring,Alert fired for checkout p95 above 2s
+
+          14:09,payments-gw,Timeouts to cart-service above 5%
+
+          14:12,monitoring,On-call engineer acknowledged
+
+          14:15,checkout-api,Retry storm detected on cart calls
+
+          14:17,payments-gw,Circuit breaker opened for cart-service
+
+          14:20,checkout-api,Error rate peaked at 7.4%
+
+          14:23,monitoring,Incident channel opened
+
+          14:26,cart-service,Bad config in cart-service 2.18 identified
+
+          14:29,cart-service,Config diff posted for review
+
+          14:32,cart-service,Rollback of cart-service 2.18 started
+
+          14:38,cart-service,Rollback completed on all pods
+
+          14:41,payments-gw,Circuit breaker closed
+
+          14:44,checkout-api,Cache warm-up finished
+
+          14:47,checkout-api,Error rate below 0.5%
+
+          14:51,checkout-api,Latency back to baseline
+
+          14:55,payments-gw,Timeout rate back to baseline
+
+          14:58,monitoring,Status page set to monitoring
+
+          15:02,monitoring,Alert resolved
+
+          Follow-up,Rosa Lima,Add config schema validation to the cart-service deploy
+
+          Follow-up,Kenji Sato,Lower the checkout retry budget
+
+          Follow-up,Omar Haddad,Alert on circuit breaker state changes
+
+          '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Add config schema validation to the cart-service deploy (Rosa Lima)
+          due: '2026-10-22'
+        - title: Lower the checkout retry budget (Kenji Sato)
+          due: '2026-10-22'
+        - title: Alert on circuit breaker state changes (Omar Haddad)
+          due: '2026-10-22'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: C:\Users\User\Documents\incident_postmortem.docx
+      phone_path: /sdcard/Download/incident_postmortem.docx
+    windows:
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: '$expected = @''
+
+          Time,Service,Event
+
+          14:05,monitoring,Alert fired for checkout p95 above 2s
+
+          14:09,payments-gw,Timeouts to cart-service above 5%
+
+          14:12,monitoring,On-call engineer acknowledged
+
+          14:15,checkout-api,Retry storm detected on cart calls
+
+          14:17,payments-gw,Circuit breaker opened for cart-service
+
+          14:20,checkout-api,Error rate peaked at 7.4%
+
+          14:23,monitoring,Incident channel opened
+
+          14:26,cart-service,Bad config in cart-service 2.18 identified
+
+          14:29,cart-service,Config diff posted for review
+
+          14:32,cart-service,Rollback of cart-service 2.18 started
+
+          14:38,cart-service,Rollback completed on all pods
+
+          14:41,payments-gw,Circuit breaker closed
+
+          14:44,checkout-api,Cache warm-up finished
+
+          14:47,checkout-api,Error rate below 0.5%
+
+          14:51,checkout-api,Latency back to baseline
+
+          14:55,payments-gw,Timeout rate back to baseline
+
+          14:58,monitoring,Status page set to monitoring
+
+          15:02,monitoring,Alert resolved
+
+          Follow-up,Rosa Lima,Add config schema validation to the cart-service deploy
+
+          Follow-up,Kenji Sato,Lower the checkout retry budget
+
+          Follow-up,Omar Haddad,Alert on circuit breaker state changes
+
+          ''@
+
+          $path = ''C:\Users\User\Desktop\incident_transfer.csv''
+
+          if (-not (Test-Path -LiteralPath $path)) { ''DESKTOP_FILE_MISSING''; exit 1 }
+
+          $norm = { param($s) (($s -replace "`r`n", "`n") -replace "`r", "`n").Trim() }
+
+          if ((& $norm ([IO.File]::ReadAllText($path))) -cne (& $norm $expected)) { ''DESKTOP_FILE_MISMATCH''; exit 1 }
+
+          ''EVAL_RESULT:PASS'''
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: "$OutputEncoding = New-Object System.Text.UTF8Encoding $false\n@'\nimport zipfile\nimport xml.etree.ElementTree\
+          \ as ET\n\nW = \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\nNS = {\"w\": W}\n\ndef read_docx(path):\n\
+          \    with zipfile.ZipFile(path) as zf:\n        body = ET.fromstring(zf.read(\"word/document.xml\")).find(\"w:body\"\
+          , NS)\n        names = {}\n        if \"word/styles.xml\" in zf.namelist():\n            styles = ET.fromstring(zf.read(\"\
+          word/styles.xml\"))\n            for style in styles.findall(\"w:style\", NS):\n                name = style.find(\"\
+          w:name\", NS)\n                if name is not None:\n                    names[style.attrib.get(\"{%s}styleId\"\
+          \ % W)] = name.attrib.get(\"{%s}val\" % W, \"\")\n    items = []\n    for child in body:\n        tag = child.tag.split(\"\
+          }\")[1]\n        if tag == \"p\":\n            text = \"\".join(t.text or \"\" for t in child.findall(\".//w:t\"\
+          , NS)).strip()\n            if not text:\n                continue\n            style = child.find(\"w:pPr/w:pStyle\"\
+          , NS)\n            style_id = style.attrib.get(\"{%s}val\" % W) if style is not None else \"\"\n            items.append((\"\
+          p\", text, names.get(style_id, style_id).lower()))\n        elif tag == \"tbl\":\n            rows = []\n      \
+          \      for tr in child.findall(\"w:tr\", NS):\n                rows.append([\"\".join(t.text or \"\" for t in tc.findall(\"\
+          .//w:t\", NS)).strip()\n                             for tc in tr.findall(\"w:tc\", NS)])\n            items.append((\"\
+          tbl\", rows, \"\"))\n    return items\ndef fail(message):\n    raise SystemExit(message)\nitems = read_docx(\"C:/Users/User/Documents/incident_postmortem.docx\"\
+          )\nexpected = [('p', 'INC-4821 Postmortem', 'heading 1'), ('p', 'Summary', 'heading 2'), ('p', 'Start: 14:05', ''),\
+          \ ('p', 'End: 15:02', ''), ('p', 'Duration: 57 minutes', ''), ('p', 'Peak error rate: 7.4%', ''), ('p', 'Timeline',\
+          \ 'heading 2'), ('tbl', [['Time', 'Service', 'Event'], ['14:05', 'monitoring', 'Alert fired for checkout p95 above\
+          \ 2s'], ['14:09', 'payments-gw', 'Timeouts to cart-service above 5%'], ['14:12', 'monitoring', 'On-call engineer\
+          \ acknowledged'], ['14:15', 'checkout-api', 'Retry storm detected on cart calls'], ['14:17', 'payments-gw', 'Circuit\
+          \ breaker opened for cart-service'], ['14:20', 'checkout-api', 'Error rate peaked at 7.4%'], ['14:23', 'monitoring',\
+          \ 'Incident channel opened'], ['14:26', 'cart-service', 'Bad config in cart-service 2.18 identified'], ['14:29',\
+          \ 'cart-service', 'Config diff posted for review'], ['14:32', 'cart-service', 'Rollback of cart-service 2.18 started'],\
+          \ ['14:38', 'cart-service', 'Rollback completed on all pods'], ['14:41', 'payments-gw', 'Circuit breaker closed'],\
+          \ ['14:44', 'checkout-api', 'Cache warm-up finished'], ['14:47', 'checkout-api', 'Error rate below 0.5%'], ['14:51',\
+          \ 'checkout-api', 'Latency back to baseline'], ['14:55', 'payments-gw', 'Timeout rate back to baseline'], ['14:58',\
+          \ 'monitoring', 'Status page set to monitoring'], ['15:02', 'monitoring', 'Alert resolved']], ''), ('p', 'Events\
+          \ by service', 'heading 2'), ('tbl', [['Service', 'Events', 'First', 'Last'], ['cart-service', '4', '14:26', '14:38'],\
+          \ ['checkout-api', '5', '14:15', '14:51'], ['monitoring', '5', '14:05', '15:02'], ['payments-gw', '4', '14:09',\
+          \ '14:55']], ''), ('p', 'Follow-ups', 'heading 2'), ('tbl', [['Owner', 'Task'], ['Rosa Lima', 'Add config schema\
+          \ validation to the cart-service deploy'], ['Kenji Sato', 'Lower the checkout retry budget'], ['Omar Haddad', 'Alert\
+          \ on circuit breaker state changes']], ''), ('p', 'Status', 'heading 2'), ('p', 'Resolved', '')]\nif len(items)\
+          \ != len(expected):\n    fail('ITEM_COUNT_MISMATCH:%r' % (items,))\nfor observed, (kind, value, style) in zip(items,\
+          \ expected):\n    if observed[0] != kind or observed[1] != value:\n        fail('CONTENT_MISMATCH:%r' % (observed,))\n\
+          \    if kind == 'p' and style and observed[2] != style:\n        fail('STYLE_MISMATCH:%r' % (observed,))\n    if\
+          \ kind == 'p' and not style and observed[2].startswith('heading'):\n        fail('UNEXPECTED_HEADING:%r' % (observed,))\n\
+          print(\"PASS\")\n'@ | py -3 -W ignore -"
+        timeout: 180
+        stdout_contains: PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - windows_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: windows
+  companion_device: android (scrcpy window)
+  human_steps: 218
+  converted_from: cross_vm.windows_to_linux.incident_postmortem_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/windows/cross_vm_prepare_incident_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_writer_incident_postmortem_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.windows_to_linux.incident_postmortem_hard: phone in a scrcpy
+    window on the Windows desktop; the agent prepares incident_transfer.csv on the phone, moves it to the desktop, and returns
+    results to the phone.'

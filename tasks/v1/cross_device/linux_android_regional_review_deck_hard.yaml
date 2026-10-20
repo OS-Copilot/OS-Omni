@@ -1,0 +1,196 @@
+# Generated from tasks/v1/cross_vm/android_to_windows_regional_review_deck_hard.yaml; see metadata.converted_from.
+task_id: cross_device.linux_android.regional_review_deck_hard
+platform: linux
+instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "regional_transfer.csv" is open in Markor on the phone, and the finance note "regional_source.txt"
+  is in the same Markor folder. Using Markor only, make the transfer CSV contain the header Region,Revenue,Target,Owner followed
+  by one row for each of the eight regions in the note, in the same order, with Revenue and Target as plain numbers and Owner
+  as the person''s name. Apply all three finance corrections, fix any existing row that disagrees with the corrected data,
+  and do not include any other lines. Save the file and leave it ready to bring to this computer. Then put the finished "regional_transfer.csv"
+  on this computer as ~/Desktop/regional_transfer.csv with exactly the same content (for example, copy its text on the phone
+  and paste it into a text editor here). Next, on this computer: A LibreOffice Impress presentation named "regional_review.pptx"
+  is open with one empty title slide. Use only LibreOffice Impress. Make the deck exactly twelve slides. Slide 1 uses the
+  title layout with the title "Q3 Regional Review" and the subtitle "Revenue vs target (k USD)". Slide 2 has the title "Agenda"
+  and one content line per region name in CSV order. Slides 3 to 10 cover one region each in CSV order, using a title and
+  content layout: the title is the region name and the content has exactly five lines, "Revenue: <revenue>", "Target: <target>",
+  "Variance: <revenue minus target>" (with a leading + when positive, a leading - when negative, and 0 when equal), "Owner:
+  <owner>", and "Status: <status>", where status is "Above target", "Below target", or "On target". Slide 11 has the title
+  "Follow-ups" and one content line "<region> - <owner> (<variance>)" for each region below target, in CSV order. Slide 12
+  has the title "Summary" and the five content lines "Total revenue: <sum>", "Total target: <sum>", "Above target: <count>",
+  "On target: <count>", and "Below target: <count>". Put no other text on any slide and save the presentation in pptx format.
+  Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone: in Markor create the note
+  "regional_followups.txt" in the same folder as the CSV, containing exactly the follow-up lines of slide 11 in the same order
+  and form, followed by the lines "Total revenue: <sum>" and "Total target: <sum>" from slide 12. In the Tasks app on the
+  phone, add one task for each region below target, titled "Follow up <Region> with <Owner>" with the due date October 20,
+  2026, and no other new tasks.'
+init:
+  initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/regional_source.txt
+        transfer_path: /sdcard/Documents/markor/regional_transfer.csv
+        open_path: /sdcard/Documents/markor/regional_transfer.csv
+        source_text: 'Q3 regional results - draft from finance (revenue and target in k USD)
+
+          North | revenue 412 | target 400 | owner Maya Chen
+
+          South | revenue 365 | target 390 | owner Jordan Lee
+
+          East | revenue 298 | target 310 | owner Priya Nair
+
+          West | revenue 420 | target 420 | owner Theo Martin
+
+          Central | revenue 322 | target 330 | owner Lena Fischer
+
+          Coastal | revenue 287 | target 260 | owner Omar Haddad
+
+          Mountain | revenue 199 | target 240 | owner Rosa Lima
+
+          Capital | revenue 505 | target 480 | owner Kenji Sato
+
+          Finance correction: East revenue is 318, not 298.
+
+          Finance correction: South owner is now Omar Haddad.
+
+          Finance correction: Capital target was raised to 505.
+
+          '
+        transfer_text: 'Region,Revenue,Target,Owner
+
+          North,412,400,Maya Chen
+
+          South,365,390,Jordan Lee
+
+          '
+    linux:
+      steps:
+      - type: run_bash
+        timeout: 90
+        script: "set -e\npkill -f soffice.bin || true\nrm -f /home/user/Desktop/regional_transfer.csv\nmkdir -p /home/user/Documents\
+          \ /home/user/Desktop\nUSERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef\
+          \ _need(mod, pkg):\n    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\npptx = _need('pptx', 'python-pptx')\npath\
+          \ = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')\nos.makedirs(os.path.dirname(path),\
+          \ exist_ok=True)\ndeck = pptx.Presentation()\ndeck.slides.add_slide(deck.slide_layouts[0])\ndeck.save(path)\nprint('INIT_OK',\
+          \ path)\nOSOMNI_PY"
+      - type: run_bash
+        timeout: 30
+        script: 'export DISPLAY=${DISPLAY:-:0}
+
+          setsid -f libreoffice --impress /home/user/Documents/regional_review.pptx >/dev/null 2>&1 </dev/null'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/regional_transfer.csv
+        expected_text: 'Region,Revenue,Target,Owner
+
+          North,412,400,Maya Chen
+
+          South,365,390,Omar Haddad
+
+          East,318,310,Priya Nair
+
+          West,420,420,Theo Martin
+
+          Central,322,330,Lena Fischer
+
+          Coastal,287,260,Omar Haddad
+
+          Mountain,199,240,Rosa Lima
+
+          Capital,505,505,Kenji Sato
+
+          '
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/regional_followups.txt
+        expected_text: 'South - Omar Haddad (-25)
+
+          Central - Lena Fischer (-8)
+
+          Mountain - Rosa Lima (-41)
+
+          Total revenue: 2828
+
+          Total target: 2855'
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Follow up South with Omar Haddad
+          due: '2026-10-20'
+        - title: Follow up Central with Lena Fischer
+          due: '2026-10-20'
+        - title: Follow up Mountain with Rosa Lima
+          due: '2026-10-20'
+        baseline_count: 7
+    phone_copies: []
+    linux:
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "python3 - <<'OSOMNI_PY'\nfrom pathlib import Path\nexpected = \"Region,Revenue,Target,Owner\\nNorth,412,400,Maya\
+          \ Chen\\nSouth,365,390,Omar Haddad\\nEast,318,310,Priya Nair\\nWest,420,420,Theo Martin\\nCentral,322,330,Lena Fischer\\\
+          nCoastal,287,260,Omar Haddad\\nMountain,199,240,Rosa Lima\\nCapital,505,505,Kenji Sato\\n\"\npath = Path('/home/user/Desktop/regional_transfer.csv')\n\
+          norm = lambda s: s.replace('\\r\\n', '\\n').replace('\\r', '\\n').strip()\nif not path.is_file():\n    print('DESKTOP_FILE_MISSING');\
+          \ raise SystemExit(1)\nif norm(path.read_text(encoding='utf-8-sig', errors='replace')) != norm(expected):\n    print('DESKTOP_FILE_MISMATCH');\
+          \ raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef _need(mod, pkg):\n\
+          \    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\npptx = _need('pptx', 'python-pptx')\npath\
+          \ = os.path.join(os.environ['USERPROFILE'], 'Documents', 'regional_review.pptx')\ndeck = pptx.Presentation(path)\n\
+          observed = []\nfor slide in deck.slides:\n    title_shape = slide.shapes.title\n    title = title_shape.text_frame.text.strip()\
+          \ if title_shape is not None else None\n    body = []\n    for shape in slide.shapes:\n        if not shape.has_text_frame\
+          \ or (title_shape is not None and shape.shape_id == title_shape.shape_id):\n            continue\n        body.extend(p.text.strip()\
+          \ for p in shape.text_frame.paragraphs if p.text.strip())\n    if title is None and body:\n        title, body =\
+          \ body[0], body[1:]\n    observed.append((title, body))\nexpected = [('Q3 Regional Review', ['Revenue vs target\
+          \ (k USD)']), ('Agenda', ['North', 'South', 'East', 'West', 'Central', 'Coastal', 'Mountain', 'Capital']), ('North',\
+          \ ['Revenue: 412', 'Target: 400', 'Variance: +12', 'Owner: Maya Chen', 'Status: Above target']), ('South', ['Revenue:\
+          \ 365', 'Target: 390', 'Variance: -25', 'Owner: Omar Haddad', 'Status: Below target']), ('East', ['Revenue: 318',\
+          \ 'Target: 310', 'Variance: +8', 'Owner: Priya Nair', 'Status: Above target']), ('West', ['Revenue: 420', 'Target:\
+          \ 420', 'Variance: 0', 'Owner: Theo Martin', 'Status: On target']), ('Central', ['Revenue: 322', 'Target: 330',\
+          \ 'Variance: -8', 'Owner: Lena Fischer', 'Status: Below target']), ('Coastal', ['Revenue: 287', 'Target: 260', 'Variance:\
+          \ +27', 'Owner: Omar Haddad', 'Status: Above target']), ('Mountain', ['Revenue: 199', 'Target: 240', 'Variance:\
+          \ -41', 'Owner: Rosa Lima', 'Status: Below target']), ('Capital', ['Revenue: 505', 'Target: 505', 'Variance: 0',\
+          \ 'Owner: Kenji Sato', 'Status: On target']), ('Follow-ups', ['South - Omar Haddad (-25)', 'Central - Lena Fischer\
+          \ (-8)', 'Mountain - Rosa Lima (-41)']), ('Summary', ['Total revenue: 2828', 'Total target: 2855', 'Above target:\
+          \ 3', 'On target: 2', 'Below target: 3'])]\nif len(observed) != len(expected):\n    print('SLIDE_COUNT_MISMATCH:%d'\
+          \ % len(observed))\n    raise SystemExit(1)\nfor index, (got, want) in enumerate(zip(observed, expected), start=1):\n\
+          \    if (got[0], got[1]) != (want[0], want[1]):\n        print('SLIDE_MISMATCH:%d:%r' % (index, got))\n        raise\
+          \ SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 120
+        stdout_contains: EVAL_RESULT:PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - linux_android
+  - markor
+  - libreoffice
+  - impress
+  - hard
+  difficulty: hard
+  screen: linux
+  companion_device: android (scrcpy window)
+  human_steps: 175
+  converted_from: cross_vm.android_to_windows.regional_review_deck_hard
+  round_trip:
+  - AndroidTextFileEvaluator
+  - TasksAppItemsEvaluator
+  source_stages:
+  - tasks/v1/cross_vm/stages/android/cross_vm_prepare_regional_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/windows/cross_vm_impress_regional_review_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.regional_review_deck_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves regional_transfer.csv to the desktop and returns results to the phone.'

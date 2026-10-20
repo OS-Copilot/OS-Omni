@@ -1,0 +1,241 @@
+# Generated from tasks/v1/cross_vm/android_to_windows_conference_schedule_hard.yaml; see metadata.converted_from.
+task_id: cross_device.linux_android.conference_schedule_hard
+platform: linux
+instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "schedule_transfer.csv" is open in Markor on the phone, and the organizer''s note
+  "schedule_source.txt" is in the same Markor folder. Each session in the note is written as Time | Room | Session | Speaker,
+  and the last four lines are changes to apply. Using Markor only, rewrite the transfer CSV so it has the header Time,Room,Session,Speaker
+  followed by one row per remaining session after every change is applied, sorted by Time and then by Room, with no spaces
+  around commas and no other lines. Save the file and leave it ready to bring to this computer. Then put the finished "schedule_transfer.csv"
+  on this computer as ~/Desktop/schedule_transfer.csv with exactly the same content (for example, copy its text on the phone
+  and paste it into a text editor here). Next, on this computer: A blank LibreOffice Writer document named "conference_schedule.docx"
+  is open. Use only LibreOffice Writer. Build the document in this exact order: "DevSummit 2026 Day 1" in the paragraph style
+  Heading 1; then for each of Room A, Room B, and Room C a Heading 2 paragraph with the room name followed by a three-column
+  table with the header row Time, Session, Speaker and one row per session in that room in time order; then "Speaker index"
+  in Heading 2 followed by one paragraph per distinct speaker in alphabetical order in the form "<speaker>: <session>; <session>"
+  listing that speaker''s sessions in time order; then "Totals" in Heading 2 followed by the paragraphs "Sessions: <count>",
+  "Speakers: <distinct speakers>", and "Busiest room: <room> (<count> sessions)". All non-heading paragraphs use body text
+  styles and the document must contain nothing else. Save the document in Word format, then also export it to PDF as "conference_schedule.pdf"
+  in the same Documents folder. Apart from creating the file on the Desktop, do not use a text editor. Then, back on the phone:
+  put a copy of the exported "conference_schedule.pdf" onto the phone so it is in the phone''s Download folder (for example,
+  drag it from the file manager onto the phone window). In the Calendar app on the phone, add one event for each session Maya
+  Chen speaks at, titled "<Session> (<Room>)", on October 15, 2026, starting at the session time and lasting one hour, and
+  no other new events.'
+init:
+  initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/schedule_source.txt
+        transfer_path: /sdcard/Documents/markor/schedule_transfer.csv
+        open_path: /sdcard/Documents/markor/schedule_transfer.csv
+        source_text: 'DevSummit 2026 - Day 1 schedule (Time | Room | Session | Speaker)
+
+          09:00 | Room A | Opening keynote | Maya Chen
+
+          09:00 | Room B | Accessibility clinic | Omar Haddad
+
+          09:00 | Room C | Hiring for platform teams | Rosa Lima
+
+          10:15 | Room A | Scaling event pipelines | Jordan Lee
+
+          10:15 | Room B | Design tokens in practice | Priya Nair
+
+          10:15 | Room C | Edge caching patterns | Kenji Sato
+
+          11:30 | Room A | Observability on a budget | Theo Martin
+
+          11:30 | Room B | Mobile offline sync | Lena Fischer
+
+          11:30 | Room C | Cost reviews that stick | Sam Patel
+
+          13:30 | Room A | Secure defaults for APIs | Rosa Lima
+
+          13:30 | Room B | Testing flaky UIs | Kenji Sato
+
+          13:30 | Room C | Feature flags at scale | Dana Ortiz
+
+          14:45 | Room A | Data contracts | Sam Patel
+
+          14:45 | Room B | Inclusive onboarding | Dana Ortiz
+
+          14:45 | Room C | Incident review rituals | Theo Martin
+
+          16:00 | Room A | Closing panel | Maya Chen
+
+          16:00 | Room B | Design systems Q and A | Priya Nair
+
+          16:00 | Room C | Platform roadmap | Jordan Lee
+
+          Change: "Data contracts" is cancelled.
+
+          Change: "Edge caching patterns" is cancelled.
+
+          Change: "Testing flaky UIs" moves to 14:45 in Room A.
+
+          Change: "Mobile offline sync" will be presented by Ines Duarte.
+
+          '
+        transfer_text: 'Time,Room,Session,Speaker
+
+          09:00,Room A,Opening keynote,Maya Chen
+
+          09:00,Room B,Accessibility clinic,Omar Haddad
+
+          13:30,Room B,Testing flaky UIs,Kenji Sato
+
+          14:45,Room A,Data contracts,Sam Patel
+
+          '
+    linux:
+      steps:
+      - type: run_bash
+        timeout: 90
+        script: "set -e\npkill -f soffice.bin || true\nrm -f /home/user/Desktop/schedule_transfer.csv\nmkdir -p /home/user/Documents\
+          \ /home/user/Desktop\nUSERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef\
+          \ _need(mod, pkg):\n    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\ndocx = _need('docx', 'python-docx')\npath\
+          \ = os.path.join(os.environ['USERPROFILE'], 'Documents', 'conference_schedule.docx')\nos.makedirs(os.path.dirname(path),\
+          \ exist_ok=True)\ndocx.Document().save(path)\nprint('INIT_OK', path)\nOSOMNI_PY"
+      - type: run_bash
+        timeout: 30
+        script: 'export DISPLAY=${DISPLAY:-:0}
+
+          setsid -f libreoffice --writer /home/user/Documents/conference_schedule.docx >/dev/null 2>&1 </dev/null'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/schedule_transfer.csv
+        expected_text: 'Time,Room,Session,Speaker
+
+          09:00,Room A,Opening keynote,Maya Chen
+
+          09:00,Room B,Accessibility clinic,Omar Haddad
+
+          09:00,Room C,Hiring for platform teams,Rosa Lima
+
+          10:15,Room A,Scaling event pipelines,Jordan Lee
+
+          10:15,Room B,Design tokens in practice,Priya Nair
+
+          11:30,Room A,Observability on a budget,Theo Martin
+
+          11:30,Room B,Mobile offline sync,Ines Duarte
+
+          11:30,Room C,Cost reviews that stick,Sam Patel
+
+          13:30,Room A,Secure defaults for APIs,Rosa Lima
+
+          13:30,Room C,Feature flags at scale,Dana Ortiz
+
+          14:45,Room A,Testing flaky UIs,Kenji Sato
+
+          14:45,Room B,Inclusive onboarding,Dana Ortiz
+
+          14:45,Room C,Incident review rituals,Theo Martin
+
+          16:00,Room A,Closing panel,Maya Chen
+
+          16:00,Room B,Design systems Q and A,Priya Nair
+
+          16:00,Room C,Platform roadmap,Jordan Lee
+
+          '
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: Opening keynote (Room A)
+          start: 2026-10-15 09:00
+          end: 2026-10-15 10:00
+        - title: Closing panel (Room A)
+          start: 2026-10-15 16:00
+          end: 2026-10-15 17:00
+        baseline_count: 1
+    phone_copies:
+    - desktop_path: /home/user/Documents/conference_schedule.pdf
+      phone_path: /sdcard/Download/conference_schedule.pdf
+    linux:
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "python3 - <<'OSOMNI_PY'\nfrom pathlib import Path\nexpected = \"Time,Room,Session,Speaker\\n09:00,Room A,Opening\
+          \ keynote,Maya Chen\\n09:00,Room B,Accessibility clinic,Omar Haddad\\n09:00,Room C,Hiring for platform teams,Rosa\
+          \ Lima\\n10:15,Room A,Scaling event pipelines,Jordan Lee\\n10:15,Room B,Design tokens in practice,Priya Nair\\n11:30,Room\
+          \ A,Observability on a budget,Theo Martin\\n11:30,Room B,Mobile offline sync,Ines Duarte\\n11:30,Room C,Cost reviews\
+          \ that stick,Sam Patel\\n13:30,Room A,Secure defaults for APIs,Rosa Lima\\n13:30,Room C,Feature flags at scale,Dana\
+          \ Ortiz\\n14:45,Room A,Testing flaky UIs,Kenji Sato\\n14:45,Room B,Inclusive onboarding,Dana Ortiz\\n14:45,Room\
+          \ C,Incident review rituals,Theo Martin\\n16:00,Room A,Closing panel,Maya Chen\\n16:00,Room B,Design systems Q and\
+          \ A,Priya Nair\\n16:00,Room C,Platform roadmap,Jordan Lee\\n\"\npath = Path('/home/user/Desktop/schedule_transfer.csv')\n\
+          norm = lambda s: s.replace('\\r\\n', '\\n').replace('\\r', '\\n').strip()\nif not path.is_file():\n    print('DESKTOP_FILE_MISSING');\
+          \ raise SystemExit(1)\nif norm(path.read_text(encoding='utf-8-sig', errors='replace')) != norm(expected):\n    print('DESKTOP_FILE_MISMATCH');\
+          \ raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef _need(mod, pkg):\n\
+          \    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\ndocx = _need('docx', 'python-docx')\nfrom\
+          \ docx.table import Table\nfrom docx.text.paragraph import Paragraph\ndef fail(message):\n    print(message)\n \
+          \   raise SystemExit(1)\ndocs = os.path.join(os.environ['USERPROFILE'], 'Documents')\ndoc = docx.Document(os.path.join(docs,\
+          \ 'conference_schedule.docx'))\nitems = []\nfor child in doc.element.body.iterchildren():\n    tag = child.tag.split('}')[1]\n\
+          \    if tag == 'p':\n        para = Paragraph(child, doc)\n        text = para.text.strip()\n        if text:\n\
+          \            items.append(('p', text, (para.style.name if para.style is not None else '').lower()))\n    elif tag\
+          \ == 'tbl':\n        table = Table(child, doc)\n        items.append(('tbl', [[cell.text.strip() for cell in row.cells]\
+          \ for row in table.rows], ''))\nexpected = [('p', 'DevSummit 2026 Day 1', 'heading 1'), ('p', 'Room A', 'heading\
+          \ 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Opening keynote', 'Maya Chen'], ['10:15', 'Scaling event\
+          \ pipelines', 'Jordan Lee'], ['11:30', 'Observability on a budget', 'Theo Martin'], ['13:30', 'Secure defaults for\
+          \ APIs', 'Rosa Lima'], ['14:45', 'Testing flaky UIs', 'Kenji Sato'], ['16:00', 'Closing panel', 'Maya Chen']], ''),\
+          \ ('p', 'Room B', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Accessibility clinic', 'Omar\
+          \ Haddad'], ['10:15', 'Design tokens in practice', 'Priya Nair'], ['11:30', 'Mobile offline sync', 'Ines Duarte'],\
+          \ ['14:45', 'Inclusive onboarding', 'Dana Ortiz'], ['16:00', 'Design systems Q and A', 'Priya Nair']], ''), ('p',\
+          \ 'Room C', 'heading 2'), ('tbl', [['Time', 'Session', 'Speaker'], ['09:00', 'Hiring for platform teams', 'Rosa\
+          \ Lima'], ['11:30', 'Cost reviews that stick', 'Sam Patel'], ['13:30', 'Feature flags at scale', 'Dana Ortiz'],\
+          \ ['14:45', 'Incident review rituals', 'Theo Martin'], ['16:00', 'Platform roadmap', 'Jordan Lee']], ''), ('p',\
+          \ 'Speaker index', 'heading 2'), ('p', 'Dana Ortiz: Feature flags at scale; Inclusive onboarding', ''), ('p', 'Ines\
+          \ Duarte: Mobile offline sync', ''), ('p', 'Jordan Lee: Scaling event pipelines; Platform roadmap', ''), ('p', 'Kenji\
+          \ Sato: Testing flaky UIs', ''), ('p', 'Maya Chen: Opening keynote; Closing panel', ''), ('p', 'Omar Haddad: Accessibility\
+          \ clinic', ''), ('p', 'Priya Nair: Design tokens in practice; Design systems Q and A', ''), ('p', 'Rosa Lima: Hiring\
+          \ for platform teams; Secure defaults for APIs', ''), ('p', 'Sam Patel: Cost reviews that stick', ''), ('p', 'Theo\
+          \ Martin: Observability on a budget; Incident review rituals', ''), ('p', 'Totals', 'heading 2'), ('p', 'Sessions:\
+          \ 16', ''), ('p', 'Speakers: 10', ''), ('p', 'Busiest room: Room A (6 sessions)', '')]\nif len(items) != len(expected):\n\
+          \    fail('ITEM_COUNT_MISMATCH:%r' % (items,))\nfor observed, (kind, value, style) in zip(items, expected):\n  \
+          \  if observed[0] != kind or observed[1] != value:\n        fail('CONTENT_MISMATCH:%r' % (observed,))\n    if kind\
+          \ == 'p' and style and observed[2] != style:\n        fail('STYLE_MISMATCH:%r' % (observed,))\n    if kind == 'p'\
+          \ and not style and observed[2].startswith('heading'):\n        fail('UNEXPECTED_HEADING:%r' % (observed,))\npypdf\
+          \ = _need('pypdf', 'pypdf')\npdf_path = os.path.join(docs, 'conference_schedule.pdf')\nif not os.path.exists(pdf_path):\n\
+          \    fail('MISSING_PDF')\ntext = ' '.join(' '.join((page.extract_text() or '').split()) for page in pypdf.PdfReader(pdf_path).pages)\n\
+          for needle in ['DevSummit 2026 Day 1', 'Speaker index', 'Sessions: 16', 'Ines Duarte']:\n    if needle not in text:\n\
+          \        fail('PDF_MISSING_TEXT:' + needle)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 120
+        stdout_contains: EVAL_RESULT:PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - linux_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: linux
+  companion_device: android (scrcpy window)
+  human_steps: 220
+  converted_from: cross_vm.android_to_windows.conference_schedule_hard
+  round_trip:
+  - CalendarEventsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/android/cross_vm_prepare_schedule_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/windows/cross_vm_writer_conference_schedule_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.conference_schedule_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves schedule_transfer.csv to the desktop and returns results to the phone.'

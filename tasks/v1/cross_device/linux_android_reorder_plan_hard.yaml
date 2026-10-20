@@ -1,0 +1,262 @@
+# Generated from tasks/v1/cross_vm/android_to_windows_reorder_plan_hard.yaml; see metadata.converted_from.
+task_id: cross_device.linux_android.reorder_plan_hard
+platform: linux
+instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The incomplete transfer CSV "reorder_transfer.csv" is open in Markor on the phone, and the stock count
+  note "stock_count_source.txt" is in the same Markor folder. Using Markor only, make the transfer CSV contain the header
+  Item,OnHand,ReorderPoint,Supplier,UnitCost followed by one row for each of the sixteen items in the note, in the same order,
+  using plain numbers for OnHand, ReorderPoint, and UnitCost. Apply all five corrections at the end of the note, fix any existing
+  row that disagrees with the corrected data, and do not include any other lines. Save the file and leave it ready to bring
+  to this computer. Then put the finished "reorder_transfer.csv" on this computer as ~/Desktop/reorder_transfer.csv with exactly
+  the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
+  A blank LibreOffice Calc workbook named "reorder_plan.xlsx" is open. Use only LibreOffice Calc. Sheet 1 must be named "Reorder":
+  put the CSV header and sixteen item rows in A1:E17 with numbers kept numeric, then add F1 "Shortfall" with =MAX(0;C2-B2),
+  G1 "OrderQty" with =ROUNDUP(F2/10;0)*10, H1 "LineCost" with =G2*E2, and I1 "Priority" with =IF(B2=0;"Critical";IF(F2>0;"Reorder";"OK")),
+  each filled down to row 17; in row 18 put "Total" in A18, =SUM(G2:G17) in G18, and =SUM(H2:H17) in H18. Sheet 2 must be
+  named "BySupplier" with the header Supplier, Lines, Units, Cost, Critical in A1:E1 and one row per supplier sorted alphabetically
+  from row 2, where B uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17;">0"), C uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$G$2:$G$17),
+  D uses =SUMIF($Reorder.$D$2:$D$17;A2;$Reorder.$H$2:$H$17), and E uses =COUNTIFS($Reorder.$D$2:$D$17;A2;$Reorder.$I$2:$I$17;"Critical"),
+  filled down; the row after the last supplier has "Total" in A and SUM formulas over the supplier rows in B through E. Sheet
+  3 must be named "Summary" with the header Metric, Value in A1:B1 and these rows: "Items to reorder" with =COUNTIF($Reorder.$G$2:$G$17;">0");
+  "Critical items" with =COUNTIF($Reorder.$I$2:$I$17;"Critical"); "Total order cost" with =$Reorder.H18; "Largest supplier"
+  with =INDEX($BySupplier.A2:A5;MATCH(MAX($BySupplier.D2:D5);$BySupplier.D2:D5;0)); and "Largest supplier cost" with =MAX($BySupplier.D2:D5).
+  Leave everything else empty and save the workbook in xlsx format. Finally, export the BySupplier sheet as a comma-separated
+  CSV file named "supplier_po.csv" in the same Documents folder. Then, back on the phone: put a copy of the exported "supplier_po.csv"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Tasks app on the phone, add one task for every Critical item, titled "Expedite <Item> from <Supplier>" with the due
+  date October 14, 2026, and no other new tasks.'
+init:
+  initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/stock_count_source.txt
+        transfer_path: /sdcard/Documents/markor/reorder_transfer.csv
+        open_path: /sdcard/Documents/markor/reorder_transfer.csv
+        source_text: 'Aisle 4 stock count - Friday close (Item | on hand | reorder point | supplier | unit cost)
+
+          Packing tape | on hand 18 | reorder point 40 | Harbor Supply | unit cost 3
+
+          Shipping labels | on hand 260 | reorder point 200 | LabelWorks | unit cost 1
+
+          Bubble wrap rolls | on hand 6 | reorder point 12 | Harbor Supply | unit cost 14
+
+          Corrugated boxes M | on hand 95 | reorder point 150 | BoxCo | unit cost 2
+
+          Corrugated boxes L | on hand 140 | reorder point 120 | BoxCo | unit cost 3
+
+          Stretch film | on hand 9 | reorder point 10 | WrapRight | unit cost 22
+
+          Void fill paper | on hand 30 | reorder point 75 | WrapRight | unit cost 5
+
+          Thermal ribbons | on hand 12 | reorder point 10 | LabelWorks | unit cost 9
+
+          Pallet wrap tool | on hand 2 | reorder point 4 | Harbor Supply | unit cost 35
+
+          Edge protectors | on hand 48 | reorder point 100 | BoxCo | unit cost 1
+
+          Fragile stickers | on hand 300 | reorder point 250 | LabelWorks | unit cost 1
+
+          Mailer bags | on hand 75 | reorder point 200 | WrapRight | unit cost 2
+
+          Box cutters | on hand 4 | reorder point 12 | Harbor Supply | unit cost 6
+
+          Corrugated boxes S | on hand 210 | reorder point 180 | BoxCo | unit cost 1
+
+          Label printer rolls | on hand 3 | reorder point 8 | LabelWorks | unit cost 12
+
+          Strapping kits | on hand 5 | reorder point 6 | Harbor Supply | unit cost 28
+
+          Correction from shift lead: the recount found 22 packing tape, not 18.
+
+          Correction from shift lead: shipping labels on hand is 160, not 260.
+
+          Correction from purchasing: Stretch film is now supplied by Harbor Supply.
+
+          Correction from shift lead: box cutters are out of stock, on hand is 0.
+
+          Correction from shift lead: label printer rolls on hand is 0 after the audit.
+
+          '
+        transfer_text: 'Item,OnHand,ReorderPoint,Supplier,UnitCost
+
+          Packing tape,18,40,Harbor Supply,3
+
+          Shipping labels,260,200,LabelWorks,1
+
+          Bubble wrap rolls,6,12,Harbor Supply,14
+
+          '
+    linux:
+      steps:
+      - type: run_bash
+        timeout: 90
+        script: "set -e\npkill -f soffice.bin || true\nrm -f /home/user/Desktop/reorder_transfer.csv\nmkdir -p /home/user/Documents\
+          \ /home/user/Desktop\nUSERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef\
+          \ _need(mod, pkg):\n    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\nopenpyxl = _need('openpyxl', 'openpyxl')\n\
+          path = os.path.join(os.environ['USERPROFILE'], 'Documents', 'reorder_plan.xlsx')\nos.makedirs(os.path.dirname(path),\
+          \ exist_ok=True)\nopenpyxl.Workbook().save(path)\nprint('INIT_OK', path)\nOSOMNI_PY"
+      - type: run_bash
+        timeout: 30
+        script: 'export DISPLAY=${DISPLAY:-:0}
+
+          setsid -f libreoffice --calc /home/user/Documents/reorder_plan.xlsx >/dev/null 2>&1 </dev/null'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/reorder_transfer.csv
+        expected_text: 'Item,OnHand,ReorderPoint,Supplier,UnitCost
+
+          Packing tape,22,40,Harbor Supply,3
+
+          Shipping labels,160,200,LabelWorks,1
+
+          Bubble wrap rolls,6,12,Harbor Supply,14
+
+          Corrugated boxes M,95,150,BoxCo,2
+
+          Corrugated boxes L,140,120,BoxCo,3
+
+          Stretch film,9,10,Harbor Supply,22
+
+          Void fill paper,30,75,WrapRight,5
+
+          Thermal ribbons,12,10,LabelWorks,9
+
+          Pallet wrap tool,2,4,Harbor Supply,35
+
+          Edge protectors,48,100,BoxCo,1
+
+          Fragile stickers,300,250,LabelWorks,1
+
+          Mailer bags,75,200,WrapRight,2
+
+          Box cutters,0,12,Harbor Supply,6
+
+          Corrugated boxes S,210,180,BoxCo,1
+
+          Label printer rolls,0,8,LabelWorks,12
+
+          Strapping kits,5,6,Harbor Supply,28
+
+          '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Expedite Box cutters from Harbor Supply
+          due: '2026-10-14'
+        - title: Expedite Label printer rolls from LabelWorks
+          due: '2026-10-14'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: /home/user/Documents/supplier_po.csv
+      phone_path: /sdcard/Download/supplier_po.csv
+    linux:
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "python3 - <<'OSOMNI_PY'\nfrom pathlib import Path\nexpected = \"Item,OnHand,ReorderPoint,Supplier,UnitCost\\\
+          nPacking tape,22,40,Harbor Supply,3\\nShipping labels,160,200,LabelWorks,1\\nBubble wrap rolls,6,12,Harbor Supply,14\\\
+          nCorrugated boxes M,95,150,BoxCo,2\\nCorrugated boxes L,140,120,BoxCo,3\\nStretch film,9,10,Harbor Supply,22\\nVoid\
+          \ fill paper,30,75,WrapRight,5\\nThermal ribbons,12,10,LabelWorks,9\\nPallet wrap tool,2,4,Harbor Supply,35\\nEdge\
+          \ protectors,48,100,BoxCo,1\\nFragile stickers,300,250,LabelWorks,1\\nMailer bags,75,200,WrapRight,2\\nBox cutters,0,12,Harbor\
+          \ Supply,6\\nCorrugated boxes S,210,180,BoxCo,1\\nLabel printer rolls,0,8,LabelWorks,12\\nStrapping kits,5,6,Harbor\
+          \ Supply,28\\n\"\npath = Path('/home/user/Desktop/reorder_transfer.csv')\nnorm = lambda s: s.replace('\\r\\n', '\\\
+          n').replace('\\r', '\\n').strip()\nif not path.is_file():\n    print('DESKTOP_FILE_MISSING'); raise SystemExit(1)\n\
+          if norm(path.read_text(encoding='utf-8-sig', errors='replace')) != norm(expected):\n    print('DESKTOP_FILE_MISMATCH');\
+          \ raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef _need(mod, pkg):\n\
+          \    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\ndef norm(value):\n    if isinstance(value,\
+          \ str):\n        text = value.strip()\n        if text.startswith('='):\n            return '=' + text[1:].replace('\
+          \ ', '').replace('$', '').replace(\"'\", '').upper()\n        return text\n    if isinstance(value, bool) or value\
+          \ is None:\n        return value\n    number = float(value)\n    return int(number) if number.is_integer() else\
+          \ round(number, 4)\nopenpyxl = _need('openpyxl', 'openpyxl')\npath = os.path.join(os.environ['USERPROFILE'], 'Documents',\
+          \ 'reorder_plan.xlsx')\nwb = openpyxl.load_workbook(path, data_only=False)\nexpected_sheets = [('Reorder', [['Item',\
+          \ 'OnHand', 'ReorderPoint', 'Supplier', 'UnitCost', 'Shortfall', 'OrderQty', 'LineCost', 'Priority'], ['Packing\
+          \ tape', 22, 40, 'Harbor Supply', 3, '=MAX(0,C2-B2)', '=ROUNDUP(F2/10,0)*10', '=G2*E2', '=IF(B2=0,\"Critical\",IF(F2>0,\"\
+          Reorder\",\"OK\"))'], ['Shipping labels', 160, 200, 'LabelWorks', 1, '=MAX(0,C3-B3)', '=ROUNDUP(F3/10,0)*10', '=G3*E3',\
+          \ '=IF(B3=0,\"Critical\",IF(F3>0,\"Reorder\",\"OK\"))'], ['Bubble wrap rolls', 6, 12, 'Harbor Supply', 14, '=MAX(0,C4-B4)',\
+          \ '=ROUNDUP(F4/10,0)*10', '=G4*E4', '=IF(B4=0,\"Critical\",IF(F4>0,\"Reorder\",\"OK\"))'], ['Corrugated boxes M',\
+          \ 95, 150, 'BoxCo', 2, '=MAX(0,C5-B5)', '=ROUNDUP(F5/10,0)*10', '=G5*E5', '=IF(B5=0,\"Critical\",IF(F5>0,\"Reorder\"\
+          ,\"OK\"))'], ['Corrugated boxes L', 140, 120, 'BoxCo', 3, '=MAX(0,C6-B6)', '=ROUNDUP(F6/10,0)*10', '=G6*E6', '=IF(B6=0,\"\
+          Critical\",IF(F6>0,\"Reorder\",\"OK\"))'], ['Stretch film', 9, 10, 'Harbor Supply', 22, '=MAX(0,C7-B7)', '=ROUNDUP(F7/10,0)*10',\
+          \ '=G7*E7', '=IF(B7=0,\"Critical\",IF(F7>0,\"Reorder\",\"OK\"))'], ['Void fill paper', 30, 75, 'WrapRight', 5, '=MAX(0,C8-B8)',\
+          \ '=ROUNDUP(F8/10,0)*10', '=G8*E8', '=IF(B8=0,\"Critical\",IF(F8>0,\"Reorder\",\"OK\"))'], ['Thermal ribbons', 12,\
+          \ 10, 'LabelWorks', 9, '=MAX(0,C9-B9)', '=ROUNDUP(F9/10,0)*10', '=G9*E9', '=IF(B9=0,\"Critical\",IF(F9>0,\"Reorder\"\
+          ,\"OK\"))'], ['Pallet wrap tool', 2, 4, 'Harbor Supply', 35, '=MAX(0,C10-B10)', '=ROUNDUP(F10/10,0)*10', '=G10*E10',\
+          \ '=IF(B10=0,\"Critical\",IF(F10>0,\"Reorder\",\"OK\"))'], ['Edge protectors', 48, 100, 'BoxCo', 1, '=MAX(0,C11-B11)',\
+          \ '=ROUNDUP(F11/10,0)*10', '=G11*E11', '=IF(B11=0,\"Critical\",IF(F11>0,\"Reorder\",\"OK\"))'], ['Fragile stickers',\
+          \ 300, 250, 'LabelWorks', 1, '=MAX(0,C12-B12)', '=ROUNDUP(F12/10,0)*10', '=G12*E12', '=IF(B12=0,\"Critical\",IF(F12>0,\"\
+          Reorder\",\"OK\"))'], ['Mailer bags', 75, 200, 'WrapRight', 2, '=MAX(0,C13-B13)', '=ROUNDUP(F13/10,0)*10', '=G13*E13',\
+          \ '=IF(B13=0,\"Critical\",IF(F13>0,\"Reorder\",\"OK\"))'], ['Box cutters', 0, 12, 'Harbor Supply', 6, '=MAX(0,C14-B14)',\
+          \ '=ROUNDUP(F14/10,0)*10', '=G14*E14', '=IF(B14=0,\"Critical\",IF(F14>0,\"Reorder\",\"OK\"))'], ['Corrugated boxes\
+          \ S', 210, 180, 'BoxCo', 1, '=MAX(0,C15-B15)', '=ROUNDUP(F15/10,0)*10', '=G15*E15', '=IF(B15=0,\"Critical\",IF(F15>0,\"\
+          Reorder\",\"OK\"))'], ['Label printer rolls', 0, 8, 'LabelWorks', 12, '=MAX(0,C16-B16)', '=ROUNDUP(F16/10,0)*10',\
+          \ '=G16*E16', '=IF(B16=0,\"Critical\",IF(F16>0,\"Reorder\",\"OK\"))'], ['Strapping kits', 5, 6, 'Harbor Supply',\
+          \ 28, '=MAX(0,C17-B17)', '=ROUNDUP(F17/10,0)*10', '=G17*E17', '=IF(B17=0,\"Critical\",IF(F17>0,\"Reorder\",\"OK\"\
+          ))'], ['Total', None, None, None, None, None, '=SUM(G2:G17)', '=SUM(H2:H17)', None]]), ('BySupplier', [['Supplier',\
+          \ 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!G2:G17,\">0\")', '=SUMIF(Reorder!D2:D17,A2,Reorder!G2:G17)',\
+          \ '=SUMIF(Reorder!D2:D17,A2,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A2,Reorder!I2:I17,\"Critical\")'], ['Harbor\
+          \ Supply', '=COUNTIFS(Reorder!D2:D17,A3,Reorder!G2:G17,\">0\")', '=SUMIF(Reorder!D2:D17,A3,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A3,Reorder!H2:H17)',\
+          \ '=COUNTIFS(Reorder!D2:D17,A3,Reorder!I2:I17,\"Critical\")'], ['LabelWorks', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!G2:G17,\"\
+          >0\")', '=SUMIF(Reorder!D2:D17,A4,Reorder!G2:G17)', '=SUMIF(Reorder!D2:D17,A4,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A4,Reorder!I2:I17,\"\
+          Critical\")'], ['WrapRight', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!G2:G17,\">0\")', '=SUMIF(Reorder!D2:D17,A5,Reorder!G2:G17)',\
+          \ '=SUMIF(Reorder!D2:D17,A5,Reorder!H2:H17)', '=COUNTIFS(Reorder!D2:D17,A5,Reorder!I2:I17,\"Critical\")'], ['Total',\
+          \ '=SUM(B2:B5)', '=SUM(C2:C5)', '=SUM(D2:D5)', '=SUM(E2:E5)']]), ('Summary', [['Metric', 'Value'], ['Items to reorder',\
+          \ '=COUNTIF(Reorder!G2:G17,\">0\")'], ['Critical items', '=COUNTIF(Reorder!I2:I17,\"Critical\")'], ['Total order\
+          \ cost', '=Reorder!H18'], ['Largest supplier', '=INDEX(BySupplier!A2:A5,MATCH(MAX(BySupplier!D2:D5),BySupplier!D2:D5,0))'],\
+          \ ['Largest supplier cost', '=MAX(BySupplier!D2:D5)']])]\nnames = wb.sheetnames\nif names[:len(expected_sheets)]\
+          \ != [name for name, _ in expected_sheets]:\n    print('SHEET_NAMES_MISMATCH:' + repr(names))\n    raise SystemExit(1)\n\
+          width = 9\nfor name, rows in expected_sheets:\n    ws = wb[name]\n    for r in range(1, len(rows) + 2):\n      \
+          \  expected = [norm(v) for v in rows[r - 1]] if r <= len(rows) else [None] * width\n        expected += [None] *\
+          \ (width - len(expected))\n        observed = [norm(ws.cell(row=r, column=c).value) for c in range(1, width + 1)]\n\
+          \        observed = [None if v == '' else v for v in observed]\n        if observed != expected:\n            print('ROW_MISMATCH:%s:%d:%r'\
+          \ % (name, r, observed))\n            raise SystemExit(1)\ndef fail(message):\n    print(message)\n    raise SystemExit(1)\n\
+          def norm_csv(value):\n    text = (value or '').strip()\n    try:\n        number = float(text)\n    except ValueError:\n\
+          \        return text\n    return int(number) if number.is_integer() else round(number, 2)\nimport csv\ncsv_path\
+          \ = os.path.join(os.environ['USERPROFILE'], 'Documents', 'supplier_po.csv')\nif not os.path.exists(csv_path):\n\
+          \    fail('MISSING_CSV')\ndef trim(row):\n    row = [norm_csv(v) for v in row]\n    while row and row[-1] == '':\n\
+          \        row.pop()\n    return row\nwith open(csv_path, newline='', encoding='utf-8-sig') as handle:\n    observed_csv\
+          \ = [trim(row) for row in csv.reader(handle) if any(v.strip() for v in row)]\nexpected_csv = [trim(row) for row\
+          \ in [['Supplier', 'Lines', 'Units', 'Cost', 'Critical'], ['BoxCo', '2', '120', '180', '0'], ['Harbor Supply', '6',\
+          \ '80', '1170', '1'], ['LabelWorks', '2', '50', '160', '1'], ['WrapRight', '2', '180', '510', '0'], ['Total', '12',\
+          \ '430', '2020', '2']]]\nif observed_csv != expected_csv:\n    fail('CSV_MISMATCH:%r' % (observed_csv,))\nprint('EVAL_RESULT:PASS')\n\
+          OSOMNI_PY"
+        timeout: 120
+        stdout_contains: EVAL_RESULT:PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - linux_android
+  - markor
+  - libreoffice
+  - calc
+  - hard
+  difficulty: hard
+  screen: linux
+  companion_device: android (scrcpy window)
+  human_steps: 217
+  converted_from: cross_vm.android_to_windows.reorder_plan_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/android/cross_vm_prepare_reorder_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/windows/cross_vm_calc_reorder_plan_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.reorder_plan_hard: phone in a scrcpy window
+    on the Linux desktop; the agent moves reorder_transfer.csv to the desktop and returns results to the phone.'

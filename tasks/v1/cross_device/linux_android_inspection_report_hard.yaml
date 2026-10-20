@@ -1,0 +1,272 @@
+# Generated from tasks/v1/cross_vm/android_to_windows_inspection_report_hard.yaml; see metadata.converted_from.
+task_id: cross_device.linux_android.inspection_report_hard
+platform: linux
+instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The transfer CSV "inspection_transfer.csv" is open in Markor on the phone, and the inspector''s log
+  "inspection_source.txt" is in the same Markor folder. Each finding in the log is written as Unit | Item | Result | Action,
+  and the last four lines are re-test results that override earlier findings. Using Markor only, make the transfer CSV a comma-separated
+  copy of all twenty-four findings with the re-test results applied: keep the header Unit,Item,Result,Action, then one row
+  per finding in the same order as the log, with no spaces around the commas. Fix any existing row that disagrees with the
+  corrected data and do not include the log title, the re-test lines, or any other lines. Save the file and leave it ready
+  to bring to this computer. Then put the finished "inspection_transfer.csv" on this computer as ~/Desktop/inspection_transfer.csv
+  with exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this
+  computer: A blank LibreOffice Writer document named "inspection_report.docx" is open. Use only LibreOffice Writer. Build
+  the report in this exact order: "Harborview Inspection Follow-up" in Heading 1; "Failed items" in Heading 2 followed by
+  a four-column table with the header row Unit, Item, Action, Priority and one row for every FAIL finding in CSV order, where
+  Priority is "High" for Smoke detector, Carbon monoxide alarm, Fire extinguisher, and Electrical outlet items and "Normal"
+  otherwise; "Failures by item" in Heading 2 followed by one paragraph per failed item type in alphabetical order in the form
+  "<item>: <count>"; "Open items by unit" in Heading 2 followed by one paragraph per unit that has failures, in CSV order,
+  in the form "<unit>: <count> open"; "Units with no failures" in Heading 2 followed by one paragraph listing those units
+  in CSV order separated by ", "; and "Totals" in Heading 2 followed by the paragraphs "Open items: <count>" and "High priority:
+  <count>". All non-heading paragraphs use body text styles and the document must contain nothing else. Save the document
+  in Word format, then also export it to PDF as "inspection_report.pdf" in the same Documents folder. Apart from creating
+  the file on the Desktop, do not use a text editor. Then, back on the phone: put a copy of the exported "inspection_report.pdf"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Tasks app on the phone, add one task for every High-priority failed item, titled "Fix <Item> - <Unit>" with the due
+  date October 16, 2026, and no other new tasks.'
+init:
+  initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/inspection_source.txt
+        transfer_path: /sdcard/Documents/markor/inspection_transfer.csv
+        open_path: /sdcard/Documents/markor/inspection_transfer.csv
+        source_text: 'Harborview Apartments - quarterly safety inspection log (Unit | Item | Result | Action)
+
+          Unit 2A | Smoke detector | PASS | none
+
+          Unit 2A | Fire extinguisher | FAIL | replace expired extinguisher
+
+          Unit 2A | Window latch | PASS | none
+
+          Unit 2B | Smoke detector | FAIL | replace battery
+
+          Unit 2B | Carbon monoxide alarm | PASS | none
+
+          Unit 2B | Stair handrail | PASS | none
+
+          Unit 3A | Window latch | PASS | none
+
+          Unit 3A | Electrical outlet | FAIL | replace cracked cover
+
+          Unit 3A | Smoke detector | PASS | none
+
+          Unit 3B | Smoke detector | FAIL | replace detector
+
+          Unit 3B | Carbon monoxide alarm | FAIL | install new alarm
+
+          Unit 3B | Door closer | PASS | none
+
+          Unit 4A | Stair handrail | FAIL | tighten brackets
+
+          Unit 4A | Fire extinguisher | PASS | none
+
+          Unit 4A | Electrical outlet | PASS | none
+
+          Unit 4C | Fire extinguisher | PASS | none
+
+          Unit 4C | Door closer | PASS | none
+
+          Unit 4C | Smoke detector | PASS | none
+
+          Unit 5A | Window latch | FAIL | replace latch
+
+          Unit 5A | Carbon monoxide alarm | PASS | none
+
+          Unit 5A | Door closer | FAIL | adjust closing speed
+
+          Unit 5B | Carbon monoxide alarm | PASS | none
+
+          Unit 5B | Electrical outlet | FAIL | replace scorched outlet
+
+          Unit 5B | Smoke detector | PASS | none
+
+          Re-test: Unit 3B Smoke detector now PASS, action none.
+
+          Re-test: Unit 3A Electrical outlet now PASS, action none.
+
+          Re-test: Unit 5B Smoke detector now FAIL, action replace detector.
+
+          Re-test: Unit 2B Smoke detector action is replace detector, not replace battery.
+
+          '
+        transfer_text: 'Unit,Item,Result,Action
+
+          Unit 2A,Smoke detector,PASS,none
+
+          Unit 2A,Fire extinguisher,FAIL,replace expired extinguisher
+
+          Unit 2B,Smoke detector,PASS,none
+
+          '
+    linux:
+      steps:
+      - type: run_bash
+        timeout: 90
+        script: "set -e\npkill -f soffice.bin || true\nrm -f /home/user/Desktop/inspection_transfer.csv\nmkdir -p /home/user/Documents\
+          \ /home/user/Desktop\nUSERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef\
+          \ _need(mod, pkg):\n    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\ndocx = _need('docx', 'python-docx')\npath\
+          \ = os.path.join(os.environ['USERPROFILE'], 'Documents', 'inspection_report.docx')\nos.makedirs(os.path.dirname(path),\
+          \ exist_ok=True)\ndocx.Document().save(path)\nprint('INIT_OK', path)\nOSOMNI_PY"
+      - type: run_bash
+        timeout: 30
+        script: 'export DISPLAY=${DISPLAY:-:0}
+
+          setsid -f libreoffice --writer /home/user/Documents/inspection_report.docx >/dev/null 2>&1 </dev/null'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/inspection_transfer.csv
+        expected_text: 'Unit,Item,Result,Action
+
+          Unit 2A,Smoke detector,PASS,none
+
+          Unit 2A,Fire extinguisher,FAIL,replace expired extinguisher
+
+          Unit 2A,Window latch,PASS,none
+
+          Unit 2B,Smoke detector,FAIL,replace detector
+
+          Unit 2B,Carbon monoxide alarm,PASS,none
+
+          Unit 2B,Stair handrail,PASS,none
+
+          Unit 3A,Window latch,PASS,none
+
+          Unit 3A,Electrical outlet,PASS,none
+
+          Unit 3A,Smoke detector,PASS,none
+
+          Unit 3B,Smoke detector,PASS,none
+
+          Unit 3B,Carbon monoxide alarm,FAIL,install new alarm
+
+          Unit 3B,Door closer,PASS,none
+
+          Unit 4A,Stair handrail,FAIL,tighten brackets
+
+          Unit 4A,Fire extinguisher,PASS,none
+
+          Unit 4A,Electrical outlet,PASS,none
+
+          Unit 4C,Fire extinguisher,PASS,none
+
+          Unit 4C,Door closer,PASS,none
+
+          Unit 4C,Smoke detector,PASS,none
+
+          Unit 5A,Window latch,FAIL,replace latch
+
+          Unit 5A,Carbon monoxide alarm,PASS,none
+
+          Unit 5A,Door closer,FAIL,adjust closing speed
+
+          Unit 5B,Carbon monoxide alarm,PASS,none
+
+          Unit 5B,Electrical outlet,FAIL,replace scorched outlet
+
+          Unit 5B,Smoke detector,FAIL,replace detector
+
+          '
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: Fix Fire extinguisher - Unit 2A
+          due: '2026-10-16'
+        - title: Fix Smoke detector - Unit 2B
+          due: '2026-10-16'
+        - title: Fix Carbon monoxide alarm - Unit 3B
+          due: '2026-10-16'
+        - title: Fix Electrical outlet - Unit 5B
+          due: '2026-10-16'
+        - title: Fix Smoke detector - Unit 5B
+          due: '2026-10-16'
+        baseline_count: 7
+    phone_copies:
+    - desktop_path: /home/user/Documents/inspection_report.pdf
+      phone_path: /sdcard/Download/inspection_report.pdf
+    linux:
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "python3 - <<'OSOMNI_PY'\nfrom pathlib import Path\nexpected = \"Unit,Item,Result,Action\\nUnit 2A,Smoke\
+          \ detector,PASS,none\\nUnit 2A,Fire extinguisher,FAIL,replace expired extinguisher\\nUnit 2A,Window latch,PASS,none\\\
+          nUnit 2B,Smoke detector,FAIL,replace detector\\nUnit 2B,Carbon monoxide alarm,PASS,none\\nUnit 2B,Stair handrail,PASS,none\\\
+          nUnit 3A,Window latch,PASS,none\\nUnit 3A,Electrical outlet,PASS,none\\nUnit 3A,Smoke detector,PASS,none\\nUnit\
+          \ 3B,Smoke detector,PASS,none\\nUnit 3B,Carbon monoxide alarm,FAIL,install new alarm\\nUnit 3B,Door closer,PASS,none\\\
+          nUnit 4A,Stair handrail,FAIL,tighten brackets\\nUnit 4A,Fire extinguisher,PASS,none\\nUnit 4A,Electrical outlet,PASS,none\\\
+          nUnit 4C,Fire extinguisher,PASS,none\\nUnit 4C,Door closer,PASS,none\\nUnit 4C,Smoke detector,PASS,none\\nUnit 5A,Window\
+          \ latch,FAIL,replace latch\\nUnit 5A,Carbon monoxide alarm,PASS,none\\nUnit 5A,Door closer,FAIL,adjust closing speed\\\
+          nUnit 5B,Carbon monoxide alarm,PASS,none\\nUnit 5B,Electrical outlet,FAIL,replace scorched outlet\\nUnit 5B,Smoke\
+          \ detector,FAIL,replace detector\\n\"\npath = Path('/home/user/Desktop/inspection_transfer.csv')\nnorm = lambda\
+          \ s: s.replace('\\r\\n', '\\n').replace('\\r', '\\n').strip()\nif not path.is_file():\n    print('DESKTOP_FILE_MISSING');\
+          \ raise SystemExit(1)\nif norm(path.read_text(encoding='utf-8-sig', errors='replace')) != norm(expected):\n    print('DESKTOP_FILE_MISMATCH');\
+          \ raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\ndef _need(mod, pkg):\n\
+          \    try:\n        return __import__(mod)\n    except ImportError:\n        subprocess.check_call([sys.executable,\
+          \ '-m', 'pip', 'install', pkg, '-q'])\n        return __import__(mod)\ndocx = _need('docx', 'python-docx')\nfrom\
+          \ docx.table import Table\nfrom docx.text.paragraph import Paragraph\ndef fail(message):\n    print(message)\n \
+          \   raise SystemExit(1)\ndocs = os.path.join(os.environ['USERPROFILE'], 'Documents')\ndoc = docx.Document(os.path.join(docs,\
+          \ 'inspection_report.docx'))\nitems = []\nfor child in doc.element.body.iterchildren():\n    tag = child.tag.split('}')[1]\n\
+          \    if tag == 'p':\n        para = Paragraph(child, doc)\n        text = para.text.strip()\n        if text:\n\
+          \            items.append(('p', text, (para.style.name if para.style is not None else '').lower()))\n    elif tag\
+          \ == 'tbl':\n        table = Table(child, doc)\n        items.append(('tbl', [[cell.text.strip() for cell in row.cells]\
+          \ for row in table.rows], ''))\nexpected = [('p', 'Harborview Inspection Follow-up', 'heading 1'), ('p', 'Failed\
+          \ items', 'heading 2'), ('tbl', [['Unit', 'Item', 'Action', 'Priority'], ['Unit 2A', 'Fire extinguisher', 'replace\
+          \ expired extinguisher', 'High'], ['Unit 2B', 'Smoke detector', 'replace detector', 'High'], ['Unit 3B', 'Carbon\
+          \ monoxide alarm', 'install new alarm', 'High'], ['Unit 4A', 'Stair handrail', 'tighten brackets', 'Normal'], ['Unit\
+          \ 5A', 'Window latch', 'replace latch', 'Normal'], ['Unit 5A', 'Door closer', 'adjust closing speed', 'Normal'],\
+          \ ['Unit 5B', 'Electrical outlet', 'replace scorched outlet', 'High'], ['Unit 5B', 'Smoke detector', 'replace detector',\
+          \ 'High']], ''), ('p', 'Failures by item', 'heading 2'), ('p', 'Carbon monoxide alarm: 1', ''), ('p', 'Door closer:\
+          \ 1', ''), ('p', 'Electrical outlet: 1', ''), ('p', 'Fire extinguisher: 1', ''), ('p', 'Smoke detector: 2', ''),\
+          \ ('p', 'Stair handrail: 1', ''), ('p', 'Window latch: 1', ''), ('p', 'Open items by unit', 'heading 2'), ('p',\
+          \ 'Unit 2A: 1 open', ''), ('p', 'Unit 2B: 1 open', ''), ('p', 'Unit 3B: 1 open', ''), ('p', 'Unit 4A: 1 open', ''),\
+          \ ('p', 'Unit 5A: 2 open', ''), ('p', 'Unit 5B: 2 open', ''), ('p', 'Units with no failures', 'heading 2'), ('p',\
+          \ 'Unit 3A, Unit 4C', ''), ('p', 'Totals', 'heading 2'), ('p', 'Open items: 8', ''), ('p', 'High priority: 5', '')]\n\
+          if len(items) != len(expected):\n    fail('ITEM_COUNT_MISMATCH:%r' % (items,))\nfor observed, (kind, value, style)\
+          \ in zip(items, expected):\n    if observed[0] != kind or observed[1] != value:\n        fail('CONTENT_MISMATCH:%r'\
+          \ % (observed,))\n    if kind == 'p' and style and observed[2] != style:\n        fail('STYLE_MISMATCH:%r' % (observed,))\n\
+          \    if kind == 'p' and not style and observed[2].startswith('heading'):\n        fail('UNEXPECTED_HEADING:%r' %\
+          \ (observed,))\npypdf = _need('pypdf', 'pypdf')\npdf_path = os.path.join(docs, 'inspection_report.pdf')\nif not\
+          \ os.path.exists(pdf_path):\n    fail('MISSING_PDF')\ntext = ' '.join(' '.join((page.extract_text() or '').split())\
+          \ for page in pypdf.PdfReader(pdf_path).pages)\nfor needle in ['Harborview Inspection Follow-up', 'replace scorched\
+          \ outlet', 'Open items: 8']:\n    if needle not in text:\n        fail('PDF_MISSING_TEXT:' + needle)\nprint('EVAL_RESULT:PASS')\n\
+          OSOMNI_PY"
+        timeout: 120
+        stdout_contains: EVAL_RESULT:PASS
+limits:
+  max_steps: 450
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - linux_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: linux
+  companion_device: android (scrcpy window)
+  human_steps: 210
+  converted_from: cross_vm.android_to_windows.inspection_report_hard
+  round_trip:
+  - TasksAppItemsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/android/cross_vm_prepare_inspection_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/windows/cross_vm_writer_inspection_report_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.inspection_report_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves inspection_transfer.csv to the desktop and returns results to the phone.'

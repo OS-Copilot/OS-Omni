@@ -1,0 +1,267 @@
+# Generated from tasks/v1/cross_vm/windows_to_linux_budget_review_hard.yaml; see metadata.converted_from.
+task_id: cross_device.windows_android.budget_review_hard
+platform: windows
+instruction: 'An Android phone is shown in the "Android phone" window on this Windows desktop. Use the phone only through
+  that window; in it, a right-click works as the phone''s Back button and a middle-click as Home. If the window is closed,
+  the "Android phone" shortcut on the Desktop opens it again. Do not use a terminal or adb. First, on the phone: The reference
+  CSV "budget_source.csv" and the incomplete transfer CSV "budget_transfer.csv" are in Markor on the phone, and the transfer
+  CSV is already open. Using Markor only, replace the transfer CSV so it exactly matches the reference CSV: the header Category,
+  Planned, Actual and all eight rows in the same order. Save it. Then put the finished "budget_transfer.csv" on this computer
+  as C:\Users\User\Desktop\budget_transfer.csv with exactly the same content (for example, copy its text on the phone and
+  paste it into Notepad here). Next, on this computer: A blank LibreOffice Calc workbook named budget_review.xlsx is already
+  open, and the note finance_review_note.txt is on the Desktop. Use the CSV on the Desktop to complete the workbook like a
+  finance review sheet: put the CSV headers and rows into columns A:C, add column D "Variance" with Actual minus Planned formulas,
+  column E "Status" with IF formulas that show "Over" when Variance is positive and "Under" otherwise, column F "Owner" with
+  IF formulas that assign "Finance Director" when ABS(Variance) is at least 100 and "Team Lead" otherwise, column G "Action"
+  with IF formulas that show "Schedule Friday review" for Finance Director rows and "Track in team sync" otherwise, and column
+  H "Review Note" with formulas that combine the category, status, and absolute variance as Category: Status by amount. Add
+  a final Total row with SUM formulas for Planned, Actual, and Variance, then save the workbook. Then, back on the phone:
+  in Markor create the note "budget_followup.txt" in the same folder as the CSV, containing exactly these five lines with
+  the values from your workbook: "Rows: <number of budget rows>", "Total planned: <total>", "Total actual: <total>", "Net
+  variance: <total actual minus total planned>", and "Finance Director reviews: <number of rows assigned to the Finance Director>".
+  In the Tasks app on the phone, add one task for every row assigned to the Finance Director, titled "Friday review: <Category>"
+  with the due date October 23, 2026, and no other new tasks.'
+init:
+  initializer_id: initializers.windows.android_companion:WindowsAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/budget_source.csv
+        transfer_path: /sdcard/Documents/markor/budget_transfer.csv
+        open_path: /sdcard/Documents/markor/budget_transfer.csv
+        source_text: 'Category,Planned,Actual
+
+          Travel,1200,980
+
+          Lodging,2100,2240
+
+          Meals,450,390
+
+          Supplies,300,340
+
+          Contingency,600,720
+
+          Permits,250,410
+
+          Training,500,455
+
+          Equipment,850,1025
+
+          '
+        transfer_text: 'Category,Planned,Actual
+
+          Travel,1200,980
+
+          Lodging,2100,2240
+
+          '
+    windows:
+      steps:
+      - type: run_powershell
+        timeout: 180
+        script: '$ErrorActionPreference = ''Stop''
+
+          Get-Process soffice, soffice.bin, notepad -ErrorAction SilentlyContinue | Stop-Process -Force
+
+          Start-Sleep 1
+
+          New-Item -ItemType Directory -Force ''C:\Users\User\Documents'', ''C:\Users\User\Desktop'' | Out-Null
+
+          Remove-Item -LiteralPath ''C:\Users\User\Desktop\budget_transfer.csv'' -ErrorAction SilentlyContinue
+
+          [IO.File]::WriteAllText(''C:\Users\User\Desktop\finance_review_note.txt'', @''
+
+          Create a compact review sheet for the finance lead.
+
+          Escalate any category where the absolute variance is 100 or more.
+
+          Leave formulas visible in the review columns so the sheet can be reused.
+
+
+          ''@)
+
+          $soffice = ''C:\Program Files\LibreOffice\program\soffice.exe''
+
+          $tmp = Join-Path $env:TEMP (''osomni_'' + [guid]::NewGuid().ToString(''N''))
+
+          New-Item -ItemType Directory $tmp | Out-Null
+
+          [IO.File]::WriteAllText((Join-Path $tmp ''blank.csv''), "`n")
+
+          $p = Start-Process -FilePath $soffice -ArgumentList ''--headless'', ''--convert-to'', ''xlsx'', ''--outdir'', $tmp,
+          (Join-Path $tmp ''blank.csv'') -WindowStyle Hidden -PassThru
+
+          $p.WaitForExit(120000) | Out-Null
+
+          $blank = Join-Path $tmp ''blank.xlsx''
+
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $blank); $i++) { Start-Sleep 1 }
+
+          Move-Item -Force $blank ''C:\Users\User\Documents\budget_review.xlsx''
+
+          Remove-Item -Recurse -Force $tmp
+
+          ''INIT_OK'''
+      - type: run_powershell
+        timeout: 30
+        script: Start-Process -FilePath 'C:\Program Files\LibreOffice\program\soffice.exe' -ArgumentList '--calc', '"C:\Users\User\Documents\budget_review.xlsx"'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.android_companion:WindowsAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/budget_transfer.csv
+        expected_text: 'Category,Planned,Actual
+
+          Travel,1200,980
+
+          Lodging,2100,2240
+
+          Meals,450,390
+
+          Supplies,300,340
+
+          Contingency,600,720
+
+          Permits,250,410
+
+          Training,500,455
+
+          Equipment,850,1025
+
+          '
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/budget_followup.txt
+        expected_text: 'Rows: 8
+
+          Total planned: 6250
+
+          Total actual: 6560
+
+          Net variance: 310
+
+          Finance Director reviews: 5'
+    - evaluator_id: evaluators.android.companion_records:TasksAppItemsEvaluator
+      params:
+        tasks:
+        - title: 'Friday review: Travel'
+          due: '2026-10-23'
+        - title: 'Friday review: Lodging'
+          due: '2026-10-23'
+        - title: 'Friday review: Contingency'
+          due: '2026-10-23'
+        - title: 'Friday review: Permits'
+          due: '2026-10-23'
+        - title: 'Friday review: Equipment'
+          due: '2026-10-23'
+        baseline_count: 7
+    phone_copies: []
+    windows:
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: '$expected = @''
+
+          Category,Planned,Actual
+
+          Travel,1200,980
+
+          Lodging,2100,2240
+
+          Meals,450,390
+
+          Supplies,300,340
+
+          Contingency,600,720
+
+          Permits,250,410
+
+          Training,500,455
+
+          Equipment,850,1025
+
+          ''@
+
+          $path = ''C:\Users\User\Desktop\budget_transfer.csv''
+
+          if (-not (Test-Path -LiteralPath $path)) { ''DESKTOP_FILE_MISSING''; exit 1 }
+
+          $norm = { param($s) (($s -replace "`r`n", "`n") -replace "`r", "`n").Trim() }
+
+          if ((& $norm ([IO.File]::ReadAllText($path))) -cne (& $norm $expected)) { ''DESKTOP_FILE_MISMATCH''; exit 1 }
+
+          ''EVAL_RESULT:PASS'''
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.windows.powershell_check:PowerShellCheckEvaluator
+      params:
+        command: "$OutputEncoding = New-Object System.Text.UTF8Encoding $false\n@'\nimport re\nimport zipfile\nimport xml.etree.ElementTree\
+          \ as ET\n\nns = {\"a\": \"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"}\n\ndef col_to_idx(ref):\n\
+          \    letters = re.match(r\"([A-Z]+)\", ref).group(1)\n    value = 0\n    for ch in letters:\n        value = value\
+          \ * 26 + (ord(ch) - ord(\"A\") + 1)\n    return value\n\ndef normalize_number(text):\n    value = float(text)\n\
+          \    return int(value) if value.is_integer() else value\n\nwith zipfile.ZipFile(\"C:/Users/User/Documents/budget_review.xlsx\"\
+          ) as zf:\n    sheet = ET.fromstring(zf.read(\"xl/worksheets/sheet1.xml\"))\n    shared_strings = []\n    if \"xl/sharedStrings.xml\"\
+          \ in zf.namelist():\n        sst = ET.fromstring(zf.read(\"xl/sharedStrings.xml\"))\n        for si in sst.findall(\"\
+          a:si\", ns):\n            text = \"\".join(t.text or \"\" for t in si.findall(\".//a:t\", ns))\n            shared_strings.append(text)\n\
+          \nobserved_rows = {}\nfor row in sheet.findall(\".//a:sheetData/a:row\", ns):\n    row_idx = int(row.attrib[\"r\"\
+          ])\n    cells = [None] * 8\n    for cell in row.findall(\"a:c\", ns):\n        col_idx = col_to_idx(cell.attrib[\"\
+          r\"]) - 1\n        if not 0 <= col_idx < 8:\n            continue\n        formula = cell.find(\"a:f\", ns)\n  \
+          \      if formula is not None:\n            cells[col_idx] = f\"={formula.text or ''}\"\n            continue\n\
+          \        cell_type = cell.attrib.get(\"t\")\n        if cell_type == \"inlineStr\":\n            text_node = cell.find(\"\
+          a:is\", ns)\n            cells[col_idx] = \"\".join(t.text or \"\" for t in text_node.findall(\".//a:t\", ns))\n\
+          \            continue\n        value_node = cell.find(\"a:v\", ns)\n        if value_node is None:\n           \
+          \ continue\n        if cell_type == \"s\":\n            cells[col_idx] = shared_strings[int(value_node.text)]\n\
+          \        else:\n            cells[col_idx] = normalize_number(value_node.text)\n    observed_rows[row_idx] = cells\n\
+          \nexpected_rows = [\n    [\"Category\", \"Planned\", \"Actual\", \"Variance\", \"Status\", \"Owner\", \"Action\"\
+          , \"Review Note\"],\n    [\"Travel\", 1200, 980, \"=C2-B2\", '=IF(D2>0,\"Over\",\"Under\")', '=IF(ABS(D2)>=100,\"\
+          Finance Director\",\"Team Lead\")', '=IF(F2=\"Finance Director\",\"Schedule Friday review\",\"Track in team sync\"\
+          )', '=A2&\": \"&E2&\" by \"&ABS(D2)'],\n    [\"Lodging\", 2100, 2240, \"=C3-B3\", '=IF(D3>0,\"Over\",\"Under\")',\
+          \ '=IF(ABS(D3)>=100,\"Finance Director\",\"Team Lead\")', '=IF(F3=\"Finance Director\",\"Schedule Friday review\"\
+          ,\"Track in team sync\")', '=A3&\": \"&E3&\" by \"&ABS(D3)'],\n    [\"Meals\", 450, 390, \"=C4-B4\", '=IF(D4>0,\"\
+          Over\",\"Under\")', '=IF(ABS(D4)>=100,\"Finance Director\",\"Team Lead\")', '=IF(F4=\"Finance Director\",\"Schedule\
+          \ Friday review\",\"Track in team sync\")', '=A4&\": \"&E4&\" by \"&ABS(D4)'],\n    [\"Supplies\", 300, 340, \"\
+          =C5-B5\", '=IF(D5>0,\"Over\",\"Under\")', '=IF(ABS(D5)>=100,\"Finance Director\",\"Team Lead\")', '=IF(F5=\"Finance\
+          \ Director\",\"Schedule Friday review\",\"Track in team sync\")', '=A5&\": \"&E5&\" by \"&ABS(D5)'],\n    [\"Contingency\"\
+          , 600, 720, \"=C6-B6\", '=IF(D6>0,\"Over\",\"Under\")', '=IF(ABS(D6)>=100,\"Finance Director\",\"Team Lead\")',\
+          \ '=IF(F6=\"Finance Director\",\"Schedule Friday review\",\"Track in team sync\")', '=A6&\": \"&E6&\" by \"&ABS(D6)'],\n\
+          \    [\"Permits\", 250, 410, \"=C7-B7\", '=IF(D7>0,\"Over\",\"Under\")', '=IF(ABS(D7)>=100,\"Finance Director\"\
+          ,\"Team Lead\")', '=IF(F7=\"Finance Director\",\"Schedule Friday review\",\"Track in team sync\")', '=A7&\": \"\
+          &E7&\" by \"&ABS(D7)'],\n    [\"Training\", 500, 455, \"=C8-B8\", '=IF(D8>0,\"Over\",\"Under\")', '=IF(ABS(D8)>=100,\"\
+          Finance Director\",\"Team Lead\")', '=IF(F8=\"Finance Director\",\"Schedule Friday review\",\"Track in team sync\"\
+          )', '=A8&\": \"&E8&\" by \"&ABS(D8)'],\n    [\"Equipment\", 850, 1025, \"=C9-B9\", '=IF(D9>0,\"Over\",\"Under\"\
+          )', '=IF(ABS(D9)>=100,\"Finance Director\",\"Team Lead\")', '=IF(F9=\"Finance Director\",\"Schedule Friday review\"\
+          ,\"Track in team sync\")', '=A9&\": \"&E9&\" by \"&ABS(D9)'],\n    [\"Total\", \"=SUM(B2:B9)\", \"=SUM(C2:C9)\"\
+          , \"=SUM(D2:D9)\", None, None, None, None],\n]\nfor row_idx, expected in enumerate(expected_rows, start=1):\n  \
+          \  observed = observed_rows.get(row_idx, [None] * 8)\n    if observed != expected:\n        raise SystemExit(f\"\
+          ROW_MISMATCH:{row_idx}:{observed}\")\nprint(\"PASS\")\n'@ | py -3 -W ignore -"
+        timeout: 180
+        stdout_contains: PASS
+limits:
+  max_steps: 300
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - windows_android
+  - markor
+  - libreoffice
+  - calc
+  - hard
+  difficulty: hard
+  screen: windows
+  companion_device: android (scrcpy window)
+  human_steps: 153
+  converted_from: cross_vm.windows_to_linux.budget_review_hard
+  round_trip:
+  - AndroidTextFileEvaluator
+  - TasksAppItemsEvaluator
+  source_stages:
+  - tasks/v1/cross_vm/stages/windows/cross_vm_prepare_budget_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/linux/cross_vm_calc_budget_review_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.windows_to_linux.budget_review_hard: phone in a scrcpy window
+    on the Windows desktop; the agent prepares budget_transfer.csv on the phone, moves it to the desktop, and returns results
+    to the phone.'

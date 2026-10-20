@@ -1,0 +1,771 @@
+# Generated from tasks/v1/cross_vm/android_to_windows_launch_review_minutes_hard.yaml; see metadata.converted_from.
+task_id: cross_device.linux_android.launch_review_minutes_hard
+platform: linux
+instruction: 'An Android phone is shown in the "Android phone" window on this Linux desktop. Use the phone only through that
+  window; in it, a right-click works as the phone''s Back button and a middle-click as Home. Do not use a terminal or adb.
+  First, on the phone: The reference note "launch_review_source.txt" and the incomplete transfer note "launch_review_transfer.txt"
+  are in Markor on the phone, and the transfer note is already open. Using Markor only, replace the transfer note so it exactly
+  matches the reference note, preserving every non-empty line and order, then save it and leave it ready to bring to this
+  computer. Then put the finished "launch_review_transfer.txt" on this computer as ~/Desktop/launch_review_transfer.txt with
+  exactly the same content (for example, copy its text on the phone and paste it into a text editor here). Next, on this computer:
+  A blank LibreOffice Writer document named "launch_review_minutes.docx" is open. Use only LibreOffice Writer. Bring every
+  non-empty line from the note on the Desktop into the document as separate paragraphs in the same order. In the same Writer
+  document, also add seven tables: Routing Matrix, Evidence Reconciliation, Cross-VM Delivery Chain, Final Escalation Summary,
+  Reviewer Rotation, Acceptance Criteria, and Cross-VM Consistency Checks. The tables must summarize only information from
+  the note on the Desktop. Save the document. Then, back on the phone: put a copy of the saved "launch_review_minutes.docx"
+  onto the phone so it is in the phone''s Download folder (for example, drag it from the file manager onto the phone window).
+  In the Calendar app on the phone, add a 30-minute event for each meeting in the note''s "Follow-up Schedule" and "Next Checkpoint"
+  sections, in the week starting Monday, October 19, 2026, at the time given in the note. Title each event with the meeting
+  description from the note, capitalized and without the final period (for example "Vendor access checkpoint"), and add no
+  other new events.'
+init:
+  initializer_id: initializers.linux.android_companion:LinuxAndroidCompanionInitializer
+  params:
+    android:
+      initializer_id: initializers.android.cross_vm:AndroidTransferSourceInitializer
+      params:
+        source_path: /sdcard/Documents/markor/launch_review_source.txt
+        transfer_path: /sdcard/Documents/markor/launch_review_transfer.txt
+        open_path: /sdcard/Documents/markor/launch_review_transfer.txt
+        source_text: 'Launch Readiness Review
+
+          Attendees:
+
+          Maya Chen
+
+          Jordan Lee
+
+          Priya Nair
+
+          Theo Martin
+
+          Action Items:
+
+          Confirm vendor staging access by Tuesday.
+
+          Send revised demo script to the field team.
+
+          Lock the final travel roster at 18 people.
+
+          Owners:
+
+          Vendor staging: Jordan Lee
+
+          Demo script: Priya Nair
+
+          Travel roster: Theo Martin
+
+          Decisions:
+
+          Keep the launch window on July 18.
+
+          Publish the final checklist after the dry run.
+
+          Risks:
+
+          Vendor staging account owners are not final.
+
+          Demo recording depends on the dry-run room audio.
+
+          Travel roster changes after Friday need director approval.
+
+          Next Checkpoint:
+
+          Friday 09:30 readiness sync with launch leads.
+
+          Escalation Rules:
+
+          Escalate vendor access blockers to Maya by 16:00.
+
+          Escalate travel roster conflicts to Theo before final approval.
+
+          Signoff:
+
+          Maya owns agenda confirmation.
+
+          Jordan owns vendor staging proof.
+
+          Priya owns demo script delivery.
+
+          Audit Trail:
+
+          Transfer source: launch_review_transfer.txt
+
+          Document owner: Maya Chen
+
+          Review status: Ready for director signoff.
+
+          Follow-up Schedule:
+
+          Monday 11:00 vendor access checkpoint.
+
+          Wednesday 15:30 demo-room audio validation.
+
+          Verification Notes:
+
+          QA packet reviewed by Maya.
+
+          Director signoff packet due Friday 16:30.
+
+          Distribution List:
+
+          maya.chen@example.test
+
+          jordan.lee@example.test
+
+          priya.nair@example.test
+
+          Readiness Metrics:
+
+          Open blockers: 2
+
+          Dry-run pass rate: 92%
+
+          Travel roster variance: 1
+
+          Dependency Ledger:
+
+          Vendor access depends on security approval.
+
+          Demo script depends on field-team comments.
+
+          Signoff packet depends on QA evidence.
+
+          Closeout Owners:
+
+          Security approval: Maya Chen
+
+          Field comments: Jordan Lee
+
+          QA evidence: Priya Nair
+
+          Packet Checklist:
+
+          Include agenda confirmation.
+
+          Include vendor staging screenshot.
+
+          Include dry-run audio proof.
+
+          Include travel roster export.
+
+          Director Questions:
+
+          Are vendor credentials active for every reviewer?
+
+          Is the demo script frozen after field comments?
+
+          Is the travel variance approved before lock?
+
+          Post-Launch Watch:
+
+          Monitor room audio for the first two sessions.
+
+          Monitor vendor login failures for 24 hours.
+
+          Monitor travel exception requests through Monday.
+
+          Archive Routing:
+
+          Store packet under Launch/Readiness/Final.
+
+          Send archive notice to Maya and Priya.
+
+          Keep source transfer beside the final DOCX.
+
+          Escalation Packet Owners:
+
+          Vendor access packet: Jordan Lee
+
+          Demo audio packet: Priya Nair
+
+          Travel exception packet: Theo Martin
+
+          Evidence Hashes:
+
+          vendor-staging=hash-pending
+
+          demo-audio=hash-pending
+
+          travel-roster=hash-pending
+
+          Final Review Questions:
+
+          Has Maya approved the launch window summary?
+
+          Has Jordan verified every vendor staging credential?
+
+          Has Priya confirmed the dry-run audio capture?
+
+          Has Theo frozen the travel exception list?
+
+          Approval Gates:
+
+          Gate 1: vendor access screenshot attached.
+
+          Gate 2: demo script checksum recorded.
+
+          Gate 3: QA evidence packet reviewed.
+
+          Gate 4: director signoff queued.
+
+          Rollback Contacts:
+
+          Vendor access rollback: Jordan Lee
+
+          Demo room rollback: Priya Nair
+
+          Travel roster rollback: Theo Martin
+
+          Packet Receipt:
+
+          Receipt owner: Maya Chen
+
+          Receipt channel: launch-readiness archive
+
+          Receipt status: pending director review
+
+          Director Packet Routing:
+
+          Route vendor packet to Jordan before Maya review.
+
+          Route demo audio packet to Priya before archive receipt.
+
+          Route travel exception packet to Theo before director signoff.
+
+          Evidence Reconciliation:
+
+          Match vendor-staging hash to Gate 1 evidence.
+
+          Match demo-audio hash to Gate 2 checksum.
+
+          Match travel-roster hash to Gate 3 QA packet.
+
+          Cross-VM Delivery Chain:
+
+          Android source note feeds Windows minutes.
+
+          Windows minutes feed owner matrix and archive manifest.
+
+          Archive manifest feeds director question packet.
+
+          Final Escalation Summary:
+
+          Jordan remains blocked until vendor credentials are active.
+
+          Priya remains ready after dry-run audio validation.
+
+          Theo remains locked after travel exception review.
+
+          Reviewer Rotation:
+
+          Maya reviews agenda and packet receipts.
+
+          Jordan reviews vendor access and route locks.
+
+          Priya reviews demo audio and field comments.
+
+          Theo reviews travel roster and exception locks.
+
+          Acceptance Criteria:
+
+          Every gate has a named owner.
+
+          Every packet has a predecessor and status.
+
+          Every evidence item maps to a gate.
+
+          Every blocked item has an escalation owner.
+
+          Cross-VM Consistency Checks:
+
+          The Android note must be the single source of truth.
+
+          The Windows minutes must preserve the Android ordering.
+
+          The embedded tables must summarize the transferred note only.
+
+          Director Handoff:
+
+          Handoff owner: Maya Chen
+
+          Handoff route: launch-readiness archive
+
+          Handoff status: queued after packet receipt.
+
+          '
+        transfer_text: 'Launch Readiness Review
+
+          Attendees:
+
+          Maya Chen
+
+          Jordan Lee
+
+          Priya Nair
+
+          Theo Martin
+
+          Action Items:
+
+          Confirm vendor staging access by Tuesday.
+
+          Send revised demo script to the field team.
+
+          Lock the final travel roster at 18 people.
+
+          Owners:
+
+          Vendor staging: Jordan Lee
+
+          '
+    linux:
+      steps:
+      - type: run_bash
+        timeout: 90
+        script: "set -e\npkill -f soffice.bin || true\nrm -f /home/user/Desktop/launch_review_transfer.txt\nmkdir -p /home/user/Documents\
+          \ /home/user/Desktop\nUSERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os\nimport subprocess\nimport\
+          \ sys\n\ntry:\n    from docx import Document\nexcept ImportError:\n    subprocess.check_call([sys.executable, \"\
+          -m\", \"pip\", \"install\", \"python-docx\", \"-q\"])\n    from docx import Document\n\npath = os.path.join(os.environ[\"\
+          USERPROFILE\"], \"Documents\", \"launch_review_minutes.docx\")\nos.makedirs(os.path.dirname(path), exist_ok=True)\n\
+          Document().save(path)\nprint(\"INIT_OK\", path)\nOSOMNI_PY"
+      - type: run_bash
+        timeout: 30
+        script: 'export DISPLAY=${DISPLAY:-:0}
+
+          setsid -f libreoffice --writer /home/user/Documents/launch_review_minutes.docx >/dev/null 2>&1 </dev/null'
+      - type: wait
+        ms: 8000
+evaluation:
+  evaluator_id: evaluators.linux.android_companion:LinuxAndroidCompositeEvaluator
+  params:
+    android:
+    - evaluator_id: evaluators.android.text_file:AndroidTextFileEvaluator
+      params:
+        path: /sdcard/Documents/markor/launch_review_transfer.txt
+        expected_text: 'Launch Readiness Review
+
+          Attendees:
+
+          Maya Chen
+
+          Jordan Lee
+
+          Priya Nair
+
+          Theo Martin
+
+          Action Items:
+
+          Confirm vendor staging access by Tuesday.
+
+          Send revised demo script to the field team.
+
+          Lock the final travel roster at 18 people.
+
+          Owners:
+
+          Vendor staging: Jordan Lee
+
+          Demo script: Priya Nair
+
+          Travel roster: Theo Martin
+
+          Decisions:
+
+          Keep the launch window on July 18.
+
+          Publish the final checklist after the dry run.
+
+          Risks:
+
+          Vendor staging account owners are not final.
+
+          Demo recording depends on the dry-run room audio.
+
+          Travel roster changes after Friday need director approval.
+
+          Next Checkpoint:
+
+          Friday 09:30 readiness sync with launch leads.
+
+          Escalation Rules:
+
+          Escalate vendor access blockers to Maya by 16:00.
+
+          Escalate travel roster conflicts to Theo before final approval.
+
+          Signoff:
+
+          Maya owns agenda confirmation.
+
+          Jordan owns vendor staging proof.
+
+          Priya owns demo script delivery.
+
+          Audit Trail:
+
+          Transfer source: launch_review_transfer.txt
+
+          Document owner: Maya Chen
+
+          Review status: Ready for director signoff.
+
+          Follow-up Schedule:
+
+          Monday 11:00 vendor access checkpoint.
+
+          Wednesday 15:30 demo-room audio validation.
+
+          Verification Notes:
+
+          QA packet reviewed by Maya.
+
+          Director signoff packet due Friday 16:30.
+
+          Distribution List:
+
+          maya.chen@example.test
+
+          jordan.lee@example.test
+
+          priya.nair@example.test
+
+          Readiness Metrics:
+
+          Open blockers: 2
+
+          Dry-run pass rate: 92%
+
+          Travel roster variance: 1
+
+          Dependency Ledger:
+
+          Vendor access depends on security approval.
+
+          Demo script depends on field-team comments.
+
+          Signoff packet depends on QA evidence.
+
+          Closeout Owners:
+
+          Security approval: Maya Chen
+
+          Field comments: Jordan Lee
+
+          QA evidence: Priya Nair
+
+          Packet Checklist:
+
+          Include agenda confirmation.
+
+          Include vendor staging screenshot.
+
+          Include dry-run audio proof.
+
+          Include travel roster export.
+
+          Director Questions:
+
+          Are vendor credentials active for every reviewer?
+
+          Is the demo script frozen after field comments?
+
+          Is the travel variance approved before lock?
+
+          Post-Launch Watch:
+
+          Monitor room audio for the first two sessions.
+
+          Monitor vendor login failures for 24 hours.
+
+          Monitor travel exception requests through Monday.
+
+          Archive Routing:
+
+          Store packet under Launch/Readiness/Final.
+
+          Send archive notice to Maya and Priya.
+
+          Keep source transfer beside the final DOCX.
+
+          Escalation Packet Owners:
+
+          Vendor access packet: Jordan Lee
+
+          Demo audio packet: Priya Nair
+
+          Travel exception packet: Theo Martin
+
+          Evidence Hashes:
+
+          vendor-staging=hash-pending
+
+          demo-audio=hash-pending
+
+          travel-roster=hash-pending
+
+          Final Review Questions:
+
+          Has Maya approved the launch window summary?
+
+          Has Jordan verified every vendor staging credential?
+
+          Has Priya confirmed the dry-run audio capture?
+
+          Has Theo frozen the travel exception list?
+
+          Approval Gates:
+
+          Gate 1: vendor access screenshot attached.
+
+          Gate 2: demo script checksum recorded.
+
+          Gate 3: QA evidence packet reviewed.
+
+          Gate 4: director signoff queued.
+
+          Rollback Contacts:
+
+          Vendor access rollback: Jordan Lee
+
+          Demo room rollback: Priya Nair
+
+          Travel roster rollback: Theo Martin
+
+          Packet Receipt:
+
+          Receipt owner: Maya Chen
+
+          Receipt channel: launch-readiness archive
+
+          Receipt status: pending director review
+
+          Director Packet Routing:
+
+          Route vendor packet to Jordan before Maya review.
+
+          Route demo audio packet to Priya before archive receipt.
+
+          Route travel exception packet to Theo before director signoff.
+
+          Evidence Reconciliation:
+
+          Match vendor-staging hash to Gate 1 evidence.
+
+          Match demo-audio hash to Gate 2 checksum.
+
+          Match travel-roster hash to Gate 3 QA packet.
+
+          Cross-VM Delivery Chain:
+
+          Android source note feeds Windows minutes.
+
+          Windows minutes feed owner matrix and archive manifest.
+
+          Archive manifest feeds director question packet.
+
+          Final Escalation Summary:
+
+          Jordan remains blocked until vendor credentials are active.
+
+          Priya remains ready after dry-run audio validation.
+
+          Theo remains locked after travel exception review.
+
+          Reviewer Rotation:
+
+          Maya reviews agenda and packet receipts.
+
+          Jordan reviews vendor access and route locks.
+
+          Priya reviews demo audio and field comments.
+
+          Theo reviews travel roster and exception locks.
+
+          Acceptance Criteria:
+
+          Every gate has a named owner.
+
+          Every packet has a predecessor and status.
+
+          Every evidence item maps to a gate.
+
+          Every blocked item has an escalation owner.
+
+          Cross-VM Consistency Checks:
+
+          The Android note must be the single source of truth.
+
+          The Windows minutes must preserve the Android ordering.
+
+          The embedded tables must summarize the transferred note only.
+
+          Director Handoff:
+
+          Handoff owner: Maya Chen
+
+          Handoff route: launch-readiness archive
+
+          Handoff status: queued after packet receipt.
+
+          '
+    - evaluator_id: evaluators.android.companion_records:CalendarEventsEvaluator
+      params:
+        events:
+        - title: Vendor access checkpoint
+          start: 2026-10-19 11:00
+          end: 2026-10-19 11:30
+        - title: Demo-room audio validation
+          start: 2026-10-21 15:30
+          end: 2026-10-21 16:00
+        - title: Readiness sync with launch leads
+          start: 2026-10-23 09:30
+          end: 2026-10-23 10:00
+        baseline_count: 1
+    phone_copies:
+    - desktop_path: /home/user/Documents/launch_review_minutes.docx
+      phone_path: /sdcard/Download/launch_review_minutes.docx
+    linux:
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "python3 - <<'OSOMNI_PY'\nfrom pathlib import Path\nexpected = \"Launch Readiness Review\\nAttendees:\\nMaya\
+          \ Chen\\nJordan Lee\\nPriya Nair\\nTheo Martin\\nAction Items:\\nConfirm vendor staging access by Tuesday.\\nSend\
+          \ revised demo script to the field team.\\nLock the final travel roster at 18 people.\\nOwners:\\nVendor staging:\
+          \ Jordan Lee\\nDemo script: Priya Nair\\nTravel roster: Theo Martin\\nDecisions:\\nKeep the launch window on July\
+          \ 18.\\nPublish the final checklist after the dry run.\\nRisks:\\nVendor staging account owners are not final.\\\
+          nDemo recording depends on the dry-run room audio.\\nTravel roster changes after Friday need director approval.\\\
+          nNext Checkpoint:\\nFriday 09:30 readiness sync with launch leads.\\nEscalation Rules:\\nEscalate vendor access\
+          \ blockers to Maya by 16:00.\\nEscalate travel roster conflicts to Theo before final approval.\\nSignoff:\\nMaya\
+          \ owns agenda confirmation.\\nJordan owns vendor staging proof.\\nPriya owns demo script delivery.\\nAudit Trail:\\\
+          nTransfer source: launch_review_transfer.txt\\nDocument owner: Maya Chen\\nReview status: Ready for director signoff.\\\
+          nFollow-up Schedule:\\nMonday 11:00 vendor access checkpoint.\\nWednesday 15:30 demo-room audio validation.\\nVerification\
+          \ Notes:\\nQA packet reviewed by Maya.\\nDirector signoff packet due Friday 16:30.\\nDistribution List:\\nmaya.chen@example.test\\\
+          njordan.lee@example.test\\npriya.nair@example.test\\nReadiness Metrics:\\nOpen blockers: 2\\nDry-run pass rate:\
+          \ 92%\\nTravel roster variance: 1\\nDependency Ledger:\\nVendor access depends on security approval.\\nDemo script\
+          \ depends on field-team comments.\\nSignoff packet depends on QA evidence.\\nCloseout Owners:\\nSecurity approval:\
+          \ Maya Chen\\nField comments: Jordan Lee\\nQA evidence: Priya Nair\\nPacket Checklist:\\nInclude agenda confirmation.\\\
+          nInclude vendor staging screenshot.\\nInclude dry-run audio proof.\\nInclude travel roster export.\\nDirector Questions:\\\
+          nAre vendor credentials active for every reviewer?\\nIs the demo script frozen after field comments?\\nIs the travel\
+          \ variance approved before lock?\\nPost-Launch Watch:\\nMonitor room audio for the first two sessions.\\nMonitor\
+          \ vendor login failures for 24 hours.\\nMonitor travel exception requests through Monday.\\nArchive Routing:\\nStore\
+          \ packet under Launch/Readiness/Final.\\nSend archive notice to Maya and Priya.\\nKeep source transfer beside the\
+          \ final DOCX.\\nEscalation Packet Owners:\\nVendor access packet: Jordan Lee\\nDemo audio packet: Priya Nair\\nTravel\
+          \ exception packet: Theo Martin\\nEvidence Hashes:\\nvendor-staging=hash-pending\\ndemo-audio=hash-pending\\ntravel-roster=hash-pending\\\
+          nFinal Review Questions:\\nHas Maya approved the launch window summary?\\nHas Jordan verified every vendor staging\
+          \ credential?\\nHas Priya confirmed the dry-run audio capture?\\nHas Theo frozen the travel exception list?\\nApproval\
+          \ Gates:\\nGate 1: vendor access screenshot attached.\\nGate 2: demo script checksum recorded.\\nGate 3: QA evidence\
+          \ packet reviewed.\\nGate 4: director signoff queued.\\nRollback Contacts:\\nVendor access rollback: Jordan Lee\\\
+          nDemo room rollback: Priya Nair\\nTravel roster rollback: Theo Martin\\nPacket Receipt:\\nReceipt owner: Maya Chen\\\
+          nReceipt channel: launch-readiness archive\\nReceipt status: pending director review\\nDirector Packet Routing:\\\
+          nRoute vendor packet to Jordan before Maya review.\\nRoute demo audio packet to Priya before archive receipt.\\\
+          nRoute travel exception packet to Theo before director signoff.\\nEvidence Reconciliation:\\nMatch vendor-staging\
+          \ hash to Gate 1 evidence.\\nMatch demo-audio hash to Gate 2 checksum.\\nMatch travel-roster hash to Gate 3 QA packet.\\\
+          nCross-VM Delivery Chain:\\nAndroid source note feeds Windows minutes.\\nWindows minutes feed owner matrix and archive\
+          \ manifest.\\nArchive manifest feeds director question packet.\\nFinal Escalation Summary:\\nJordan remains blocked\
+          \ until vendor credentials are active.\\nPriya remains ready after dry-run audio validation.\\nTheo remains locked\
+          \ after travel exception review.\\nReviewer Rotation:\\nMaya reviews agenda and packet receipts.\\nJordan reviews\
+          \ vendor access and route locks.\\nPriya reviews demo audio and field comments.\\nTheo reviews travel roster and\
+          \ exception locks.\\nAcceptance Criteria:\\nEvery gate has a named owner.\\nEvery packet has a predecessor and status.\\\
+          nEvery evidence item maps to a gate.\\nEvery blocked item has an escalation owner.\\nCross-VM Consistency Checks:\\\
+          nThe Android note must be the single source of truth.\\nThe Windows minutes must preserve the Android ordering.\\\
+          nThe embedded tables must summarize the transferred note only.\\nDirector Handoff:\\nHandoff owner: Maya Chen\\\
+          nHandoff route: launch-readiness archive\\nHandoff status: queued after packet receipt.\\n\"\npath = Path('/home/user/Desktop/launch_review_transfer.txt')\n\
+          norm = lambda s: s.replace('\\r\\n', '\\n').replace('\\r', '\\n').strip()\nif not path.is_file():\n    print('DESKTOP_FILE_MISSING');\
+          \ raise SystemExit(1)\nif norm(path.read_text(encoding='utf-8-sig', errors='replace')) != norm(expected):\n    print('DESKTOP_FILE_MISMATCH');\
+          \ raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 60
+        stdout_contains: EVAL_RESULT:PASS
+    - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
+      params:
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\nfrom pathlib import\
+          \ Path\ntry:\n    from docx import Document\nexcept ImportError:\n    subprocess.check_call([sys.executable, '-m',\
+          \ 'pip', 'install', 'python-docx', '-q'])\n    from docx import Document\ndoc = Document(str(Path(os.environ['USERPROFILE'])\
+          \ / 'Documents' / 'launch_review_minutes.docx'))\nparagraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]\n\
+          expected = ['Launch Readiness Review', 'Attendees:', 'Maya Chen', 'Jordan Lee', 'Priya Nair', 'Theo Martin', 'Action\
+          \ Items:', 'Confirm vendor staging access by Tuesday.', 'Send revised demo script to the field team.', 'Lock the\
+          \ final travel roster at 18 people.', 'Owners:', 'Vendor staging: Jordan Lee', 'Demo script: Priya Nair', 'Travel\
+          \ roster: Theo Martin', 'Decisions:', 'Keep the launch window on July 18.', 'Publish the final checklist after the\
+          \ dry run.', 'Risks:', 'Vendor staging account owners are not final.', 'Demo recording depends on the dry-run room\
+          \ audio.', 'Travel roster changes after Friday need director approval.', 'Next Checkpoint:', 'Friday 09:30 readiness\
+          \ sync with launch leads.', 'Escalation Rules:', 'Escalate vendor access blockers to Maya by 16:00.', 'Escalate\
+          \ travel roster conflicts to Theo before final approval.', 'Signoff:', 'Maya owns agenda confirmation.', 'Jordan\
+          \ owns vendor staging proof.', 'Priya owns demo script delivery.', 'Audit Trail:', 'Transfer source: launch_review_transfer.txt',\
+          \ 'Document owner: Maya Chen', 'Review status: Ready for director signoff.', 'Follow-up Schedule:', 'Monday 11:00\
+          \ vendor access checkpoint.', 'Wednesday 15:30 demo-room audio validation.', 'Verification Notes:', 'QA packet reviewed\
+          \ by Maya.', 'Director signoff packet due Friday 16:30.', 'Distribution List:', 'maya.chen@example.test', 'jordan.lee@example.test',\
+          \ 'priya.nair@example.test', 'Readiness Metrics:', 'Open blockers: 2', 'Dry-run pass rate: 92%', 'Travel roster\
+          \ variance: 1', 'Dependency Ledger:', 'Vendor access depends on security approval.', 'Demo script depends on field-team\
+          \ comments.', 'Signoff packet depends on QA evidence.', 'Closeout Owners:', 'Security approval: Maya Chen', 'Field\
+          \ comments: Jordan Lee', 'QA evidence: Priya Nair', 'Packet Checklist:', 'Include agenda confirmation.', 'Include\
+          \ vendor staging screenshot.', 'Include dry-run audio proof.', 'Include travel roster export.', 'Director Questions:',\
+          \ 'Are vendor credentials active for every reviewer?', 'Is the demo script frozen after field comments?', 'Is the\
+          \ travel variance approved before lock?', 'Post-Launch Watch:', 'Monitor room audio for the first two sessions.',\
+          \ 'Monitor vendor login failures for 24 hours.', 'Monitor travel exception requests through Monday.', 'Archive Routing:',\
+          \ 'Store packet under Launch/Readiness/Final.', 'Send archive notice to Maya and Priya.', 'Keep source transfer\
+          \ beside the final DOCX.', 'Escalation Packet Owners:', 'Vendor access packet: Jordan Lee', 'Demo audio packet:\
+          \ Priya Nair', 'Travel exception packet: Theo Martin', 'Evidence Hashes:', 'vendor-staging=hash-pending', 'demo-audio=hash-pending',\
+          \ 'travel-roster=hash-pending', 'Final Review Questions:', 'Has Maya approved the launch window summary?', 'Has\
+          \ Jordan verified every vendor staging credential?', 'Has Priya confirmed the dry-run audio capture?', 'Has Theo\
+          \ frozen the travel exception list?', 'Approval Gates:', 'Gate 1: vendor access screenshot attached.', 'Gate 2:\
+          \ demo script checksum recorded.', 'Gate 3: QA evidence packet reviewed.', 'Gate 4: director signoff queued.', 'Rollback\
+          \ Contacts:', 'Vendor access rollback: Jordan Lee', 'Demo room rollback: Priya Nair', 'Travel roster rollback: Theo\
+          \ Martin', 'Packet Receipt:', 'Receipt owner: Maya Chen', 'Receipt channel: launch-readiness archive', 'Receipt\
+          \ status: pending director review', 'Director Packet Routing:', 'Route vendor packet to Jordan before Maya review.',\
+          \ 'Route demo audio packet to Priya before archive receipt.', 'Route travel exception packet to Theo before director\
+          \ signoff.', 'Evidence Reconciliation:', 'Match vendor-staging hash to Gate 1 evidence.', 'Match demo-audio hash\
+          \ to Gate 2 checksum.', 'Match travel-roster hash to Gate 3 QA packet.', 'Cross-VM Delivery Chain:', 'Android source\
+          \ note feeds Windows minutes.', 'Windows minutes feed owner matrix and archive manifest.', 'Archive manifest feeds\
+          \ director question packet.', 'Final Escalation Summary:', 'Jordan remains blocked until vendor credentials are\
+          \ active.', 'Priya remains ready after dry-run audio validation.', 'Theo remains locked after travel exception review.',\
+          \ 'Reviewer Rotation:', 'Maya reviews agenda and packet receipts.', 'Jordan reviews vendor access and route locks.',\
+          \ 'Priya reviews demo audio and field comments.', 'Theo reviews travel roster and exception locks.', 'Acceptance\
+          \ Criteria:', 'Every gate has a named owner.', 'Every packet has a predecessor and status.', 'Every evidence item\
+          \ maps to a gate.', 'Every blocked item has an escalation owner.', 'Cross-VM Consistency Checks:', 'The Android\
+          \ note must be the single source of truth.', 'The Windows minutes must preserve the Android ordering.', 'The embedded\
+          \ tables must summarize the transferred note only.', 'Director Handoff:', 'Handoff owner: Maya Chen', 'Handoff route:\
+          \ launch-readiness archive', 'Handoff status: queued after packet receipt.']\npos = -1\nfor line in expected:\n\
+          \    try:\n        nxt = paragraphs.index(line, pos + 1)\n    except ValueError:\n        print('MISSING_OR_OUT_OF_ORDER:'\
+          \ + line + ' PARAGRAPHS=' + repr(paragraphs))\n        raise SystemExit(1)\n    pos = nxt\nactual_tables = []\n\
+          for table in doc.tables:\n    actual_tables.append([[cell.text.strip() for cell in row.cells] for row in table.rows])\n\
+          for expected_table in [[['Route', 'Owner', 'Predecessor', 'Status'], ['vendor-packet', 'Jordan Lee', 'Maya review',\
+          \ 'blocked'], ['demo-audio', 'Priya Nair', 'archive receipt', 'ready'], ['travel-exception', 'Theo Martin', 'director\
+          \ signoff', 'locked']], [['Evidence', 'Gate', 'Status'], ['vendor-staging', 'Gate 1', 'pending'], ['demo-audio',\
+          \ 'Gate 2', 'ready'], ['travel-roster', 'Gate 3', 'ready']], [['Artifact', 'Feeds'], ['Android source note', 'Windows\
+          \ minutes'], ['Windows minutes', 'Owner matrix and archive manifest'], ['Archive manifest', 'Director question packet']],\
+          \ [['Owner', 'Final state'], ['Jordan', 'blocked until vendor credentials are active'], ['Priya', 'ready after dry-run\
+          \ audio validation'], ['Theo', 'locked after travel exception review']], [['Reviewer', 'Area', 'Required check'],\
+          \ ['Maya Chen', 'agenda', 'packet receipts'], ['Jordan Lee', 'vendor access', 'route locks'], ['Priya Nair', 'demo\
+          \ audio', 'field comments'], ['Theo Martin', 'travel roster', 'exception locks']], [['Criterion', 'Expected state'],\
+          \ ['gate ownership', 'named owner on every gate'], ['packet lineage', 'predecessor and status on every packet'],\
+          \ ['evidence mapping', 'every evidence item maps to a gate'], ['blocked escalation', 'blocked item has escalation\
+          \ owner']], [['Consistency check', 'Result'], ['Android source', 'single source of truth'], ['Windows ordering',\
+          \ 'preserves Android ordering'], ['Embedded tables', 'summarize transferred note only']]]:\n    if expected_table\
+          \ not in actual_tables:\n        print('MISSING_TABLE:' + repr(expected_table) + ' ACTUAL=' + repr(actual_tables))\n\
+          \        raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        timeout: 120
+        stdout_contains: EVAL_RESULT:PASS
+limits:
+  max_steps: 650
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - cross_device
+  - linux_android
+  - markor
+  - libreoffice
+  - writer
+  - hard
+  difficulty: hard
+  screen: linux
+  companion_device: android (scrcpy window)
+  human_steps: 406
+  converted_from: cross_vm.android_to_windows.launch_review_minutes_hard
+  round_trip:
+  - CalendarEventsEvaluator
+  - phone_copy
+  source_stages:
+  - tasks/v1/cross_vm/stages/android/cross_vm_prepare_launch_review_transfer_hard.yaml
+  - tasks/v1/cross_vm/stages/windows/cross_vm_writer_launch_review_minutes_hard.yaml
+  description: 'Single-screen round-trip version of cross_vm.android_to_windows.launch_review_minutes_hard: phone in a scrcpy
+    window on the Linux desktop; the agent moves launch_review_transfer.txt to the desktop and returns results to the phone.'
