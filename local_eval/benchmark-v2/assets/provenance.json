@@ -1,0 +1,31 @@
+{
+  "version": "author-rebuilt-photo-v2",
+  "authorization": "Benchmark author explicitly authorized generated cooking source and evaluator recalibration",
+  "generator": "built-in image_gen",
+  "prompt": "Photorealistic documentary, five adult friends cooking around outdoor pot/burner, vegetables, leafy park, blue sky, portrait3:4, no text/logos/overlays",
+  "asset_sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d",
+  "preprocessing": "Resize960x1280 JPEG98; deterministic calibration patches added by initializer",
+  "calibration_rgb": [
+    [
+      190,
+      40,
+      40
+    ],
+    [
+      40,
+      190,
+      40
+    ],
+    [
+      40,
+      40,
+      190
+    ]
+  ],
+  "indoor": {
+    "prompt": "Photorealistic documentary, five adult friends preparing a meal indoors around stainless steel cooking pot, vegetables, warm lighting, cabinets; portrait3:4; no text/logos/graphics",
+    "asset": "indoor-cooking-v2.jpg",
+    "sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d",
+    "reason": "Downloaded portrait_20 shows fish hatchery training, not cooking"
+  }
+}

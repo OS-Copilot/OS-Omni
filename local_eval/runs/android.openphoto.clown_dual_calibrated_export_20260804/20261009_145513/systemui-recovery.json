@@ -1,0 +1,6 @@
+{
+  "repair": "openphoto-systemui-preparation-v1",
+  "old_pid": "768",
+  "new_pid": "2085",
+  "reason": "Repeated actual PhotoPicker SystemUI ANRs; recovery validated on device"
+}

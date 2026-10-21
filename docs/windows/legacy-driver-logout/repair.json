@@ -1,0 +1,7 @@
+{
+  "version": "author-driver-logout-v2",
+  "owned_message_positive": "PASS",
+  "wrong_owner_negative": "PASS",
+  "old_pass_excluded": true,
+  "real_device_retest": "completed valid model FAIL; see final-score.json"
+}

@@ -63,7 +63,7 @@ init:
     workspace_name: blender_social_render
     scene_name: product_stage.blend
     scene_template: product_stage
-    launch_gui: false
+    launch_gui: true
 evaluation:
   evaluator_id: evaluators.macos.blender:BlenderSceneEvaluator
   params:

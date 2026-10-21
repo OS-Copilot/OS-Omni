@@ -1,0 +1,4392 @@
+{
+  "guitar": {
+    "status": "PASS",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 20,
+      "candidate_export_count": 20,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "size": 354593,
+          "mtime": 1791544130
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "size": 296586,
+          "mtime": 1791545576
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "size": 296586,
+          "mtime": 1791545712
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "size": 353543,
+          "mtime": 1791545878
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "size": 353543,
+          "mtime": 1791545882
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "size": 370499,
+          "mtime": 1791545897
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "size": 176439,
+          "mtime": 1791545913
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "size": 176439,
+          "mtime": 1791546041
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "size": 206647,
+          "mtime": 1791546188
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "size": 206647,
+          "mtime": 1791546192
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "size": 224031,
+          "mtime": 1791546207
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "size": 285796,
+          "mtime": 1791546223
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "size": 351793,
+          "mtime": 1791546396
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "size": 383277,
+          "mtime": 1791546550
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "size": 383277,
+          "mtime": 1791546554
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "size": 418691,
+          "mtime": 1791546569
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "size": 501636,
+          "mtime": 1791546584
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "size": 535292,
+          "mtime": 1791546773
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "size": 535292,
+          "mtime": 1791546778
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "size": 581982,
+          "mtime": 1791546793
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "size": 354593,
+          "mtime": 1791544130,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              254,
+              0,
+              0
+            ],
+            "green": [
+              0,
+              255,
+              1
+            ],
+            "blue": [
+              0,
+              8,
+              251
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 41,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "size": 296586,
+          "mtime": 1791545576,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "size": 296586,
+          "mtime": 1791545712,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "size": 353543,
+          "mtime": 1791545878,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "size": 353543,
+          "mtime": 1791545882,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "size": 370499,
+          "mtime": 1791545897,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              54,
+              54
+            ],
+            "green": [
+              47,
+              255,
+              47
+            ],
+            "blue": [
+              15,
+              24,
+              253
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 31,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 49,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "size": 176439,
+          "mtime": 1791545913,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "size": 176439,
+          "mtime": 1791546041,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "size": 206647,
+          "mtime": 1791546188,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "size": 206647,
+          "mtime": 1791546192,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "size": 224031,
+          "mtime": 1791546207,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              61,
+              52
+            ],
+            "green": [
+              64,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              58,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 61,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "size": 285796,
+          "mtime": 1791546223,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "size": 351793,
+          "mtime": 1791546396,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "size": 383277,
+          "mtime": 1791546550,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "size": 383277,
+          "mtime": 1791546554,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "size": 418691,
+          "mtime": 1791546569,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              58,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              63,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 61,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "size": 501636,
+          "mtime": 1791546584,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "size": 535292,
+          "mtime": 1791546773,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "size": 535292,
+          "mtime": 1791546778,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "size": 581982,
+          "mtime": 1791546793,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              40,
+              255,
+              38
+            ],
+            "blue": [
+              62,
+              60,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "蓝色电吉他特写",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 59,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "红色织物上的木吉他",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "electric_guitar_portrait_21": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "score": {
+            "profile_id": "electric_guitar_portrait_21",
+            "role": "蓝色电吉他特写",
+            "source_file": "portrait_21.jpg",
+            "expected_median_rgb": {
+              "red": [
+                229,
+                40,
+                41
+              ],
+              "green": [
+                35,
+                224,
+                34
+              ],
+              "blue": [
+                3,
+                12,
+                229
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          }
+        },
+        "wood_guitar_portrait_17": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "score": {
+            "profile_id": "wood_guitar_portrait_17",
+            "role": "红色织物上的木吉他",
+            "source_file": "portrait_17.jpg",
+            "expected_median_rgb": {
+              "red": [
+                225,
+                48,
+                40
+              ],
+              "green": [
+                51,
+                213,
+                39
+              ],
+              "blue": [
+                50,
+                44,
+                204
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": true,
+        "distinct_files_for_profiles": true,
+        "final_editor_visible": true,
+        "correct_source_and_render": true
+      },
+      "failures": [],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Back",
+          "Edit",
+          "Undo",
+          "Redo",
+          "View original",
+          "Export",
+          "Exposure",
+          "35",
+          "Brightness",
+          "Contrast",
+          "Curve",
+          "Saturation",
+          "Temperature",
+          "Portrait",
+          "Landscape",
+          "HSL",
+          "Filters"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Undo",
+          "Redo",
+          "Edit",
+          "Exposure",
+          "Filters",
+          "Landscape",
+          "HSL"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "whole_image_mae": 1.3140098741319444,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "whole_image_mae": 9.855005696614583,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "whole_image_mae": 9.855005696614583,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "whole_image_mae": 12.643028700086807,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "whole_image_mae": 86.94082139756944,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "whole_image_mae": 86.94082139756944,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "whole_image_mae": 95.00321234809029,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "whole_image_mae": 91.14683349609375,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "whole_image_mae": 96.73337131076387,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "whole_image_mae": 109.77426866319445,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "whole_image_mae": 99.81026584201389,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "whole_image_mae": 113.14760823567708,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "whole_image_mae": 91.68745930989583,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "whole_image_mae": 88.15912353515625,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "whole_image_mae": 88.15912353515625,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "whole_image_mae": 91.90701144748265,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "whole_image_mae": 11.386280381944445,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "whole_image_mae": 11.386280381944445,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "whole_image_mae": 13.319950086805555,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "whole_image_mae": 93.78466335720486,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "whole_image_mae": 89.66784450954862,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "whole_image_mae": 95.44986979166667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "whole_image_mae": 89.62580891927082,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "whole_image_mae": 97.33792941623263,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {
+        "electric_guitar_portrait_21": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+        "wood_guitar_portrait_17": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg"
+      }
+    }
+  },
+  "cooking": {
+    "status": "PASS",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 20,
+      "candidate_export_count": 20,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "size": 354593,
+          "mtime": 1791544130
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "size": 296586,
+          "mtime": 1791545576
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "size": 296586,
+          "mtime": 1791545712
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "size": 353543,
+          "mtime": 1791545878
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "size": 353543,
+          "mtime": 1791545882
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "size": 370499,
+          "mtime": 1791545897
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "size": 176439,
+          "mtime": 1791545913
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "size": 176439,
+          "mtime": 1791546041
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "size": 206647,
+          "mtime": 1791546188
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "size": 206647,
+          "mtime": 1791546192
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "size": 224031,
+          "mtime": 1791546207
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "size": 285796,
+          "mtime": 1791546223
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "size": 351793,
+          "mtime": 1791546396
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "size": 383277,
+          "mtime": 1791546550
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "size": 383277,
+          "mtime": 1791546554
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "size": 418691,
+          "mtime": 1791546569
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "size": 501636,
+          "mtime": 1791546584
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "size": 535292,
+          "mtime": 1791546773
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "size": 535292,
+          "mtime": 1791546778
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "size": 581982,
+          "mtime": 1791546793
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "size": 354593,
+          "mtime": 1791544130,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              254,
+              0,
+              0
+            ],
+            "green": [
+              0,
+              255,
+              1
+            ],
+            "blue": [
+              0,
+              8,
+              251
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 54,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 49,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "size": 296586,
+          "mtime": 1791545576,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "size": 296586,
+          "mtime": 1791545712,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "size": 353543,
+          "mtime": 1791545878,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "size": 353543,
+          "mtime": 1791545882,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "size": 370499,
+          "mtime": 1791545897,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              54,
+              54
+            ],
+            "green": [
+              47,
+              255,
+              47
+            ],
+            "blue": [
+              15,
+              24,
+              253
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 38,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "size": 176439,
+          "mtime": 1791545913,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "size": 176439,
+          "mtime": 1791546041,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "size": 206647,
+          "mtime": 1791546188,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "size": 206647,
+          "mtime": 1791546192,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "size": 224031,
+          "mtime": 1791546207,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              61,
+              52
+            ],
+            "green": [
+              64,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              58,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 29,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "size": 285796,
+          "mtime": 1791546223,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "size": 351793,
+          "mtime": 1791546396,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "size": 383277,
+          "mtime": 1791546550,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "size": 383277,
+          "mtime": 1791546554,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "size": 418691,
+          "mtime": 1791546569,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              58,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              63,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 29,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "size": 501636,
+          "mtime": 1791546584,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "size": 535292,
+          "mtime": 1791546773,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "size": 535292,
+          "mtime": 1791546778,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "size": 581982,
+          "mtime": 1791546793,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              40,
+              255,
+              38
+            ],
+            "blue": [
+              62,
+              60,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 29,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "indoor_cooking_portrait_20": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "score": {
+            "profile_id": "indoor_cooking_portrait_20",
+            "role": "室内多人备餐",
+            "source_file": "portrait_20.jpg",
+            "expected_median_rgb": {
+              "red": [
+                230,
+                48,
+                47
+              ],
+              "green": [
+                46,
+                226,
+                41
+              ],
+              "blue": [
+                54,
+                51,
+                228
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          }
+        },
+        "outdoor_cooking_portrait_16": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "score": {
+            "profile_id": "outdoor_cooking_portrait_16",
+            "role": "户外多人烹饪",
+            "source_file": "portrait_16.jpg",
+            "expected_median_rgb": {
+              "red": [
+                217,
+                47,
+                47
+              ],
+              "green": [
+                32,
+                224,
+                29
+              ],
+              "blue": [
+                49,
+                47,
+                216
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": true,
+        "distinct_files_for_profiles": true,
+        "final_editor_visible": true,
+        "correct_source_and_render": true
+      },
+      "failures": [],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Back",
+          "Edit",
+          "Undo",
+          "Redo",
+          "View original",
+          "Export",
+          "Exposure",
+          "35",
+          "Brightness",
+          "Contrast",
+          "Curve",
+          "Saturation",
+          "Temperature",
+          "Portrait",
+          "Landscape",
+          "HSL",
+          "Filters"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Undo",
+          "Redo",
+          "Edit",
+          "Exposure",
+          "Filters",
+          "Landscape",
+          "HSL"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "whole_image_mae": 103.25776638454862,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "whole_image_mae": 96.45571858723959,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "whole_image_mae": 96.45571858723959,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "whole_image_mae": 105.21678358289931,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "whole_image_mae": 87.12185112847222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "whole_image_mae": 87.12185112847222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "whole_image_mae": 94.684130859375,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "whole_image_mae": 72.76824137369792,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "whole_image_mae": 17.140145941840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "whole_image_mae": 17.961817491319444,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "whole_image_mae": 70.6415109592014,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "whole_image_mae": 83.25688937717014,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_110850.jpg",
+          "whole_image_mae": 105.5406130642361,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113256.jpg",
+          "whole_image_mae": 99.2006214735243,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113512.jpg",
+          "whole_image_mae": 99.2006214735243,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113758.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113802.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113817.jpg",
+          "whole_image_mae": 106.93131646050347,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_113833.jpg",
+          "whole_image_mae": 87.63435438368056,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114041.jpg",
+          "whole_image_mae": 87.63435438368056,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114308.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114312.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114327.jpg",
+          "whole_image_mae": 95.23171983506944,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114343.jpg",
+          "whole_image_mae": 73.80809163411459,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114636.jpg",
+          "whole_image_mae": 74.68734429253472,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114914.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114929.jpg",
+          "whole_image_mae": 78.03271538628472,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114944.jpg",
+          "whole_image_mae": 14.907103407118056,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115258.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115313.jpg",
+          "whole_image_mae": 21.234688856336806,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {
+        "indoor_cooking_portrait_20": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_114910.jpg",
+        "outdoor_cooking_portrait_16": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_115253.jpg"
+      }
+    }
+  }
+}

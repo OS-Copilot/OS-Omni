@@ -111,6 +111,8 @@ metadata:
   initializer_contract:
   - Launch and foreground DeltaChat, then validate the macOS1 snapshot account, three source messages,
     two Documents files, absent Nova Command group, and absent target records using read-only checks.
+  - If either task attachment is missing, restore the versioned replacement input from
+    tasks/v1/macos/assets/deltachat before the read-only starting-state checks; never overwrite an existing file.
   - Do not restore a snapshot, reset or seed the profile, create Nova Command, send messages, attach files,
     copy text, or perform any evaluator-checked target action.
   - Manual execution starts after the human recreates macOS1 from allapps-base; evaluate-only must not

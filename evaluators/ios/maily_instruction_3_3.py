@@ -29,7 +29,7 @@ TASK_ID = "ios.maily.instruction_3_3"
 #: simulator does not record when it was last started.
 DEFAULT_WINDOW_START = "2026-08-01T08:43:24+00:00"
 BUNDLE_ID = "de.enough.maily"
-EXPECTED_DEVICE_PROFILE = "iphone17-2"
+EXPECTED_DEVICE_TYPE_IDENTIFIER = "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
 SENDER_EMAIL = "alex.rivera@example.test"
 
 TEAM_CONTACTS_SHA256 = "8015c51c4036b70ac1231b0bc6f38d43231039eac3ea7bfc6a0ccc9bec52565e"
@@ -211,7 +211,11 @@ RULESET_SPEC: dict[str, Any] = {
     "schema_version": "2.0",
     "task_id": TASK_ID,
     "bundle_id": BUNDLE_ID,
-    "expected_device_profile": EXPECTED_DEVICE_PROFILE,
+    "expected_device_type_identifier": EXPECTED_DEVICE_TYPE_IDENTIFIER,
+    "device_identity_contract": (
+        "The bound UDID must be Booted and have the configured Apple deviceTypeIdentifier; "
+        "the simulator display name is user-editable and is not a device identity."
+    ),
     "sender": SENDER_EMAIL,
     "instruction_sha256": "6fcf760fb940cc48e67360df3c6d26ad57d4d682ed5ced3b313126a979581dc6",
     "maily_build_observed": "96",
@@ -249,6 +253,17 @@ def _canonical_json_sha256(value: Any) -> str:
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def _simulator_matches_expected_device(
+    simulator_info: Mapping[str, Any], expected_device_type: str
+) -> bool:
+    """Bind evaluation to actual hardware type and boot state, not its label."""
+    return (
+        simulator_info.get("state") == "Booted"
+        and simulator_info.get("isAvailable", True) is True
+        and simulator_info.get("deviceTypeIdentifier") == expected_device_type
+    )
 
 
 RULESET_SHA256 = _canonical_json_sha256(RULESET_SPEC)
@@ -306,8 +321,9 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
 
         api_base_url = str(params.get("api_base_url") or self.DEFAULT_API_BASE_URL).rstrip("/")
         bundle_id = str(params.get("bundle_id") or BUNDLE_ID).strip()
-        expected_profile = str(
-            params.get("expected_ios_device_profile") or EXPECTED_DEVICE_PROFILE
+        expected_device_type = str(
+            params.get("expected_ios_device_type_identifier")
+            or EXPECTED_DEVICE_TYPE_IDENTIFIER
         ).strip()
         timeout_seconds = float(params.get("timeout_seconds", self.DEFAULT_TIMEOUT_SECONDS) or 0.0)
         poll_interval_seconds = float(
@@ -323,7 +339,7 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
                     api_base_url=api_base_url,
                     udid=udid,
                     bundle_id=bundle_id,
-                    expected_profile=expected_profile,
+                    expected_device_type=expected_device_type,
                     evaluation_cutoff=evaluation_cutoff,
                     base_metadata=base_metadata,
                 )
@@ -349,7 +365,7 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
         api_base_url: str,
         udid: str,
         bundle_id: str,
-        expected_profile: str,
+        expected_device_type: str,
         evaluation_cutoff: datetime,
         base_metadata: Mapping[str, Any],
     ) -> EvalResult:
@@ -362,10 +378,14 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
             "name": "bound_maily_runtime",
             "steps": list(range(1, 77)),
             "pass": (
-                simulator_info.get("state") == "Booted"
-                and simulator_info.get("name") == expected_profile
+                _simulator_matches_expected_device(
+                    simulator_info, expected_device_type
+                )
             ),
-            "expected": {"name": expected_profile, "state": "Booted"},
+            "expected": {
+                "deviceTypeIdentifier": expected_device_type,
+                "state": "Booted",
+            },
             "observed": simulator_info,
         }
 
@@ -504,6 +524,9 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
                 if isinstance(row, dict) and row.get("udid") == udid:
                     return {
                         "name": str(row.get("name") or ""),
+                        "deviceTypeIdentifier": str(
+                            row.get("deviceTypeIdentifier") or ""
+                        ),
                         "state": str(row.get("state") or ""),
                         "lastBootedAt": str(row.get("lastBootedAt") or ""),
                         "runtime": str(runtime),
@@ -531,7 +554,8 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
         if proc.returncode != 0:
             evidence["error"] = proc.stderr.strip() or "get_app_container_failed"
             return evidence
-        container = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        container = remap_simulator_container_path(proc.stdout.strip(), udid)
         evidence["container_resolved"] = container.is_dir()
         evidence["data_container_path"] = str(container)
         if not container.is_dir():

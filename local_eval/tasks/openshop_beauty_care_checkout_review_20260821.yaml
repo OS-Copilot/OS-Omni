@@ -1,0 +1,163 @@
+task_id: android.openshop.beauty_care_checkout_review_20260821
+platform: android
+instruction: OpenShop 已经登录 Lucas Lin 账号，请不要退出登录。使用 Android GUI 完成一份 Beauty 旅行护理订单：从首页
+  Categories 的 Beauty 分类进入商品列表，把 BloomCare Sensitive Skin Eau de Parfum 的 Travel Size
+  规格加入购物车；之后返回首页并使用顶部搜索栏依次查找其余商品， 把 Aloe Room Hydrating Shaving Trimmer 的 Sensitive
+  规格、Puretone Travel-Size Vitamin Serum 的 Value Set 规格、Daily Dew Soft Matte Moisturizer
+  Jar 的 Travel Size 规格、MiraSkin Gentle Hair Treatment Mask 的 Original 规格，以及 Aloe Room
+  Cooling Lip Balm Set 的 Value Set 规格各加入购物车 1 件。进入底部购物栏的 Checkout，核对购物车只有上述 6 件商品且规格正确，
+  点击 Proceed to Checkout；在 Select Shipping Address 中选择 Home，在 Payment Method 中选择 Alipay，在
+  Order Note 文本框输入精确文本“Travel care kit”，然后点击 Place Order。下单后在订单历史中 找到订单 TBH-LUCAS-20260518-001，在其中
+  Verdant Pro Noise-Canceling Headphones 商品的 Rating 下拉框选择 4 / 5，在 Review 文本框输入精确文本“Good
+  commute audio”，点击 Submit Review。 最终停留在能看到该历史订单耳机评分和评论的订单历史页面；不要 Sign Out / 不要退出登录。
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openshop
+    app_activity: com.killt.openshop.MainActivity
+    wait_ms: 4000
+    baseline_timeout_seconds: 35
+    baseline_poll_interval_seconds: 1
+    local_state_key: openshop.localState.v3
+    snapshot_name: snap_2026-08-03_16-11-57
+    expected_logged_in_phone: '13800138000'
+    expected_cart_size: 0
+    expected_order_ids:
+    - TB1781113752081
+    - TBH-LUCAS-20260518-001
+    - TBH-LUCAS-20260429-002
+    - TBH-LUCAS-20260410-003
+    - TBH-LUCAS-20260321-004
+    forbidden_order_note: Travel care kit
+    review_order_id: TBH-LUCAS-20260518-001
+    review_item_id: history-p1001-black
+    review_product_id: p1001
+    source_initializer: evaluators.cua_review.initializers.android.openshop:OpenShopSnapshotBaselineInitializer
+evaluation:
+  evaluator_id: evaluators.android.openshop_beauty_care_checkout_review_20260821:OpenShopOrderAndHistoricalReviewEvaluator
+  params:
+    app_package: com.killt.openshop
+    local_state_key: openshop.localState.v3
+    account_phone: '13800138000'
+    expected_order_count: 6
+    expected_baseline_order_ids:
+    - TB1781113752081
+    - TBH-LUCAS-20260518-001
+    - TBH-LUCAS-20260429-002
+    - TBH-LUCAS-20260410-003
+    - TBH-LUCAS-20260321-004
+    new_order:
+      address_id: addr-home
+      payment_method_id: alipay
+      note: Travel care kit
+      status: Awaiting Shipment
+      items:
+      - product_id: p2071
+        quantity: 1
+        selected_spec: Travel Size
+      - product_id: p2072
+        quantity: 1
+        selected_spec: Sensitive
+      - product_id: p2074
+        quantity: 1
+        selected_spec: Value Set
+      - product_id: p2075
+        quantity: 1
+        selected_spec: Travel Size
+      - product_id: p2073
+        quantity: 1
+        selected_spec: Original
+      - product_id: p2077
+        quantity: 1
+        selected_spec: Value Set
+    historical_review:
+      order_id: TBH-LUCAS-20260518-001
+      item_id: history-p1001-black
+      product_id: p1001
+      rating: 4
+      review: Good commute audio
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - android
+  - openshop
+  - beauty
+  - cart
+  - checkout
+  - order
+  - review
+  - hard
+  - benchmark
+  app: OpenShop
+  app_name: OpenShop
+  app_bundle_id: com.killt.openshop
+  required_packages_any:
+  - com.killt.openshop
+  difficulty: hard
+  task_version: 1.0.0
+  snapshot_name: snap_2026-08-03_16-11-57
+  model_requirement: kimi-k3
+  description: Create an exact six-item Beauty order and review one exact item in
+    a pre-existing delivered order.
+  prerequisites:
+  - Android Studio Quail 1 AVD AndroidWorldAvd_20260611_1 is already at snapshot snap_2026-08-03_16-11-57
+    before initialization.
+  - The snapshot already contains OpenShop com.killt.openshop and a logged-in Lucas
+    Lin account (13800138000).
+  - The snapshot baseline has an empty cart, five exact baseline orders, no Travel
+    care kit order, and no review on history-p1001-black.
+  initializer_behavior: Opens OpenShop without clearing data and performs read-only
+    business-state baseline checks; it never restores a snapshot or performs a target
+    action.
+  evaluation_scope:
+  - Exact logged-in account and empty final cart.
+  - Five baseline order IDs preserved plus exactly one new latest order.
+  - Exact new-order address, payment, note, status, six product IDs, quantities, and
+    specifications.
+  - Exact historical order, order-item, product, rating, review text, and a persisted
+    reviewedAt timestamp.
+  unverifiable_process_steps:
+  - Individual searches, scrolling gestures, category navigation, Back to Home transitions,
+    and dropdown-opening gestures are navigation hints only and are not independently
+    scored from final state.
+  false_positive_controls:
+  - Exact snapshot order fingerprint and exact expected count reject wrong accounts,
+    wrong snapshots, and unrelated old orders.
+  - The single new order must be latest, have a fresh non-baseline TB ID, and match
+    every exact item and checkout field.
+  - The review is matched by historical order ID, order-item ID, product ID, exact
+    rating, exact full review text, and reviewedAt presence; substring matching is
+    not used.
+  manual_verifier_note: scripts/evaluate_android_task_only.py performs no snapshot
+    reset, initializer, or GUI-agent actions and evaluates only the current VM state.
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openshop/Android/android.openshop.beauty_care_checkout_review_20260821
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 007601035fefe1b79fd9ab1f1252970bb5745cc660dc62790af4d91859ff67ca
+    source_instruction: OpenShop 已经登录 Lucas Lin 账号，请不要退出登录。使用 Android GUI 完成一份 Beauty
+      旅行护理订单：从首页 Categories 的 Beauty 分类进入商品列表，把 BloomCare Sensitive Skin Eau de Parfum
+      的 Travel Size 规格加入购物车；之后返回首页并使用顶部搜索栏依次查找其余商品， 把 Aloe Room Hydrating Shaving
+      Trimmer 的 Sensitive 规格、Puretone Travel-Size Vitamin Serum 的 Value Set 规格、Daily
+      Dew Soft Matte Moisturizer Jar 的 Travel Size 规格、MiraSkin Gentle Hair Treatment
+      Mask 的 Original 规格，以及 Aloe Room Cooling Lip Balm Set 的 Value Set 规格各加入购物车 1
+      件。进入底部购物栏的 Checkout，核对购物车只有上述 6 件商品且规格正确， 点击 Proceed to Checkout；在 Select Shipping
+      Address 中选择 Home，在 Payment Method 中选择 Alipay，在 Order Note 文本框输入精确文本“Travel care
+      kit”，然后点击 Place Order。下单后在订单历史中 找到订单 TBH-LUCAS-20260518-001，在其中 Verdant Pro
+      Noise-Canceling Headphones 商品的 Rating 下拉框选择 4 / 5，在 Review 文本框输入精确文本“Good commute
+      audio”，点击 Submit Review。 最终停留在能看到该历史订单耳机评分和评论的订单历史页面；不要 Sign Out / 不要退出登录。
+    release_path: benchmark/tasks/openshop/Android/android.openshop.beauty_care_checkout_review_20260821
+    original_evaluator_id: evaluators.android.openshop:OpenShopOrderAndHistoricalReviewEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.openshop:OpenShopSnapshotBaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/openshop_beauty_care_checkout_review_20260821.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

@@ -10,7 +10,7 @@ instruction: |-
 
   Mark the alerts “New sign-in from macOS” and “Upcoming bill” as read, and lock the “OpenBank Rewards Card”. Configure the alert settings as follows: for Low balance, set the Amount to 410 and ensure the Text notification is enabled; for Large purchase, set the Amount to 240 and ensure the Email notification is disabled; for Payment due, ensure the Text notification is enabled and the Email notification is disabled; and for Direct deposit posted, ensure both the On and Text notifications are enabled. Save all four alert configurations.
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.openbank_rebuilt:OpenBankRebuiltInitializer
   params:
     app_name: OpenBank
     wait_ms: 1200

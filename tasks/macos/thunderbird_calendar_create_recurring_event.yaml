@@ -1,0 +1,40 @@
+task_id: macos.thunderbird.calendar.create_recurring_event
+platform: macos
+instruction: 'Open Thunderbird and switch to the Calendar view. Create a recurring
+  event called "Weekly Standup" every Monday at 9:00 AM, lasting 1 hour. Create it
+  by opening the Monday 9:00 AM slot in the calendar grid first, then add a reminder
+  for 15 minutes before the event and save it. In Thunderbird, make sure the event
+  date itself is set to a Monday before you choose the weekly repeat option, so the
+  recurrence is anchored to Monday rather than the default day.
+
+  '
+init:
+  initializer_id: initializers.macos.thunderbird_profile:ThunderbirdProfileInitializer
+  params:
+    open_calendar: true
+    wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.thunderbird_calendar:ThunderbirdCalendarEvaluator
+  params:
+    required_titles:
+    - Weekly Standup
+    recurrence_checks:
+      Weekly Standup:
+      - rrule
+      - freq=weekly
+      - weekly
+    event_expectations:
+      Weekly Standup:
+        start_time: "09:00"
+        duration_minutes: 60
+        recurrence_keywords:
+        - rrule
+        - freq=weekly
+        - byday=mo
+        alarm_keywords:
+        - -pt15m
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

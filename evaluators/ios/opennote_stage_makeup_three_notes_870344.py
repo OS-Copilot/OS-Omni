@@ -722,7 +722,8 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
         )
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container app failed: {proc.stderr.strip()}")
-        app = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        app = remap_simulator_container_path(proc.stdout.strip(), udid)
         files = {"binary_sha256": app / "App", "app_js_sha256": app / "public" / "app.js", "local_api_js_sha256": app / "public" / "local-api.js"}
         observed = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in files.items()}
         if observed != EXPECTED_BUILD:

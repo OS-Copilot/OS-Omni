@@ -198,6 +198,10 @@ RULESET_SPEC = {
         "app_js_sha256": EXPECTED_APP_JS_SHA256,
         "seed_data_sha256": EXPECTED_SEED_DATA_SHA256,
         "account_id": ACCOUNT_ID,
+        "account_binding": (
+            "session user name and phone must match; user.id is optional for legacy local state, "
+            "but if present must match the benchmark account id"
+        ),
         "account_name": ACCOUNT_NAME,
         "account_phone": ACCOUNT_PHONE,
         "database_selection": "exact origin bytes; exactly one active database",
@@ -348,10 +352,18 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
         app_binding = dict(app_binding or {"pass": True, "source": "synthetic"})
 
         session = state.get("session") if isinstance(state, Mapping) else None
-        session_pass = session == {
-            "loggedIn": True,
-            "user": {"id": ACCOUNT_ID, "name": ACCOUNT_NAME, "phone": ACCOUNT_PHONE},
-        }
+        session_user = (
+            session.get("user")
+            if isinstance(session, Mapping) and isinstance(session.get("user"), Mapping)
+            else {}
+        )
+        session_pass = (
+            isinstance(session, Mapping)
+            and session.get("loggedIn") is True
+            and session_user.get("name") == ACCOUNT_NAME
+            and session_user.get("phone") == ACCOUNT_PHONE
+            and session_user.get("id") in (None, ACCOUNT_ID)
+        )
         checks.append(
             cls._check(
                 "account_binding_exact",
@@ -360,7 +372,11 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
                 session_pass,
                 {
                     "loggedIn": True,
-                    "user": {"id": ACCOUNT_ID, "name": ACCOUNT_NAME, "phone": ACCOUNT_PHONE},
+                    "user": {
+                        "id": f"optional; if present must equal {ACCOUNT_ID}",
+                        "name": ACCOUNT_NAME,
+                        "phone": ACCOUNT_PHONE,
+                    },
                 },
                 session,
             )
@@ -1027,7 +1043,8 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
             raise RuntimeError(
                 f"simctl get_app_container {kind} failed: {proc.stderr.strip()}"
             )
-        path = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        path = remap_simulator_container_path(proc.stdout.strip(), udid)
         if not path.exists():
             raise FileNotFoundError(f"simctl {kind} container does not exist: {path}")
         return path

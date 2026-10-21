@@ -164,7 +164,7 @@ class VMwareWindowsVMProvider:
                 skip_next = False
                 continue
             redacted.append(token)
-            if token in {"-vp", "-gp"}:
+            if token.lower() in {"-vp", "-gp", "-token", "--token"}:
                 skip_next = True
         return " ".join(redacted)
 

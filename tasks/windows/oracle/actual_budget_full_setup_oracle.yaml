@@ -1,0 +1,92 @@
+task_id: windows.oracle.actual_budget.full_setup
+platform: windows
+instruction: >
+  Oracle sanity check for windows.actual_budget.full_setup.
+
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+      - type: run_powershell
+        script: |
+          $ErrorActionPreference = "Stop"
+          $py = @'
+          import os, shutil, sqlite3
+          base = os.path.join(os.environ["USERPROFILE"], "Documents", "Actual", "oracle-budget")
+          if os.path.exists(base):
+              shutil.rmtree(base, ignore_errors=True)
+          os.makedirs(base, exist_ok=True)
+          db_path = os.path.join(base, "db.sqlite")
+          conn = sqlite3.connect(db_path)
+          conn.execute("create table accounts (id text, name text, tombstone integer)")
+          conn.execute("create table categories (id text, name text, tombstone integer)")
+          conn.execute("create table zero_budgets (category text, amount integer)")
+          conn.execute("create table payees (id text, name text, tombstone integer)")
+          conn.execute("""
+              create table transactions (
+                  acct text,
+                  category text,
+                  description text,
+                  amount integer,
+                  tombstone integer,
+                  starting_balance_flag integer,
+                  transfer_id text
+              )
+          """)
+          conn.executemany("insert into accounts values (?, ?, 0)", [
+              ("a_checking", "Checking"),
+              ("a_savings", "Savings"),
+          ])
+          conn.executemany("insert into categories values (?, ?, 0)", [
+              ("c_rent", "Rent"),
+              ("c_groceries", "Groceries"),
+              ("c_entertainment", "Entertainment"),
+              ("c_utilities", "Utilities"),
+              ("c_insurance", "Insurance"),
+          ])
+          conn.executemany("insert into zero_budgets values (?, ?)", [
+              ("c_rent", 150000),
+              ("c_groceries", 40000),
+              ("c_entertainment", 20000),
+              ("c_utilities", 15000),
+              ("c_insurance", 8000),
+          ])
+          conn.executemany("insert into payees values (?, ?, 0)", [
+              ("p_landlord", "Landlord"),
+              ("p_supermarket", "Supermarket"),
+              ("p_power", "Power Company"),
+              ("p_policy", "Policy Center"),
+          ])
+          conn.executemany("insert into transactions values (?, ?, ?, ?, 0, ?, ?)", [
+              ("a_checking", None, None, 500000, 1, None),
+              ("a_savings", None, None, 1000000, 1, None),
+              ("a_checking", "c_rent", "p_landlord", -150000, 0, None),
+              ("a_checking", "c_groceries", "p_supermarket", -35000, 0, None),
+              ("a_checking", "c_utilities", "p_power", -12000, 0, None),
+              ("a_checking", "c_insurance", "p_policy", -7900, 0, None),
+              ("a_checking", None, None, -100000, 0, "transfer-1"),
+              ("a_savings", None, None, 100000, 0, "transfer-1"),
+          ])
+          conn.commit()
+          conn.close()
+          print("ORACLE_ACTUAL_BUDGET_READY", db_path)
+          '@
+          $tmp = Join-Path $env:TEMP "actual_budget_full_setup_oracle.py"
+          Set-Content -LiteralPath $tmp -Value $py -Encoding UTF8
+          py -3 -W ignore $tmp
+        timeout: 30
+
+evaluation:
+  evaluator_id: evaluators.windows.actual_budget:ActualBudgetEvaluator
+  params:
+    check_id: budget_full_setup
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 45
+
+limits:
+  max_steps: 100
+  step_timeout_seconds: 180
+
+metadata:
+  tags: [oracle, windows, actual_budget]
+  oracle_for: windows.actual_budget.full_setup

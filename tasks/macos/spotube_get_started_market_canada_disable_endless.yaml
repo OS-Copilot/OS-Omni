@@ -1,0 +1,32 @@
+task_id: macos.spotube.get_started_market_canada_disable_endless
+platform: macos
+instruction: 'Open Spotube and use the getting-started flow to prepare a Canada profile.
+
+
+  Complete these changes in order:
+
+  1. Set Marketplace Region to **Canada**.
+
+  2. Keep the language on the default system option.
+
+  3. Turn **Endless Playback** off.
+
+  4. Leave Spotube open when you finish.
+
+  '
+init:
+  initializer_id: initializers.macos.spotube:SpotubeInitializer
+  params:
+    wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.spotube:SpotubeEvaluator
+  params:
+    mode: state_check
+    expected_preferences:
+      market: CA
+      endless_playback: false
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy

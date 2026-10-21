@@ -12,6 +12,7 @@ init:
   params:
     mode: open
     final_wait_ms: 2500
+    dismiss_prompts: false
 evaluation:
   evaluator_id: evaluators.macos.photos:PhotosStateEvaluator
   params:

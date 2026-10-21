@@ -1,0 +1,355 @@
+task_id: windows.zotero.organize_library
+platform: windows
+instruction: 'In Zotero, work under My Library in this exact order. First create a collection named "Reference Shelf" under
+  My Library and add a new Book titled "Designing Data-Intensive Applications" to it with author "Martin Kleppmann" and tag
+  "systems". Next create "AI Papers" and add a new Journal Article titled "BERT" to that collection with author "Jacob Devlin"
+  and tag "transformer". Next create "Project Notes" and add a new Report titled "Benchmark Plan" to that collection with
+  tag "planning" and a child note that says "Review before Friday". Finally create "Implementation Queue" and add a new Conference
+  Paper titled "MapReduce" to that collection with author "Jeffrey Dean", tag "distributed-systems", and a child note that
+  says "Compare with Spark notes". Finally create "Review Board" and add a new Book titled "The Mythical Man-Month" to that
+  collection with author "Frederick Brooks", tag "software-history", and a child note that says "Use for planning risk discussion".
+  Finally create "Evidence Queue" and add a new Report titled "Latency Audit" to that collection with author "Dana Lee", tag
+  "measurement", and a child note that says "Attach to benchmark appendix". Finally create "Operations Reading" and add a
+  new Book titled "Site Reliability Engineering" to that collection with author "Betsy Beyer", tag "reliability", and a child
+  note that says "Review incident chapter". Finally create "Security Review" and add a new Book titled "Security Engineering"
+  to that collection with author "Ross Anderson", tag "security", and a child note that says "Review threat modeling chapter".
+  Finally create "Reproducibility Queue" and add a new Report titled "Reproducibility Checklist" to that collection with author
+  "Victoria Stodden", tag "reproducibility", and a child note that says "Use for artifact review rubric". Finally create "Database
+  Queue" and add a new Book titled "Readings in Database Systems" to that collection with author "Joseph Hellerstein", tag
+  "database-systems", and a child note that says "Compare transaction processing chapter". Finally create "Observability Shelf"
+  and add a new Book titled "Observability Engineering" to that collection with author "Charity Majors", tag "observability",
+  and a child note that says "Review telemetry chapter". Finally create "Testing Queue" and add a new Report titled "Evaluation
+  Harness Notes" to that collection with author "Riley Chen", tag "testing", and a child note that says "Use for regression
+  checklist". Finally create "Scheduler Queue" and add a new Conference Paper titled "The Google Borg Paper" to that collection
+  with author "Abhishek Verma", tag "cluster-scheduling", and a child note that says "Compare scheduling primitives". Finally
+  create "Storage Queue" and add a new Book titled "Database Internals" to that collection with author "Alex Petrov", tag
+  "storage", and a child note that says "Review storage engine diagrams". Finally create "Human Factors" and add a new Report
+  titled "Operator Playbook" to that collection with author "Mina Rao", tag "operations", and a child note that says "Use
+  for incident drill". Finally create "Incident Review" and add a new Report titled "Postmortem Template" to that collection
+  with author "Nora Patel", tag "incident-review", and a child note that says "Use for outage writeup". Finally create "Networking
+  Queue" and add a new Book titled "Computer Networking: A Top-Down Approach" to that collection with author "James Kurose",
+  tag "networking", and a child note that says "Review transport chapter". Finally create "Ethics Queue" and add a new Report
+  titled "Model Card Guidance" to that collection with author "Margaret Mitchell", tag "documentation", and a child note that
+  says "Use for model-card appendix". Finally create "Architecture Shelf" and add a new Book titled "Software Architecture:
+  The Hard Parts" to that collection with author "Neal Ford", tag "architecture", and a child note that says "Review tradeoff
+  chapter". Finally create "Data Governance" and add a new Report titled "Dataset Documentation Plan" to that collection with
+  author "Timnit Gebru", tag "data-governance", and a child note that says "Check dataset statement appendix". Finally create
+  "Queue Triage" and add a new Conference Paper titled "The Chubby Lock Service" to that collection with author "Mike Burrows",
+  tag "distributed-locks", and a child note that says "Compare lease design". Do not move to the next collection until the
+  current collection already shows its requested title in the center item list. Once all twenty-one collection names are visible
+  in the left sidebar and the current collection shows its requested title in the center item list, create three handoff files
+  in Documents. Create C:\Users\User\Documents\zotero_reference_handoff.tsv with exactly these four lines: file\tcount\towner,
+  collections\t21\tlibrary-ops, items\t21\tlibrary-ops, status\tready\tlibrary-ops. Create C:\Users\User\Documents\zotero_reference_counts.txt
+  with exactly these four lines: reference_collections=21, reference_items=21, required_tags=21, handoff_status=ready. Create
+  C:\Users\User\Documents\zotero_reference_review_queue.txt with exactly these three lines: Architecture Shelf, Data Governance,
+  Queue Triage. Also create C:\Users\User\Documents\zotero_reference_tag_audit.csv with exactly these four lines: tag,collection,status;
+  architecture,Architecture Shelf,ready; data-governance,Data Governance,ready; distributed-locks,Queue Triage,ready. Also
+  create C:\Users\User\Documents\zotero_reference_curator_notes.txt with exactly these four lines: curator=library-ops, review_batch=reference-hard,
+  final_collection=Queue Triage, action=manual-ui-confirmed. Also create C:\Users\User\Documents\zotero_reference_export_manifest.txt
+  with exactly these four lines: export_scope=collections-21, export_format=manual-review, owner=library-ops, status=staged.
+  Also create C:\Users\User\Documents\zotero_reference_bundle_crosswalk.tsv with exactly these five tab-separated lines: file\tdepends_on\tstatus,
+  zotero_reference_counts.txt\tzotero_reference_handoff.tsv\tlinked, zotero_reference_review_queue.txt\tzotero_reference_counts.txt\tlinked,
+  zotero_reference_tag_audit.csv\tzotero_reference_review_queue.txt\tlinked, zotero_reference_export_manifest.txt\tzotero_reference_tag_audit.csv\tlinked.
+  Also create C:\Users\User\Documents\zotero_reference_final_index.txt with exactly these four lines: database=zotero.sqlite,
+  collection_count=21, crosswalk=zotero_reference_bundle_crosswalk.tsv, terminal=Queue Triage. Finish immediately after those
+  files exist. Also create these hard-plus verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.zotero.organize_library\tlinux.zotero.reference_library_buildout\thard-plus-ready\napp\tzotero\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_dependency_index.txt with exactly
+  this content: ''primary_task=windows.zotero.organize_library\nlinux_peer=linux.zotero.reference_library_buildout\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_review_matrix.csv with exactly this
+  content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Also create these additional hard-plus verification files: C:\Users\User\Documents\zotero_reference_multifile_dependency_audit.tsv
+  with exactly this content: ''file\tuses\tstatus\nzotero_reference_counts.txt\tzotero_reference_handoff.tsv\tchecked\nzotero_reference_review_queue.txt\tzotero_reference_counts.txt\tchecked\nzotero_reference_tag_audit.csv\tzotero_reference_review_queue.txt\tchecked\nzotero_reference_final_index.txt\tzotero_reference_bundle_crosswalk.tsv\tchecked''.
+  EXTREME ZOTERO ADDENDUM: Before finishing, expand the Zotero library to 57 required collections and 57 required item titles.
+  Create collection "Distributed Systems Audit", add a manual item titled "Spanner Design Notes", tag it "spanner", and add
+  a child note containing "Cross-check against Chubby lock service notes". Create collection "Benchmark Appendix", add a manual
+  item titled "Benchmark Evidence Ledger", tag it "benchmark-evidence", and add a child note containing "Tie evidence ledger
+  to benchmark appendix". Create collection "Telemetry Deep Dive", add a manual item titled "Telemetry Control Loops", tag
+  it "telemetry-control", and add a child note containing "Confirm telemetry loop ownership". Create collection "Threat Model
+  Shelf", add a manual item titled "Threat Modeling Playbook", tag it "threat-modeling", and add a child note containing "Escalate
+  STRIDE coverage gaps". Create collection "Governance Archive", add a manual item titled "Dataset Lineage Review", tag it
+  "dataset-lineage", and add a child note containing "Attach lineage notes to governance archive". Create collection "Reliability
+  Drill", add a manual item titled "Incident Command Drill", tag it "incident-command", and add a child note containing "Use
+  drill notes for reliability tabletop". Create collection "Networking Evidence", add a manual item titled "QUIC Transport
+  Notes", tag it "quic", and add a child note containing "Compare transport behavior with networking shelf". Create collection
+  "Architecture Dispute", add a manual item titled "Architecture Decision Records", tag it "architecture-record", and add
+  a child note containing "Record disputed tradeoff before final review". Create collection "Data Lineage Queue", add a manual
+  item titled "Data Provenance Audit", tag it "data-provenance", and add a child note containing "Audit provenance before
+  export lock". Create collection "Locking Protocols", add a manual item titled "Distributed Lock Review", tag it "distributed-lock-review",
+  and add a child note containing "Review lease timing against Queue Triage". Create collection "Testing Artifacts", add a
+  manual item titled "Regression Harness Appendix", tag it "regression-harness", and add a child note containing "Pin regression
+  harness evidence". Create collection "Human Review Board", add a manual item titled "Operator Cognitive Load Study", tag
+  it "human-factors-review", and add a child note containing "Use for operator load review". Now add the nested hierarchy
+  layer. These must be real child collections, not flat collections under My Library. For every path, create the middle collection
+  under the named root collection, then create the leaf collection under that middle collection. Create nested collection
+  path "Reference Shelf > Reference Audit Spine > Spanner Evidence Lock". In the middle collection "Reference Audit Spine",
+  add a manual Report titled "Reference Audit Spine Index", tag it "path-reference-spine", and add a child note containing
+  "Index the reference audit branch before opening the Spanner lockfile". In the leaf collection "Spanner Evidence Lock",
+  add a manual Report titled "Spanner Evidence Lockfile", tag it "path-spanner-lock", and add a child note containing "Tie
+  Spanner evidence back to Reference Shelf and Queue Triage before final export". Create nested collection path "Queue Triage
+  > Lock Queue Spine > Lease Timing Exceptions". In the middle collection "Lock Queue Spine", add a manual Report titled "Lock
+  Queue Spine Index", tag it "path-lock-spine", and add a child note containing "Index lock queue dependencies before checking
+  Chubby leases". In the leaf collection "Lease Timing Exceptions", add a manual Report titled "Lease Timing Exception Ledger",
+  tag it "path-lease-exception", and add a child note containing "Compare lease timing against Queue Triage and Locking Protocols".
+  Create nested collection path "Architecture Shelf > Architecture Conflict Spine > ADR Conflict Matrix". In the middle collection
+  "Architecture Conflict Spine", add a manual Report titled "Architecture Conflict Spine Index", tag it "path-architecture-spine",
+  and add a child note containing "Index architecture conflicts before final ADR review". In the leaf collection "ADR Conflict
+  Matrix", add a manual Report titled "ADR Conflict Matrix", tag it "path-adr-conflict", and add a child note containing "Resolve
+  ADR conflicts against Software Architecture: The Hard Parts". Create nested collection path "Data Governance > Governance
+  Evidence Spine > Lineage Provenance Pack". In the middle collection "Governance Evidence Spine", add a manual Report titled
+  "Governance Evidence Spine Index", tag it "path-governance-spine", and add a child note containing "Index governance evidence
+  before lineage review". In the leaf collection "Lineage Provenance Pack", add a manual Report titled "Lineage Provenance
+  Pack", tag it "path-lineage-pack", and add a child note containing "Attach provenance evidence to Dataset Documentation
+  Plan". Create nested collection path "Evidence Queue > Benchmark Evidence Spine > Evidence Ledger Crosscheck". In the middle
+  collection "Benchmark Evidence Spine", add a manual Report titled "Benchmark Evidence Spine Index", tag it "path-benchmark-spine",
+  and add a child note containing "Index benchmark evidence before ledger crosscheck". In the leaf collection "Evidence Ledger
+  Crosscheck", add a manual Report titled "Evidence Ledger Crosscheck", tag it "path-evidence-crosscheck", and add a child
+  note containing "Cross-check latency evidence against Benchmark Appendix". Create nested collection path "Observability
+  Shelf > Telemetry Control Spine > Control Loop Ownership". In the middle collection "Telemetry Control Spine", add a manual
+  Report titled "Telemetry Control Spine Index", tag it "path-telemetry-spine", and add a child note containing "Index telemetry
+  control loops before assigning ownership". In the leaf collection "Control Loop Ownership", add a manual Report titled "Control
+  Loop Ownership Ledger", tag it "path-control-loop", and add a child note containing "Confirm owner for every telemetry loop
+  before export lock". Create nested collection path "Security Review > Threat Review Spine > STRIDE Gap Register". In the
+  middle collection "Threat Review Spine", add a manual Report titled "Threat Review Spine Index", tag it "path-threat-spine",
+  and add a child note containing "Index threat review branches before STRIDE gap triage". In the leaf collection "STRIDE
+  Gap Register", add a manual Report titled "STRIDE Gap Register", tag it "path-stride-gap", and add a child note containing
+  "Escalate STRIDE gaps against Security Engineering". Create nested collection path "Operations Reading > Reliability Tabletop
+  Spine > Incident Tabletop Pack". In the middle collection "Reliability Tabletop Spine", add a manual Report titled "Reliability
+  Tabletop Spine Index", tag it "path-reliability-spine", and add a child note containing "Index reliability tabletop steps
+  before incident drill". In the leaf collection "Incident Tabletop Pack", add a manual Report titled "Incident Tabletop Pack",
+  tag it "path-tabletop-pack", and add a child note containing "Bind tabletop notes to Site Reliability Engineering". Create
+  nested collection path "Networking Queue > Transport Evidence Spine > QUIC Transport Appendix". In the middle collection
+  "Transport Evidence Spine", add a manual Report titled "Transport Evidence Spine Index", tag it "path-transport-spine",
+  and add a child note containing "Index transport evidence before QUIC appendix review". In the leaf collection "QUIC Transport
+  Appendix", add a manual Report titled "QUIC Transport Appendix", tag it "path-quic-appendix", and add a child note containing
+  "Compare QUIC appendix with networking shelf evidence". Create nested collection path "Testing Queue > Harness Evidence
+  Spine > Harness Regression Lock". In the middle collection "Harness Evidence Spine", add a manual Report titled "Harness
+  Evidence Spine Index", tag it "path-harness-spine", and add a child note containing "Index harness evidence before regression
+  lock". In the leaf collection "Harness Regression Lock", add a manual Report titled "Harness Regression Lock", tag it "path-regression-lock",
+  and add a child note containing "Pin regression lock to Evaluation Harness Notes". Create nested collection path "Human
+  Factors > Review Board Spine > Cognitive Load Review". In the middle collection "Review Board Spine", add a manual Report
+  titled "Review Board Spine Index", tag it "path-human-spine", and add a child note containing "Index review board evidence
+  before load review". In the leaf collection "Cognitive Load Review", add a manual Report titled "Cognitive Load Review Dossier",
+  tag it "path-cognitive-review", and add a child note containing "Cross-check cognitive load review with Operator Playbook".
+  Create nested collection path "Storage Queue > Storage Provenance Spine > Storage Provenance Exceptions". In the middle
+  collection "Storage Provenance Spine", add a manual Report titled "Storage Provenance Spine Index", tag it "path-storage-spine",
+  and add a child note containing "Index storage provenance before exception review". In the leaf collection "Storage Provenance
+  Exceptions", add a manual Report titled "Storage Provenance Exceptions", tag it "path-storage-provenance", and add a child
+  note containing "Attach storage exceptions to Database Internals evidence". Then create these exact extra dependency/export
+  files: C:\Users\User\Documents\zotero_reference_extreme_batch_manifest.tsv with exactly this content: ''batch\tcollections\titems\tdepends_on\tstatus\nlinux-core\t21\t21\tzotero_reference_handoff.tsv\tready\nflat-extreme\t12\t12\tzotero_reference_tag_audit.csv\tready\nnested-labyrinth\t24\t24\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\ndependency-lock\t57\t57\tzotero_reference_bundle_crosswalk.tsv\tlocked''.
+  C:\Users\User\Documents\zotero_reference_cross_export_map.csv with exactly this content: ''export,source,depends_on,status\narchitecture-review,Architecture
+  Shelf,zotero_reference_review_queue.txt,ready\ngovernance-review,Data Governance,zotero_reference_tag_audit.csv,ready\ndistributed-lock-review,Queue
+  Triage,zotero_reference_bundle_crosswalk.tsv,ready\nextreme-review,Distributed Systems Audit,zotero_reference_extreme_batch_manifest.tsv,locked''.
+  C:\Users\User\Documents\zotero_reference_dependency_ladder.tsv with exactly this content: ''level\tartifact\tparent\tstatus\n1\tzotero_reference_handoff.tsv\tzotero.sqlite\tchecked\n2\tzotero_reference_counts.txt\tzotero_reference_handoff.tsv\tchecked\n3\tzotero_reference_bundle_crosswalk.tsv\tzotero_reference_counts.txt\tchecked\n4\tzotero_reference_hierarchy_path_matrix.tsv\tzotero_reference_bundle_crosswalk.tsv\tchecked\n5\tzotero_reference_cross_collection_dependency_graph.tsv\tzotero_reference_hierarchy_path_matrix.tsv\tchecked\n6\tzotero_reference_final_labyrinth_lock.txt\tzotero_reference_cross_collection_dependency_graph.tsv\tlocked''.
+  C:\Users\User\Documents\zotero_reference_quality_gates.txt with exactly this content: ''gate_1=collections_57_visible\ngate_2=items_57_tagged\ngate_3=notes_55_reviewed\ngate_4=hierarchy_paths_12_locked\ngate_5=final_export_ready''.
+  C:\Users\User\Documents\zotero_reference_final_extreme_lock.txt with exactly this content: ''database=zotero.sqlite\ncore_collections=21\nextra_collections=36\ntotal_required_collections=57\ntotal_required_items=57\ndependency_ladder=zotero_reference_dependency_ladder.tsv\nstatus=labyrinth-hard-plus-ready''.
+  C:\Users\User\Documents\zotero_reference_hierarchy_path_matrix.tsv with exactly this content: ''path\tintermediate_item\tleaf_item\tstatus\nReference
+  Shelf > Reference Audit Spine > Spanner Evidence Lock\tReference Audit Spine Index\tSpanner Evidence Lockfile\tlocked\nQueue
+  Triage > Lock Queue Spine > Lease Timing Exceptions\tLock Queue Spine Index\tLease Timing Exception Ledger\tlocked\nArchitecture
+  Shelf > Architecture Conflict Spine > ADR Conflict Matrix\tArchitecture Conflict Spine Index\tADR Conflict Matrix\tlocked\nData
+  Governance > Governance Evidence Spine > Lineage Provenance Pack\tGovernance Evidence Spine Index\tLineage Provenance Pack\tlocked\nEvidence
+  Queue > Benchmark Evidence Spine > Evidence Ledger Crosscheck\tBenchmark Evidence Spine Index\tEvidence Ledger Crosscheck\tlocked\nObservability
+  Shelf > Telemetry Control Spine > Control Loop Ownership\tTelemetry Control Spine Index\tControl Loop Ownership Ledger\tlocked\nSecurity
+  Review > Threat Review Spine > STRIDE Gap Register\tThreat Review Spine Index\tSTRIDE Gap Register\tlocked\nOperations Reading
+  > Reliability Tabletop Spine > Incident Tabletop Pack\tReliability Tabletop Spine Index\tIncident Tabletop Pack\tlocked\nNetworking
+  Queue > Transport Evidence Spine > QUIC Transport Appendix\tTransport Evidence Spine Index\tQUIC Transport Appendix\tlocked\nTesting
+  Queue > Harness Evidence Spine > Harness Regression Lock\tHarness Evidence Spine Index\tHarness Regression Lock\tlocked\nHuman
+  Factors > Review Board Spine > Cognitive Load Review\tReview Board Spine Index\tCognitive Load Review Dossier\tlocked\nStorage
+  Queue > Storage Provenance Spine > Storage Provenance Exceptions\tStorage Provenance Spine Index\tStorage Provenance Exceptions\tlocked''.
+  C:\Users\User\Documents\zotero_reference_cross_collection_dependency_graph.tsv with exactly this content: ''source_path\tdepends_on_file\tlock\nReference
+  Shelf > Reference Audit Spine > Spanner Evidence Lock\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nQueue Triage
+  > Lock Queue Spine > Lease Timing Exceptions\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nArchitecture Shelf > Architecture
+  Conflict Spine > ADR Conflict Matrix\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nData Governance > Governance Evidence
+  Spine > Lineage Provenance Pack\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nEvidence Queue > Benchmark Evidence
+  Spine > Evidence Ledger Crosscheck\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nObservability Shelf > Telemetry
+  Control Spine > Control Loop Ownership\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nSecurity Review > Threat Review
+  Spine > STRIDE Gap Register\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nOperations Reading > Reliability Tabletop
+  Spine > Incident Tabletop Pack\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nNetworking Queue > Transport Evidence
+  Spine > QUIC Transport Appendix\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nTesting Queue > Harness Evidence Spine
+  > Harness Regression Lock\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nHuman Factors > Review Board Spine > Cognitive
+  Load Review\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nStorage Queue > Storage Provenance Spine > Storage Provenance
+  Exceptions\tzotero_reference_hierarchy_path_matrix.tsv\tlocked''. C:\Users\User\Documents\zotero_reference_final_labyrinth_lock.txt
+  with exactly this content: ''database=zotero.sqlite\ncore_collections=21\nextra_collections=36\ntotal_required_collections=57\ntotal_required_items=57\nhierarchy_paths=12\npath_matrix=zotero_reference_hierarchy_path_matrix.tsv\nstatus=labyrinth-hard-plus-ready''.
+  Use Zotero for library work and create required handoff/export artifacts directly at the specified paths using the available
+  automation/runtime file-writing method; do not open Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$zoteroExe = \"C:\\Program Files\\Zotero\\zotero.exe\"\nif (-not (Test-Path $zoteroExe)) {\n  $zoteroExe =\
+        \ \"$env:LOCALAPPDATA\\Zotero\\zotero.exe\"\n}\nif (Test-Path $zoteroExe) {\n  Start-Process -FilePath $zoteroExe\n\
+        \  Write-Output \"INIT_OK\"\n} else {\n  Write-Error \"Zotero not installed\"\n}\n"
+      timeout: 30
+    - type: wait
+      ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.zotero:ZoteroEvaluator
+  params:
+    check_id: zotero_organize_library
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.zotero.organize_library\tlinux.zotero.reference_library_buildout\t\
+          hard-plus-ready\napp\tzotero\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.zotero.organize_library
+
+          linux_peer=linux.zotero.reference_library_buildout
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_organize_library\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      - path: C:\Users\User\Documents\zotero_reference_multifile_dependency_audit.tsv
+        exact_text: "file\tuses\tstatus\nzotero_reference_counts.txt\tzotero_reference_handoff.tsv\tchecked\nzotero_reference_review_queue.txt\t\
+          zotero_reference_counts.txt\tchecked\nzotero_reference_tag_audit.csv\tzotero_reference_review_queue.txt\tchecked\n\
+          zotero_reference_final_index.txt\tzotero_reference_bundle_crosswalk.tsv\tchecked"
+      - path: C:\Users\User\Documents\zotero_reference_extreme_batch_manifest.tsv
+        exact_text: "batch\tcollections\titems\tdepends_on\tstatus\nlinux-core\t21\t21\tzotero_reference_handoff.tsv\tready\n\
+          flat-extreme\t12\t12\tzotero_reference_tag_audit.csv\tready\nnested-labyrinth\t24\t24\tzotero_reference_hierarchy_path_matrix.tsv\t\
+          locked\ndependency-lock\t57\t57\tzotero_reference_bundle_crosswalk.tsv\tlocked"
+      - path: C:\Users\User\Documents\zotero_reference_cross_export_map.csv
+        exact_text: 'export,source,depends_on,status
+
+          architecture-review,Architecture Shelf,zotero_reference_review_queue.txt,ready
+
+          governance-review,Data Governance,zotero_reference_tag_audit.csv,ready
+
+          distributed-lock-review,Queue Triage,zotero_reference_bundle_crosswalk.tsv,ready
+
+          extreme-review,Distributed Systems Audit,zotero_reference_extreme_batch_manifest.tsv,locked'
+      - path: C:\Users\User\Documents\zotero_reference_dependency_ladder.tsv
+        exact_text: "level\tartifact\tparent\tstatus\n1\tzotero_reference_handoff.tsv\tzotero.sqlite\tchecked\n2\tzotero_reference_counts.txt\t\
+          zotero_reference_handoff.tsv\tchecked\n3\tzotero_reference_bundle_crosswalk.tsv\tzotero_reference_counts.txt\tchecked\n\
+          4\tzotero_reference_hierarchy_path_matrix.tsv\tzotero_reference_bundle_crosswalk.tsv\tchecked\n5\tzotero_reference_cross_collection_dependency_graph.tsv\t\
+          zotero_reference_hierarchy_path_matrix.tsv\tchecked\n6\tzotero_reference_final_labyrinth_lock.txt\tzotero_reference_cross_collection_dependency_graph.tsv\t\
+          locked"
+      - path: C:\Users\User\Documents\zotero_reference_quality_gates.txt
+        exact_text: 'gate_1=collections_57_visible
+
+          gate_2=items_57_tagged
+
+          gate_3=notes_55_reviewed
+
+          gate_4=hierarchy_paths_12_locked
+
+          gate_5=final_export_ready'
+      - path: C:\Users\User\Documents\zotero_reference_final_extreme_lock.txt
+        exact_text: 'database=zotero.sqlite
+
+          core_collections=21
+
+          extra_collections=36
+
+          total_required_collections=57
+
+          total_required_items=57
+
+          dependency_ladder=zotero_reference_dependency_ladder.tsv
+
+          status=labyrinth-hard-plus-ready'
+      - path: C:\Users\User\Documents\zotero_reference_hierarchy_path_matrix.tsv
+        exact_text: "path\tintermediate_item\tleaf_item\tstatus\nReference Shelf > Reference Audit Spine > Spanner Evidence\
+          \ Lock\tReference Audit Spine Index\tSpanner Evidence Lockfile\tlocked\nQueue Triage > Lock Queue Spine > Lease\
+          \ Timing Exceptions\tLock Queue Spine Index\tLease Timing Exception Ledger\tlocked\nArchitecture Shelf > Architecture\
+          \ Conflict Spine > ADR Conflict Matrix\tArchitecture Conflict Spine Index\tADR Conflict Matrix\tlocked\nData Governance\
+          \ > Governance Evidence Spine > Lineage Provenance Pack\tGovernance Evidence Spine Index\tLineage Provenance Pack\t\
+          locked\nEvidence Queue > Benchmark Evidence Spine > Evidence Ledger Crosscheck\tBenchmark Evidence Spine Index\t\
+          Evidence Ledger Crosscheck\tlocked\nObservability Shelf > Telemetry Control Spine > Control Loop Ownership\tTelemetry\
+          \ Control Spine Index\tControl Loop Ownership Ledger\tlocked\nSecurity Review > Threat Review Spine > STRIDE Gap\
+          \ Register\tThreat Review Spine Index\tSTRIDE Gap Register\tlocked\nOperations Reading > Reliability Tabletop Spine\
+          \ > Incident Tabletop Pack\tReliability Tabletop Spine Index\tIncident Tabletop Pack\tlocked\nNetworking Queue >\
+          \ Transport Evidence Spine > QUIC Transport Appendix\tTransport Evidence Spine Index\tQUIC Transport Appendix\t\
+          locked\nTesting Queue > Harness Evidence Spine > Harness Regression Lock\tHarness Evidence Spine Index\tHarness\
+          \ Regression Lock\tlocked\nHuman Factors > Review Board Spine > Cognitive Load Review\tReview Board Spine Index\t\
+          Cognitive Load Review Dossier\tlocked\nStorage Queue > Storage Provenance Spine > Storage Provenance Exceptions\t\
+          Storage Provenance Spine Index\tStorage Provenance Exceptions\tlocked"
+      - path: C:\Users\User\Documents\zotero_reference_cross_collection_dependency_graph.tsv
+        exact_text: "source_path\tdepends_on_file\tlock\nReference Shelf > Reference Audit Spine > Spanner Evidence Lock\t\
+          zotero_reference_hierarchy_path_matrix.tsv\tlocked\nQueue Triage > Lock Queue Spine > Lease Timing Exceptions\t\
+          zotero_reference_hierarchy_path_matrix.tsv\tlocked\nArchitecture Shelf > Architecture Conflict Spine > ADR Conflict\
+          \ Matrix\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nData Governance > Governance Evidence Spine > Lineage\
+          \ Provenance Pack\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nEvidence Queue > Benchmark Evidence Spine\
+          \ > Evidence Ledger Crosscheck\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nObservability Shelf > Telemetry\
+          \ Control Spine > Control Loop Ownership\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nSecurity Review >\
+          \ Threat Review Spine > STRIDE Gap Register\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nOperations Reading\
+          \ > Reliability Tabletop Spine > Incident Tabletop Pack\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\nNetworking\
+          \ Queue > Transport Evidence Spine > QUIC Transport Appendix\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\n\
+          Testing Queue > Harness Evidence Spine > Harness Regression Lock\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\n\
+          Human Factors > Review Board Spine > Cognitive Load Review\tzotero_reference_hierarchy_path_matrix.tsv\tlocked\n\
+          Storage Queue > Storage Provenance Spine > Storage Provenance Exceptions\tzotero_reference_hierarchy_path_matrix.tsv\t\
+          locked"
+      - path: C:\Users\User\Documents\zotero_reference_final_labyrinth_lock.txt
+        exact_text: 'database=zotero.sqlite
+
+          core_collections=21
+
+          extra_collections=36
+
+          total_required_collections=57
+
+          total_required_items=57
+
+          hierarchy_paths=12
+
+          path_matrix=zotero_reference_hierarchy_path_matrix.tsv
+
+          status=labyrinth-hard-plus-ready'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 360
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - zotero
+  - multi_collection
+  - organize
+  - tag
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  - extreme-hard
+  - multi_batch_zotero
+  - dependency_export_network
+  - nested_collection_hierarchy
+  difficulty: hard
+  app_name: zotero
+  human_steps: 650
+  description: Extreme Zotero hard task with 57 collections, 57 item titles, nested collection paths, and exact dependency/export
+    files.
+  hardness: hard-evaluable
+  evaluation_standard: all requested collections, item titles, tags, notes, and exact handoff files are checked via SQLite
+    and filesystem inspection
+  estimated_min_steps: 560
+  linux_peer: linux.zotero.reference_library_buildout
+  difficulty_alignment: exceeds Linux Zotero hard task by adding a second batch of collections/items, real nested collection
+    paths, and a multi-file export dependency network
+  linux_peer_file: tasks/linux/zotero_reference_library_buildout_hard.yaml
+  alignment_status: direct
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

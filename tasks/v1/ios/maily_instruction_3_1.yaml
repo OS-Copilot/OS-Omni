@@ -6,19 +6,23 @@ instruction: |-
 
   The fifth sent message is a forward of the email with the subject “AlphaBulkA” to “planbox@mail.test” with the body text “Batch A is kept” and the subject line modified by appending “ . batch-1” to the end of the original subject. The sixth is a new email addressed to “benchrecv@example.test” with the subject “Alpha gate midway” and the body “Two checks passed”. The seventh is a reply to the email with the subject “AlphaShare0708” containing the body text “Share is approved.” and attaching the photo thumbnail of a uniformed person holding a gun located in the top middle of the photo grid. The eighth is a forward of the email with the subject “AlphaBulkB” to “planbox@mail.test” with the body text “Batch B is kept.” and the subject line modified by appending “ . batch-b” to the end of the original subject. The ninth is a reply to the email with the subject “AlphaTrash0708” containing the body text “Purge is deferred.”. The tenth is a new email addressed to “planbox@mail.test” with the subject “Alpha record index” and the body “Proofs are filed”. All ten resulting sent messages must be recorded in the exact order specified above.
 init:
-  initializer_id: evaluators.cua_review.initializers.ios.maily_open_app:MailyOpenAppInitializer
+  initializer_id: initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer
   params:
+    task_id: ios.maily.instruction_3_1
     bundle_id: de.enough.maily
-    snapshot_name: osomni-opendriver-ios-source-fixed-promax
-    initial_state_note: Maily、FSNotes、照片资源和 lightweight-mail 基线数据均来自稳定源；initializer 只启动并验证应用，不写入业务数据。
+    sender_password_env: MAILY_BENCH_SENDER_PASSWORD
+    purge_greenmail: true
+    greenmail_reset_confirmed: true
+    verify_seeds: true
+    api_base_url: http://hanqideMacBook-pro.local:8081
+    smtp_host: hanqideMacBook-pro.local
+    smtp_port: 3025
     wait_ms: 800
     return_home_after_init: false
-    validate_foreground: true
-    require_nonempty_ui_tree: true
 evaluation:
   evaluator_id: evaluators.ios.maily_instruction_3_1:MailyInstruction31StateEvaluator
   params:
-    api_base_url: http://127.0.0.1:8081
+    api_base_url: http://hanqideMacBook-pro.local:8081
     timeout_seconds: 5
     poll_interval_seconds: 1
     bundle_id: de.enough.maily

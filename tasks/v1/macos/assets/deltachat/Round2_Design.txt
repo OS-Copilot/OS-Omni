@@ -1,0 +1,11 @@
+Round 2 Design Review
+
+Review scope: navigation and search behavior for the migration workspace.
+
+Checklist:
+- Keep the primary navigation labels stable across desktop and mobile.
+- Make message search available from the conversation list and conversation view.
+- Preserve the selected conversation when a search result is opened and closed.
+- Verify keyboard focus order and visible focus state before release.
+
+Frontend release gate: nav_bar_search

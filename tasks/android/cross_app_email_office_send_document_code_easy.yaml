@@ -1,0 +1,40 @@
+task_id: android.email_office.send_document_code_easy
+platform: android
+instruction: 'Open office_code.md in Markor, read the code, then use K-9 Mail (not Gmail) to email benchrecv@example.test with subject BMK Office Code and body exactly: Office code: <the code from the note>.'
+init:
+  initializer_id: initializers.android.email_office_cross_app:EmailOfficeCrossAppInitializer
+  params:
+    filename: "office_code.md"
+    document_format: "markdown"
+    open_app: "markor"
+    document_lines:
+      - "Office handoff code"
+      - "Code: OE-481"
+    seed_messages: []
+    reset_app_data: true
+    wait_ms: 1800
+evaluation:
+  evaluator_id: evaluators.android.email_office_cross_app:EmailOfficeCrossAppEvaluator
+  params:
+    document_format: "markdown"
+    expected_emails:
+      - recipient_email: "benchrecv@example.test"
+        sender_email: "benchsender@example.test"
+        subject: "BMK Office Code"
+        body_contains:
+          - "Office code: OE-481"
+    email_timeout_seconds: 20
+    email_poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [email, office, markor, k9, greenmail, cross_app, easy, benchmark]
+  app: "K-9 Mail + Markor"
+  app_bundle_id: com.fsck.k9
+  description: "Read one short code from a Markor note and send it through K-9 Mail."
+  difficulty_basis: "Human path is under 10 main actions when the document is already open: read the code, switch to mail, compose, fill recipient/subject/body, and send."
+  prerequisites:
+    - "K-9 Mail is configured against GreenMail using adb reverse for ports 3143 and 3025."
+    - "Markor is installed on the emulator."
+  difficulty: easy

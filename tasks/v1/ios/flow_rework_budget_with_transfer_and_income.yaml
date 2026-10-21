@@ -61,6 +61,7 @@ init:
           description: "Keep this one unchanged"
           day_offset: -1
     wait_ms: 1200
+    return_home_after_init: false
 evaluation:
   evaluator_id: evaluators.ios.flow_state:FlowStateEvaluator
   params:

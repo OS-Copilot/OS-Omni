@@ -152,57 +152,12 @@ class MapsInitializer(BaseInitializer):
             end tell
             APPLESCRIPT
 
+            # Prompt dismissal is handled below through the runtime's current
+            # accessibility tree. Repeatedly scanning every button in Maps,
+            # CoreLocationAgent, and UserNotificationCenter here can block
+            # AppleScript for minutes even when no prompt exists.
             if [ "$DISMISS_PROMPTS" -eq 1 ]; then
-              osascript <<'APPLESCRIPT' >/dev/null 2>&1 || true
-            tell application "Maps" to activate
-            tell application "System Events"
-              set promptButtons to {{"Don't Allow", "Don’t Allow", "Not Now", "Continue", "Allow", "不允许", "以后", "稍后", "继续", "允许"}}
-              set promptProcesses to {{"Maps", "CoreLocationAgent", "UserNotificationCenter"}}
-              repeat 12 times
-                repeat with processName in promptProcesses
-                  try
-                    if exists process (processName as text) then
-                      tell process (processName as text)
-                        repeat with buttonName in promptButtons
-                          try
-                            if exists window 1 then
-                              if exists button (buttonName as text) of window 1 then
-                                click button (buttonName as text) of window 1
-                                delay 0.5
-                              end if
-                            end if
-                          end try
-                          try
-                            if exists window 1 then
-                              set matchingButtons to (buttons of entire contents of window 1 whose name is (buttonName as text))
-                              if (count of matchingButtons) > 0 then
-                                click item 1 of matchingButtons
-                                delay 0.5
-                              end if
-                            end if
-                          end try
-                          try
-                            if exists window 1 then
-                              if exists sheet 1 of window 1 then
-                                if exists button (buttonName as text) of sheet 1 of window 1 then
-                                  click button (buttonName as text) of sheet 1 of window 1
-                                  delay 0.5
-                                end if
-                              end if
-                            end if
-                          end try
-                        end repeat
-                      end tell
-                    end if
-                  end try
-                end repeat
-                try
-                  tell application "Maps" to activate
-                end try
-                delay 0.3
-              end repeat
-            end tell
-            APPLESCRIPT
+              /usr/bin/osascript -e 'tell application "Maps" to activate' >/dev/null 2>&1 || true
             fi
 
             if [ -n "$INITIAL_URL" ]; then
@@ -250,6 +205,8 @@ class MapsInitializer(BaseInitializer):
                 for node in ui_nodes
                 if isinstance(node, Mapping)
             )
+            if not prompt_visible:
+                return
             for text in prompt_texts:
                 if not any(str(node.get("text") or "").strip() == text for node in ui_nodes if isinstance(node, Mapping)):
                     continue

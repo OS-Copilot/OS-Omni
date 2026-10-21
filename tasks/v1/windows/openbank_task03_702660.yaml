@@ -10,7 +10,7 @@ instruction: |-
 
   A new recipient must be saved with the name "Caleb Wong", the nickname "Research", the bank "Metro Bank", the routing number "021000021", and the account number "8642073159". A new transfer must be submitted from the account "Rainy Day Savings ...9140" to "Caleb Wong" for an amount of "149.75" on the date "2026-06-06" with the memo "T3 research".
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.openbank_rebuilt:OpenBankRebuiltInitializer
   params:
     app_name: OpenBank
     wait_ms: 1200

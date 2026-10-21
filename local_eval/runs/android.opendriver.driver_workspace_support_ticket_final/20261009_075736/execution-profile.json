@@ -1,0 +1,5 @@
+{
+  "model_id": "deepseek_flash",
+  "reasoning_effort": "none",
+  "max_steps": 160
+}

@@ -1,0 +1,58 @@
+task_id: ios.openshop.oracle.add_coffee_to_cart
+platform: ios
+instruction: "In OpenShop, search for coffee, find Mountain Isle Pour-Over Coffee 20 Pack, and add exactly one unit of it to the cart."
+init:
+  initializer_id: initializers.ios.openshop_seed_open_app:OpenShopSeedOpenAppInitializer
+  params:
+    bundle_id: com.killt.openshop
+    login_session: false
+    cart_items: []
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.openshop_state:OpenShopStateEvaluator
+  params:
+    bundle_id: com.killt.openshop
+    present_cart_items:
+      - product_id: p1005
+        quantity: 1
+    cart_size: 1
+    order_count: 0
+    absent_cart_product_ids:
+      - p1001
+      - p1002
+      - p1003
+      - p1004
+      - p1006
+    timeout_seconds: 10
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [shopping, ios, openshop, cart, search, simple, benchmark, oracle]
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  description: "Oracle state-seed task for ios.openshop.add_coffee_to_cart."
+  prerequisites:
+    - "OpenShop is installed on the simulator."
+  oracle_for: ios.openshop.add_coffee_to_cart
+  oracle_actions:
+    - type: seed_state
+      store: openshop
+      params:
+        bundle_id: com.killt.openshop
+        present_cart_items:
+          - product_id: p1005
+            quantity: 1
+        cart_size: 1
+        order_count: 0
+        absent_cart_product_ids:
+          - p1001
+          - p1002
+          - p1003
+          - p1004
+          - p1006
+        timeout_seconds: 10
+        poll_interval_seconds: 0.5
+    - type: success
+      message: Oracle state seeded.

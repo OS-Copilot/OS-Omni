@@ -1,0 +1,2092 @@
+{
+  "task_id": "android.deltachat.delivery_claim_record_1787390185793_240468",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T12:13:02.184364+08:00",
+  "ended_at": "2026-10-09T12:14:33.904768+08:00",
+  "steps_taken": 14,
+  "latency_ms": 91720.404,
+  "episode_result": {
+    "status": "FAIL",
+    "terminal_reason": "fail_llm",
+    "execution_message": "Model declared task infeasible",
+    "execution_valid": true,
+    "message": "Delta Chat durable state does not match the requested outcome"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Verified/reconstructed DeltaChat source inputs and starting foreground",
+    "metadata": {
+      "original_initializer": "evaluators.cua_review.initializers.android.deltachat_delivery_claim_record_1787350552275_228752:DeltaChatDeliveryClaimRecord1787350552275228752Initializer",
+      "source_input_repair": true,
+      "reconstructed_media": {
+        "provenance": "Generated reconstruction with built-in imagegen; not original benchmark photos",
+        "media_index_verified": true,
+        "photos": [
+          {
+            "scene": "delivery_livingroom",
+            "path": "/sdcard/Pictures/OSOmniInputs/source_01.png",
+            "sha256": "1a9a99b04f169b988adebc7c295b1339af9a2282fe952211752e02dc9f363c89"
+          }
+        ]
+      },
+      "initial_foreground_repair": "Markor; instruction begins with its red new-note button"
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "Delta Chat durable state does not match the requested outcome",
+    "metadata": {
+      "read_only": true,
+      "app_package": "chat.delta",
+      "checks": [
+        {
+          "name": "group_conversation_unique",
+          "passed": false,
+          "expected": {
+            "name": "Claim Review Cell",
+            "match_count": 1
+          },
+          "observed": {
+            "match_count": 0,
+            "ids": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        },
+        {
+          "name": "group_description_exact",
+          "passed": false,
+          "expected": "Delivery stock evidence",
+          "observed": {
+            "chat_name": null,
+            "message_texts": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        },
+        {
+          "name": "message_Claim review opened",
+          "passed": false,
+          "expected": {
+            "text": "Claim review opened"
+          },
+          "observed": {
+            "match_count": 0,
+            "ids": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        },
+        {
+          "name": "message_Two sources captured",
+          "passed": false,
+          "expected": {
+            "text": "Two sources captured"
+          },
+          "observed": {
+            "match_count": 0,
+            "ids": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        },
+        {
+          "name": "message_Claim record delivered",
+          "passed": false,
+          "expected": {
+            "text": "Claim record delivered"
+          },
+          "observed": {
+            "match_count": 0,
+            "ids": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        },
+        {
+          "name": "note_file_unique",
+          "passed": false,
+          "expected": {
+            "title": "Delivery claim record",
+            "match_count": 1
+          },
+          "observed": {
+            "match_count": 0,
+            "paths": []
+          },
+          "failure_reason": "durable value or cardinality mismatch"
+        }
+      ],
+      "failures": [
+        "group_conversation_unique",
+        "group_description_exact",
+        "message_Claim review opened",
+        "message_Two sources captured",
+        "message_Claim record delivered",
+        "note_file_unique"
+      ],
+      "expected_outcome": {
+        "group_name": "Claim Review Cell",
+        "group_description": "Delivery stock evidence",
+        "messages": [
+          "Claim review opened",
+          "Two sources captured",
+          "Claim record delivered"
+        ],
+        "note_title": "Delivery claim record",
+        "note_lines": [
+          "# Delivery claim record",
+          "Case: Apartment delivery",
+          "## Claim scope",
+          "Carrier: Liam route",
+          "## Evidence needed",
+          "- Doorway condition",
+          "## Resolution",
+          "Pending carrier response",
+          "Await replacement approval",
+          "Owner: Liam claims",
+          "## Collected findings",
+          "Finding owne: Claims desk",
+          "Evidence set is completer",
+          "Next step: Carrier decision",
+          "Owner: Claims desk"
+        ],
+        "require_archived": false
+      },
+      "chat_count": 70,
+      "message_count": 448,
+      "note_count": 4
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_bar_root",
+        "resource-id": "net.gsantner.markor:id/action_bar_root",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/main_content",
+        "resource-id": "net.gsantner.markor:id/main_content",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/appbar",
+        "resource-id": "net.gsantner.markor:id/appbar",
+        "class": "android.widget.LinearLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,275]",
+        "tap": {
+          "x": 540,
+          "y": 201
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/toolbar",
+        "resource-id": "net.gsantner.markor:id/toolbar",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,275]",
+        "tap": {
+          "x": 540,
+          "y": 201
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "> Documents",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[42,166][354,237]",
+        "tap": {
+          "x": 198,
+          "y": 201
+        },
+        "rect": {
+          "x": 42,
+          "y": 166,
+          "w": 312,
+          "h": 71
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "androidx.appcompat.widget.LinearLayoutCompat",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[450,128][1080,275]",
+        "tap": {
+          "x": 765,
+          "y": 201
+        },
+        "rect": {
+          "x": 450,
+          "y": 128,
+          "w": 630,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_undo",
+        "resource-id": "net.gsantner.markor:id/action_undo",
+        "class": "android.widget.Button",
+        "package": "net.gsantner.markor",
+        "content_description": "Undo",
+        "content-desc": "Undo",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "false",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[450,138][555,264]",
+        "tap": {
+          "x": 502,
+          "y": 201
+        },
+        "rect": {
+          "x": 450,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_redo",
+        "resource-id": "net.gsantner.markor:id/action_redo",
+        "class": "android.widget.Button",
+        "package": "net.gsantner.markor",
+        "content_description": "Redo",
+        "content-desc": "Redo",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "false",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[555,138][660,264]",
+        "tap": {
+          "x": 607,
+          "y": 201
+        },
+        "rect": {
+          "x": 555,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_save",
+        "resource-id": "net.gsantner.markor:id/action_save",
+        "class": "android.widget.Button",
+        "package": "net.gsantner.markor",
+        "content_description": "Save",
+        "content-desc": "Save",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "false",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[660,138][765,264]",
+        "tap": {
+          "x": 712,
+          "y": 201
+        },
+        "rect": {
+          "x": 660,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_preview",
+        "resource-id": "net.gsantner.markor:id/action_preview",
+        "class": "android.widget.Button",
+        "package": "net.gsantner.markor",
+        "content_description": "View Mode",
+        "content-desc": "View Mode",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[765,138][870,264]",
+        "tap": {
+          "x": 817,
+          "y": 201
+        },
+        "rect": {
+          "x": 765,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/action_search",
+        "resource-id": "net.gsantner.markor:id/action_search",
+        "class": "android.widget.Button",
+        "package": "net.gsantner.markor",
+        "content_description": "Search",
+        "content-desc": "Search",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[870,138][975,264]",
+        "tap": {
+          "x": 922,
+          "y": 201
+        },
+        "rect": {
+          "x": 870,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "5",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "More options",
+        "content-desc": "More options",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[975,138][1080,264]",
+        "tap": {
+          "x": 1027,
+          "y": 201
+        },
+        "rect": {
+          "x": 975,
+          "y": 138,
+          "w": 105,
+          "h": 126
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/main__view_pager_container",
+        "resource-id": "net.gsantner.markor:id/main__view_pager_container",
+        "class": "androidx.viewpager.widget.ViewPager",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1915
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "androidx.recyclerview.widget.RecyclerView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1915
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1915
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1915
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1915
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/document__fragment__edit__content_editor__scrolling_parent",
+        "resource-id": "net.gsantner.markor:id/document__fragment__edit__content_editor__scrolling_parent",
+        "class": "android.widget.ScrollView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2158]",
+        "tap": {
+          "x": 540,
+          "y": 1216
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1883
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/document__fragment__edit__editor_holder",
+        "resource-id": "net.gsantner.markor:id/document__fragment__edit__editor_holder",
+        "class": "android.widget.LinearLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2158]",
+        "tap": {
+          "x": 540,
+          "y": 1216
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1883
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/document__fragment__edit__highlighting_editor",
+        "resource-id": "net.gsantner.markor:id/document__fragment__edit__highlighting_editor",
+        "class": "android.widget.EditText",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,275][1080,2158]",
+        "tap": {
+          "x": 540,
+          "y": 1216
+        },
+        "rect": {
+          "x": 0,
+          "y": 275,
+          "w": 1080,
+          "h": 1883
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/document__fragment__edit__text_actions_bar__scrolling_parent",
+        "resource-id": "net.gsantner.markor:id/document__fragment__edit__text_actions_bar__scrolling_parent",
+        "class": "android.widget.HorizontalScrollView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2069][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 2129
+        },
+        "rect": {
+          "x": 0,
+          "y": 2069,
+          "w": 1080,
+          "h": 121
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/document__fragment__edit__text_actions_bar",
+        "resource-id": "net.gsantner.markor:id/document__fragment__edit__text_actions_bar",
+        "class": "android.widget.LinearLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2080][1080,2190]",
+        "tap": {
+          "x": 540,
+          "y": 2135
+        },
+        "rect": {
+          "x": 0,
+          "y": 2080,
+          "w": 1080,
+          "h": 110
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Ordered list",
+        "content-desc": "Ordered list",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2080][115,2185]",
+        "tap": {
+          "x": 57,
+          "y": 2132
+        },
+        "rect": {
+          "x": 0,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Rotate",
+        "content-desc": "Rotate",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[115,2080][230,2185]",
+        "tap": {
+          "x": 172,
+          "y": 2132
+        },
+        "rect": {
+          "x": 115,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Date and time",
+        "content-desc": "Date and time",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[230,2080][345,2185]",
+        "tap": {
+          "x": 287,
+          "y": 2132
+        },
+        "rect": {
+          "x": 230,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Special Key",
+        "content-desc": "Special Key",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[345,2080][460,2185]",
+        "tap": {
+          "x": 402,
+          "y": 2132
+        },
+        "rect": {
+          "x": 345,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Unordered list",
+        "content-desc": "Unordered list",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[460,2080][575,2185]",
+        "tap": {
+          "x": 517,
+          "y": 2132
+        },
+        "rect": {
+          "x": 460,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "5",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Inline code",
+        "content-desc": "Inline code",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[575,2080][690,2185]",
+        "tap": {
+          "x": 632,
+          "y": 2132
+        },
+        "rect": {
+          "x": 575,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "6",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Bold",
+        "content-desc": "Bold",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[690,2080][805,2185]",
+        "tap": {
+          "x": 747,
+          "y": 2132
+        },
+        "rect": {
+          "x": 690,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "7",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Heading 2",
+        "content-desc": "Heading 2",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[805,2080][920,2185]",
+        "tap": {
+          "x": 862,
+          "y": 2132
+        },
+        "rect": {
+          "x": 805,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "8",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Heading 1",
+        "content-desc": "Heading 1",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[920,2080][1035,2185]",
+        "tap": {
+          "x": 977,
+          "y": 2132
+        },
+        "rect": {
+          "x": 920,
+          "y": 2080,
+          "w": 115,
+          "h": 105
+        }
+      },
+      {
+        "index": "9",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "Horizontal line",
+        "content-desc": "Horizontal line",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "true",
+        "long-clickable": "true",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[1035,2080][1080,2185]",
+        "tap": {
+          "x": 1057,
+          "y": 2132
+        },
+        "rect": {
+          "x": 1035,
+          "y": 2080,
+          "w": 45,
+          "h": 105
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/bottom_navigation_bar",
+        "resource-id": "net.gsantner.markor:id/bottom_navigation_bar",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2190][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 2263
+        },
+        "rect": {
+          "x": 0,
+          "y": 2190,
+          "w": 1080,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2190][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 2263
+        },
+        "rect": {
+          "x": 0,
+          "y": 2190,
+          "w": 1080,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/nav_notebook",
+        "resource-id": "net.gsantner.markor:id/nav_notebook",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "Files",
+        "content-desc": "Files",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2190][270,2337]",
+        "tap": {
+          "x": 135,
+          "y": 2263
+        },
+        "rect": {
+          "x": 0,
+          "y": 2190,
+          "w": 270,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[96,2271][173,2337]",
+        "tap": {
+          "x": 134,
+          "y": 2304
+        },
+        "rect": {
+          "x": 96,
+          "y": 2271,
+          "w": 77,
+          "h": 66
+        }
+      },
+      {
+        "index": "0",
+        "text": "Files",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "class": "android.widget.TextView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[100,2277][168,2320]",
+        "tap": {
+          "x": 134,
+          "y": 2298
+        },
+        "rect": {
+          "x": 100,
+          "y": 2277,
+          "w": 68,
+          "h": 43
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[103,2211][166,2274]",
+        "tap": {
+          "x": 134,
+          "y": 2242
+        },
+        "rect": {
+          "x": 103,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[103,2211][166,2274]",
+        "tap": {
+          "x": 134,
+          "y": 2242
+        },
+        "rect": {
+          "x": 103,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/nav_todo",
+        "resource-id": "net.gsantner.markor:id/nav_todo",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "To-Do",
+        "content-desc": "To-Do",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[270,2190][540,2337]",
+        "tap": {
+          "x": 405,
+          "y": 2263
+        },
+        "rect": {
+          "x": 270,
+          "y": 2190,
+          "w": 270,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[356,2271][453,2337]",
+        "tap": {
+          "x": 404,
+          "y": 2304
+        },
+        "rect": {
+          "x": 356,
+          "y": 2271,
+          "w": 97,
+          "h": 66
+        }
+      },
+      {
+        "index": "0",
+        "text": "To-Do",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "class": "android.widget.TextView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[362,2277][446,2320]",
+        "tap": {
+          "x": 404,
+          "y": 2298
+        },
+        "rect": {
+          "x": 362,
+          "y": 2277,
+          "w": 84,
+          "h": 43
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[373,2211][436,2274]",
+        "tap": {
+          "x": 404,
+          "y": 2242
+        },
+        "rect": {
+          "x": 373,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[373,2211][436,2274]",
+        "tap": {
+          "x": 404,
+          "y": 2242
+        },
+        "rect": {
+          "x": 373,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/nav_quicknote",
+        "resource-id": "net.gsantner.markor:id/nav_quicknote",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "QuickNote",
+        "content-desc": "QuickNote",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[540,2190][810,2337]",
+        "tap": {
+          "x": 675,
+          "y": 2263
+        },
+        "rect": {
+          "x": 540,
+          "y": 2190,
+          "w": 270,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[643,2206][706,2269]",
+        "tap": {
+          "x": 674,
+          "y": 2237
+        },
+        "rect": {
+          "x": 643,
+          "y": 2206,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[643,2206][706,2269]",
+        "tap": {
+          "x": 674,
+          "y": 2237
+        },
+        "rect": {
+          "x": 643,
+          "y": 2206,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[589,2271][760,2337]",
+        "tap": {
+          "x": 674,
+          "y": 2304
+        },
+        "rect": {
+          "x": 589,
+          "y": 2271,
+          "w": 171,
+          "h": 66
+        }
+      },
+      {
+        "index": "0",
+        "text": "QuickNote",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_large_label_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_large_label_view",
+        "class": "android.widget.TextView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[589,2271][760,2322]",
+        "tap": {
+          "x": 674,
+          "y": 2296
+        },
+        "rect": {
+          "x": 589,
+          "y": 2271,
+          "w": 171,
+          "h": 51
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/nav_more",
+        "resource-id": "net.gsantner.markor:id/nav_more",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "More",
+        "content-desc": "More",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[810,2190][1080,2337]",
+        "tap": {
+          "x": 945,
+          "y": 2263
+        },
+        "rect": {
+          "x": 810,
+          "y": 2190,
+          "w": 270,
+          "h": 147
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_labels_group",
+        "class": "android.view.ViewGroup",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[902,2271][988,2337]",
+        "tap": {
+          "x": 945,
+          "y": 2304
+        },
+        "rect": {
+          "x": 902,
+          "y": 2271,
+          "w": 86,
+          "h": 66
+        }
+      },
+      {
+        "index": "0",
+        "text": "More",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_small_label_view",
+        "class": "android.widget.TextView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[908,2277][982,2320]",
+        "tap": {
+          "x": 945,
+          "y": 2298
+        },
+        "rect": {
+          "x": 908,
+          "y": 2277,
+          "w": 74,
+          "h": 43
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_container",
+        "class": "android.widget.FrameLayout",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[913,2211][976,2274]",
+        "tap": {
+          "x": 944,
+          "y": 2242
+        },
+        "rect": {
+          "x": 913,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "resource-id": "net.gsantner.markor:id/navigation_bar_item_icon_view",
+        "class": "android.widget.ImageView",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[913,2211][976,2274]",
+        "tap": {
+          "x": 944,
+          "y": 2242
+        },
+        "rect": {
+          "x": 913,
+          "y": 2211,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "net.gsantner.markor",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

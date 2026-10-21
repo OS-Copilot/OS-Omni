@@ -1,0 +1,12 @@
+models:
+  - windows_oracle
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 8
+timeout: 300
+tasks:
+  - tasks/windows/writer_headings_list_pagebreak.yaml
+  - tasks/windows/writer_toc_image_footnote.yaml
+metadata:
+  description: Oracle recheck for final hard-plus Windows Writer tasks.

@@ -26,6 +26,7 @@ $python = @'
 import json
 import os
 import re
+import struct
 
 root = os.environ["OPENFOOD_LOCAL_STATE_ROOT"]
 documents = []
@@ -47,6 +48,19 @@ if os.path.isdir(root):
                 documents.append(value)
 
 state = documents[-1] if documents else {}
+# Current builds keep immutable identifiers in the shipped ASAR, separately
+# from mutable Chromium storage. Never infer missing seed records from that
+# mutable document or overwrite actual mutable state with seed defaults.
+with open(r"C:\OS-Omni\Apps\OpenFood\resources\app.asar", "rb") as archive:
+    prefix = archive.read(16)
+    header_size = struct.unpack_from("<I", prefix, 4)[0]
+    json_size = struct.unpack_from("<I", prefix, 12)[0]
+    header = json.loads(archive.read(json_size))
+    entry = header["files"]["shared"]["files"]["seed-data.json"]
+    archive.seek(8 + header_size + int(entry["offset"]))
+    seed = json.loads(archive.read(entry["size"]))
+for key in ("restaurants", "users", "courierTasks"):
+    state[key] = seed.get(key, [])
 
 restaurant_id_by_name = {}
 menu_id_by_name = {}

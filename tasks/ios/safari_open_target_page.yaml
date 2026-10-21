@@ -1,0 +1,34 @@
+task_id: ios.safari.open_target_page
+platform: ios
+instruction: "Open Safari, go to https://example.com/?bench=safari-open, and leave that page open in the current tab."
+init:
+  initializer_id: initializers.ios.safari_prepare_open_app:SafariPrepareOpenAppInitializer
+  params:
+    bundle_id: com.apple.mobilesafari
+    purge_all_tabs: true
+    purge_history_urls:
+      - "https://example.com/?bench=safari-open"
+    terminate_after_setup: true
+    wait_ms: 1000
+evaluation:
+  evaluator_id: evaluators.ios.safari_state:SafariStateEvaluator
+  params:
+    bundle_id: com.apple.mobilesafari
+    present_history_urls:
+      - "https://example.com/?bench=safari-open"
+    present_tabs:
+      - url: "https://example.com/?bench=safari-open"
+    active_tab_url: "https://example.com/?bench=safari-open"
+    require_foreground: true
+    timeout_seconds: 10
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [safari, ios, browser, simple, navigation, benchmark]
+  app: Safari
+  app_bundle_id: com.apple.mobilesafari
+  description: "Open one specific page in Safari and keep it in the active tab."
+  prerequisites:
+    - "Safari is available in the simulator."

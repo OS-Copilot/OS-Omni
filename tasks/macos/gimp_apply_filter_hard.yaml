@@ -1,0 +1,74 @@
+task_id: macos.gimp.apply_filter_hard
+platform: macos
+instruction: >
+  Open the seeded image /Users/bench/Downloads/input.png in GIMP.
+  Apply the following filters in order:
+  1. Go to Filters → Blur → Gaussian Blur. Set both Horizontal and Vertical
+     blur radius to 5 pixels. Click OK.
+  2. Go to Colors → Brightness-Contrast. Increase brightness by 20 and
+     contrast by 10. Click OK.
+  3. Go to Colors → Hue-Saturation. Increase saturation by 30. Click OK.
+  Finally, use File → Export As to export the result to
+  /Users/bench/Documents/filtered_image.png as a PNG file.
+  In the export dialog, click Export to confirm.
+  Finish after the export succeeds.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall gimp >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Downloads /Users/bench/Documents
+        python3 - <<'PY'
+from pathlib import Path
+from urllib.request import urlopen
+url = "https://huggingface.co/datasets/xlangai/ubuntu_osworld_file_cache/resolve/main/gimp/3B327A6F-2C59-4F61-A256-E57920C6C839/test_image.png"
+out = Path("/Users/bench/Downloads/input.png")
+out.parent.mkdir(parents=True, exist_ok=True)
+out.write_bytes(urlopen(url).read())
+PY
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a GIMP /Users/bench/Downloads/input.png
+    - type: wait
+      ms: 18000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+
+      # Check if the filtered image exists
+      img_path = os.path.expanduser("~/Documents/filtered_image.png")
+      if not os.path.exists(img_path):
+          raise SystemExit("FILTERED_IMAGE_NOT_FOUND")
+
+      # Check file size (should be > 0)
+      if os.path.getsize(img_path) == 0:
+          raise SystemExit("FILTERED_IMAGE_EMPTY")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - gimp
+  - filter
+  - blur
+  - brightness
+  - saturation
+  - hard
+  app_name: gimp
+  difficulty: hard
+  description: Apply multiple filters (Gaussian Blur, Brightness-Contrast, Hue-Saturation) in GIMP.

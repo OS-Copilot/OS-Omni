@@ -2,16 +2,18 @@
 # Vendored from benchmark/initializers/macos/opennote.py.
 """Prepare OpenNote for an episode.
 
-OpenNote serves ``GET /api/evaluation`` over the guest loopback and opens on a
-login page that already carries the episode's account.  Preparation reads the
-document to confirm the seeded source notes are present and that the posts the
-task asks for have not been written yet, then waits for the login page itself --
-the prefilled account and the Log In control -- to be visible.  It does not log
-in, publish, comment, save or follow.
+OpenNote serves ``GET /api/evaluation`` over the guest loopback. Sequential tasks
+share one VM, so a previous attempt can leave created posts, profile changes, and
+saved/liked state behind. At each task boundary this initializer restores the
+app's documented ``/api/dev/reset`` seed, but refuses to reset an unexpected
+signed-in account. It then restarts the app and verifies the seeded notes and
+login page.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
@@ -24,14 +26,25 @@ DEFAULT_VISIBLE_TIMEOUT_SECONDS = 45.0
 
 
 class OpenNoteSnapshotInitializer(MacAppInitializer):
-    """Confirm the signed-out OpenNote starting point an episode assumes."""
+    """Establish the signed-out OpenNote starting point an episode assumes."""
 
     INITIALIZER_ID = "initializers.macos.opennote:OpenNoteSnapshotInitializer"
     APP_NAME = "OpenNote"
     BUNDLE_ID = "local.osomni.opennote"
     SETTLE_MS = 2500
 
+    def __init__(self) -> None:
+        self._did_boundary_reset = False
+
+    def _result(self, status, message, metadata):
+        result = super()._result(status, message, metadata)
+        if self._did_boundary_reset:
+            result.metadata["read_only"] = False
+            result.metadata["inter_task_snapshot_reset"] = True
+        return result
+
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
+        app_name = str(params.get("app_name") or self.APP_NAME).strip()
         port, state, notes = self._read_loopback(
             controller,
             params.get("candidate_ports") or [DEFAULT_PORT],
@@ -45,8 +58,37 @@ class OpenNoteSnapshotInitializer(MacAppInitializer):
             )
         document = self._endpoint_body(state, "/api/evaluation")
 
+        session = dict(document.get("session") or {})
+        if session.get("loggedIn"):
+            user = dict(session.get("user") or {})
+            expected_email = str(
+                params.get("expected_account_name") or "lina@opennote.local"
+            ).strip().casefold()
+            observed_email = str(user.get("email") or "").strip().casefold()
+            if not expected_email or observed_email != expected_email:
+                raise InitializationError(
+                    "OpenNote is signed in as an unexpected account; refusing to log it out"
+                )
+
+        # The app's seeded developer reset clears all task mutations. Logging
+        # out alone is insufficient: created posts and profile interactions
+        # persist and make later tasks fail their own clean-start preconditions.
+        self._reset_task_snapshot(controller, port, app_name, params)
+        self._did_boundary_reset = True
+        port, state, notes = self._read_loopback(
+            controller,
+            params.get("candidate_ports") or [DEFAULT_PORT],
+            ["/api/evaluation"],
+            what="OpenNote state after task snapshot reset",
+        )
+        if port is None:
+            raise InitializationError(
+                "OpenNote did not recover after restoring the task snapshot"
+                + (f" ({'; '.join(notes)})" if notes else "")
+            )
+        document = self._endpoint_body(state, "/api/evaluation")
         if dict(document.get("session") or {}).get("loggedIn"):
-            raise InitializationError("OpenNote is already signed in")
+            raise InitializationError("OpenNote remained signed in after task snapshot reset")
 
         titles = {
             str(note.get("title") or "")
@@ -84,7 +126,88 @@ class OpenNoteSnapshotInitializer(MacAppInitializer):
         return (
             f"OpenNote answers on port {port} with {len(required)} seeded source note(s), "
             f"no target posts, and the prefilled login page visible"
+            + (" after restoring the seeded task snapshot" if self._did_boundary_reset else "")
         )
+
+    def _reset_task_snapshot(
+        self,
+        controller: Any,
+        port: int,
+        app_name: str,
+        params: Mapping[str, Any],
+    ) -> None:
+        """Restore the app's built-in seed and restart its visible app window."""
+        script = "\n".join(
+            [
+                "import json, urllib.request",
+                f"url = 'http://127.0.0.1:{int(port)}/api/dev/reset'",
+                "request = urllib.request.Request(url, data=b'{}', headers={'Content-Type': 'application/json'}, method='POST')",
+                "with urllib.request.urlopen(request, timeout=8) as response:",
+                "    body = json.loads(response.read().decode('utf-8'))",
+                "print(json.dumps({'ok': body.get('ok') is True, 'logged_in': bool((body.get('session') or {}).get('loggedIn'))}))",
+            ]
+        )
+        response = self._guest_python(controller, script, timeout=15)
+        returncode = int(response.get("returncode", -1))
+        output = str(response.get("stdout") or response.get("output") or "")
+        error = str(response.get("stderr") or response.get("error") or "")
+        if returncode != 0:
+            raise InitializationError(
+                f"OpenNote could not restore the task snapshot: {error.strip() or output.strip() or f'exit {returncode}'}"
+            )
+        try:
+            logout_state = json.loads([line for line in output.splitlines() if line.strip()][-1])
+        except (IndexError, ValueError) as exc:
+            raise InitializationError("OpenNote snapshot reset did not return a verifiable state") from exc
+        if logout_state.get("ok") is not True or logout_state.get("logged_in") is not False:
+            raise InitializationError("OpenNote snapshot reset was not confirmed as signed out")
+
+        app_path, _ = self._inspect_installation(controller, app_name)
+        executable = str(Path(app_path) / "Contents" / "MacOS" / "OpenAppShell")
+        stop_script = "\n".join(
+            [
+                "import json, os, signal, subprocess, time",
+                "expected = " + repr(executable),
+                "lines = subprocess.check_output(['/bin/ps', '-axo', 'pid=,comm='], text=True).splitlines()",
+                "pids = []",
+                "for line in lines:",
+                "    fields = line.strip().split(None, 1)",
+                "    if len(fields) == 2 and fields[1] == expected and fields[0].isdigit(): pids.append(int(fields[0]))",
+                "for pid in pids:",
+                "    try: os.kill(pid, signal.SIGTERM)",
+                "    except ProcessLookupError: pass",
+                "deadline = time.monotonic() + 8",
+                "while time.monotonic() < deadline:",
+                "    active = []",
+                "    for pid in pids:",
+                "        try: os.kill(pid, 0); active.append(pid)",
+                "        except ProcessLookupError: pass",
+                "    if not active: break",
+                "    time.sleep(0.2)",
+                "print(json.dumps({'stopped': not bool(active), 'pid_count': len(pids)}))",
+            ]
+        )
+        stopped = self._guest_python(controller, stop_script, timeout=15)
+        stop_output = str(stopped.get("stdout") or stopped.get("output") or "")
+        stop_error = str(stopped.get("stderr") or stopped.get("error") or "")
+        if int(stopped.get("returncode", -1)) != 0:
+            raise InitializationError(
+                f"OpenNote could not restart after snapshot reset: {stop_error.strip() or stop_output.strip() or 'guest process stop failed'}"
+            )
+        try:
+            stop_state = json.loads([line for line in stop_output.splitlines() if line.strip()][-1])
+        except (IndexError, ValueError) as exc:
+            raise InitializationError("OpenNote app shutdown did not return a verifiable result") from exc
+        if not stop_state.get("stopped") or not stop_state.get("pid_count"):
+            raise InitializationError("OpenNote app did not stop cleanly after the task snapshot reset")
+
+        launch = controller.launch_app(app_name)
+        if isinstance(launch, Mapping) and launch.get("success") is False:
+            raise InitializationError(
+                f"OpenNote could not relaunch after snapshot reset: {launch.get('error') or launch.get('message')}"
+            )
+        self._wait_for_process(controller, app_path)
+        self._settle(params)
 
     @staticmethod
     def _required_titles(params: Mapping[str, Any]) -> list[str]:

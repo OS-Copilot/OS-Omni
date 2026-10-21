@@ -369,6 +369,23 @@ class QueueBehaviorTests(unittest.TestCase):
         persisted = queue.load_queue(self.results / "queue.json")
         self.assertIsNotNone(persisted.get("paused_reason"))
 
+    def test_batch_mode_continues_and_does_not_rerun_pending_audit(self) -> None:
+        entries = queue.build_plan_entries("ios")
+        failing = entries[1]["task_id"]
+        first_runner = FakeRunner({failing: "FAIL"})
+        summary = self._run(
+            first_runner, limit=2, batch_until_environment_error=True
+        )
+        self.assertFalse(summary["paused"])
+        self.assertEqual(first_runner.calls, [entries[0]["task_id"], failing])
+
+        next_runner = FakeRunner({})
+        next_summary = self._run(
+            next_runner, limit=1, batch_until_environment_error=True
+        )
+        self.assertEqual(next_summary["processed"], 1)
+        self.assertEqual(next_runner.calls, [entries[2]["task_id"]])
+
     def test_error_pauses_whole_queue(self) -> None:
         entries = queue.build_plan_entries("ios")
         runner = FakeRunner({entries[0]["task_id"]: "ERROR"})
@@ -376,6 +393,16 @@ class QueueBehaviorTests(unittest.TestCase):
         self.assertTrue(summary["paused"])
         self.assertIn("ERROR", summary["paused_reason"])
         self.assertEqual(len(runner.calls), 1)
+
+    def test_batch_mode_pauses_on_environment_exclusion(self) -> None:
+        entries = queue.build_plan_entries("ios")
+        runner = FakeRunner({entries[0]["task_id"]: "environment_excluded"})
+        summary = self._run(
+            runner, limit=5, batch_until_environment_error=True
+        )
+        self.assertTrue(summary["paused"])
+        self.assertIn("environment exclusion", summary["paused_reason"])
+        self.assertEqual(runner.calls, [entries[0]["task_id"]])
 
     def test_three_new_completions_pause_for_link_audit(self) -> None:
         summary = self._run(FakeRunner({}), limit=5)
@@ -579,6 +606,38 @@ class QueueBehaviorTests(unittest.TestCase):
 
 
 class DefaultRunnerEvidenceTests(unittest.TestCase):
+    def test_macos_single_vm_mode_uses_live_tart_ip(self) -> None:
+        entry = next(
+            item for item in queue.build_plan_entries("macos")
+            if item["task_id"].startswith("macos.openshop.")
+        )
+        fake_benchmark = mock.MagicMock()
+        fake_benchmark.run_benchmark_command = mock.MagicMock(return_value=0)
+        module_name = "platforms.macos.host.runners.benchmark"
+        with tempfile.TemporaryDirectory(prefix="tart-ip-runner-") as raw:
+            attempt = Path(raw) / "attempt_001"
+            attempt.mkdir(parents=True)
+            with mock.patch.dict(os.environ, {"MACOS_SKIP_VM_CLONE": "1"}), \
+                    mock.patch.dict(sys.modules, {module_name: fake_benchmark}), \
+                    mock.patch.object(
+                        queue,
+                        "_load_committed_runtime_defaults",
+                        return_value={
+                            "vm_ip": "192.168.64.2", "runtime_port": 5000,
+                            "vm_token": "", "base_vm_name": "allapps-base",
+                            "vm_provider": "tart", "tart_home": "/tmp/tart-home",
+                        },
+                    ), \
+                    mock.patch.object(queue, "_resolve_tart_vm_ip", return_value="192.168.64.4") as resolve:
+                queue.default_runner(
+                    entry, attempt, platform="macos",
+                    macos_base_vm_name="allapps-base",
+                    macos_storage_dir="/tmp/tart-home",
+                )
+        resolve.assert_called_once_with("allapps-base", "/tmp/tart-home")
+        args = fake_benchmark.run_benchmark_command.call_args.args[0]
+        self.assertEqual(args.vm_ip, "192.168.64.4")
+
     def test_ios_direct_mode_bypasses_clone_source(self) -> None:
         entry = queue.build_plan_entries("ios")[0]
         fake_benchmark = mock.MagicMock()

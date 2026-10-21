@@ -1,0 +1,9 @@
+tasks:
+  - tasks/android/k9_manual_setup_send_email.yaml
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 4
+metadata:
+  description: Android focused single-task benchmark - K-9 manual account setup and send email using a11y-tree observation

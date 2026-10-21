@@ -1,0 +1,7 @@
+tasks:
+  - tasks/android/tasks_org_create_task_with_subtasks.yaml
+models:
+  - gpt5_5_chat
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 4

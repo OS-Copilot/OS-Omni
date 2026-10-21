@@ -20,8 +20,9 @@ init:
   params:
     bundle_id: com.killt.opentwitter
     require_logged_in: true
+    reset_to_seed: true
     login_if_missing: false
-    wait_ms: 1200
+    wait_ms: 6000
     bootstrap_wait_ms: 1200
     return_home_after_init: false
     author_handle: alex

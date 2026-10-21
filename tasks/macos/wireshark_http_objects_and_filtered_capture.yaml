@@ -1,0 +1,129 @@
+task_id: macos.wireshark.conversations_triage
+platform: macos
+instruction: |
+  Wireshark is already open with `/Users/bench/Downloads/sample.pcapng`.
+  The **Conversations** and **Endpoints** windows are already open for you.
+  The **Conversations** window is on the left side, and the **Endpoints**
+  window is on the right side.
+
+  Triage only the HTTP traffic and work only inside these already-open dialog
+  windows. Do **not** reopen Statistics menus.
+
+  In both dialogs, switch to the **TCP** tab and turn on **Limit to display
+  filter**. In the **Conversations** window, narrow the dialog filter field so
+  `Hypertext` remains visible. In the **Endpoints** window, narrow the dialog
+  filter field so `192.168` remains visible. Finish with both dialogs still
+  open and the **Endpoints** window in front.
+
+  At the end, the **Conversations** dialog should show **TCP · 1** with
+  `Hypertext` visible, and the **Endpoints** dialog should show **TCP · 2**
+  with `192.168` visible.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        defaults write org.wireshark.Wireshark SUEnableAutomaticChecks -bool false || true
+        killall Wireshark >/dev/null 2>&1 || true
+        APP_PATH=""
+        for candidate in "$HOME/Applications/Wireshark.app" "/Applications/Wireshark.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "Wireshark.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "Wireshark.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+    - type: upload_file
+      local_path: ../../platforms/windows/vm/setup/sample.pcapng
+      path: /Users/bench/Downloads/sample.pcapng
+    - type: run_bash
+      script: |
+        set -e
+        APP_PATH=""
+        for candidate in "$HOME/Applications/Wireshark.app" "/Applications/Wireshark.app"; do
+          if [ -d "$candidate" ]; then
+            APP_PATH="$candidate"
+            break
+          fi
+        done
+        if [ -z "$APP_PATH" ]; then
+          APP_PATH="$(mdfind 'kMDItemFSName == "Wireshark.app"' | head -n 1 || true)"
+        fi
+        [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "Wireshark.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        open -a "$APP_PATH" /Users/bench/Downloads/sample.pcapng
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        set -e
+        osascript <<'APPLESCRIPT'
+        tell application "System Events"
+          tell process "Wireshark"
+            try
+              if exists window "Software Update" then
+                tell window "Software Update"
+                  click button "Remind Me Later"
+                end tell
+                delay 0.5
+              end if
+            end try
+            click menu bar item "Statistics" of menu bar 1
+            delay 0.4
+            click menu item "Endpoints" of menu 1 of menu bar item "Statistics" of menu bar 1
+            delay 0.5
+            click menu bar item "Statistics" of menu bar 1
+            delay 0.4
+            click menu item "Conversations" of menu 1 of menu bar item "Statistics" of menu bar 1
+            delay 0.8
+            try
+              set position of window "Wireshark · Conversations · sample.pcapng" to {40, 110}
+              set size of window "Wireshark · Conversations · sample.pcapng" to {760, 430}
+            end try
+            try
+              set position of window "Wireshark · Endpoints · sample.pcapng" to {860, 110}
+              set size of window "Wireshark · Endpoints · sample.pcapng" to {760, 430}
+            end try
+            try
+              if exists window "Software Update" then
+                tell window "Software Update"
+                  click button "Remind Me Later"
+                end tell
+                delay 0.5
+              end if
+            end try
+          end tell
+        end tell
+        APPLESCRIPT
+    - type: wait
+      ms: 1500
+evaluation:
+  evaluator_id: evaluators.macos.wireshark:WiresharkObservationEvaluator
+  params:
+    refresh_observation: true
+    required_window_title_substrings:
+    - Wireshark · Endpoints ·
+    - Wireshark · Conversations ·
+    foreground_window_title_substring: Wireshark · Endpoints ·
+    required_texts:
+    - TCP · 1
+    - TCP · 2
+    required_exact_values:
+    - Hypertext
+    - 192.168
+    checkbox_value_counts:
+      Limit to display filter:
+        value: '1'
+        min_matches: 2
+    scripted_checkbox_windows:
+    - Conversations
+    - Endpoints
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

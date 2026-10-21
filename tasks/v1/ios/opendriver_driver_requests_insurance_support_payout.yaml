@@ -2,9 +2,11 @@
 task_id: ios.opendriver.driver_requests_insurance_support_payout
 platform: ios
 instruction: Sign in to the OpenDriver application using the Driver role with the email driver@example.com
-  and the password Password123! to access the driver workspace for Maya Rodriguez. The Work area must
-  contain a rejected ride request and an accepted sample request, with the trip panel open to confirm
-  the active ride. The driver profile in the Account section must be updated with the license number NY-DL-100492,
+  and the password Password123! to access the driver workspace for Maya Rodriguez. In Work, reject one
+  generated ride request, then accept a separate sample request. A request marked searching is awaiting a
+  decision; it is not an active trip until accepted. Use Open trip to bring the accepted trip's controls into
+  view before continuing. The seeded account's logout cancels the accepted active ride but preserves its acceptance
+  history and returns the final driver status to online. The driver profile in the Account section must be updated with the license number NY-DL-100492,
   vehicle make Tesla, vehicle model Model Y, vehicle year 2023, plate 8XJR214, and color Pearl White,
   and saved for review. An Insurance document must be submitted in the Account view using the document
   ID INS-2026-4096 and an expiration date of 2028-09-30. A new support ticket must be created in the Support
@@ -12,10 +14,13 @@ instruction: Sign in to the OpenDriver application using the Driver role with th
   the note Weekend transfer must be requested in the Money section. The application must be logged out
   so that no active session remains for the driver.
 init:
-  initializer_id: evaluators.cua_review.initializers.ios.opendriver:OpenDriverIOSInitializer
+  initializer_id: evaluators.cua_review.initializers.ios.opendriver_clean:OpenDriverCleanIOSInitializer
   params:
     bundle_id: com.killt.opendriver
-    wait_ms: 1500
+    wait_ms: 1800
+    reset_backend: true
+    backend_url: http://127.0.0.1:4320
+    return_home_after_init: false
 evaluation:
   evaluator_id: evaluators.ios.opendriver_driver_requests_insurance_support_payout:OpenDriverIOSDriverWorkflowEvaluator
   params:
@@ -85,21 +90,22 @@ metadata:
     page.
   - The OpenDriver iOS backend is healthy and contains schema v16 seed data.
   - driver@example.com exists with password Password123! and the Maya Rodriguez approved driver profile.
-  initializer_message: The initializer only launches OpenDriver and validates the signed-out login surface;
-    it does not log in, reset the backend, or create task records.
+  initializer_message: The task-scoped initializer restores backend seed data, clears the simulator's cached
+    OpenDriver token, and verifies the signed-out login surface; it does not create task records.
   verifier_rules:
     final_business_evidence:
-    - The primary driver is online with license NY-DL-100492 and Tesla Model Y 2023 plate 8XJR214 in Pearl
-      White.
+    - The primary driver is online after logout with license NY-DL-100492 and Tesla Model Y 2023 plate 8XJR214
+      in Pearl White.
     - A submitted Insurance document exists with identifier INS-2026-4096 and expiry 2028-09-30.
     - A requested USD 135 payout exists with exact note Weekend transfer.
     - An open rider issue support ticket exists with exact message Route support help.
     - At least one post-seed request contains usr_driver_primary in rejectedDriverIds.
-    - At least one post-seed trip assigned to usr_driver_primary contains durable acceptance evidence.
+    - At least one post-seed trip assigned to usr_driver_primary retains acceptedAt history; logout may cancel
+      the active trip.
     - No backend session remains for usr_driver_primary after logout.
     instruction_mapping:
     - Steps 2-7 cover Driver login.
-    - Steps 8-13 cover rejection, acceptance, and opening the accepted trip.
+    - Steps 8-13 cover rejecting one request, accepting a separate sample request, and opening its trip controls.
     - Steps 14-43 cover profile and Insurance document submission.
     - Steps 44-49 cover support ticket creation.
     - Steps 50-58 cover payout creation.
@@ -108,7 +114,7 @@ metadata:
     - The read-only host OpenDriver iOS backend JSON database is authoritative for durable business state.
     - The selected simulator identity and installed com.killt.opendriver bundle bind the evaluation to
       iOS.
-    - Intermediate tabs, scroll positions, and the opened-trip panel are flow-only UI evidence.
+    - Intermediate tabs, scroll positions, and the opened trip controls are flow-only UI evidence.
     forbidden_assumptions:
     - Do not require generated payout, ticket, document, or ride ids.
     - Normalize zero-padded and non-zero-padded YYYY-M-D document expiry values before comparison.

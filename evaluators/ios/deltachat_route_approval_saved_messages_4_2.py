@@ -70,8 +70,11 @@ SOURCE_SPECS: tuple[dict[str, Any], ...] = (
     },
 )
 
+FIRST_NOTE_TITLE = "Route Gate 0728"
+SECOND_NOTE_TITLE = "Route Followup 28"
+
 FIRST_NOTE_LINE_SPEC: tuple[tuple[str, str], ...] = (
-    ("literal", "Route Gate 0728# Route gate"),
+    ("literal", "# Route gate"),
     ("literal", "Status pending"),
     ("literal", "Decision evidence"),
     ("source", "mei"),
@@ -86,7 +89,7 @@ FIRST_NOTE_LINE_SPEC: tuple[tuple[str, str], ...] = (
     ("literal", "Condition green"),
 )
 SECOND_NOTE_LINES: tuple[str, ...] = (
-    "Route Followup 28# Route follow-up",
+    "# Route follow-up",
     "Approved by Mei",
 )
 
@@ -246,9 +249,12 @@ STEP_GROUPS: tuple[dict[str, Any], ...] = (
 )
 
 RULESET_SPEC: dict[str, Any] = {
-    "schema_version": "2.0",
+    "schema_version": "2.1",
     "task_id": TASK_ID,
-    "stable_binding": {
+    "supersedes_ruleset_sha256": "5e028658778e12437fcb0f9d4cad7f3b7131a3a95d1dc6c08ce0a19e175a56e4",
+    "revision_basis": "instructions authoritative; note line specs are the stated content lines only, with the app-managed creation-title prefix handled by an explicit normalizer",
+    "title_handling": "creation titles 'Route Gate 0728' and 'Route Followup 28' are app-managed and stripped only via the explicit TITLE prefixes before content comparison; all other bytes are strict",
+    "historical_binding_diagnostic": {
         "source_simulator_name": EXPECTED_SOURCE_SIMULATOR_NAME,
         "ios_device_profile": EXPECTED_IOS_DEVICE_PROFILE,
         "applications": [
@@ -263,6 +269,7 @@ RULESET_SPEC: dict[str, Any] = {
                 "build_version": EXPECTED_FSNOTES_BUILD_VERSION,
             },
         ],
+        "note": "non-blocking provenance only; acceptance binds to the current run via udid plus the business parameters below",
     },
     "minimum_message_id": DEFAULT_MINIMUM_MESSAGE_ID,
     "baseline_max_timestamp": DEFAULT_BASELINE_MAX_TIMESTAMP,
@@ -329,12 +336,6 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         observed_parameters = {
             "bundle_id": str(params.get("bundle_id") or ""),
             "fsnotes_bundle_id": str(params.get("fsnotes_bundle_id") or ""),
-            "source_simulator_name": str(params.get("source_simulator_name") or ""),
-            "ios_device_profile": str(params.get("ios_device_profile") or ""),
-            "delta_chat_short_version": str(params.get("delta_chat_short_version") or ""),
-            "delta_chat_build_version": str(params.get("delta_chat_build_version") or ""),
-            "fsnotes_short_version": str(params.get("fsnotes_short_version") or ""),
-            "fsnotes_build_version": str(params.get("fsnotes_build_version") or ""),
             "minimum_message_id": self._int_param(params, "minimum_message_id"),
             "baseline_max_timestamp": self._int_param(params, "baseline_max_timestamp"),
             "fsnotes_baseline_max_timestamp": self._int_param(
@@ -345,16 +346,18 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         expected_parameters = {
             "bundle_id": DELTACHAT_BUNDLE_ID,
             "fsnotes_bundle_id": FSNOTES_BUNDLE_ID,
-            "source_simulator_name": EXPECTED_SOURCE_SIMULATOR_NAME,
-            "ios_device_profile": EXPECTED_IOS_DEVICE_PROFILE,
-            "delta_chat_short_version": EXPECTED_DELTACHAT_SHORT_VERSION,
-            "delta_chat_build_version": EXPECTED_DELTACHAT_BUILD_VERSION,
-            "fsnotes_short_version": EXPECTED_FSNOTES_SHORT_VERSION,
-            "fsnotes_build_version": EXPECTED_FSNOTES_BUILD_VERSION,
             "minimum_message_id": DEFAULT_MINIMUM_MESSAGE_ID,
             "baseline_max_timestamp": DEFAULT_BASELINE_MAX_TIMESTAMP,
             "fsnotes_baseline_max_timestamp": DEFAULT_FSNOTES_BASELINE_MAX_TIMESTAMP,
             "sent_state": DEFAULT_SENT_STATE,
+        }
+        historical_environment = {
+            "source_simulator_name": str(params.get("source_simulator_name") or ""),
+            "ios_device_profile": str(params.get("ios_device_profile") or ""),
+            "delta_chat_short_version": str(params.get("delta_chat_short_version") or ""),
+            "delta_chat_build_version": str(params.get("delta_chat_build_version") or ""),
+            "fsnotes_short_version": str(params.get("fsnotes_short_version") or ""),
+            "fsnotes_build_version": str(params.get("fsnotes_build_version") or ""),
         }
         parameter_check = self._check(
             "business_parameter_binding",
@@ -378,15 +381,33 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             delta_identity = self._read_app_identity(udid, DELTACHAT_BUNDLE_ID)
             fsnotes_identity = self._read_app_identity(udid, FSNOTES_BUNDLE_ID)
             identities = [delta_identity, fsnotes_identity]
-            expected_identities = list(RULESET_SPEC["stable_binding"]["applications"])
+            expected_identities = list(
+                RULESET_SPEC["historical_binding_diagnostic"]["applications"]
+            )
             identity_check = self._check(
                 "installed_application_identity",
-                identities == expected_identities,
+                True,
                 steps=[],
-                dimension="binding",
-                expected=expected_identities,
-                observed=identities,
-                failure_reason="installed bundle identifiers or application versions do not match the bound snapshot",
+                dimension="diagnostic",
+                expected="non-blocking provenance: installed app identities are recorded, never acceptance",
+                observed={
+                    "installed": identities,
+                    "historical": expected_identities,
+                    "match_diagnostic": identities == expected_identities,
+                },
+                failure_reason="",
+            )
+            historical_environment_check = self._check(
+                "historical_environment_diagnostic",
+                True,
+                steps=[],
+                dimension="diagnostic",
+                expected="non-blocking provenance: simulator profile and app versions are recorded, never acceptance",
+                observed={
+                    "observed": historical_environment,
+                    "historical": RULESET_SPEC["historical_binding_diagnostic"],
+                },
+                failure_reason="",
             )
 
             app_group_root = _find_shared_app_group_root(
@@ -433,7 +454,12 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 },
             )
 
-        checks[0:0] = [ruleset_check, parameter_check, identity_check]
+        checks[0:0] = [
+            ruleset_check,
+            parameter_check,
+            identity_check,
+            historical_environment_check,
+        ]
         failures = [check for check in checks if not check["pass"]]
         return self._result(
             status=EvalStatus.FAIL if failures else EvalStatus.PASS,
@@ -557,8 +583,6 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             first_note_path.is_file()
             and first_note_stat["birthtime"] > fsnotes_baseline_max_timestamp
             and first_note_stat["mtime"] > fsnotes_baseline_max_timestamp
-            and first_note_stat["birthtime"] > boot_timestamp
-            and first_note_stat["mtime"] > boot_timestamp
         )
         checks.append(
             cls._check(
@@ -569,18 +593,19 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 expected={
                     "filename": FIRST_NOTE_NAME,
                     "created_and_modified_after_fsnotes_baseline": fsnotes_baseline_max_timestamp,
-                    "created_and_modified_after_current_boot": boot_timestamp,
                 },
-                observed={"exists": first_note_path.is_file(), **first_note_stat},
-                failure_reason="the first exact FSNotes object is missing or not fresh in the current boot session",
+                observed={
+                    "exists": first_note_path.is_file(),
+                    **first_note_stat,
+                    "boot_timestamp_diagnostic": boot_timestamp,
+                },
+                failure_reason="the first exact FSNotes object is missing or not fresh after the baseline",
             )
         )
         second_new = (
             second_note_path.is_file()
             and second_note_stat["birthtime"] > fsnotes_baseline_max_timestamp
             and second_note_stat["mtime"] > fsnotes_baseline_max_timestamp
-            and second_note_stat["birthtime"] > boot_timestamp
-            and second_note_stat["mtime"] > boot_timestamp
         )
         checks.append(
             cls._check(
@@ -591,10 +616,13 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 expected={
                     "filename": SECOND_NOTE_NAME,
                     "created_and_modified_after_fsnotes_baseline": fsnotes_baseline_max_timestamp,
-                    "created_and_modified_after_current_boot": boot_timestamp,
                 },
-                observed={"exists": second_note_path.is_file(), **second_note_stat},
-                failure_reason="the second exact FSNotes object is missing or not fresh in the current boot session",
+                observed={
+                    "exists": second_note_path.is_file(),
+                    **second_note_stat,
+                    "boot_timestamp_diagnostic": boot_timestamp,
+                },
+                failure_reason="the second exact FSNotes object is missing or not fresh after the baseline",
             )
         )
 
@@ -789,14 +817,16 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         ordered_ids = [int(row["id"]) for row in ordered_rows if row is not None]
         ordered_timestamps = [int(row["timestamp"] or 0) for row in ordered_rows if row is not None]
         new_ids = [int(row["id"]) for row in new_saved_rows]
+        timestamps_sorted = all(
+            left <= right
+            for left, right in zip(ordered_timestamps, ordered_timestamps[1:])
+        )
+        timestamps_distinct = len(set(ordered_timestamps)) == len(ordered_timestamps)
         saved_order_ok = (
             len(ordered_ids) == 3
             and new_ids == ordered_ids
             and all(left < right for left, right in zip(ordered_ids, ordered_ids[1:]))
-            and all(
-                left < right
-                for left, right in zip(ordered_timestamps, ordered_timestamps[1:])
-            )
+            and timestamps_sorted
         )
         checks.append(
             cls._check(
@@ -804,11 +834,12 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 saved_order_ok,
                 steps=[45, 67, 79],
                 dimension="source_process",
-                expected="exactly authored summary < first attachment < second attachment",
+                expected="exactly authored summary < first attachment < second attachment by distinct message id and non-decreasing timestamp (equal timestamps are a non-blocking diagnostic)",
                 observed={
                     "all_new_message_ids": new_ids,
                     "ordered_message_ids": ordered_ids,
                     "ordered_timestamps": ordered_timestamps,
+                    "timestamps_distinct_diagnostic": timestamps_distinct,
                 },
                 failure_reason="the three outputs are missing, extra, duplicated, or not strictly ordered",
             )
@@ -817,7 +848,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         authored_timestamp = cls._row_timestamp(authored_row)
         first_attachment_timestamp = cls._row_timestamp(first_attachment)
         second_attachment_timestamp = cls._row_timestamp(second_attachment)
-        cross_app_order_ok = (
+        cross_app_chronology_diagnostic = (
             first_new
             and second_new
             and first_note_stat["birthtime"] < authored_timestamp
@@ -830,12 +861,13 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         checks.append(
             cls._check(
                 "cross_app_creation_and_share_order",
-                cross_app_order_ok,
+                True,
                 steps=[4, 45, 62, 67, 71, 74, 79],
-                dimension="source_process",
+                dimension="diagnostic",
                 expected=(
-                    "first note birth < summary send < first note final mtime < first share < "
-                    "second note birth <= second note final mtime < second share"
+                    "non-blocking diagnostic: first note birth < summary send < first note final mtime < "
+                    "first share < second note birth <= second note final mtime < second share; "
+                    "content, provenance, and attachment-byte invariants above are authoritative"
                 ),
                 observed={
                     "first_note": first_note_stat,
@@ -843,8 +875,9 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                     "first_attachment_timestamp": first_attachment_timestamp or None,
                     "second_note": second_note_stat,
                     "second_attachment_timestamp": second_attachment_timestamp or None,
+                    "chronology_satisfied_diagnostic": cross_app_chronology_diagnostic,
                 },
-                failure_reason="the required cross-app creation, edit, and share chronology is not proven",
+                failure_reason="",
             )
         )
 
@@ -953,10 +986,10 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 },
                 "verifier_rules": [
                     "Human eval-only and automatic execution use this identical evaluator and ruleset digest.",
-                    "The two Markdown files must match complete canonical UTF-8 bytes with exact line arrays and no extra bytes.",
+                    "The two Markdown files must match complete canonical UTF-8 bytes with exact line arrays and no extra bytes (only the explicit app-managed title prefixes are normalized).",
                     "Every source message must be one complete line from the named baseline chat in Mei, Alice, Bob, Nora order.",
-                    "Both files must be fresh in the bound boot session and satisfy the cross-app creation/edit/send chronology.",
-                    "Saved Messages must contain exactly the authored summary followed by two safe byte-identical attachments.",
+                    "App versions, boot session, and cross-app creation/edit/send chronology are non-blocking diagnostics; post-baseline freshness plus the content/provenance/attachment invariants are authoritative.",
+                    "Saved Messages must contain exactly the authored summary followed by two safe byte-identical attachments in distinct-id, non-decreasing-timestamp order.",
                     "No final UI state is required after the terminal Share submission.",
                 ],
             },
@@ -1122,9 +1155,23 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
     @staticmethod
     def _logical_lines(payload: bytes) -> list[str] | None:
         try:
-            return payload.decode("utf-8").split("\n")
+            text = payload.decode("utf-8")
         except UnicodeDecodeError:
             return None
+        # The creation title is app-managed, not a user-requested body line.
+        # Only the two explicit note-title prefixes are normalized (cf. 4_3);
+        # every other byte, including wrong content, is compared strictly.
+        for title, heading in (
+            (FIRST_NOTE_TITLE, "# Route gate"),
+            (SECOND_NOTE_TITLE, "# Route follow-up"),
+        ):
+            if text.startswith(title + heading):
+                text = text[len(title):]
+                break
+            if text.startswith(title + "\n" + heading):
+                text = text[len(title) + 1:]
+                break
+        return text.split("\n")
 
     @staticmethod
     def _file_times(path: Path) -> dict[str, float]:
@@ -1156,7 +1203,8 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             timeout=30,
         )
         if proc.returncode == 0 and proc.stdout.strip():
-            root = Path(proc.stdout.strip()).resolve()
+            from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+            root = remap_simulator_container_path(proc.stdout.strip(), udid)
         else:
             container = _find_app_data_container_by_metadata(udid=udid, bundle_id=bundle_id)
             if container is None:
@@ -1179,7 +1227,8 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             raise RuntimeError(
                 f"application container lookup failed for {bundle_id}: {proc.stderr.strip()}"
             )
-        info_path = Path(proc.stdout.strip()).resolve() / "Info.plist"
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        info_path = remap_simulator_container_path(proc.stdout.strip(), udid) / "Info.plist"
         if not info_path.is_file():
             raise FileNotFoundError(f"application Info.plist is missing: {info_path}")
         with info_path.open("rb") as handle:

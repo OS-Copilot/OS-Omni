@@ -1,0 +1,16 @@
+<mxfile host="app.diagrams.net" modified="2026-04-23T00:00:00.000Z" agent="Codex" version="29.6.6" type="device" compressed="false">
+  <diagram id="page-main" name="Board">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="card_1" value="Card 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="110" y="150" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="card_2" value="Card 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="390" y="150" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="card_3" value="Card 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="670" y="150" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="card_4" value="Card 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="110" y="290" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="card_5" value="Card 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="390" y="290" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="card_6" value="Card 6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="670" y="290" width="220" height="90" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

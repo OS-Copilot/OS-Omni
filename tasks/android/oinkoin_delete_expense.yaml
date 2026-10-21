@@ -1,0 +1,38 @@
+task_id: android.oinkoin.delete_expense
+platform: android
+instruction: In Oinkoin, delete the existing Food expense with amount 9.99, title Tea, and note bench_delete_me.
+init:
+  initializer_id: initializers.android.oinkoin_additional:OinkoinDeleteExpenseInitializer
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    app_activity: "com.example.piggybank.MainActivity"
+    clear_app_data: true
+    wait_ms: 1500
+    seed_category_name: "Food"
+    seed_amount: 9.99
+    seed_title: "Tea"
+    seed_note: "bench_delete_me"
+evaluation:
+  evaluator_id: evaluators.android.oinkoin_additional:OinkoinDeleteExpenseEvaluator
+  params:
+    app_package: "com.github.emavgl.piggybankpro"
+    database_path: "/data/user/0/com.github.emavgl.piggybankpro/databases/movements.db"
+    title: "Tea"
+    note: "bench_delete_me"
+    amount: 9.99
+    category_name: "Food"
+    category_type: 0
+    timeout_seconds: 15
+    poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [finance, accounting, oinkoin, sqlite, local_db, delete, hard, benchmark]
+  app: "Oinkoin"
+  app_bundle_id: com.github.emavgl.piggybankpro
+  description: "Delete an existing Food expense record in Oinkoin and verify that the seeded row no longer exists in SQLite."
+  prerequisites:
+    - "Oinkoin PRO is installed on the emulator."
+    - "The Android emulator supports adb root so the evaluator can inspect the app database."
+  difficulty: hard

@@ -785,7 +785,7 @@ class OpenPhotoEditRgbEvaluator(BaseEvaluator):
             for name in explicit:
                 add(str(name))
         references = params.get("reference_images")
-        if isinstance(references, Mapping):
+        if not names and isinstance(references, Mapping):
             for name, entry in references.items():
                 candidate = entry.get("name") if isinstance(entry, Mapping) else None
                 add(str(candidate or name))

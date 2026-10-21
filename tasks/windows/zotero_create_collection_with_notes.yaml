@@ -1,0 +1,368 @@
+task_id: windows.zotero.create_collection_with_notes
+platform: windows
+instruction: 'In Zotero, work under My Library. Create a new collection named "Research" under My Library. In that collection,
+  add a manual Book item titled "Deep Learning" with author "Ian Goodfellow". Add the tag "textbook" to that item, and add
+  a child note with the text "Foundational text on deep learning". Then create a second collection named "Reading Notes" under
+  My Library. In "Reading Notes", add a manual Book item titled "Pattern Recognition and Machine Learning" with author "Christopher
+  Bishop". Add the tag "ml-reference" to that second item, and add a child note with the text "Use chapters 1 and 2 for onboarding".
+  Finally create a third collection named "Methods Queue". In "Methods Queue", add a manual Journal Article item titled "Attention
+  Is All You Need" with author "Ashish Vaswani". Add the tag "transformers" to that item and add a child note with the text
+  "Prioritize for architecture review". Finally create a fourth collection named "Reading Backlog". In "Reading Backlog",
+  add a manual Book item titled "The Pragmatic Programmer" with author "Andrew Hunt". Add the tag "software-practice" to that
+  item and add a child note with the text "Discuss during mentoring circle". Finally create a fifth collection named "Seminar
+  Queue". In "Seminar Queue", add a manual Conference Paper item titled "ImageNet Classification with Deep Convolutional Neural
+  Networks" with author "Alex Krizhevsky". Add the tag "vision" to that item and add a child note with the text "Use as CNN
+  baseline discussion". Finally create a sixth collection named "Replication Queue". In "Replication Queue", add a manual
+  Journal Article item titled "Playing Atari with Deep Reinforcement Learning" with author "Volodymyr Mnih". Add the tag "reinforcement-learning"
+  to that item and add a child note with the text "Use for RL baseline replication". Finally create a seventh collection named
+  "Survey Queue". In "Survey Queue", add a manual Journal Article item titled "A Survey of Reinforcement Learning" with author
+  "Leslie Kaelbling". Add the tag "survey" to that item and add a child note with the text "Use for method taxonomy cross-check".
+  Finally create an eighth collection named "Optimization Queue". In "Optimization Queue", add a manual Conference Paper item
+  titled "Adam: A Method for Stochastic Optimization" with author "Diederik Kingma". Add the tag "optimization" to that item
+  and add a child note with the text "Check optimizer defaults". Finally create a ninth collection named "Systems Queue".
+  In "Systems Queue", add a manual Book item titled "Operating System Concepts" with author "Abraham Silberschatz". Add the
+  tag "systems" to that item and add a child note with the text "Use scheduler chapter for OS baseline". Finally create a
+  tenth collection named "Theory Queue". In "Theory Queue", add a manual Book item titled "The Nature of Statistical Learning
+  Theory" with author "Vladimir Vapnik". Add the tag "theory" to that item and add a child note with the text "Use margin
+  theory context". Finally create an eleventh collection named "Evaluation Queue". In "Evaluation Queue", add a manual Conference
+  Paper item titled "BLEU: a Method for Automatic Evaluation of Machine Translation" with author "Kishore Papineni". Add the
+  tag "evaluation" to that item and add a child note with the text "Use metric caveat discussion". Finally create a twelfth
+  collection named "Interpretability Queue". In "Interpretability Queue", add a manual Journal Article item titled "A Mathematical
+  Framework for Transformer Circuits" with author "Nelson Elhage". Add the tag "interpretability" to that item and add a child
+  note with the text "Use for circuit discussion". Finally create a thirteenth collection named "Data Queue". In "Data Queue",
+  add a manual Book item titled "Designing Machine Learning Systems" with author "Chip Huyen". Add the tag "ml-systems" to
+  that item and add a child note with the text "Use data validation chapter". Finally create a fourteenth collection named
+  "Benchmark Queue". In "Benchmark Queue", add a manual Report item titled "HELM" with author "Percy Liang". Add the tag "benchmarking"
+  to that item and add a child note with the text "Use scenario taxonomy". Finally create a fifteenth collection named "Safety
+  Queue". In "Safety Queue", add a manual Report item titled "Concrete Problems in AI Safety" with author "Dario Amodei".
+  Add the tag "safety" to that item and add a child note with the text "Use robustness framing". Finally create a sixteenth
+  collection named "Optimization Backlog". In "Optimization Backlog", add a manual Journal Article item titled "Decoupled
+  Weight Decay Regularization" with author "Ilya Loshchilov". Add the tag "optimization" to that item and add a child note
+  with the text "Compare with Adam defaults". Finally create a seventeenth collection named "Robustness Queue". In "Robustness
+  Queue", add a manual Journal Article item titled "Explaining and Harnessing Adversarial Examples" with author "Ian Goodfellow".
+  Add the tag "robustness" to that item and add a child note with the text "Use adversarial baseline". Finally create an eighteenth
+  collection named "Retrieval Queue". In "Retrieval Queue", add a manual Conference Paper item titled "Retrieval-Augmented
+  Generation for Knowledge-Intensive NLP Tasks" with author "Patrick Lewis". Add the tag "retrieval" to that item and add
+  a child note with the text "Use RAG baseline". Finally create a nineteenth collection named "Scaling Queue". In "Scaling
+  Queue", add a manual Report item titled "Scaling Laws for Neural Language Models" with author "Jared Kaplan". Add the tag
+  "scaling" to that item and add a child note with the text "Use compute scaling caveat". Finally create a twentieth collection
+  named "Compression Queue". In "Compression Queue", add a manual Report item titled "Distilling the Knowledge in a Neural
+  Network" with author "Geoffrey Hinton". Add the tag "distillation" to that item and add a child note with the text "Use
+  compression baseline". Finally create a twenty-first collection named "Agent Systems". In "Agent Systems", add a manual
+  Report item titled "Toolformer" with author "Timo Schick". Add the tag "tool-use" to that item and add a child note with
+  the text "Use tool-call comparison". Finally create a twenty-second collection named "Long Context Queue". In "Long Context
+  Queue", add a manual Journal Article item titled "Longformer" with author "Iz Beltagy". Add the tag "long-context" to that
+  item and add a child note with the text "Use sparse attention baseline". Make sure all twenty-two collections exist and
+  each one shows its requested title in the center item list. Then create three handoff files in Documents. Create C:\Users\User\Documents\zotero_research_handoff.tsv
+  with exactly these four lines: file\tcount\towner, collections\t22\tresearch-ops, items\t22\tresearch-ops, status\tready\tresearch-ops.
+  Create C:\Users\User\Documents\zotero_research_counts.txt with exactly these four lines: research_collections=22, research_items=22,
+  required_tags=22, handoff_status=ready. Create C:\Users\User\Documents\zotero_research_review_queue.txt with exactly these
+  three lines: Compression Queue, Agent Systems, Long Context Queue. Also create C:\Users\User\Documents\zotero_research_tag_audit.csv
+  with exactly these four lines: tag,collection,status; distillation,Compression Queue,ready; tool-use,Agent Systems,ready;
+  long-context,Long Context Queue,ready. Also create C:\Users\User\Documents\zotero_research_curator_notes.txt with exactly
+  these four lines: curator=research-ops, review_batch=research-hard, final_collection=Long Context Queue, action=manual-ui-confirmed.
+  Also create C:\Users\User\Documents\zotero_research_export_manifest.txt with exactly these four lines: export_scope=collections-22,
+  export_format=manual-review, owner=research-ops, status=staged. Also create C:\Users\User\Documents\zotero_research_bundle_crosswalk.tsv
+  with exactly these five tab-separated lines: file\tdepends_on\tstatus, zotero_research_counts.txt\tzotero_research_handoff.tsv\tlinked,
+  zotero_research_review_queue.txt\tzotero_research_counts.txt\tlinked, zotero_research_tag_audit.csv\tzotero_research_review_queue.txt\tlinked,
+  zotero_research_export_manifest.txt\tzotero_research_tag_audit.csv\tlinked. Also create C:\Users\User\Documents\zotero_research_final_index.txt
+  with exactly these four lines: database=zotero.sqlite, collection_count=22, crosswalk=zotero_research_bundle_crosswalk.tsv,
+  terminal=Long Context Queue. Finish after the files exist. Also create these hard-plus verification files so the final state
+  is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.zotero.create_collection_with_notes\tlinux.zotero.research_collection_with_notes\thard-plus-ready\napp\tzotero\tevaluator-checked'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.zotero.create_collection_with_notes\nlinux_peer=linux.zotero.research_collection_with_notes\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_review_matrix.csv with
+  exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Also create these additional hard-plus verification files: C:\Users\User\Documents\zotero_research_multifile_dependency_audit.tsv
+  with exactly this content: ''file\tuses\tstatus\nzotero_research_counts.txt\tzotero_research_handoff.tsv\tchecked\nzotero_research_review_queue.txt\tzotero_research_counts.txt\tchecked\nzotero_research_tag_audit.csv\tzotero_research_review_queue.txt\tchecked\nzotero_research_final_index.txt\tzotero_research_bundle_crosswalk.tsv\tchecked''.
+  EXTREME ZOTERO ADDENDUM: Before finishing, expand the Zotero library to 58 required collections and 58 required item titles.
+  Create collection "Transformer Audit", add a manual item titled "Transformer Mechanism Audit", tag it "transformer-audit",
+  and add a child note containing "Map attention heads to audit rows". Create collection "Data Curation Lab", add a manual
+  item titled "Dataset Curation Failure Modes", tag it "data-curation", and add a child note containing "Check data curation
+  assumptions". Create collection "Retrieval Evidence", add a manual item titled "RAG Evidence Ledger", tag it "rag-evidence",
+  and add a child note containing "Link retrieval evidence to RAG baseline". Create collection "Safety Red Team", add a manual
+  item titled "Red Teaming Language Models", tag it "safety-red-team", and add a child note containing "Escalate red-team
+  findings". Create collection "Scaling Appendix", add a manual item titled "Scaling Law Caveats", tag it "scaling-caveat",
+  and add a child note containing "Separate compute scaling caveats". Create collection "Compression Audit", add a manual
+  item titled "Distillation Compression Ledger", tag it "compression-audit", and add a child note containing "Compare compression
+  losses with baseline". Create collection "Agent Tool Logs", add a manual item titled "Tool Use Trace Review", tag it "tool-trace",
+  and add a child note containing "Review tool-use traces before final lock". Create collection "Long Context Evidence", add
+  a manual item titled "Sparse Attention Evidence Pack", tag it "sparse-attention", and add a child note containing "Attach
+  sparse attention evidence". Create collection "Optimizer Backtest", add a manual item titled "Optimizer Backtest Memo",
+  tag it "optimizer-backtest", and add a child note containing "Backtest optimizer defaults". Create collection "Robustness
+  Lab", add a manual item titled "Adversarial Robustness Ledger", tag it "adversarial-ledger", and add a child note containing
+  "Tie robustness ledger to adversarial queue". Create collection "Interpretability Review Board", add a manual item titled
+  "Circuit Review Minutes", tag it "circuit-review", and add a child note containing "Review circuit minutes before export".
+  Create collection "Benchmark Lockbox", add a manual item titled "Benchmark Lockbox Manifest", tag it "benchmark-lockbox",
+  and add a child note containing "Lock benchmark package after audit". Now add the nested hierarchy layer. These must be
+  real child collections, not flat collections under My Library. For every path, create the middle collection under the named
+  root collection, then create the leaf collection under that middle collection. Create nested collection path "Research >
+  Transformer Mechanism Spine > Attention Head Ledger". In the middle collection "Transformer Mechanism Spine", add a manual
+  Report titled "Transformer Mechanism Spine Index", tag it "path-transformer-spine", and add a child note containing "Index
+  transformer mechanism evidence before attention audit". In the leaf collection "Attention Head Ledger", add a manual Report
+  titled "Attention Head Ledger", tag it "path-attention-ledger", and add a child note containing "Map attention heads back
+  to Attention Is All You Need". Create nested collection path "Data Queue > Curation Failure Spine > Deduplication Failure
+  Ledger". In the middle collection "Curation Failure Spine", add a manual Report titled "Curation Failure Spine Index", tag
+  it "path-curation-spine", and add a child note containing "Index curation failure modes before dedup review". In the leaf
+  collection "Deduplication Failure Ledger", add a manual Report titled "Deduplication Failure Ledger", tag it "path-dedup-ledger",
+  and add a child note containing "Check deduplication failures against data validation notes". Create nested collection path
+  "Retrieval Queue > Retrieval Failure Spine > RAG Failure Case Ledger". In the middle collection "Retrieval Failure Spine",
+  add a manual Report titled "Retrieval Failure Spine Index", tag it "path-retrieval-spine", and add a child note containing
+  "Index retrieval failures before RAG ledger review". In the leaf collection "RAG Failure Case Ledger", add a manual Report
+  titled "RAG Failure Case Ledger", tag it "path-rag-failure", and add a child note containing "Link RAG failures back to
+  retrieval baseline evidence". Create nested collection path "Safety Queue > Red Team Spine > Red Team Escalation Lock".
+  In the middle collection "Red Team Spine", add a manual Report titled "Red Team Spine Index", tag it "path-red-team-spine",
+  and add a child note containing "Index safety red-team evidence before escalation". In the leaf collection "Red Team Escalation
+  Lock", add a manual Report titled "Red Team Escalation Lock", tag it "path-escalation-lock", and add a child note containing
+  "Escalate red-team lock against safety queue evidence". Create nested collection path "Scaling Queue > Scaling Caveat Spine
+  > Compute Frontier Caveats". In the middle collection "Scaling Caveat Spine", add a manual Report titled "Scaling Caveat
+  Spine Index", tag it "path-scaling-spine", and add a child note containing "Index scaling caveats before compute frontier
+  review". In the leaf collection "Compute Frontier Caveats", add a manual Report titled "Compute Frontier Caveats", tag it
+  "path-compute-frontier", and add a child note containing "Separate compute frontier caveats from Scaling Laws". Create nested
+  collection path "Compression Queue > Compression Delta Spine > Distillation Delta Ledger". In the middle collection "Compression
+  Delta Spine", add a manual Report titled "Compression Delta Spine Index", tag it "path-compression-spine", and add a child
+  note containing "Index compression deltas before distillation review". In the leaf collection "Distillation Delta Ledger",
+  add a manual Report titled "Distillation Delta Ledger", tag it "path-distillation-delta", and add a child note containing
+  "Compare distillation deltas with compression baseline". Create nested collection path "Agent Systems > Tool Trace Spine
+  > Tool Trace Exception Board". In the middle collection "Tool Trace Spine", add a manual Report titled "Tool Trace Spine
+  Index", tag it "path-tool-trace-spine", and add a child note containing "Index tool traces before exception review". In
+  the leaf collection "Tool Trace Exception Board", add a manual Report titled "Tool Trace Exception Board", tag it "path-tool-exception",
+  and add a child note containing "Review tool trace exceptions before benchmark lock". Create nested collection path "Long
+  Context Queue > Context Window Spine > Window Regression Ledger". In the middle collection "Context Window Spine", add a
+  manual Report titled "Context Window Spine Index", tag it "path-context-spine", and add a child note containing "Index context-window
+  evidence before regression review". In the leaf collection "Window Regression Ledger", add a manual Report titled "Window
+  Regression Ledger", tag it "path-window-regression", and add a child note containing "Bind regression ledger to Longformer
+  sparse attention evidence". Create nested collection path "Optimization Queue > Optimizer Evidence Spine > AdamW Baseline
+  Delta". In the middle collection "Optimizer Evidence Spine", add a manual Report titled "Optimizer Evidence Spine Index",
+  tag it "path-optimizer-spine", and add a child note containing "Index optimizer evidence before AdamW comparison". In the
+  leaf collection "AdamW Baseline Delta", add a manual Report titled "AdamW Baseline Delta", tag it "path-adamw-delta", and
+  add a child note containing "Backtest AdamW delta against optimizer defaults". Create nested collection path "Robustness
+  Queue > Attack Surface Spine > Attack Surface Register". In the middle collection "Attack Surface Spine", add a manual Report
+  titled "Attack Surface Spine Index", tag it "path-attack-spine", and add a child note containing "Index robustness evidence
+  before attack register review". In the leaf collection "Attack Surface Register", add a manual Report titled "Attack Surface
+  Register", tag it "path-attack-register", and add a child note containing "Tie attack surface register to adversarial examples".
+  Create nested collection path "Interpretability Queue > Circuit Dispute Spine > Circuit Dispute Ledger". In the middle collection
+  "Circuit Dispute Spine", add a manual Report titled "Circuit Dispute Spine Index", tag it "path-circuit-spine", and add
+  a child note containing "Index interpretability disputes before circuit review". In the leaf collection "Circuit Dispute
+  Ledger", add a manual Report titled "Circuit Dispute Ledger", tag it "path-circuit-dispute", and add a child note containing
+  "Review circuit dispute ledger before export lock". Create nested collection path "Benchmark Queue > Benchmark Release Spine
+  > Release Gate Lock". In the middle collection "Benchmark Release Spine", add a manual Report titled "Benchmark Release
+  Spine Index", tag it "path-release-spine", and add a child note containing "Index benchmark release evidence before final
+  gate". In the leaf collection "Release Gate Lock", add a manual Report titled "Release Gate Lock", tag it "path-release-lock",
+  and add a child note containing "Lock release gate after benchmark evidence review". Then create these exact extra dependency/export
+  files: C:\Users\User\Documents\zotero_research_extreme_batch_manifest.tsv with exactly this content: ''batch\tcollections\titems\tdepends_on\tstatus\nlinux-core\t22\t22\tzotero_research_handoff.tsv\tready\nflat-extreme\t12\t12\tzotero_research_tag_audit.csv\tready\nnested-labyrinth\t24\t24\tzotero_research_hierarchy_path_matrix.tsv\tlocked\ndependency-lock\t58\t58\tzotero_research_bundle_crosswalk.tsv\tlocked''.
+  C:\Users\User\Documents\zotero_research_cross_export_map.csv with exactly this content: ''export,source,depends_on,status\ncompression-review,Compression
+  Queue,zotero_research_review_queue.txt,ready\nagent-review,Agent Systems,zotero_research_tag_audit.csv,ready\ncontext-review,Long
+  Context Queue,zotero_research_bundle_crosswalk.tsv,ready\nextreme-review,Transformer Audit,zotero_research_extreme_batch_manifest.tsv,locked''.
+  C:\Users\User\Documents\zotero_research_dependency_ladder.tsv with exactly this content: ''level\tartifact\tparent\tstatus\n1\tzotero_research_handoff.tsv\tzotero.sqlite\tchecked\n2\tzotero_research_counts.txt\tzotero_research_handoff.tsv\tchecked\n3\tzotero_research_bundle_crosswalk.tsv\tzotero_research_counts.txt\tchecked\n4\tzotero_research_hierarchy_path_matrix.tsv\tzotero_research_bundle_crosswalk.tsv\tchecked\n5\tzotero_research_cross_collection_dependency_graph.tsv\tzotero_research_hierarchy_path_matrix.tsv\tchecked\n6\tzotero_research_final_labyrinth_lock.txt\tzotero_research_cross_collection_dependency_graph.tsv\tlocked''.
+  C:\Users\User\Documents\zotero_research_quality_gates.txt with exactly this content: ''gate_1=collections_58_visible\ngate_2=items_58_tagged\ngate_3=notes_58_reviewed\ngate_4=hierarchy_paths_12_locked\ngate_5=final_export_ready''.
+  C:\Users\User\Documents\zotero_research_final_extreme_lock.txt with exactly this content: ''database=zotero.sqlite\ncore_collections=22\nextra_collections=36\ntotal_required_collections=58\ntotal_required_items=58\ndependency_ladder=zotero_research_dependency_ladder.tsv\nstatus=labyrinth-hard-plus-ready''.
+  C:\Users\User\Documents\zotero_research_hierarchy_path_matrix.tsv with exactly this content: ''path\tintermediate_item\tleaf_item\tstatus\nResearch
+  > Transformer Mechanism Spine > Attention Head Ledger\tTransformer Mechanism Spine Index\tAttention Head Ledger\tlocked\nData
+  Queue > Curation Failure Spine > Deduplication Failure Ledger\tCuration Failure Spine Index\tDeduplication Failure Ledger\tlocked\nRetrieval
+  Queue > Retrieval Failure Spine > RAG Failure Case Ledger\tRetrieval Failure Spine Index\tRAG Failure Case Ledger\tlocked\nSafety
+  Queue > Red Team Spine > Red Team Escalation Lock\tRed Team Spine Index\tRed Team Escalation Lock\tlocked\nScaling Queue
+  > Scaling Caveat Spine > Compute Frontier Caveats\tScaling Caveat Spine Index\tCompute Frontier Caveats\tlocked\nCompression
+  Queue > Compression Delta Spine > Distillation Delta Ledger\tCompression Delta Spine Index\tDistillation Delta Ledger\tlocked\nAgent
+  Systems > Tool Trace Spine > Tool Trace Exception Board\tTool Trace Spine Index\tTool Trace Exception Board\tlocked\nLong
+  Context Queue > Context Window Spine > Window Regression Ledger\tContext Window Spine Index\tWindow Regression Ledger\tlocked\nOptimization
+  Queue > Optimizer Evidence Spine > AdamW Baseline Delta\tOptimizer Evidence Spine Index\tAdamW Baseline Delta\tlocked\nRobustness
+  Queue > Attack Surface Spine > Attack Surface Register\tAttack Surface Spine Index\tAttack Surface Register\tlocked\nInterpretability
+  Queue > Circuit Dispute Spine > Circuit Dispute Ledger\tCircuit Dispute Spine Index\tCircuit Dispute Ledger\tlocked\nBenchmark
+  Queue > Benchmark Release Spine > Release Gate Lock\tBenchmark Release Spine Index\tRelease Gate Lock\tlocked''. C:\Users\User\Documents\zotero_research_cross_collection_dependency_graph.tsv
+  with exactly this content: ''source_path\tdepends_on_file\tlock\nResearch > Transformer Mechanism Spine > Attention Head
+  Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nData Queue > Curation Failure Spine > Deduplication Failure Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nRetrieval
+  Queue > Retrieval Failure Spine > RAG Failure Case Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nSafety Queue
+  > Red Team Spine > Red Team Escalation Lock\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nScaling Queue > Scaling
+  Caveat Spine > Compute Frontier Caveats\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nCompression Queue > Compression
+  Delta Spine > Distillation Delta Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nAgent Systems > Tool Trace Spine
+  > Tool Trace Exception Board\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nLong Context Queue > Context Window Spine
+  > Window Regression Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nOptimization Queue > Optimizer Evidence Spine
+  > AdamW Baseline Delta\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nRobustness Queue > Attack Surface Spine > Attack
+  Surface Register\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nInterpretability Queue > Circuit Dispute Spine > Circuit
+  Dispute Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nBenchmark Queue > Benchmark Release Spine > Release Gate
+  Lock\tzotero_research_hierarchy_path_matrix.tsv\tlocked''. C:\Users\User\Documents\zotero_research_final_labyrinth_lock.txt
+  with exactly this content: ''database=zotero.sqlite\ncore_collections=22\nextra_collections=36\ntotal_required_collections=58\ntotal_required_items=58\nhierarchy_paths=12\npath_matrix=zotero_research_hierarchy_path_matrix.tsv\nstatus=labyrinth-hard-plus-ready''.
+  Use Zotero for library work and create required handoff/export artifacts directly at the specified paths using the available
+  automation/runtime file-writing method; do not open Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$zoteroExe = \"C:\\Program Files\\Zotero\\zotero.exe\"\nif (-not (Test-Path $zoteroExe)) {\n  $zoteroExe =\
+        \ \"$env:LOCALAPPDATA\\Zotero\\zotero.exe\"\n}\nif (Test-Path $zoteroExe) {\n  Start-Process -FilePath $zoteroExe\n\
+        \  Write-Output \"INIT_OK\"\n} else {\n  Write-Error \"Zotero not installed\"\n}\n"
+      timeout: 30
+    - type: wait
+      ms: 8000
+evaluation:
+  evaluator_id: evaluators.windows.zotero:ZoteroEvaluator
+  params:
+    check_id: zotero_create_collection_with_notes
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.zotero.create_collection_with_notes\tlinux.zotero.research_collection_with_notes\t\
+          hard-plus-ready\napp\tzotero\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.zotero.create_collection_with_notes
+
+          linux_peer=linux.zotero.research_collection_with_notes
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_zotero_create_collection_with_notes\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      - path: C:\Users\User\Documents\zotero_research_multifile_dependency_audit.tsv
+        exact_text: "file\tuses\tstatus\nzotero_research_counts.txt\tzotero_research_handoff.tsv\tchecked\nzotero_research_review_queue.txt\t\
+          zotero_research_counts.txt\tchecked\nzotero_research_tag_audit.csv\tzotero_research_review_queue.txt\tchecked\n\
+          zotero_research_final_index.txt\tzotero_research_bundle_crosswalk.tsv\tchecked"
+      - path: C:\Users\User\Documents\zotero_research_extreme_batch_manifest.tsv
+        exact_text: "batch\tcollections\titems\tdepends_on\tstatus\nlinux-core\t22\t22\tzotero_research_handoff.tsv\tready\n\
+          flat-extreme\t12\t12\tzotero_research_tag_audit.csv\tready\nnested-labyrinth\t24\t24\tzotero_research_hierarchy_path_matrix.tsv\t\
+          locked\ndependency-lock\t58\t58\tzotero_research_bundle_crosswalk.tsv\tlocked"
+      - path: C:\Users\User\Documents\zotero_research_cross_export_map.csv
+        exact_text: 'export,source,depends_on,status
+
+          compression-review,Compression Queue,zotero_research_review_queue.txt,ready
+
+          agent-review,Agent Systems,zotero_research_tag_audit.csv,ready
+
+          context-review,Long Context Queue,zotero_research_bundle_crosswalk.tsv,ready
+
+          extreme-review,Transformer Audit,zotero_research_extreme_batch_manifest.tsv,locked'
+      - path: C:\Users\User\Documents\zotero_research_dependency_ladder.tsv
+        exact_text: "level\tartifact\tparent\tstatus\n1\tzotero_research_handoff.tsv\tzotero.sqlite\tchecked\n2\tzotero_research_counts.txt\t\
+          zotero_research_handoff.tsv\tchecked\n3\tzotero_research_bundle_crosswalk.tsv\tzotero_research_counts.txt\tchecked\n\
+          4\tzotero_research_hierarchy_path_matrix.tsv\tzotero_research_bundle_crosswalk.tsv\tchecked\n5\tzotero_research_cross_collection_dependency_graph.tsv\t\
+          zotero_research_hierarchy_path_matrix.tsv\tchecked\n6\tzotero_research_final_labyrinth_lock.txt\tzotero_research_cross_collection_dependency_graph.tsv\t\
+          locked"
+      - path: C:\Users\User\Documents\zotero_research_quality_gates.txt
+        exact_text: 'gate_1=collections_58_visible
+
+          gate_2=items_58_tagged
+
+          gate_3=notes_58_reviewed
+
+          gate_4=hierarchy_paths_12_locked
+
+          gate_5=final_export_ready'
+      - path: C:\Users\User\Documents\zotero_research_final_extreme_lock.txt
+        exact_text: 'database=zotero.sqlite
+
+          core_collections=22
+
+          extra_collections=36
+
+          total_required_collections=58
+
+          total_required_items=58
+
+          dependency_ladder=zotero_research_dependency_ladder.tsv
+
+          status=labyrinth-hard-plus-ready'
+      - path: C:\Users\User\Documents\zotero_research_hierarchy_path_matrix.tsv
+        exact_text: "path\tintermediate_item\tleaf_item\tstatus\nResearch > Transformer Mechanism Spine > Attention Head Ledger\t\
+          Transformer Mechanism Spine Index\tAttention Head Ledger\tlocked\nData Queue > Curation Failure Spine > Deduplication\
+          \ Failure Ledger\tCuration Failure Spine Index\tDeduplication Failure Ledger\tlocked\nRetrieval Queue > Retrieval\
+          \ Failure Spine > RAG Failure Case Ledger\tRetrieval Failure Spine Index\tRAG Failure Case Ledger\tlocked\nSafety\
+          \ Queue > Red Team Spine > Red Team Escalation Lock\tRed Team Spine Index\tRed Team Escalation Lock\tlocked\nScaling\
+          \ Queue > Scaling Caveat Spine > Compute Frontier Caveats\tScaling Caveat Spine Index\tCompute Frontier Caveats\t\
+          locked\nCompression Queue > Compression Delta Spine > Distillation Delta Ledger\tCompression Delta Spine Index\t\
+          Distillation Delta Ledger\tlocked\nAgent Systems > Tool Trace Spine > Tool Trace Exception Board\tTool Trace Spine\
+          \ Index\tTool Trace Exception Board\tlocked\nLong Context Queue > Context Window Spine > Window Regression Ledger\t\
+          Context Window Spine Index\tWindow Regression Ledger\tlocked\nOptimization Queue > Optimizer Evidence Spine > AdamW\
+          \ Baseline Delta\tOptimizer Evidence Spine Index\tAdamW Baseline Delta\tlocked\nRobustness Queue > Attack Surface\
+          \ Spine > Attack Surface Register\tAttack Surface Spine Index\tAttack Surface Register\tlocked\nInterpretability\
+          \ Queue > Circuit Dispute Spine > Circuit Dispute Ledger\tCircuit Dispute Spine Index\tCircuit Dispute Ledger\t\
+          locked\nBenchmark Queue > Benchmark Release Spine > Release Gate Lock\tBenchmark Release Spine Index\tRelease Gate\
+          \ Lock\tlocked"
+      - path: C:\Users\User\Documents\zotero_research_cross_collection_dependency_graph.tsv
+        exact_text: "source_path\tdepends_on_file\tlock\nResearch > Transformer Mechanism Spine > Attention Head Ledger\t\
+          zotero_research_hierarchy_path_matrix.tsv\tlocked\nData Queue > Curation Failure Spine > Deduplication Failure Ledger\t\
+          zotero_research_hierarchy_path_matrix.tsv\tlocked\nRetrieval Queue > Retrieval Failure Spine > RAG Failure Case\
+          \ Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nSafety Queue > Red Team Spine > Red Team Escalation\
+          \ Lock\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nScaling Queue > Scaling Caveat Spine > Compute Frontier\
+          \ Caveats\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nCompression Queue > Compression Delta Spine > Distillation\
+          \ Delta Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nAgent Systems > Tool Trace Spine > Tool Trace\
+          \ Exception Board\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nLong Context Queue > Context Window Spine\
+          \ > Window Regression Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nOptimization Queue > Optimizer\
+          \ Evidence Spine > AdamW Baseline Delta\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nRobustness Queue > Attack\
+          \ Surface Spine > Attack Surface Register\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nInterpretability Queue\
+          \ > Circuit Dispute Spine > Circuit Dispute Ledger\tzotero_research_hierarchy_path_matrix.tsv\tlocked\nBenchmark\
+          \ Queue > Benchmark Release Spine > Release Gate Lock\tzotero_research_hierarchy_path_matrix.tsv\tlocked"
+      - path: C:\Users\User\Documents\zotero_research_final_labyrinth_lock.txt
+        exact_text: 'database=zotero.sqlite
+
+          core_collections=22
+
+          extra_collections=36
+
+          total_required_collections=58
+
+          total_required_items=58
+
+          hierarchy_paths=12
+
+          path_matrix=zotero_research_hierarchy_path_matrix.tsv
+
+          status=labyrinth-hard-plus-ready'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 360
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - zotero
+  - collection
+  - note
+  - tag
+  - hard
+  - single_app
+  - evaluator_backed
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  - extreme-hard
+  - multi_batch_zotero
+  - dependency_export_network
+  - nested_collection_hierarchy
+  difficulty: hard
+  app_name: zotero
+  human_steps: 650
+  description: Extreme Zotero hard task with 58 collections, 58 item titles, nested collection paths, and exact dependency/export
+    files.
+  hardness: hard-evaluable
+  evaluation_standard: all requested collections, item titles, tags, notes, and exact handoff files are checked via SQLite
+    and filesystem inspection
+  estimated_min_steps: 560
+  linux_peer: linux.zotero.research_collection_with_notes
+  difficulty_alignment: exceeds Linux Zotero hard task by adding a second batch of collections/items, real nested collection
+    paths, and a multi-file export dependency network
+  linux_peer_file: tasks/linux/zotero_research_collection_with_notes_hard.yaml
+  alignment_status: direct
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

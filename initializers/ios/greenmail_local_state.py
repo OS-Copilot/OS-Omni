@@ -8,6 +8,8 @@ import sqlite3
 import subprocess
 from pathlib import Path
 
+from platforms.ios.runtime_env.simulator_manager import get_app_data_container_path
+
 
 MAILY_BUNDLE_ID = "de.enough.maily"
 DELTACHAT_BUNDLE_ID = "chat.delta"
@@ -171,13 +173,7 @@ def _resolve_app_data_container_root(
     if not udid:
         raise ValueError(f"Unable to resolve app data container for {bundle_id}: missing simulator UDID")
 
-    result = subprocess.run(
-        ["xcrun", "simctl", "get_app_container", udid, bundle_id, "data"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return Path(result.stdout.strip()).expanduser().resolve()
+    return Path(get_app_data_container_path(udid, bundle_id)).expanduser().resolve()
 
 
 def _find_shared_app_group_root(*, udid: str | None, group_id: str) -> Path:

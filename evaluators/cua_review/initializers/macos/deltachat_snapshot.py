@@ -14,12 +14,15 @@ attaches are on disk.  It sends nothing and creates nothing.
 from __future__ import annotations
 
 import json
+import shlex
+from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
 
 #: DeltaChat's profile root, relative to the guest home directory.
 DEFAULT_PROFILE_ROOT = "~/Library/Application Support/DeltaChat"
+REBUILT_ASSET_ROOT = Path(__file__).resolve().parents[4] / "tasks/v1/macos/assets/deltachat"
 
 
 class DeltaChatSnapshotInitializer(MacAppInitializer):
@@ -29,6 +32,44 @@ class DeltaChatSnapshotInitializer(MacAppInitializer):
     APP_NAME = "DeltaChat"
     BUNDLE_ID = "chat.delta.desktop.electron"
     SETTLE_MS = 5000
+
+    def initialize(self, context: Mapping[str, Any]):
+        self._reconstructed_documents: list[dict[str, str]] = []
+        result = super().initialize(context)
+        if self._reconstructed_documents:
+            result.metadata["read_only"] = False
+            result.metadata["asset_reconstruction"] = list(self._reconstructed_documents)
+        return result
+
+    def _launch(self, controller: Any, app_name: str, app_path: str) -> str:
+        """Foreground DeltaChat and clear transient system pickers left by prior tasks.
+
+        The author-eval queue deliberately reuses one macOS desktop. A previous
+        model run can leave Character Viewer, Dictation, or another transient
+        system panel open over DeltaChat. Dismiss those panels during setup,
+        then reactivate the target app so the next screenshot starts clean.
+        """
+        run_bash = getattr(controller, "run_bash_script", None)
+        if callable(run_bash):
+            result = run_bash("/usr/bin/killall CharacterPalette 2>/dev/null || true", timeout=10)
+            if isinstance(result, Mapping) and int(result.get("returncode", 0)) != 0:
+                raise InitializationError("the lingering macOS Character Viewer could not be closed")
+        launched = super()._launch(controller, app_name, app_path)
+        hotkey = getattr(controller, "hotkey", None)
+        if callable(hotkey):
+            for _ in range(2):
+                result = hotkey("escape")
+                if isinstance(result, Mapping) and result.get("success") is False:
+                    raise InitializationError(
+                        "a transient system overlay could not be dismissed before DeltaChat"
+                    )
+            outcome = controller.launch_app(app_name)
+            if isinstance(outcome, Mapping) and outcome.get("success") is False:
+                raise InitializationError(
+                    f"{app_name} could not be reactivated after clearing overlays: "
+                    f"{outcome.get('error') or outcome.get('message')}"
+                )
+        return f"{launched}; dismissed transient overlays and reactivated {app_name}"
 
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
         profile_root = str(params.get("profile_root") or DEFAULT_PROFILE_ROOT)
@@ -122,18 +163,25 @@ class DeltaChatSnapshotInitializer(MacAppInitializer):
                     f"{chat_name} already carries the target record {text!r}"
                 )
 
-        documents = self._check_documents(controller, params.get("required_files"))
+        documents, reconstructed = self._check_documents(controller, params.get("required_files"))
+        self._reconstructed_documents.extend(reconstructed)
         return (
             f"DeltaChat carries {len(accounts)} account database(s) with the seeded source chats, "
             f"no target chats or records"
             + (f", and the {documents} attached document(s) on disk" if documents else "")
+            + (
+                "; restored missing task input file(s) from versioned benchmark assets: "
+                + ", ".join(item["filename"] for item in reconstructed)
+                if reconstructed
+                else ""
+            )
         )
 
-    def _check_documents(self, controller: Any, paths: Any) -> int:
-        """Confirm the documents the instruction attaches are on disk."""
+    def _check_documents(self, controller: Any, paths: Any) -> tuple[int, list[dict[str, str]]]:
+        """Check attached inputs, rebuilding only missing versioned assets."""
         wanted = [str(path) for path in (paths or []) if str(path)]
         if not wanted:
-            return 0
+            return 0, []
         script = "\n".join(
             [
                 "import json",
@@ -145,8 +193,46 @@ class DeltaChatSnapshotInitializer(MacAppInitializer):
         )
         observed = self._guest_json(controller, script, what="the attached documents")
         missing = [item["path"] for item in observed if not item.get("exists")]
+        reconstructed: list[dict[str, str]] = []
         if missing:
-            raise InitializationError(
-                "the documents the instruction attaches are missing: " + ", ".join(missing)
-            )
-        return len(observed)
+            for remote in missing:
+                filename = Path(remote).name
+                source = REBUILT_ASSET_ROOT / filename
+                if not source.is_file():
+                    raise InitializationError(
+                        "the documents the instruction attaches are missing and no rebuilt "
+                        f"asset is available for {remote}"
+                    )
+                staged = f"/tmp/os-omni-deltachat-inputs/{filename}"
+                controller.run_bash_script(
+                    f"mkdir -p {shlex.quote(str(Path(staged).parent))}"
+                )
+                controller.upload_file(str(source), staged)
+                # The known task paths are under ~/Documents. Resolve $HOME in
+                # the shell, and never overwrite an existing user file.
+                destination = f'"$HOME/Documents/{filename}"'
+                result = controller.run_bash_script(
+                    "mkdir -p \"$HOME/Documents\"\n"
+                    f"if [ ! -f {destination} ]; then cp -n {shlex.quote(staged)} {destination}; fi",
+                    timeout=20,
+                )
+                if str(result.get("status") or "").lower() in {"error", "failed", "fail"} or result.get("returncode", 0) != 0:
+                    raise InitializationError(
+                        f"the rebuilt {filename} input could not be copied into Documents"
+                    )
+                import hashlib
+
+                reconstructed.append(
+                    {
+                        "filename": filename,
+                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                        "source": str(source),
+                    }
+                )
+            observed = self._guest_json(controller, script, what="the attached documents")
+            missing = [item["path"] for item in observed if not item.get("exists")]
+            if missing:
+                raise InitializationError(
+                    "the rebuilt attached document(s) remain missing: " + ", ".join(missing)
+                )
+        return len(observed), reconstructed

@@ -1,0 +1,20 @@
+{
+  "paths": [],
+  "reconstructed": true,
+  "calibration_input": "pure RGB stripes at declared sample boxes, padded eight pixels",
+  "provenance": [
+    {
+      "source": "portrait_30.jpg",
+      "target": "portrait_17.jpg",
+      "source_sha256": "b6237067e7ca26eb618ca8f8d4cb7b09bb931ac8c2e5cdf2928146bbd9c5ad91",
+      "fixture_sha256": "e978e3621d0903c462d8657eb27c4c4620370beb469936f25e6ab4e792d178ad"
+    },
+    {
+      "source": "portrait_28.jpg",
+      "target": "portrait_16.jpg",
+      "source_sha256": "c70ca0ab1b961103079b3ef5fcc520804d2ede1d0660a39d029d375ae0d9760a",
+      "fixture_sha256": "afd8d3b714cced5b54bb39d819ae4856a46c8a148667b615313d5a9070b5aa02"
+    }
+  ],
+  "limitations": []
+}

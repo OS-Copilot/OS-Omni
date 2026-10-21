@@ -58,6 +58,7 @@ class BaseEpisodeRunner(ABC):
         self.step_settle_seconds = step_settle_seconds
         self._run_dir = Path(run_dir) if run_dir is not None else None
         self._logger = logger_obj or logging.getLogger(self.__class__.__module__)
+        self._last_action_feedback: Optional[str] = None
 
         if self.action_mode != "code_adapter":
             raise ValueError(
@@ -93,7 +94,9 @@ class BaseEpisodeRunner(ABC):
 
     def _build_extra_step_prompt(self, observation: Any) -> Optional[str]:
         if self.action_mode == "code_adapter":
-            return None
+            if not self._last_action_feedback:
+                return None
+            return "Result from the previous Appium action:\n" + self._last_action_feedback
 
         if self.observation_mode != "screenshot_only":
             return None
@@ -277,7 +280,28 @@ class BaseEpisodeRunner(ABC):
         elif action_error:
             result_message = action_error
         self._logger.info("[Step %d] Result: %s", current_step, result_message)
+        payload = self._build_action_execution_payload(
+            action_result=action_result,
+            action_success=action_success,
+            action_error=action_error,
+        )
+        self._last_action_feedback = self._render_action_feedback(payload)
         return action_result, action_success, action_error, action_latency
+
+    @staticmethod
+    def _render_action_feedback(payload: Optional[Dict[str, Any]], limit: int = 5000) -> Optional[str]:
+        """Keep the previous tool result visible to the code-adapter model."""
+        if not payload:
+            return None
+        parts = [f"status: {payload.get('status', 'UNKNOWN')}"]
+        if payload.get("result"):
+            parts.append(f"result:\n{payload['result']}")
+        if payload.get("error"):
+            parts.append(f"error:\n{payload['error']}")
+        rendered = "\n".join(parts)
+        if len(rendered) > limit:
+            rendered = rendered[:limit] + "\n[previous action output truncated]"
+        return rendered
 
     def _observe_final_state(self) -> Tuple[Optional[Any], Optional[str]]:
         final_observation = None
@@ -348,14 +372,27 @@ class BaseEpisodeRunner(ABC):
         if action_result is None and action_error is None:
             return None
         if action_success and isinstance(action_result, dict):
+            details = str(action_result.get("message") or "")
+            stdout = str(action_result.get("stdout") or "").strip()
+            stderr = str(action_result.get("stderr") or "").strip()
+            if stdout:
+                details = f"{details}\nstdout:\n{stdout}" if details else f"stdout:\n{stdout}"
+            if stderr:
+                details = f"{details}\nstderr:\n{stderr}" if details else f"stderr:\n{stderr}"
             return {
                 "status": "SUCCESS",
-                "result": action_result.get("message"),
+                "result": details or None,
                 "error": None,
             }
         error_message = action_error
         if error_message is None and isinstance(action_result, dict):
             error_message = action_result.get("message")
+        stdout = str((action_result or {}).get("stdout") or "").strip() if isinstance(action_result, dict) else ""
+        stderr = str((action_result or {}).get("stderr") or "").strip() if isinstance(action_result, dict) else ""
+        if stdout:
+            error_message = f"{error_message or 'Action failed'}\nstdout:\n{stdout}"
+        if stderr:
+            error_message = f"{error_message or 'Action failed'}\nstderr:\n{stderr}"
         return {
             "status": "ERROR",
             "result": None,

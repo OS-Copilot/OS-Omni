@@ -1,0 +1,30 @@
+{
+  "original_initializer": "evaluators.cua_review.initializers.android.deltachat23_launcher_only_1787350530:DeltaChat23LauncherOnlyInitializer",
+  "source_input_repair": true,
+  "reconstructed_media": {
+    "provenance": "Generated reconstruction with built-in imagegen; not original benchmark photos",
+    "media_index_verified": true,
+    "photos": [
+      {
+        "scene": "office_desk",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_01.png",
+        "sha256": "d0f58f03927f94d71101dbefee9163ea8a5ee410a98531cceaec0036d9fe61c7"
+      },
+      {
+        "scene": "meeting_room",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_02.png",
+        "sha256": "8c28fe844ab4ea1afaf48978c1a239dac021d08a719f35c18cd17c56d0db5839"
+      },
+      {
+        "scene": "receiving_boxes",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_03.png",
+        "sha256": "c81b88b2d3fd75ad25e8e51b86e61aeac116276122eb247a105b452f70e1f9c6"
+      },
+      {
+        "scene": "phone_repair",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_04.png",
+        "sha256": "454ab36653a5009b856054b2d6570e564ed11d4a50b8eb32ed51a46ebeb2a8fa"
+      }
+    ]
+  }
+}

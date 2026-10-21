@@ -13,6 +13,8 @@ mailbox the replies are posted to is listening.  It sends nothing.
 from __future__ import annotations
 
 import json
+import shlex
+import time
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
@@ -37,7 +39,19 @@ class ThunderbirdRN2041SnapshotInitializer(MacAppInitializer):
     BUNDLE_ID = "org.mozilla.thunderbird"
     SETTLE_MS = 7000
 
+    def initialize(self, context: Mapping[str, Any]):
+        result = super().initialize(context)
+        if getattr(self, "_service_started", False):
+            result.metadata["read_only"] = False
+            result.metadata["provisioned_service"] = {
+                "service": "loopback SMTP capture sink",
+                "host": "127.0.0.1",
+                "port": int((context.get("params") or {}).get("smtp_port") or DEFAULT_SMTP_PORT),
+            }
+        return result
+
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
+        self._service_started = False
         profile_root = str(params.get("profile_root") or DEFAULT_PROFILE_ROOT)
         script = "\n".join(
             [
@@ -169,7 +183,7 @@ class ThunderbirdRN2041SnapshotInitializer(MacAppInitializer):
                     f"the Thunderbird profile carries no {identity} identity"
                 )
 
-        self._verify_capture_mailbox(controller, params)
+        self._ensure_capture_mailbox(controller, params)
 
         return (
             f"Thunderbird is running with {source_count} Inbox messages, the six seeded "
@@ -177,7 +191,7 @@ class ThunderbirdRN2041SnapshotInitializer(MacAppInitializer):
             f"and the capture mailbox listening"
         )
 
-    def _verify_capture_mailbox(self, controller: Any, params: Mapping[str, Any]) -> None:
+    def _ensure_capture_mailbox(self, controller: Any, params: Mapping[str, Any]) -> None:
         host = str(params.get("smtp_host") or "127.0.0.1")
         port = int(params.get("smtp_port") or DEFAULT_SMTP_PORT)
         capture_dir = str(params.get("smtp_capture_dir") or DEFAULT_SMTP_CAPTURE_DIR)
@@ -202,10 +216,81 @@ class ThunderbirdRN2041SnapshotInitializer(MacAppInitializer):
         )
         observed = self._guest_json(controller, script, what="the capture mailbox")
         if not observed.get("listening"):
-            raise InitializationError(
-                f"the capture mailbox is not listening on {host}:{port}"
-            )
+            if host not in {"127.0.0.1", "localhost"}:
+                raise InitializationError("the capture mailbox can only be provisioned on loopback")
+            self._start_capture_server(controller, port, capture_dir)
+            # launchctl submit returns once the job is accepted, not once the
+            # child has bound its socket. Poll briefly instead of treating a
+            # normal process-start race as a broken benchmark environment.
+            deadline = time.monotonic() + float(params.get("smtp_start_timeout_seconds") or 8.0)
+            while True:
+                observed = self._guest_json(controller, script, what="the capture mailbox")
+                if observed.get("listening"):
+                    break
+                if time.monotonic() >= deadline:
+                    raise InitializationError(f"the capture mailbox did not start on {host}:{port}")
+                time.sleep(0.25)
+            self._service_started = True
         if not observed.get("capture_exists"):
             raise InitializationError(
                 f"the capture directory is missing at {observed.get('capture_dir')}"
             )
+
+    @staticmethod
+    def _start_capture_server(controller: Any, port: int, capture_dir: str) -> None:
+        """Start a loopback-only SMTP sink without changing Thunderbird's profile."""
+        server = r'''import datetime, pathlib, socketserver, uuid
+root = pathlib.Path(CAPTURE_DIR).expanduser()
+root.mkdir(parents=True, exist_ok=True)
+class Handler(socketserver.StreamRequestHandler):
+    def handle(self):
+        self.wfile.write(b"220 localhost ThunderbirdBench SMTP\r\n")
+        data = []
+        in_data = False
+        while True:
+            line = self.rfile.readline(1024 * 1024)
+            if not line:
+                return
+            text = line.decode("utf-8", "replace").rstrip("\r\n")
+            upper = text.upper()
+            if in_data:
+                if text == ".":
+                    name = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f") + "-" + uuid.uuid4().hex + ".eml"
+                    (root / name).write_bytes(("\r\n".join(data) + "\r\n").encode("utf-8"))
+                    data = []
+                    in_data = False
+                    self.wfile.write(b"250 2.0.0 queued\r\n")
+                else:
+                    data.append(text[1:] if text.startswith("..") else text)
+            elif upper.startswith(("EHLO ", "HELO ")):
+                self.wfile.write(b"250-localhost\r\n250 SIZE 10485760\r\n")
+            elif upper.startswith(("MAIL FROM:", "RCPT TO:")):
+                self.wfile.write(b"250 2.1.0 OK\r\n")
+            elif upper == "DATA":
+                in_data = True
+                self.wfile.write(b"354 End data with <CR><LF>.<CR><LF>\r\n")
+            elif upper == "RSET":
+                data = []
+                in_data = False
+                self.wfile.write(b"250 2.0.0 reset\r\n")
+            elif upper == "NOOP":
+                self.wfile.write(b"250 2.0.0 OK\r\n")
+            elif upper == "QUIT":
+                self.wfile.write(b"221 2.0.0 bye\r\n")
+                return
+            else:
+                self.wfile.write(b"250 2.0.0 OK\r\n")
+class Server(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+Server(("127.0.0.1", PORT), Handler).serve_forever()
+'''
+        script = server.replace("CAPTURE_DIR", repr(capture_dir)).replace("PORT", str(port))
+        service_label = "com.osomni.thunderbird.smtp"
+        command = (
+            f"launchctl remove {service_label} >/dev/null 2>&1 || true; "
+            f"launchctl submit -l {service_label} -- /usr/bin/python3 -u -c {shlex.quote(script)}"
+        )
+        result = controller.run_bash_script(command, timeout=20)
+        if int(result.get("returncode", 0)) != 0:
+            raise InitializationError("the loopback SMTP capture service could not be started")

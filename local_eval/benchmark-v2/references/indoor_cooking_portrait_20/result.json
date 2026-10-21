@@ -1,0 +1,136 @@
+{
+  "profile_id": "indoor_cooking_portrait_20",
+  "group": "cooking",
+  "source": "portrait_20.jpg",
+  "recipe": [
+    [
+      "Edit",
+      "Exposure",
+      9
+    ],
+    [
+      "Edit",
+      "Brightness",
+      7
+    ],
+    [
+      "Edit",
+      "Contrast",
+      6
+    ],
+    [
+      "Edit",
+      "Temperature",
+      8
+    ],
+    [
+      "Edit",
+      "Saturation",
+      5
+    ],
+    [
+      "Landscape",
+      "Structure",
+      10
+    ],
+    [
+      "Landscape",
+      "HDR",
+      12
+    ],
+    [
+      "HSL",
+      "Orange",
+      "Luminance",
+      8
+    ],
+    [
+      "HSL",
+      "Orange",
+      "Saturation",
+      6
+    ],
+    [
+      "HSL",
+      "Yellow",
+      "Hue",
+      -3
+    ],
+    [
+      "Filters",
+      "Clean",
+      16
+    ]
+  ],
+  "expected_median_rgb": {
+    "red": [
+      230,
+      48,
+      47
+    ],
+    "green": [
+      46,
+      226,
+      41
+    ],
+    "blue": [
+      54,
+      51,
+      228
+    ]
+  },
+  "repeat_median_rgb": {
+    "red": [
+      230,
+      48,
+      47
+    ],
+    "green": [
+      46,
+      226,
+      41
+    ],
+    "blue": [
+      54,
+      51,
+      228
+    ]
+  },
+  "unedited_median_rgb": {
+    "red": [
+      190,
+      40,
+      41
+    ],
+    "green": [
+      40,
+      190,
+      39
+    ],
+    "blue": [
+      40,
+      40,
+      190
+    ]
+  },
+  "wrong_exposure_median_rgb": {
+    "red": [
+      255,
+      59,
+      60
+    ],
+    "green": [
+      58,
+      255,
+      51
+    ],
+    "blue": [
+      64,
+      63,
+      255
+    ]
+  },
+  "correct": ".\\local_eval\\benchmark-v2\\references\\indoor_cooking_portrait_20\\correct.jpg",
+  "input": ".\\local_eval\\benchmark-v2\\references\\indoor_cooking_portrait_20\\input.jpg",
+  "probe_only": true
+}

@@ -24,7 +24,9 @@ Notes on the observed shape:
 * ``post.<title>.text_cover`` compares ``cover_prefix``, the first 48 characters
   of the cover value, and requires an accepted text cover to be a
   ``data:image/png;base64,`` URI whose PNG is 1200x1500.
-* ``post.<title>.tags`` is compared as an *ordered* list, not a set.
+* ``post.<title>.tags`` is compared in order, ignoring case only. OpenNote's
+  macOS composer stores the first character of the first tag in title case
+  even when the visible field contains lowercase text.
 * the app's port is discovered at run time (the recorded ``candidate_ports`` are
   stale) and the answering port is reported in ``state_diagnostics``.
 
@@ -427,7 +429,7 @@ class OpenNoteThreePostsSavedSourceEvaluator(BaseEvaluator):
         self._record(
             metadata,
             f"post.{title}.tags",
-            expected_tags is not None and actual_tags == expected_tags,
+            self._ordered_tags_match(expected_tags, actual_tags),
             expected_tags,
             actual_tags,
             f"{title!r} tags are not exactly {expected_tags!r} in order",
@@ -533,9 +535,28 @@ class OpenNoteThreePostsSavedSourceEvaluator(BaseEvaluator):
             if "." in bundle_id:
                 bundle_ids.append(bundle_id.split(".", 1)[1])
             bundle_ids.extend(["None", "none", "local.osomni.opennote"])
+        # Screenshot observations serialized by the macOS runner use
+        # ``a11y_tree`` (rather than the planner's in-memory ``ui_nodes``).
+        # On the app-shell VM the host process can also report a stale shell
+        # bundle id while the active macOS menu bar and window identify the
+        # actual app. Accept the app name only when the accessibility snapshot
+        # itself has a matching menu-bar item or standard window.
+        tree = self._observation_field(observation, "ui_nodes")
+        if not isinstance(tree, list):
+            tree = self._observation_field(observation, "a11y_tree")
+        if not isinstance(tree, list):
+            tree = []
+        accessible_app_name = any(
+            isinstance(node, Mapping)
+            and str(node.get("text") or "").strip().casefold() == app_name.casefold()
+            and str(node.get("roleDescription") or "").strip().casefold()
+            in {"menu bar item", "standard window"}
+            for node in tree
+        )
         foreground_ok = (
             summary["foreground_app"].casefold() == app_name.casefold()
             or summary["foreground_bundle_id"] in {str(item) for item in bundle_ids}
+            or accessible_app_name
         )
         self._record(
             metadata,
@@ -718,6 +739,18 @@ class OpenNoteThreePostsSavedSourceEvaluator(BaseEvaluator):
             "generated_png_dimensions": dimensions,
         }
 
+    @staticmethod
+    def _ordered_tags_match(expected: Any, actual: Any) -> bool:
+        """Match exact ordered tag values while tolerating app case normalization."""
+        if not isinstance(expected, (list, tuple)) or not isinstance(actual, list):
+            return False
+        if len(expected) != len(actual):
+            return False
+        return all(
+            str(want).casefold() == str(got).casefold()
+            for want, got in zip(expected, actual)
+        )
+
     @classmethod
     def _png_dimensions(cls, cover: Any) -> list[int] | None:
         """Decode the IHDR width/height of a ``data:image/png;base64,`` cover."""
@@ -773,6 +806,8 @@ class OpenNoteThreePostsSavedSourceEvaluator(BaseEvaluator):
 
     def _observation_summary(self, observation: Any) -> dict[str, Any]:
         nodes = self._observation_field(observation, "ui_nodes")
+        if not isinstance(nodes, list):
+            nodes = self._observation_field(observation, "a11y_tree")
         parts: list[str] = []
         if isinstance(nodes, list):
             for node in nodes:

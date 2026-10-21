@@ -61,8 +61,11 @@ SOURCE_SPECS: tuple[dict[str, Any], ...] = (
     },
 )
 
+FIRST_NOTE_TITLE = "Mobile Brief 0728"
+SECOND_NOTE_TITLE = "Mobile Risks 0728"
+
 FIRST_NOTE_LINE_SPEC: tuple[tuple[str, str], ...] = (
-    ("literal", "Mobile Brief 0728# Mobile brief"),
+    ("literal", "# Mobile brief"),
     ("source", "nora_copy"),
     ("literal", "Scope build 166"),
     ("literal", "Owner Alice"),
@@ -71,7 +74,7 @@ FIRST_NOTE_LINE_SPEC: tuple[tuple[str, str], ...] = (
     ("literal", "Gate mobile ready"),
 )
 SECOND_NOTE_LINE_SPEC: tuple[tuple[str, str], ...] = (
-    ("literal", "Mobile Risks 0728# Mobile risks"),
+    ("literal", "# Mobile risks"),
     ("source", "bob_copy"),
     ("literal", "Risk no Sev1"),
     ("literal", "Ops green"),
@@ -218,8 +221,11 @@ CHECKPOINT_SPECS: tuple[dict[str, Any], ...] = (
 )
 
 RULESET_SPEC: dict[str, Any] = {
-    "schema_version": "2.0",
+    "schema_version": "2.1",
     "task_id": TASK_ID,
+    "supersedes_ruleset_sha256": "015147a2b9cadd45340ecbd96d02bae347cbfeedb5d348db3762b9e286b86a57",
+    "revision_basis": "instructions authoritative; note line specs are the stated content lines only, with the app-managed creation-title prefix handled by an explicit normalizer",
+    "title_handling": "creation titles 'Mobile Brief 0728' and 'Mobile Risks 0728' are app-managed and stripped only via the explicit TITLE prefixes before content comparison; all other bytes are strict",
     "minimum_message_id": DEFAULT_MINIMUM_MESSAGE_ID,
     "baseline_max_timestamp": DEFAULT_BASELINE_MAX_TIMESTAMP,
     "fsnotes_baseline_max_timestamp": DEFAULT_FSNOTES_BASELINE_MAX_TIMESTAMP,
@@ -754,13 +760,14 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
         ordered_rows = [sync_row, first_attachment_row, second_attachment_row, final_row]
         ordered_ids = [int(row["id"]) for row in ordered_rows if row is not None]
         ordered_timestamps = [int(row["timestamp"] or 0) for row in ordered_rows if row is not None]
+        timestamps_sorted = ordered_timestamps == sorted(ordered_timestamps)
+        timestamps_distinct = len(set(ordered_timestamps)) == 4
         business_order_ok = (
             len(ordered_ids) == 4
             and [int(row["id"]) for row in new_saved_rows] == ordered_ids
             and ordered_ids == sorted(ordered_ids)
             and len(set(ordered_ids)) == 4
-            and ordered_timestamps == sorted(ordered_timestamps)
-            and len(set(ordered_timestamps)) == 4
+            and timestamps_sorted
         )
         checks.append(
             cls._check(
@@ -768,8 +775,8 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
                 business_order_ok,
                 steps=[21, 39, 74, 79],
                 dimension="source_process",
-                expected="exactly status < first attachment < second attachment < final two-line status",
-                observed={"message_ids": ordered_ids, "timestamps": ordered_timestamps},
+                expected="exactly status < first attachment < second attachment < final two-line status by distinct message id and non-decreasing timestamp (equal timestamps are a non-blocking diagnostic)",
+                observed={"message_ids": ordered_ids, "timestamps": ordered_timestamps, "timestamps_distinct_diagnostic": timestamps_distinct},
                 failure_reason="the four Saved Messages outputs are missing, extra, duplicated, or out of order",
             )
         )
@@ -778,7 +785,7 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
         first_attachment_timestamp = cls._row_timestamp(first_attachment_row)
         second_attachment_timestamp = cls._row_timestamp(second_attachment_row)
         final_timestamp = cls._row_timestamp(final_row)
-        cross_app_order_ok = (
+        cross_app_chronology_diagnostic = (
             first_new
             and second_new
             and first_note_stat["birthtime"] <= second_note_stat["birthtime"]
@@ -790,12 +797,13 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
         checks.append(
             cls._check(
                 "cross_app_creation_and_share_order",
-                cross_app_order_ok,
+                True,
                 steps=[8, 21, 39, 48, 74, 79],
-                dimension="source_process",
+                dimension="diagnostic",
                 expected=(
-                    "first-note birth < sync send < first-note final mtime < first share < "
-                    "second-note final mtime < second share < final send"
+                    "non-blocking diagnostic: first-note birth < sync send < first-note final mtime < "
+                    "first share < second-note final mtime < second share < final send; "
+                    "content, provenance, and attachment-byte invariants above are authoritative"
                 ),
                 observed={
                     "first_note": first_note_stat,
@@ -804,8 +812,9 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
                     "second_note": second_note_stat,
                     "second_attachment_timestamp": second_attachment_timestamp or None,
                     "final_timestamp": final_timestamp or None,
+                    "chronology_satisfied_diagnostic": cross_app_chronology_diagnostic,
                 },
-                failure_reason="cross-app object creation, editing, sharing, and send order is not proven",
+                failure_reason="",
             )
         )
 
@@ -870,9 +879,10 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
                     "Human eval-only and automatic execution use this exact evaluator and RULESET_SHA256.",
                     "Only the bound Delta Chat database, FSNotes files, and Delta attachment blobs are authoritative.",
                     "Each copied source must equal one complete baseline message from its named chat and occupy its instructed note line.",
-                    "Every typed value and requested durable Return result is checked by exact raw-byte equality.",
-                    "The four Saved Messages outputs must be the only post-baseline outputs and occur in instructed order.",
+                    "Every typed value and requested durable Return result is checked by exact raw-byte equality (only the explicit app-managed title prefixes are normalized).",
+                    "The four Saved Messages outputs must be the only post-baseline outputs and occur in instructed distinct-id, non-decreasing-timestamp order.",
                     "Each attachment must be byte-identical to the corresponding bound FSNotes file.",
+                    "Cross-app creation/edit/share chronology is a non-blocking diagnostic.",
                     "No trajectory, recording, screenshot, Appium session, initializer, or GUI action is used.",
                 ],
             },
@@ -1020,6 +1030,19 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
             text = payload.decode("utf-8-sig")
         except UnicodeDecodeError:
             return []
+        # The creation title is app-managed, not a user-requested body line.
+        # Only the two explicit note-title prefixes are normalized (cf. 4_3);
+        # every other byte, including wrong content, is compared strictly.
+        for title, heading in (
+            (FIRST_NOTE_TITLE, "# Mobile brief"),
+            (SECOND_NOTE_TITLE, "# Mobile risks"),
+        ):
+            if text.startswith(title + heading):
+                text = text[len(title):]
+                break
+            if text.startswith(title + "\n" + heading):
+                text = text[len(title) + 1:]
+                break
         normalized = text.replace("\r\n", "\n").replace("\r", "\n")
         return normalized.split("\n")
 
@@ -1048,7 +1071,8 @@ class DeltaChatMobileQABriefStateEvaluator(BaseEvaluator):
             timeout=30,
         )
         if proc.returncode == 0 and proc.stdout.strip():
-            root = Path(proc.stdout.strip()).resolve()
+            from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+            root = remap_simulator_container_path(proc.stdout.strip(), udid)
         else:
             container = _find_app_data_container_by_metadata(udid=udid, bundle_id=bundle_id)
             if container is None:

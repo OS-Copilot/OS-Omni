@@ -1,0 +1,109 @@
+task_id: ios.reminders.oracle.rework_seeded_agenda
+platform: ios
+instruction: >
+  In the Reminders app, go to the "Benchmark Tasks" list and turn it into the final event setup
+  agenda. Handle the similar-looking items carefully: keep "Bring receipt book" and
+  "Charge tablet batteries" exactly as they are, but remove "Bring recipe book" and
+  "Change tablet batteries". Rename only "Call venue" to "Call Riverside venue by noon",
+  "Draft volunteer roster" to "Draft final volunteer roster", and "Sketch lobby signs" to
+  "Sketch final lobby signs". Delete "Old flyer copy", "Reserve backup chairs", and
+  "Stale sponsor note". Add "Print name badges", "Pack extension cords", "Send setup timeline",
+  "Confirm snack pickup", and "Label check-in bins". When finished, the list must contain exactly
+  these reminders in this order: "Call Riverside venue by noon", "Draft final volunteer roster",
+  "Sketch final lobby signs", "Print name badges", "Pack extension cords", "Send setup timeline",
+  "Confirm snack pickup", "Label check-in bins", "Bring receipt book", and
+  "Charge tablet batteries".
+init:
+  initializer_id: initializers.ios.reminder_seed_open_app:ReminderSeedOpenAppInitializer
+  params:
+    bundle_id: com.apple.reminders
+    list_name: "Benchmark Tasks"
+    purge_existing_reminders: true
+    seed_reminders:
+      - title: "Call venue"
+      - title: "Draft volunteer roster"
+      - title: "Old flyer copy"
+      - title: "Reserve backup chairs"
+      - title: "Bring receipt book"
+      - title: "Sketch lobby signs"
+      - title: "Stale sponsor note"
+      - title: "Charge tablet batteries"
+      - title: "Bring recipe book"
+      - title: "Change tablet batteries"
+    terminate_after_setup: true
+    return_to_lists_home_before_terminate: true
+evaluation:
+  evaluator_id: evaluators.ios.reminder_list_state:ReminderListStateEvaluator
+  params:
+    bundle_id: com.apple.reminders
+    list_name: "Benchmark Tasks"
+    exact_titles:
+      - "Call Riverside venue by noon"
+      - "Draft final volunteer roster"
+      - "Sketch final lobby signs"
+      - "Bring receipt book"
+      - "Charge tablet batteries"
+      - "Print name badges"
+      - "Pack extension cords"
+      - "Send setup timeline"
+      - "Confirm snack pickup"
+      - "Label check-in bins"
+    ordered_titles:
+      - "Call Riverside venue by noon"
+      - "Draft final volunteer roster"
+      - "Sketch final lobby signs"
+      - "Print name badges"
+      - "Pack extension cords"
+      - "Send setup timeline"
+      - "Confirm snack pickup"
+      - "Label check-in bins"
+      - "Bring receipt book"
+      - "Charge tablet batteries"
+    present_titles:
+      - "Call Riverside venue by noon"
+      - "Draft final volunteer roster"
+      - "Sketch final lobby signs"
+      - "Bring receipt book"
+      - "Charge tablet batteries"
+      - "Print name badges"
+      - "Pack extension cords"
+      - "Send setup timeline"
+      - "Confirm snack pickup"
+      - "Label check-in bins"
+    absent_titles:
+      - "Call venue"
+      - "Draft volunteer roster"
+      - "Old flyer copy"
+      - "Reserve backup chairs"
+      - "Sketch lobby signs"
+      - "Stale sponsor note"
+      - "Bring recipe book"
+      - "Change tablet batteries"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [reminders, edit, create, delete, ios, native, productivity, hard, benchmark, oracle]
+  app: Reminders
+  app_bundle_id: com.apple.reminders
+  description: Oracle state-seed task for ios.reminders.rework_seeded_agenda.
+  oracle_for: ios.reminders.rework_seeded_agenda
+  oracle_actions:
+    - type: seed_state
+      store: reminders
+      params:
+        bundle_id: com.apple.reminders
+        list_name: "Benchmark Tasks"
+        present_titles:
+          - "Call Riverside venue by noon"
+          - "Draft final volunteer roster"
+          - "Sketch final lobby signs"
+          - "Print name badges"
+          - "Pack extension cords"
+          - "Send setup timeline"
+          - "Confirm snack pickup"
+          - "Label check-in bins"
+          - "Bring receipt book"
+          - "Charge tablet batteries"
+    - type: success
+      message: Oracle state seeded.

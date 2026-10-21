@@ -1,0 +1,9 @@
+tasks:
+  - tasks/windows/drawio_sum_loop_flowchart.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows draw.io task - build the S and k loop flowchart with Yes/No branches

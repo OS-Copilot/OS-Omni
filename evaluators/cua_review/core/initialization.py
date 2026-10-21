@@ -175,10 +175,14 @@ class BaseInitializer:
         return f"simulator {udid} is booted"
 
     def _launch(self, udid: str, bundle_id: str) -> str:
-        if running_app_pid(udid, bundle_id) is not None:
-            return f"{bundle_id} was already running"
+        existing_pid = running_app_pid(udid, bundle_id)
+        # ``simctl launch`` also foregrounds an already-running app. Merely
+        # checking its process leaves whichever other app ran last on screen,
+        # so the model can start a task in the wrong application.
         launch_app(udid, bundle_id)
         pid = wait_until_running(udid, bundle_id)
+        if existing_pid is not None:
+            return f"{bundle_id} brought to the foreground (pid {pid})"
         return f"{bundle_id} started as pid {pid}"
 
     def _settle(self, params: Mapping[str, Any]) -> str:

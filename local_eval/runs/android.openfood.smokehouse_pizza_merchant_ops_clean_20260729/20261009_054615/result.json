@@ -1,0 +1,1226 @@
+{
+  "task_id": "android.openfood.smokehouse_pizza_merchant_ops_clean_20260729",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T05:49:32.993558+08:00",
+  "ended_at": "2026-10-09T06:05:56.154665+08:00",
+  "steps_taken": 141,
+  "latency_ms": 983161.107,
+  "episode_result": {
+    "status": "PASS",
+    "terminal_reason": "success",
+    "execution_message": "Model declared task complete",
+    "execution_valid": true,
+    "message": "OpenFood Android final state did not satisfy all hard checks"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.openfood",
+      "source_initializer": "evaluators.cua_review.initializers.android.openfood:OpenFoodSnapshotReadyInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenFood Android final state did not satisfy all hard checks",
+    "metadata": {
+      "checks": [
+        {
+          "name": "expected_delivered_orders",
+          "passed": false,
+          "observed": [
+            {
+              "expectation": {
+                "restaurant": "Smokehouse at Union 40 Aurora IL",
+                "coupon_code": "WELCOME12",
+                "status": "DELIVERED",
+                "items": {
+                  "Smoked Brisket Plate": 2,
+                  "Pulled Pork Sandwich": 2
+                }
+              },
+              "matches": []
+            },
+            {
+              "expectation": {
+                "restaurant": "Smokehouse at Union 40 Aurora IL",
+                "coupon_code": "LUNCH5",
+                "status": "DELIVERED",
+                "items": {
+                  "Smoked Brisket Plate": 3,
+                  "Pulled Pork Sandwich": 3
+                }
+              },
+              "matches": []
+            },
+            {
+              "expectation": {
+                "restaurant": "Smokehouse at Union 40 Aurora IL",
+                "coupon_code": "WELCOME12",
+                "status": "DELIVERED",
+                "items": {
+                  "Smoked Brisket Plate": 4,
+                  "Pulled Pork Sandwich": 4
+                }
+              },
+              "matches": []
+            },
+            {
+              "expectation": {
+                "restaurant": "NY Slice House",
+                "coupon_code": "LUNCH5",
+                "status": "DELIVERED",
+                "items": {
+                  "New York Cheese Pizza": 2,
+                  "Pastrami Rye Sandwich": 2,
+                  "Bagel Lox Set": 1
+                }
+              },
+              "matches": [
+                {
+                  "id": "OF-1544",
+                  "userId": "lucas",
+                  "restaurantId": "r34",
+                  "status": "Delivered",
+                  "placedAt": "2026-06-23 12:40",
+                  "total": 43.2,
+                  "address": "88 Harbor View Apt 12B",
+                  "items": [
+                    {
+                      "menuItemId": "m331",
+                      "nameSnapshot": "New York Cheese Pizza",
+                      "quantity": 2
+                    },
+                    {
+                      "menuItemId": "m332",
+                      "nameSnapshot": "Pastrami Rye Sandwich",
+                      "quantity": 2
+                    },
+                    {
+                      "menuItemId": "m333",
+                      "nameSnapshot": "Bagel Lox Set",
+                      "quantity": 1
+                    }
+                  ],
+                  "courier": "Unassigned",
+                  "notes": "Coupon LUNCH5 applied",
+                  "issue": "",
+                  "restaurantName": "NY Slice House",
+                  "couponCode": "LUNCH5",
+                  "displayCodeCandidates": [
+                    "OF-1544",
+                    "#F-1544"
+                  ],
+                  "itemQuantities": {
+                    "New York Cheese Pizza": 2,
+                    "Pastrami Rye Sandwich": 2,
+                    "Bagel Lox Set": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "support_ticket_created",
+          "passed": false,
+          "observed": []
+        },
+        {
+          "name": "coupon_claim_or_use_evidence",
+          "passed": true,
+          "observed": {
+            "WELCOME12": {
+              "coupon_rows": [
+                {
+                  "code": "WELCOME12",
+                  "status": "AVAILABLE",
+                  "source": "WEBVIEW_LOCAL_STORAGE"
+                }
+              ],
+              "mentioned_in_orders": true
+            },
+            "LUNCH5": {
+              "coupon_rows": [
+                {
+                  "code": "LUNCH5",
+                  "status": "AVAILABLE",
+                  "source": "WEBVIEW_LOCAL_STORAGE"
+                }
+              ],
+              "mentioned_in_orders": true
+            }
+          }
+        },
+        {
+          "name": "required_reorder_events",
+          "passed": false,
+          "observed": {
+            "requirements": [
+              {
+                "requirement": {
+                  "source_order_index": 0,
+                  "new_order_index": 1,
+                  "description": "Second Smokehouse order must be created by Reorder from the first Smokehouse order."
+                },
+                "source_order_ids": [],
+                "new_order_ids": [],
+                "matches": [],
+                "failure_reason": "No target order ids matched expected final orders."
+              },
+              {
+                "requirement": {
+                  "source_order_index": 1,
+                  "new_order_index": 2,
+                  "description": "Third Smokehouse order must be created by Reorder from the second Smokehouse order."
+                },
+                "source_order_ids": [],
+                "new_order_ids": [],
+                "matches": [],
+                "failure_reason": "No target order ids matched expected final orders."
+              }
+            ],
+            "reorder_events_observed": [
+              {
+                "sourceOrderId": "OF-1139",
+                "newOrderId": "OF-1270",
+                "timestamp": "2026-10-08T21:59:41.974Z"
+              }
+            ],
+            "order_source_fields_observed": [
+              {
+                "order_id": "OF-1270",
+                "restaurant": "Smokehouse at Union 40 Aurora IL",
+                "source_order_id": null,
+                "sourceOrderId": "OF-1139",
+                "reorderedFromOrderId": null,
+                "reordered_from_order_id": null
+              }
+            ],
+            "event_evidence_available": true,
+            "missing_evidence_reason": null
+          }
+        },
+        {
+          "name": "required_order_status_history",
+          "passed": false,
+          "observed": {
+            "requirements": [
+              {
+                "requirement": {
+                  "order_index": 0,
+                  "statuses": [
+                    "OUT FOR DELIVERY",
+                    "DELIVERED"
+                  ]
+                },
+                "order_ids": [],
+                "matches": [],
+                "failure_reason": "No target order ids matched expected final orders."
+              },
+              {
+                "requirement": {
+                  "order_index": 1,
+                  "statuses": [
+                    "OUT FOR DELIVERY",
+                    "DELIVERED"
+                  ]
+                },
+                "order_ids": [],
+                "matches": [],
+                "failure_reason": "No target order ids matched expected final orders."
+              },
+              {
+                "requirement": {
+                  "order_index": 2,
+                  "statuses": [
+                    "OUT FOR DELIVERY",
+                    "DELIVERED"
+                  ]
+                },
+                "order_ids": [],
+                "matches": [],
+                "failure_reason": "No target order ids matched expected final orders."
+              },
+              {
+                "requirement": {
+                  "order_index": 3,
+                  "statuses": [
+                    "OUT FOR DELIVERY",
+                    "DELIVERED"
+                  ]
+                },
+                "order_ids": [
+                  "OF-1544"
+                ],
+                "matches": [
+                  {
+                    "order_id": "OF-1544",
+                    "seen_statuses": [
+                      "PREPARING",
+                      "OUT FOR DELIVERY",
+                      "DELIVERED"
+                    ]
+                  }
+                ],
+                "failure_reason": null
+              }
+            ],
+            "status_history_observed": [
+              {
+                "orderId": "OF-1139",
+                "status": "Preparing",
+                "timestamp": "2026-10-08T21:54:28.677Z"
+              },
+              {
+                "orderId": "OF-1139",
+                "status": "Out for delivery",
+                "timestamp": "2026-10-08T21:55:57.463Z"
+              },
+              {
+                "orderId": "OF-1139",
+                "status": "Delivered",
+                "timestamp": "2026-10-08T21:56:04.815Z"
+              },
+              {
+                "orderId": "OF-1270",
+                "status": "Preparing",
+                "timestamp": "2026-10-08T21:59:41.974Z"
+              },
+              {
+                "orderId": "OF-1270",
+                "status": "Out for delivery",
+                "timestamp": "2026-10-08T22:00:01.976Z"
+              },
+              {
+                "orderId": "OF-1270",
+                "status": "Delivered",
+                "timestamp": "2026-10-08T22:00:06.616Z"
+              },
+              {
+                "orderId": "OF-1544",
+                "status": "Preparing",
+                "timestamp": "2026-10-08T22:04:24.457Z"
+              },
+              {
+                "orderId": "OF-1544",
+                "status": "Out for delivery",
+                "timestamp": "2026-10-08T22:04:44.213Z"
+              },
+              {
+                "orderId": "OF-1544",
+                "status": "Delivered",
+                "timestamp": "2026-10-08T22:04:49.079Z"
+              }
+            ],
+            "event_evidence_available": true,
+            "missing_evidence_reason": null
+          }
+        },
+        {
+          "name": "merchant_restaurant_open_states",
+          "passed": true,
+          "observed": {
+            "Dumpling Room No. 20 San Jose CA": {
+              "id": "r1",
+              "name": "Dumpling Room No. 20 San Jose CA",
+              "isOpen": false
+            },
+            "Santana Row Banh Mi Market No. 12 San Jose CA": {
+              "id": "r2",
+              "name": "Santana Row Banh Mi Market No. 12 San Jose CA",
+              "isOpen": false
+            },
+            "City Little Saigon Grill": {
+              "id": "r3",
+              "name": "City Little Saigon Grill",
+              "isOpen": false
+            }
+          }
+        },
+        {
+          "name": "merchant_menu_unavailable_states",
+          "passed": true,
+          "observed": {
+            "Dumpling Room No. 20 San Jose CA::Pork Dumplings": [
+              {
+                "id": "m1",
+                "name": "Pork Dumplings",
+                "isAvailable": false,
+                "restaurantName": "Dumpling Room No. 20 San Jose CA"
+              }
+            ],
+            "Dumpling Room No. 20 San Jose CA::Beef Chow Fun": [
+              {
+                "id": "m2",
+                "name": "Beef Chow Fun",
+                "isAvailable": false,
+                "restaurantName": "Dumpling Room No. 20 San Jose CA"
+              }
+            ],
+            "Dumpling Room No. 20 San Jose CA::Mapo Tofu": [
+              {
+                "id": "m3",
+                "name": "Mapo Tofu",
+                "isAvailable": false,
+                "restaurantName": "Dumpling Room No. 20 San Jose CA"
+              }
+            ],
+            "Santana Row Banh Mi Market No. 12 San Jose CA::Golden San Jose Pho Tai Rice": [
+              {
+                "id": "m11",
+                "name": "Golden San Jose Pho Tai Rice",
+                "isAvailable": false,
+                "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+              }
+            ],
+            "Santana Row Banh Mi Market No. 12 San Jose CA::Golden San Jose Pho Tai Soup": [
+              {
+                "id": "m12",
+                "name": "Golden San Jose Pho Tai Soup",
+                "isAvailable": false,
+                "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+              }
+            ],
+            "Santana Row Banh Mi Market No. 12 San Jose CA::Golden San Jose Pho Tai Snack": [
+              {
+                "id": "m13",
+                "name": "Golden San Jose Pho Tai Snack",
+                "isAvailable": false,
+                "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+              }
+            ],
+            "City Little Saigon Grill::Heritage Banh Mi Combo": [
+              {
+                "id": "m21",
+                "name": "Heritage Banh Mi Combo",
+                "isAvailable": false,
+                "restaurantName": "City Little Saigon Grill"
+              }
+            ]
+          }
+        },
+        {
+          "name": "final_android_ui_auxiliary",
+          "passed": true,
+          "observed": {
+            "app_package": "com.killt.openfood",
+            "foreground_ok": true,
+            "foreground_source": "adb_dumpsys_window_read_only",
+            "expected_texts": [],
+            "matched_text_chars": 28,
+            "hard_required": false
+          }
+        }
+      ],
+      "failures": [
+        "one or more expected delivered OpenFood orders with exact restaurant/coupon/items were not found",
+        "support ticket subject='bbq delivery issue', message='check bbq delivery' was not found",
+        "required Reorder source/new order event evidence was not found",
+        "required order status transition history evidence was not found"
+      ],
+      "verifier_rules": [
+        "Initializer must record openfood_baseline.json and fail if openfood-static-state-v1 exists before the GUI agent starts.",
+        "Primary final evidence is read-only SQLite/Prisma dev.db when present, otherwise read-only WebView localStorage key openfood-static-state-v1 from the OpenFood Android static snapshot.",
+        "Order checks require exact restaurant, exact coupon, exact Delivered status, exact item names, exact item quantities, and no extra item names.",
+        "Support ticket checks require exact subject BBQ delivery issue and exact message Check BBQ delivery.",
+        "Steps 1-16 are verified by the first delivered Smokehouse order with Smoked Brisket Plate x2, Pulled Pork Sandwich x2, and WELCOME12.",
+        "Steps 17-22 are verified by the exact support ticket subject/message.",
+        "Steps 23-35 are verified by LUNCH5 claim/use evidence and the second delivered Smokehouse order with both items quantity 3 and LUNCH5.",
+        "Steps 36-43 are verified by the third delivered Smokehouse order with both items quantity 4 and WELCOME12.",
+        "Steps 44-59 are verified by a delivered NY Slice House order with New York Cheese Pizza x2, Pastrami Rye Sandwich x2, Bagel Lox Set x1, and LUNCH5.",
+        "Steps 60-70 are verified by target restaurant isOpen=false and exact target menu item names isAvailable=false.",
+        "Reorder is a hard process requirement: evaluator requires reorderEvents/auditEvents or order source fields proving the second Smokehouse order came from the first and the third came from the second.",
+        "Intermediate Advance status is a hard process requirement: evaluator requires orderStatusHistory/auditEvents proving each target order reached OUT FOR DELIVERY before DELIVERED.",
+        "Search, sort, dropdown, and scroll remain flow actions unless OpenFood exposes separate per-click event history for those controls.",
+        "The evaluator is read-only and does not click, type, scroll, submit, restore snapshots, run the initializer, or mutate Android/app/server state."
+      ],
+      "observed_state": {
+        "data_source": "webview_local_storage",
+        "local_state_key": "openfood-static-state-v1",
+        "raw_state": {
+          "view": "merchant",
+          "userId": "lucas",
+          "selectedRestaurantId": "r34",
+          "filters": {
+            "q": "p",
+            "cuisine": "Pizza",
+            "sort": "fee"
+          },
+          "cart": [],
+          "claimedCoupons": [
+            "WELCOME12",
+            "LUNCH5"
+          ],
+          "activeCoupon": "",
+          "createdOrders": [
+            {
+              "id": "OF-1544",
+              "userId": "lucas",
+              "restaurantId": "r34",
+              "status": "Preparing",
+              "placedAt": "2026-06-23 12:40",
+              "total": 43.2,
+              "address": "88 Harbor View Apt 12B",
+              "items": [
+                [
+                  "m331",
+                  2
+                ],
+                [
+                  "m332",
+                  2
+                ],
+                [
+                  "m333",
+                  1
+                ]
+              ],
+              "courier": "Unassigned",
+              "notes": "Coupon LUNCH5 applied",
+              "issue": ""
+            },
+            {
+              "id": "OF-1270",
+              "userId": "lucas",
+              "restaurantId": "r6",
+              "status": "Preparing",
+              "placedAt": "2026-06-23 12:40",
+              "total": 65.1,
+              "address": "88 Harbor View Apt 12B",
+              "items": [
+                [
+                  "m51",
+                  3
+                ],
+                [
+                  "m52",
+                  3
+                ],
+                [
+                  "m53",
+                  1
+                ]
+              ],
+              "courier": "Unassigned",
+              "notes": "Coupon WELCOME12 applied",
+              "issue": "",
+              "sourceOrderId": "OF-1139"
+            },
+            {
+              "id": "OF-1139",
+              "userId": "lucas",
+              "restaurantId": "r6",
+              "status": "Preparing",
+              "placedAt": "2026-06-23 12:40",
+              "total": 44.55,
+              "address": "88 Harbor View Apt 12B",
+              "items": [
+                [
+                  "m51",
+                  2
+                ],
+                [
+                  "m52",
+                  2
+                ],
+                [
+                  "m53",
+                  1
+                ]
+              ],
+              "courier": "Unassigned",
+              "notes": "Coupon WELCOME12 applied",
+              "issue": ""
+            }
+          ],
+          "orderStatus": {
+            "OF-1139": "Delivered",
+            "OF-1270": "Delivered",
+            "OF-1544": "Delivered"
+          },
+          "reorderEvents": [
+            {
+              "sourceOrderId": "OF-1139",
+              "newOrderId": "OF-1270",
+              "timestamp": "2026-10-08T21:59:41.974Z"
+            }
+          ],
+          "orderStatusHistory": [
+            {
+              "orderId": "OF-1139",
+              "status": "Preparing",
+              "timestamp": "2026-10-08T21:54:28.677Z"
+            },
+            {
+              "orderId": "OF-1139",
+              "status": "Out for delivery",
+              "timestamp": "2026-10-08T21:55:57.463Z"
+            },
+            {
+              "orderId": "OF-1139",
+              "status": "Delivered",
+              "timestamp": "2026-10-08T21:56:04.815Z"
+            },
+            {
+              "orderId": "OF-1270",
+              "status": "Preparing",
+              "timestamp": "2026-10-08T21:59:41.974Z"
+            },
+            {
+              "orderId": "OF-1270",
+              "status": "Out for delivery",
+              "timestamp": "2026-10-08T22:00:01.976Z"
+            },
+            {
+              "orderId": "OF-1270",
+              "status": "Delivered",
+              "timestamp": "2026-10-08T22:00:06.616Z"
+            },
+            {
+              "orderId": "OF-1544",
+              "status": "Preparing",
+              "timestamp": "2026-10-08T22:04:24.457Z"
+            },
+            {
+              "orderId": "OF-1544",
+              "status": "Out for delivery",
+              "timestamp": "2026-10-08T22:04:44.213Z"
+            },
+            {
+              "orderId": "OF-1544",
+              "status": "Delivered",
+              "timestamp": "2026-10-08T22:04:49.079Z"
+            }
+          ],
+          "pendingReorderSourceOrderId": null,
+          "menuAvailability": {
+            "m1": false,
+            "m2": false,
+            "m3": false,
+            "m11": false,
+            "m12": false,
+            "m13": false,
+            "m21": false
+          },
+          "restaurantOpen": {
+            "r1": false,
+            "r2": false,
+            "r3": false
+          },
+          "tickets": [
+            {
+              "id": "T-961",
+              "userId": "lucas",
+              "subject": "BBQdeliveryissue ",
+              "status": "Open",
+              "orderId": "",
+              "updatedAt": "2026-06-23 12:44",
+              "body": "CheckBBQdelivery"
+            }
+          ]
+        },
+        "orders": [
+          {
+            "id": "OF-1544",
+            "userId": "lucas",
+            "restaurantId": "r34",
+            "status": "Delivered",
+            "placedAt": "2026-06-23 12:40",
+            "total": 43.2,
+            "address": "88 Harbor View Apt 12B",
+            "items": [
+              {
+                "menuItemId": "m331",
+                "nameSnapshot": "New York Cheese Pizza",
+                "quantity": 2
+              },
+              {
+                "menuItemId": "m332",
+                "nameSnapshot": "Pastrami Rye Sandwich",
+                "quantity": 2
+              },
+              {
+                "menuItemId": "m333",
+                "nameSnapshot": "Bagel Lox Set",
+                "quantity": 1
+              }
+            ],
+            "courier": "Unassigned",
+            "notes": "Coupon LUNCH5 applied",
+            "issue": "",
+            "restaurantName": "NY Slice House",
+            "couponCode": "LUNCH5",
+            "displayCodeCandidates": [
+              "OF-1544",
+              "#F-1544"
+            ]
+          },
+          {
+            "id": "OF-1270",
+            "userId": "lucas",
+            "restaurantId": "r6",
+            "status": "Delivered",
+            "placedAt": "2026-06-23 12:40",
+            "total": 65.1,
+            "address": "88 Harbor View Apt 12B",
+            "items": [
+              {
+                "menuItemId": "m51",
+                "nameSnapshot": "Smoked Brisket Plate",
+                "quantity": 3
+              },
+              {
+                "menuItemId": "m52",
+                "nameSnapshot": "Pulled Pork Sandwich",
+                "quantity": 3
+              },
+              {
+                "menuItemId": "m53",
+                "nameSnapshot": "m53",
+                "quantity": 1
+              }
+            ],
+            "courier": "Unassigned",
+            "notes": "Coupon WELCOME12 applied",
+            "issue": "",
+            "sourceOrderId": "OF-1139",
+            "restaurantName": "Smokehouse at Union 40 Aurora IL",
+            "couponCode": "WELCOME12",
+            "displayCodeCandidates": [
+              "OF-1270",
+              "#F-1270"
+            ]
+          },
+          {
+            "id": "OF-1139",
+            "userId": "lucas",
+            "restaurantId": "r6",
+            "status": "Delivered",
+            "placedAt": "2026-06-23 12:40",
+            "total": 44.55,
+            "address": "88 Harbor View Apt 12B",
+            "items": [
+              {
+                "menuItemId": "m51",
+                "nameSnapshot": "Smoked Brisket Plate",
+                "quantity": 2
+              },
+              {
+                "menuItemId": "m52",
+                "nameSnapshot": "Pulled Pork Sandwich",
+                "quantity": 2
+              },
+              {
+                "menuItemId": "m53",
+                "nameSnapshot": "m53",
+                "quantity": 1
+              }
+            ],
+            "courier": "Unassigned",
+            "notes": "Coupon WELCOME12 applied",
+            "issue": "",
+            "restaurantName": "Smokehouse at Union 40 Aurora IL",
+            "couponCode": "WELCOME12",
+            "displayCodeCandidates": [
+              "OF-1139",
+              "#F-1139"
+            ]
+          }
+        ],
+        "tickets": [
+          {
+            "id": "T-961",
+            "userId": "lucas",
+            "subject": "BBQdeliveryissue ",
+            "status": "Open",
+            "orderId": "",
+            "updatedAt": "2026-06-23 12:44",
+            "body": "CheckBBQdelivery",
+            "description": "CheckBBQdelivery",
+            "linkedOrderId": "",
+            "linkedOrderCodeCandidates": [
+              ""
+            ]
+          }
+        ],
+        "coupons": [
+          {
+            "code": "WELCOME12",
+            "status": "AVAILABLE",
+            "source": "WEBVIEW_LOCAL_STORAGE"
+          },
+          {
+            "code": "LUNCH5",
+            "status": "AVAILABLE",
+            "source": "WEBVIEW_LOCAL_STORAGE"
+          }
+        ],
+        "restaurants": [
+          {
+            "id": "r1",
+            "name": "Dumpling Room No. 20 San Jose CA",
+            "isOpen": false
+          },
+          {
+            "id": "r2",
+            "name": "Santana Row Banh Mi Market No. 12 San Jose CA",
+            "isOpen": false
+          },
+          {
+            "id": "r3",
+            "name": "City Little Saigon Grill",
+            "isOpen": false
+          }
+        ],
+        "menu": [
+          {
+            "id": "m1",
+            "name": "Pork Dumplings",
+            "isAvailable": false,
+            "restaurantName": "Dumpling Room No. 20 San Jose CA"
+          },
+          {
+            "id": "m2",
+            "name": "Beef Chow Fun",
+            "isAvailable": false,
+            "restaurantName": "Dumpling Room No. 20 San Jose CA"
+          },
+          {
+            "id": "m3",
+            "name": "Mapo Tofu",
+            "isAvailable": false,
+            "restaurantName": "Dumpling Room No. 20 San Jose CA"
+          },
+          {
+            "id": "m11",
+            "name": "Golden San Jose Pho Tai Rice",
+            "isAvailable": false,
+            "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+          },
+          {
+            "id": "m12",
+            "name": "Golden San Jose Pho Tai Soup",
+            "isAvailable": false,
+            "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+          },
+          {
+            "id": "m13",
+            "name": "Golden San Jose Pho Tai Snack",
+            "isAvailable": false,
+            "restaurantName": "Santana Row Banh Mi Market No. 12 San Jose CA"
+          },
+          {
+            "id": "m21",
+            "name": "Heritage Banh Mi Combo",
+            "isAvailable": false,
+            "restaurantName": "City Little Saigon Grill"
+          },
+          {
+            "id": "m51",
+            "name": "Smoked Brisket Plate",
+            "isAvailable": true,
+            "restaurantName": "Smokehouse at Union 40 Aurora IL"
+          },
+          {
+            "id": "m52",
+            "name": "Pulled Pork Sandwich",
+            "isAvailable": true,
+            "restaurantName": "Smokehouse at Union 40 Aurora IL"
+          },
+          {
+            "id": "m331",
+            "name": "New York Cheese Pizza",
+            "isAvailable": true,
+            "restaurantName": "NY Slice House"
+          },
+          {
+            "id": "m332",
+            "name": "Pastrami Rye Sandwich",
+            "isAvailable": true,
+            "restaurantName": "NY Slice House"
+          },
+          {
+            "id": "m333",
+            "name": "Bagel Lox Set",
+            "isAvailable": true,
+            "restaurantName": "NY Slice House"
+          }
+        ],
+        "reorder_events": [
+          {
+            "sourceOrderId": "OF-1139",
+            "newOrderId": "OF-1270",
+            "timestamp": "2026-10-08T21:59:41.974Z"
+          }
+        ],
+        "order_status_history": [
+          {
+            "orderId": "OF-1139",
+            "status": "Preparing",
+            "timestamp": "2026-10-08T21:54:28.677Z"
+          },
+          {
+            "orderId": "OF-1139",
+            "status": "Out for delivery",
+            "timestamp": "2026-10-08T21:55:57.463Z"
+          },
+          {
+            "orderId": "OF-1139",
+            "status": "Delivered",
+            "timestamp": "2026-10-08T21:56:04.815Z"
+          },
+          {
+            "orderId": "OF-1270",
+            "status": "Preparing",
+            "timestamp": "2026-10-08T21:59:41.974Z"
+          },
+          {
+            "orderId": "OF-1270",
+            "status": "Out for delivery",
+            "timestamp": "2026-10-08T22:00:01.976Z"
+          },
+          {
+            "orderId": "OF-1270",
+            "status": "Delivered",
+            "timestamp": "2026-10-08T22:00:06.616Z"
+          },
+          {
+            "orderId": "OF-1544",
+            "status": "Preparing",
+            "timestamp": "2026-10-08T22:04:24.457Z"
+          },
+          {
+            "orderId": "OF-1544",
+            "status": "Out for delivery",
+            "timestamp": "2026-10-08T22:04:44.213Z"
+          },
+          {
+            "orderId": "OF-1544",
+            "status": "Delivered",
+            "timestamp": "2026-10-08T22:04:49.079Z"
+          }
+        ],
+        "audit_events": []
+      },
+      "initializer_baseline": {
+        "local_state_present": false,
+        "reconstruction": "APK bundled static initial state",
+        "observed_at": 1791496186.8774154,
+        "available": true,
+        "path": ".\\local_eval\\runs\\android.openfood.smokehouse_pizza_merchant_ops_clean_20260729\\20261009_054615\\openfood_baseline.json"
+      },
+      "compatibility_repair": {
+        "used_unwritten_key_fallback": false,
+        "reason": "Installed app writes localStorage only after an action; absent key uses verified APK initialState",
+        "source_evaluator": "evaluators.android.openfood_smokehouse_pizza_merchant_ops_clean_20260729:OpenFoodSmokehousePizzaMerchantOpsEvaluator",
+        "business_rules_changed": false
+      }
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openfood:id/action_bar_root",
+        "resource-id": "com.killt.openfood:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openfood:id/webview",
+        "resource-id": "com.killt.openfood:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openfood",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

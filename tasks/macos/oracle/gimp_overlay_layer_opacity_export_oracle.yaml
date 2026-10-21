@@ -1,0 +1,29 @@
+task_id: macos.oracle.gimp.rotate_invert_export
+platform: macos
+instruction: Oracle sanity task for macos.gimp.rotate_invert_export. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.gimp:GimpInitializer
+  params:
+    wait_ms: 18000
+    upload_files:
+    - local_path: tasks/macos/files/gimp/overlay/start/gimp_overlay_background.png
+      path: /Users/bench/Downloads/gimp_overlay_background.png
+    open_file: /Users/bench/Downloads/gimp_overlay_background.png
+evaluation:
+  evaluator_id: evaluators.macos.gimp:GimpFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/gimp_overlay_background.png
+    expected_width: 800
+    expected_height: 1200
+    expected_format: PNG
+    expected_image_path: ../files/gimp/overlay/expected/gimp_rotate_invert_output.png
+    pixel_tolerance: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.gimp.rotate_invert_export
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

@@ -1,0 +1,357 @@
+task_id: android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252
+platform: android
+instruction: '1. 点击底部导航栏的“Transfers”。
+
+  2. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Maya Fox 收款人。
+
+  3. 点击“Name”输入框。
+
+  4. 在框内输入“Maya Fox”。
+
+  5. 点击“Nickname”输入框。
+
+  6. 在框内输入“Kitchen fund”。
+
+  7. 点击“Bank”输入框。
+
+  8. 在框内输入“OpenBank”。
+
+  9. 点击“Routing number”输入框。
+
+  10. 在框内输入“125000105”。
+
+  11. 点击“Account number”输入框。
+
+  12. 在框内输入“6829415703”。
+
+  13. 点击“Save recipient”。
+
+  14. 点击“Name”输入框。
+
+  15. 在框内输入“Leo Hart”。
+
+  16. 点击“Nickname”输入框。
+
+  17. 在框内输入“Storage fund”。
+
+  18. 点击“Bank”输入框。
+
+  19. 在框内输入“OpenBank”。
+
+  20. 点击“Routing number”输入框。
+
+  21. 在框内输入“102000021”。
+
+  22. 点击“Account number”输入框。
+
+  23. 在框内输入“4197358062”。
+
+  24. 点击“Save recipient”。
+
+  25. 点击底部导航栏的“Security”。
+
+  26. 在 Security 页面向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒渠道。
+
+  27. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+  28. 点击该提醒表单底部的“Save”。
+
+  29. 在 Security 页面向下滑动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+  30. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+  31. 点击该提醒表单底部的“Save”。
+
+  32. 在 Security 页面向上滑动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+  33. 点击“Upcoming bill”行的“Mark Read”。
+
+  34. 在 Security 页面向下滑动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+  35. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+  36. 点击该提醒表单底部的“Save”。
+
+  37. 在 Security 页面向上滑动，直到“Card controls”区域可见，以便后续设置 OpenBank Rewards Card 为锁定状态。
+
+  38. 点击处于“Unlocked”状态的“OpenBank Rewards Card”行内“Lock”，将该卡设置为锁定状态。
+
+  39. 点击底部导航栏的“Activity”。
+
+  40. 点击“Search merchant or description”输入框。
+
+  41. 输入“Ace Hardware”。
+
+  42. 点击“Search”。
+
+  43. 点击“Ace Hardware”结果行的“Details”。
+
+  44. 点击“Reason”选择控件。
+
+  45. 点击“Canceled or returned item”。
+
+  46. 点击处于关闭状态的“I contacted the merchant”开关。
+
+  47. 点击争议表单的“Details”输入框。
+
+  48. 输入“Return for rebate”。
+
+  49. 点击“Submit dispute”。
+
+  50. 点击底部导航栏的“Pay & transfer”。
+
+  51. 打开“Biller”下拉列表。
+
+  52. 选择“City Utilities”。
+
+  53. 打开“From”下拉列表。
+
+  54. 选择“Everyday Checking ••••2381”。
+
+  55. 点击“Amount”输入框。
+
+  56. 在框内输入“46.38”。
+
+  57. 点击“Date”控件。
+
+  58. 选择“2026-06-02”。
+
+  59. 点击“Memo”输入框。
+
+  60. 在框内输入“46.38”。
+
+  61. 点击“Schedule”。
+
+  62. 点击底部导航栏的“Statements”。
+
+  63. 点击“Rainy Day Savings •••9140”。
+
+  64. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+  65. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。
+
+  66. 点击底部导航栏的“Transfers”。
+
+  67. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Maya Fox 的 Kitchen followup 转账。
+
+  68. 点击“To”选择控件。
+
+  69. 点击“Maya Fox”。
+
+  70. 点击“Memo”输入框。
+
+  71. 输入“Kitchen followup”。
+
+  72. 点击“Date”选择控件。
+
+  73. 点击“July 30, 2026”。
+
+  74. 点击“Amount”输入框。
+
+  75. 输入“2.95”。
+
+  76. 点击“From”选择控件。
+
+  77. 点击“Everyday Checking ••••2381”。
+
+  78. 点击“Submit transfer”。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openbank
+    snapshot_name: sn2
+    source_initializer: evaluators.cua_review.initializers.android.openbank:OpenBankInitializer
+evaluation:
+  evaluator_id: local_eval.openbank_evaluator:InstalledOpenBankEvaluator
+  params:
+    expected_ruleset_sha256: dda0eca80e9b69e547d9a8658cff798c5a71b57f37d455aa00bb6382e95364c0
+    source_evaluator: evaluators.android.openbank_maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252:AndroidOpenBankMayaLeoSecurityDisputePaymentPaperlessTransfer1787397914946938252Evaluator
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  app: OpenBank
+  app_name: OpenBank
+  app_bundle_id: com.killt.openbank
+  required_packages_any:
+  - com.killt.openbank
+  android_vm_profile: quail1
+  avd_name: quail1
+  snapshot_name: sn2
+  source_state_mode: human_completed_eval_only
+  instruction_sha256: 1d67bb9883c97c51be368a584ae7da2586685189a1d326fea04cf8c4f3f7e439
+  evaluator_ruleset_required: true
+  human_eval_only_compatible: true
+  evaluator_ruleset_sha256: dda0eca80e9b69e547d9a8658cff798c5a71b57f37d455aa00bb6382e95364c0
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openbank/Android/android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: b4576ef551e17dce13394f6d220e2f7e83e6e10babff83f12302e9d059a27ec5
+    source_instruction: '1. 点击底部导航栏的“Transfers”。
+
+      2. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Maya Fox 收款人。
+
+      3. 点击“Name”输入框。
+
+      4. 在框内输入“Maya Fox”。
+
+      5. 点击“Nickname”输入框。
+
+      6. 在框内输入“Kitchen fund”。
+
+      7. 点击“Bank”输入框。
+
+      8. 在框内输入“OpenBank”。
+
+      9. 点击“Routing number”输入框。
+
+      10. 在框内输入“125000105”。
+
+      11. 点击“Account number”输入框。
+
+      12. 在框内输入“6829415703”。
+
+      13. 点击“Save recipient”。
+
+      14. 点击“Name”输入框。
+
+      15. 在框内输入“Leo Hart”。
+
+      16. 点击“Nickname”输入框。
+
+      17. 在框内输入“Storage fund”。
+
+      18. 点击“Bank”输入框。
+
+      19. 在框内输入“OpenBank”。
+
+      20. 点击“Routing number”输入框。
+
+      21. 在框内输入“102000021”。
+
+      22. 点击“Account number”输入框。
+
+      23. 在框内输入“4197358062”。
+
+      24. 点击“Save recipient”。
+
+      25. 点击底部导航栏的“Security”。
+
+      26. 在 Security 页面向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒渠道。
+
+      27. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+      28. 点击该提醒表单底部的“Save”。
+
+      29. 在 Security 页面向下滑动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+      30. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+      31. 点击该提醒表单底部的“Save”。
+
+      32. 在 Security 页面向上滑动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+      33. 点击“Upcoming bill”行的“Mark Read”。
+
+      34. 在 Security 页面向下滑动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+      35. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+      36. 点击该提醒表单底部的“Save”。
+
+      37. 在 Security 页面向上滑动，直到“Card controls”区域可见，以便后续设置 OpenBank Rewards Card 为锁定状态。
+
+      38. 点击处于“Unlocked”状态的“OpenBank Rewards Card”行内“Lock”，将该卡设置为锁定状态。
+
+      39. 点击底部导航栏的“Activity”。
+
+      40. 点击“Search merchant or description”输入框。
+
+      41. 输入“Ace Hardware”。
+
+      42. 点击“Search”。
+
+      43. 点击“Ace Hardware”结果行的“Details”。
+
+      44. 点击“Reason”选择控件。
+
+      45. 点击“Canceled or returned item”。
+
+      46. 点击处于关闭状态的“I contacted the merchant”开关。
+
+      47. 点击争议表单的“Details”输入框。
+
+      48. 输入“Return for rebate”。
+
+      49. 点击“Submit dispute”。
+
+      50. 点击底部导航栏的“Pay & transfer”。
+
+      51. 打开“Biller”下拉列表。
+
+      52. 选择“City Utilities”。
+
+      53. 打开“From”下拉列表。
+
+      54. 选择“Everyday Checking ••••2381”。
+
+      55. 点击“Amount”输入框。
+
+      56. 在框内输入“46.38”。
+
+      57. 点击“Date”控件。
+
+      58. 选择“2026-06-02”。
+
+      59. 点击“Memo”输入框。
+
+      60. 在框内输入“46.38”。
+
+      61. 点击“Schedule”。
+
+      62. 点击底部导航栏的“Statements”。
+
+      63. 点击“Rainy Day Savings •••9140”。
+
+      64. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+      65. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。
+
+      66. 点击底部导航栏的“Transfers”。
+
+      67. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Maya Fox 的 Kitchen followup
+      转账。
+
+      68. 点击“To”选择控件。
+
+      69. 点击“Maya Fox”。
+
+      70. 点击“Memo”输入框。
+
+      71. 输入“Kitchen followup”。
+
+      72. 点击“Date”选择控件。
+
+      73. 点击“July 30, 2026”。
+
+      74. 点击“Amount”输入框。
+
+      75. 输入“2.95”。
+
+      76. 点击“From”选择控件。
+
+      77. 点击“Everyday Checking ••••2381”。
+
+      78. 点击“Submit transfer”。'
+    release_path: benchmark/tasks/openbank/Android/android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252
+    original_evaluator_id: evaluators.android.android_openbank_maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252:AndroidOpenBankMayaLeoSecurityDisputePaymentPaperlessTransfer1787397914946938252Evaluator
+    evaluator_source: benchmark_restored
+    original_initializer_id: initializers.android.openbank:OpenBankInitializer
+  local_repair:
+    source_task: tasks/v1/android/openbank_maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

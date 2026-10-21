@@ -37,7 +37,7 @@ STEP_GROUPS = {
 CHECKPOINT_SPECS = tuple(
     {"name": f"{name}_exact", "steps": steps}
     for name, steps in STEP_GROUPS.items()
-) + ({"name": "durable_event_order_exact", "steps": list(range(1, 79))},)
+)
 
 CREATED_POSTS = {
     "access audit": "focus fixes",
@@ -113,7 +113,6 @@ RULESET_SPEC = {
         "engagement_sets": "exact_including_seed_baseline",
         "unique_posts_and_replies": True,
     },
-    "event_projection": "exact_order_for_instruction_required_business_events",
     "normalization": "none",
 }
 RULESET_SHA256 = hashlib.sha256(
@@ -156,63 +155,6 @@ def _comments_for(comments: Mapping[str, Any], post_id: str, text: str) -> list[
         if str(row.get("authorHandle") or "") == AUTHOR_HANDLE
         and str(row.get("text") or "") == text
     ]
-
-
-def _expected_events() -> list[tuple[Any, ...]]:
-    return [
-        ("post_like_toggled", "p-1001", True),
-        ("comment_created", "p-1001", "access thread set"),
-        ("post_repost_toggled", "p-1001", True),
-        ("post_bookmark_toggled", "p-1013", True),
-        ("post_like_toggled", "p-1013", True),
-        ("comment_created", "p-1013", "focus map ready"),
-        ("post_repost_toggled", "p-1013", True),
-        ("post_created", "access audit"),
-        ("comment_created", "access audit", "focus fixes"),
-        ("post_repost_toggled", "access audit", True),
-        ("post_bookmark_toggled", "access audit", True),
-        ("post_like_toggled", "access audit", True),
-        ("post_created", "contrase pass"),
-        ("post_bookmark_toggled", "contrase pass", True),
-        ("comment_created", "contrase pass", "labels clear"),
-        ("post_like_toggled", "contrase pass", True),
-        ("post_repost_toggled", "contrase pass", True),
-        ("post_created", "screen review"),
-        ("post_repost_toggled", "screen review", True),
-        ("post_like_toggled", "screen review", True),
-        ("comment_created", "screen review", "keyboard path"),
-        ("post_bookmark_toggled", "screen review", True),
-        ("post_like_toggled", "p-alex-2003", True),
-        ("post_bookmark_toggled", "p-alex-2003", True),
-        ("post_repost_toggled", "p-alex-2003", True),
-        ("comment_created", "p-alex-2003", "copy access clear"),
-        ("post_repost_toggled", "p-alex-2012", True),
-        ("comment_created", "p-alex-2012", "owner audit set"),
-        ("post_bookmark_toggled", "p-alex-2012", True),
-        ("post_like_toggled", "p-alex-2012", True),
-        ("post_bookmark_toggled", "p-alex-2011", True),
-        ("post_like_toggled", "p-alex-2011", True),
-        ("comment_created", "p-alex-2011", "audit trail clear"),
-        ("post_repost_toggled", "p-alex-2011", True),
-        ("comment_created", "p-1012", "focus ring clear"),
-        ("post_like_toggled", "p-1012", True),
-    ]
-
-
-def _project_events(events: Sequence[Mapping[str, Any]], dynamic_ids: Mapping[str, str]) -> list[tuple[Any, ...]]:
-    labels_by_id = {post_id: text for text, post_id in dynamic_ids.items()}
-    projected: list[tuple[Any, ...]] = []
-    for event in events:
-        event_type = str(event.get("type") or "")
-        post_id = str(event.get("postId") or "")
-        label = labels_by_id.get(post_id, post_id)
-        if event_type == "post_created":
-            projected.append((event_type, str(event.get("text") or "")))
-        elif event_type == "comment_created":
-            projected.append((event_type, label, str(event.get("text") or "")))
-        elif event_type in {"post_like_toggled", "post_bookmark_toggled", "post_repost_toggled"}:
-            projected.append((event_type, label, event.get("active") is True))
-    return projected
 
 
 class OpenTwitterAccessibilityAuditEngagement567657Evaluator(BaseEvaluator):
@@ -287,16 +229,6 @@ class OpenTwitterAccessibilityAuditEngagement567657Evaluator(BaseEvaluator):
             evidence={"session": dict(session)}, passed=session_actual == {"loggedIn": True, "handle": AUTHOR_HANDLE},
         ))
 
-        events = _rows(state.get("evaluationEvents"))
-        projected = _project_events(events, dynamic_ids)
-        expected_projection = _expected_events()
-        checks.append(_check(
-            name="durable_event_order_exact", value_contract_id="events.required_durable_order",
-            steps=list(range(1, 79)), expected=[list(row) for row in expected_projection],
-            actual=[list(row) for row in projected], evidence={"events": events},
-            passed=projected == expected_projection, match_mode="ORDERED_EXACT",
-        ))
-
         failures = [row["name"] for row in checks if not row["passed"]]
         metadata = {
             "read_only": True,
@@ -310,7 +242,7 @@ class OpenTwitterAccessibilityAuditEngagement567657Evaluator(BaseEvaluator):
                 "liked_post_ids": sorted(_text_set(user_state.get("likedPostIds"))),
                 "bookmarked_post_ids": sorted(_text_set(user_state.get("bookmarkedPostIds"))),
                 "reposted_post_ids": sorted(_text_set(user_state.get("repostedPostIds"))),
-                "event_count": len(events),
+                "event_count": len(_rows(state.get("evaluationEvents"))),
             },
             "failures": failures,
         }

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-13T21:29:21+08:00",
+  "platform": "macOS",
+  "source_package": "execution/records/macos-author-results-20261012/macos",
+  "correction": "Native PASS results remain PASS in benchmark progress. This record supersedes the earlier author_adjudication that counted these two tasks as FAIL.",
+  "supersedes": {
+    "task_level_status": "confirmed_model_fail",
+    "decision": "count_as_completed_fail_for_benchmark_progress",
+    "reason": "The prior administrative override contradicted the preserved native result and evaluator PASS."
+  },
+  "benchmark_progress_counts": {
+    "total_distinct_tasks": 48,
+    "confirmed_fail": 46,
+    "pass": 2,
+    "unscored": 0
+  },
+  "corrected_tasks": [
+    {
+      "task_id": "macos.textedit.config_rewrite",
+      "status": "PASS",
+      "native_status": "PASS",
+      "initializer_status": "PASS",
+      "evaluator_status": "PASS",
+      "steps_taken": 3,
+      "result_file": "macos/macos.textedit.config_rewrite/attempt_001/macos.textedit.config_rewrite_20261013_130710/result.json",
+      "result_sha256": "e6bf48c2c32b5824bc0657d7111a99da13a7f6cd0033185a812a2406aa139c5a"
+    },
+    {
+      "task_id": "macos.wireshark.conversations_triage",
+      "status": "PASS",
+      "native_status": "PASS",
+      "initializer_status": "PASS",
+      "evaluator_status": "PASS",
+      "steps_taken": 21,
+      "result_file": "macos/macos.wireshark.conversations_triage/attempt_001/macos.wireshark.conversations_triage_20261013_131333/result.json",
+      "result_sha256": "51daf2467ee3be2a33f89b7850afa30c55b9dbbfc9f506c6abc8ff5a7d6e0cb4"
+    }
+  ],
+  "other_task_classifications": "The other 46 task outcomes retain their previously authorized valid FAIL classification; this correction changes only the two listed native PASS tasks.",
+  "evidence_policy": "Original result.json files are preserved byte-for-byte. This tracked correction is the authoritative task-level progress reconciliation and supersedes stale aggregate FAIL labels in the archived TASKS.csv and DELIVERY_README.md."
+}

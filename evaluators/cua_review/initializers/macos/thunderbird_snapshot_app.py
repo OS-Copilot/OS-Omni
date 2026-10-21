@@ -9,12 +9,99 @@ calendar store the task can write to.  It creates no event.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
 
 #: Thunderbird's profile directory, relative to the guest home directory.
 DEFAULT_PROFILE_ROOT = "~/Library/Thunderbird/Profiles"
+
+
+def _build_target_event_reset_script(profile_root: str, target_titles: list[str]) -> str:
+    """Build a guest script that removes only this task's old calendar items.
+
+    The macOS author queue reuses one VM. Calendar tasks therefore cannot rely
+    on a new VM clone to remove events left by an earlier attempt. This reset
+    follows Thunderbird's active profiles.ini profile and deletes exact task
+    titles plus their item_id-linked calendar rows; unrelated events and
+    profile preferences are left alone.
+    """
+    return "\n".join(
+        [
+            "import json, os, shutil, signal, sqlite3, subprocess, tempfile, time",
+            "from pathlib import Path",
+            f"profile_root = Path({profile_root!r}).expanduser()",
+            f"target_titles = {target_titles!r}",
+            "profiles_ini = profile_root.parent / 'profiles.ini'",
+            "entries = []",
+            "section = ''",
+            "if profiles_ini.is_file():",
+            "    for raw in profiles_ini.read_text(encoding='utf-8', errors='replace').splitlines():",
+            "        line = raw.strip()",
+            "        if line.startswith('[') and line.endswith(']'): section = line[1:-1]",
+            "        elif '=' in line and section:",
+            "            key, _, value = line.partition('=')",
+            "            entries.append((section, key.strip(), value.strip()))",
+            "data_root = profiles_ini.parent",
+            "candidates = []",
+            "def add_candidate(value):",
+            "    path = Path(value)",
+            "    if not path.is_absolute(): path = data_root / value",
+            "    if path not in candidates: candidates.append(path)",
+            "for section, key, value in entries:",
+            "    if key == 'Default' and section.startswith('Install') and value: add_candidate(value)",
+            "for section, key, value in entries:",
+            "    if key == 'Path' and value: add_candidate(value)",
+            "if profile_root.is_dir():",
+            "    for path in sorted(profile_root.iterdir()):",
+            "        if path.is_dir(): add_candidate(str(path))",
+            "selected = next((p for p in candidates if (p / 'calendar-data' / 'local.sqlite').is_file()), None)",
+            "if selected is None: raise SystemExit('no active Thunderbird calendar database found')",
+            "db_path = selected / 'calendar-data' / 'local.sqlite'",
+            "with tempfile.TemporaryDirectory(prefix='tb-boundary-probe-') as temp:",
+            "    temp_db = Path(temp) / db_path.name",
+            "    for suffix in ('', '-wal', '-shm'):",
+            "        source = Path(str(db_path) + suffix)",
+            "        if source.is_file(): shutil.copy2(source, Path(str(temp_db) + suffix))",
+            "    with sqlite3.connect('file:' + str(temp_db) + '?mode=ro', uri=True, timeout=10) as db:",
+            "        columns = {r[1] for r in db.execute('PRAGMA table_info(cal_events)')}",
+            "        if not {'id', 'title'} <= columns: raise SystemExit('calendar event schema lacks id/title')",
+            "        marks = ','.join('?' for _ in target_titles)",
+            "        rows = db.execute(f'SELECT id, title FROM cal_events WHERE title IN ({marks})', target_titles).fetchall() if target_titles else []",
+            "item_ids = [str(row[0]) for row in rows]",
+            "if item_ids:",
+            "    for name in ('thunderbird', 'Thunderbird'):",
+            "        subprocess.run(['/usr/bin/pkill', '-x', name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)",
+            "    deadline = time.monotonic() + 12",
+            "    while time.monotonic() < deadline:",
+            "        probe = subprocess.run(['/usr/bin/pgrep', '-x', 'thunderbird'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)",
+            "        probe2 = subprocess.run(['/usr/bin/pgrep', '-x', 'Thunderbird'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)",
+            "        if probe.returncode != 0 and probe2.returncode != 0: break",
+            "        time.sleep(0.2)",
+            "    else: raise SystemExit('Thunderbird did not stop before calendar reset')",
+            "    db = sqlite3.connect(db_path, timeout=10)",
+            "    try:",
+            "        db.execute('PRAGMA foreign_keys=ON')",
+            "        marks = ','.join('?' for _ in target_titles)",
+            "        rows = db.execute(f'SELECT id, title FROM cal_events WHERE title IN ({marks})', target_titles).fetchall() if target_titles else []",
+            "        item_ids = [str(row[0]) for row in rows]",
+            "        if item_ids:",
+            "            item_marks = ','.join('?' for _ in item_ids)",
+            "            tables = [r[0] for r in db.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'cal_%'\") ]",
+            "            for table in tables:",
+            "                if table == 'cal_events': continue",
+            "                cols = {r[1] for r in db.execute(f'PRAGMA table_info(\"{table}\")')}",
+            "                if 'item_id' in cols: db.execute(f' DELETE FROM \"{table}\" WHERE item_id IN ({item_marks})', item_ids)",
+            "            db.execute(f'DELETE FROM cal_events WHERE id IN ({item_marks})', item_ids)",
+            "        db.commit()",
+            "        db.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()",
+            "        remaining = db.execute(f'SELECT title FROM cal_events WHERE title IN ({marks})', target_titles).fetchall() if target_titles else []",
+            "        if remaining: raise SystemExit('task calendar events remained after reset')",
+            "    finally: db.close()",
+            "print(json.dumps({'profile': selected.name, 'db_path': str(db_path), 'removed_titles': sorted({str(r[1]) for r in rows}), 'removed_count': len(rows), 'target_titles': target_titles}))",
+        ]
+    )
 
 
 class ThunderbirdSnapshotAppInitializer(MacAppInitializer):
@@ -25,8 +112,54 @@ class ThunderbirdSnapshotAppInitializer(MacAppInitializer):
     BUNDLE_ID = "org.mozilla.thunderbird"
     SETTLE_MS = 7000
 
+    def __init__(self) -> None:
+        self._did_boundary_reset = False
+
+    def _result(self, status, message, metadata):
+        result = super()._result(status, message, metadata)
+        if self._did_boundary_reset:
+            result.metadata["read_only"] = False
+            result.metadata["inter_task_snapshot_reset"] = True
+        return result
+
+    def initialize(self, context: Mapping[str, Any]):
+        params = dict(context.get("params") or {})
+        task = context.get("task")
+        evaluation = getattr(task, "evaluation", None)
+        evaluation_params = dict(getattr(evaluation, "params", {}) or {})
+        params.setdefault("target_titles", list(evaluation_params.get("required_titles") or []))
+        return super().initialize({**context, "params": params})
+
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
         profile_root = str(params.get("profile_root") or DEFAULT_PROFILE_ROOT)
+        target_titles = [str(title) for title in (params.get("target_titles") or []) if str(title).strip()]
+        reset_info = None
+        if target_titles:
+            script = _build_target_event_reset_script(profile_root, target_titles)
+            result = self._guest_bash(controller, "python3 - <<'GUESTPY'\n" + script + "\nGUESTPY", timeout=45)
+            output = str(result.get("stdout") or result.get("output") or "")
+            error = str(result.get("stderr") or "")
+            if int(result.get("returncode", -1)) != 0:
+                raise InitializationError(
+                    "could not restore the task's clean Thunderbird calendar state: "
+                    + (error.strip() or output.strip() or f"exit {result.get('returncode')}")
+                )
+            try:
+                reset_info = json.loads([line for line in output.splitlines() if line.strip()][-1])
+            except (IndexError, ValueError) as exc:
+                raise InitializationError("calendar reset returned no verifiable result") from exc
+            self._did_boundary_reset = bool(reset_info.get("removed_count"))
+            if self._did_boundary_reset:
+                launch = controller.launch_app(str(params.get("app_name") or self.APP_NAME))
+                if isinstance(launch, Mapping) and launch.get("success") is False:
+                    raise InitializationError(
+                        f"Thunderbird could not relaunch after calendar reset: {launch.get('error') or launch.get('message')}"
+                    )
+                app_path, _ = self._inspect_installation(
+                    controller, str(params.get("app_name") or self.APP_NAME)
+                )
+                self._wait_for_process(controller, app_path)
+                self._settle(params)
         script = "\n".join(
             [
                 "import json",
@@ -54,4 +187,10 @@ class ThunderbirdSnapshotAppInitializer(MacAppInitializer):
                 "the Thunderbird profile carries no local calendar store"
             )
         names = ", ".join(item["name"] for item in with_calendar)
-        return f"Thunderbird is running with a local calendar store in {names}"
+        reset_message = ""
+        if reset_info is not None:
+            reset_message = (
+                f"; reset {reset_info.get('removed_count', 0)} prior task event(s) "
+                "by exact title and verified the clean task boundary"
+            )
+        return f"Thunderbird is running with a local calendar store in {names}{reset_message}"

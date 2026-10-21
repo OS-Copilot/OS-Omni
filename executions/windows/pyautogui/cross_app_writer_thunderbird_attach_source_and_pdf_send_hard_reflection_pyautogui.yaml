@@ -1,0 +1,10 @@
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+max_steps: 100
+tasks:
+  - tasks/windows/cross_app_writer_thunderbird_attach_source_and_pdf_send_hard.yaml
+metadata:
+  description: 'Windows cross-app hard task: send both Writer source document and exported PDF through Thunderbird. with code_adapter mode.'

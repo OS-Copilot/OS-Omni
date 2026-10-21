@@ -1161,8 +1161,42 @@ class RuntimeAutomation:
         return 1920, 1080
 
     def _foreground_app(self) -> Tuple[str, str]:
-        # Prefer AX-focused app when available so foreground metadata stays
-        # consistent with UI-tree collection source.
+        # Ask System Events first.  In the author VM, NSWorkspace.frontmostApplication()
+        # can report Blender while the screenshot/menu bar and active window are
+        # Actual; that stale value was injected into the model prompt and caused
+        # unnecessary app switching.  The independent System Events query tracks
+        # the process whose frontmost flag matches the visible menu bar.
+        script = """
+        tell application "System Events"
+            set p to first application process whose frontmost is true
+            set appName to name of p
+            try
+                set bundleId to bundle identifier of p
+            on error
+                set bundleId to ""
+            end try
+            return appName & "|" & bundleId
+        end tell
+        """
+        try:
+            proc = subprocess.run(["osascript", "-e", script], check=False, capture_output=True, text=True, timeout=8)
+            if proc.returncode == 0 and proc.stdout.strip():
+                app_name, _, bundle_id = proc.stdout.strip().partition("|")
+                return app_name, bundle_id
+        except Exception:
+            pass
+
+        # NSWorkspace is a fallback when System Events is unavailable.
+        if APPKIT_AVAILABLE:
+            try:
+                workspace = NSWorkspace.sharedWorkspace()
+                active_app = workspace.frontmostApplication()
+                if active_app:
+                    return active_app.localizedName() or "", active_app.bundleIdentifier() or ""
+            except Exception:
+                pass
+
+        # Use Accessibility only when NSWorkspace is unavailable.
         if ACCESSIBILITY_AVAILABLE and self.is_accessibility_trusted(False):
             try:
                 system_wide = AXUIElementCreateSystemWide()
@@ -1231,25 +1265,6 @@ class RuntimeAutomation:
             except Exception:
                 pass
 
-        script = """
-        tell application "System Events"
-            set p to first application process whose frontmost is true
-            set appName to name of p
-            try
-                set bundleId to bundle identifier of p
-            on error
-                set bundleId to ""
-            end try
-            return appName & "|" & bundleId
-        end tell
-        """
-        try:
-            proc = subprocess.run(["osascript", "-e", script], check=False, capture_output=True, text=True, timeout=8)
-            if proc.returncode == 0 and proc.stdout.strip():
-                app_name, _, bundle_id = proc.stdout.strip().partition("|")
-                return app_name, bundle_id
-        except Exception:
-            pass
         return "", ""
 
     def _capture_screenshot_bytes(self) -> bytes:

@@ -22,7 +22,7 @@ instruction: 'In the OpenBank application, create three new transfer recipients,
   contacted the merchant" box checked, and the details "Duplicate; contacted.". OpenBank must remain the
   foreground application when all tasks are complete.'
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.openbank_rebuilt:OpenBankRebuiltInitializer
   params:
     app_name: OpenBank
     wait_ms: 1200

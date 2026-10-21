@@ -29,6 +29,16 @@ class OpenTwitterInitializer(MacAppInitializer):
     BUNDLE_ID = "local.osomni.opentwitter"
     SETTLE_MS = 2500
 
+    def __init__(self) -> None:
+        self._did_boundary_reset = False
+
+    def _result(self, status, message, metadata):
+        result = super()._result(status, message, metadata)
+        if self._did_boundary_reset:
+            result.metadata["read_only"] = False
+            result.metadata["inter_task_snapshot_reset"] = True
+        return result
+
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
         candidates = list(params.get("candidate_ports") or [DEFAULT_PORT])
         if params.get("port"):
@@ -66,10 +76,111 @@ class OpenTwitterInitializer(MacAppInitializer):
         if account and account not in recorded:
             raise InitializationError(f"OpenTwitter carries no {account} account")
 
-        if dict(document.get("session") or {}).get("loggedIn"):
-            raise InitializationError("OpenTwitter is already signed in")
+        session = dict(document.get("session") or {})
+        if session.get("loggedIn"):
+            # The author queue deliberately reuses one VM. Restore the app's
+            # built-in seed between episodes, but only when the observed state
+            # still contains this task's expected account and source posts.
+            account = str(params.get("expected_account_name") or "")
+            if account and account not in recorded:
+                raise InitializationError(
+                    "OpenTwitter is signed in to an unexpected account; refusing to reset it"
+                )
+            self._reset_task_snapshot(controller, port, params)
+            self._did_boundary_reset = True
+            port, state, notes = self._read_loopback(
+                controller, candidates, ["/api/evaluation"],
+                what="OpenTwitter state after task snapshot reset",
+            )
+            if port is None:
+                raise InitializationError(
+                    "OpenTwitter did not recover after restoring its task snapshot"
+                    + (f" ({'; '.join(notes)})" if notes else "")
+                )
+            document = self._endpoint_body(state, "/api/evaluation")
+            recorded = json.dumps(document, ensure_ascii=False)
+            if dict(document.get("session") or {}).get("loggedIn"):
+                raise InitializationError("OpenTwitter remained signed in after task snapshot reset")
+            missing = [phrase for phrase in required if phrase not in recorded]
+            if missing:
+                raise InitializationError(
+                    "OpenTwitter task seed is missing source post(s) after reset: "
+                    + ", ".join(repr(phrase) for phrase in missing)
+                )
+            already = [title for title in forbidden if title in recorded]
+            if already:
+                raise InitializationError(
+                    "OpenTwitter task seed already contains target post(s) after reset: "
+                    + ", ".join(repr(title) for title in already)
+                )
+            self._restart_app(controller, params.get("app_name") or self.APP_NAME)
 
         return (
             f"OpenTwitter answers on port {port} with {len(required)} seeded source post(s), "
             f"no target posts, and the {account or 'expected'} account present"
+            + (" after restoring the seeded task snapshot" if self._did_boundary_reset else "")
         )
+
+    def _reset_task_snapshot(self, controller: Any, port: int, params: Mapping[str, Any]) -> None:
+        script = "\n".join([
+            "import json, urllib.request",
+            f"url = 'http://127.0.0.1:{int(port)}/api/dev/reset'",
+            "request = urllib.request.Request(url, data=b'{}', headers={'Content-Type': 'application/json'}, method='POST')",
+            "with urllib.request.urlopen(request, timeout=15) as response:",
+            "    body = json.loads(response.read().decode('utf-8'))",
+            "print(json.dumps({'ok': body.get('ok') is True, 'logged_in': bool((body.get('session') or {}).get('loggedIn'))}))",
+        ])
+        response = self._guest_python(controller, script, timeout=20)
+        output = str(response.get("stdout") or response.get("output") or "")
+        error = str(response.get("stderr") or response.get("error") or "")
+        if int(response.get("returncode", -1)) != 0:
+            raise InitializationError("OpenTwitter could not restore its task snapshot: " + (error.strip() or output.strip() or "reset failed"))
+        try:
+            reset = json.loads([line for line in output.splitlines() if line.strip()][-1])
+        except (IndexError, ValueError) as exc:
+            raise InitializationError("OpenTwitter snapshot reset did not return verifiable state") from exc
+        if reset.get("ok") is not True or reset.get("logged_in") is not False:
+            raise InitializationError("OpenTwitter snapshot reset was not confirmed as signed out")
+
+    def _restart_app(self, controller: Any, app_name: str) -> None:
+        app_path, _ = self._inspect_installation(controller, app_name)
+        script = "\n".join([
+            "import json, os, plistlib, signal, subprocess, time",
+            f"app = {app_path!r}",
+            "with open(os.path.join(app, 'Contents', 'Info.plist'), 'rb') as stream:",
+            "    executable = plistlib.load(stream)['CFBundleExecutable']",
+            "expected = os.path.join(app, 'Contents', 'MacOS', executable)",
+            "lines = subprocess.check_output(['/bin/ps', '-axo', 'pid=,comm='], text=True).splitlines()",
+            "pids = []",
+            "for line in lines:",
+            "    fields = line.strip().split(None, 1)",
+            "    if len(fields) == 2 and fields[1] == expected and fields[0].isdigit(): pids.append(int(fields[0]))",
+            "for pid in pids:",
+            "    try: os.kill(pid, signal.SIGTERM)",
+            "    except ProcessLookupError: pass",
+            "deadline = time.monotonic() + 8",
+            "while time.monotonic() < deadline:",
+            "    active = []",
+            "    for pid in pids:",
+            "        try: os.kill(pid, 0); active.append(pid)",
+            "        except ProcessLookupError: pass",
+            "    if not active: break",
+            "    time.sleep(0.2)",
+            "print(json.dumps({'stopped': not bool(active), 'pid_count': len(pids)}))",
+        ])
+        stopped = self._guest_python(controller, script, timeout=15)
+        output = str(stopped.get("stdout") or stopped.get("output") or "")
+        error = str(stopped.get("stderr") or stopped.get("error") or "")
+        if int(stopped.get("returncode", -1)) != 0:
+            raise InitializationError("OpenTwitter could not restart after snapshot reset: " + (error.strip() or output.strip() or "guest process stop failed"))
+        try:
+            state = json.loads([line for line in output.splitlines() if line.strip()][-1])
+        except (IndexError, ValueError) as exc:
+            raise InitializationError("OpenTwitter shutdown did not return a verifiable result") from exc
+        if not state.get("stopped") or not state.get("pid_count"):
+            raise InitializationError("OpenTwitter did not stop cleanly after snapshot reset")
+        launch = controller.launch_app(app_name)
+        if isinstance(launch, Mapping) and launch.get("success") is False:
+            raise InitializationError("OpenTwitter could not relaunch after snapshot reset")
+        self._wait_for_process(controller, app_path)
+        self._settle({"wait_ms": self.SETTLE_MS})

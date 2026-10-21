@@ -23,7 +23,7 @@ EVALUATOR_ID = (
     "evaluators.ios.opennote_live_music_visuals_three_notes_495011:"
     "OpenNoteLiveMusicVisualsThreeNotes495011Evaluator"
 )
-INSTRUCTION_SHA256 = "22a04bfc7bbf968d200d7c5d14cac7ee152c6f189c14018afb6ff14eca500038"
+INSTRUCTION_SHA256 = "c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac"
 SOURCE_SIMULATOR_NAME = "osomni-opendriver-ios-source-fixed-promax"
 IOS_DEVICE_PROFILE = "iphone17-3"
 MANUAL_WINDOW_START = "2026-08-04T16:55:28+08:00"
@@ -59,7 +59,7 @@ CHECKPOINTS = tuple(spec["name"] for spec in CHECKPOINT_SPECS)
 RULESET_SPEC = {
     "schema_version": "1.0",
     "task_id": "ios.opennote.live_music_visuals_three_notes_495011",
-    "source_state_modes": ["human_completed_eval_only", "fresh_clone_verified"],
+        "source_state_modes": ["human_completed_eval_only", "runtime_event_baseline"],
     "automatic_window": "initializer.metadata.baseline_max_event_seq",
     "checkpoints": [
         {"name": "profile_role_exact", "steps": [1, 2, 3, 4, 5], "predicate": "profile_role_exact_predicate"},
@@ -85,7 +85,7 @@ RULESET_SPEC = {
     },
     "final_ui": "not_required_after_durable_publish",
 }
-RULESET_SHA256 = "6554628990486844e7efccc0f505e4503de228d55d9214a533938d45811e3e1e"
+RULESET_SHA256 = "5af28bd7504a4e926188f6dd2149495c6d1415441937d5aa1ce75456d949c5df"
 
 _NOTE_EXPECTED = {
     "blue_green_note": {
@@ -454,7 +454,7 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
             "ruleset_spec": RULESET_SPEC, "checks": checks, "failures": failures,
             "read_only": True,
             "source_state_mode": (
-                "fresh_clone_verified"
+                "runtime_event_baseline"
                 if isinstance(raw.get("boundary"), Mapping)
                 and raw["boundary"].get("mode") == "automatic_baseline_seq"
                 else "human_completed_eval_only"
@@ -518,7 +518,8 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
         proc = subprocess.run(["xcrun", "simctl", "get_app_container", udid, bundle_id, "app"], capture_output=True, text=True, timeout=30)
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container app failed: {proc.stderr.strip()}")
-        app = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        app = remap_simulator_container_path(proc.stdout.strip(), udid)
         paths = {"binary_sha256": app / "App", "app_js_sha256": app / "public" / "app.js", "local_api_js_sha256": app / "public" / "local-api.js"}
         observed = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in paths.items()}
         if observed != EXPECTED_BUILD:

@@ -1,0 +1,264 @@
+task_id: android.opennavigation.meta_campus_transit_records_20260803
+platform: android
+instruction: '请只通过可见的 Android GUI 完成这个 OpenNavigation 工作流。从 Android Studio 快照 `snap_2026-08-01_16-48-36`
+  的干净状态开始，OpenNavigation 已安装并已登录；不要 Sign Out / 不要退出登录。最终停留在左侧栏的 Records 页面，使页面同时显示
+  MetaCommute、CampusWalk、TransitLink、Heavy traffic 和 OfficeCongestion。
+
+
+  1. 点击 OpenNavigation 应用图标，打开应用到地图首页。
+
+  2. 点击顶部搜索框，输入 Meta，收起软键盘，然后点击搜索结果中的 Meta Headquarters。
+
+  3. 点击顶部搜索框右侧的菱形 Directions 按钮，选择 Drive，保持 Leave now。
+
+  4. 点击起点和目的地之间的 + 添加途经点按钮，在新增途经点文本栏输入 Googleplex，收起软键盘，然后点击结果列表中的 Googleplex。
+
+  5. 打开出发时间右侧的 Options 路线设置按钮，在 Route preferences 弹窗中勾选 Avoid highways，然后点击 Apply
+  preferences。
+
+  6. 点击路线摘要下方标签栏最右侧的 Routes；它位于 Saved 的右边。点击该标签下方显示的第一张 Drive 路线卡片。
+
+  7. 点击路线名称文本栏，输入 MetaCommute，收起软键盘，然后点击路线名称右侧的 Save route 按钮。
+
+  8. 点击左侧栏的 Records，再点击左侧栏的 Saved，点击收藏地点列表中的 Stanford University。
+
+  9. 点击顶部搜索框右侧的菱形 Directions 按钮，点击起点和目的地之间的 + 添加途经点按钮。
+
+  10. 在新增途经点文本栏输入 Mountain View，收起软键盘，然后点击结果列表中的 Mountain View Transit Center。
+
+  11. 选择 Walk，点击 Other time，打开 Options，在 Route preferences 弹窗中勾选 Accessible route，然后点击
+  Apply preferences；路线生成后顶部按钮显示为 Start。
+
+  12. 点击显示 MetaCommute 的路线名称文本栏，长按 MetaCommute 后松开，点击浮动文本菜单中的 Select all，输入 CampusWalk，收起软键盘，然后点击蓝色
+  Save route 按钮。
+
+  13. 点击左侧栏的 Records，再点击左侧栏的 Recent，点击最近地点列表中的 Mountain View Transit Center。
+
+  14. 点击顶部搜索框右侧的菱形 Directions 按钮，点击起点和目的地之间的 + 添加途经点按钮。
+
+  15. 在新增途经点文本栏输入 Googleplex，收起软键盘，然后点击结果列表中的 Googleplex。
+
+  16. 选择 Transit，点击 Other time，打开 Options，在 Route preferences 弹窗中勾选 Fewer transfers，然后点击
+  Apply preferences；路线生成后顶部按钮显示为 Start。
+
+  17. 点击显示 CampusWalk 的路线名称文本栏，长按 CampusWalk 后松开，点击浮动文本菜单中的 Select all，输入 TransitLink，收起软键盘，然后点击
+  Save route 按钮。
+
+  18. 点击左侧栏的 Records，在 Saved routes 区域点击 MetaCommute 路线卡片。
+
+  19. 点击路线摘要下方标签栏最右侧的 Routes；它位于 Saved 的右边。点击该标签下方显示的第一张 Drive 路线卡片，然后点击页面标题行右侧的蓝色
+  Start 按钮。
+
+  20. 点击导航覆盖层中的 Report，打开 Report an incident 弹窗中的 Incident type 下拉框，选择 Heavy traffic。
+
+  21. 点击 Report note 文本栏，输入 OfficeCongestion，收起软键盘，然后点击 Save report。
+
+  22. 点击左侧栏的 Records，使最终页面同时显示 MetaCommute、CampusWalk、TransitLink、Heavy traffic 和
+  OfficeCongestion。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.opennavigation
+    app_activity: .MainActivity
+    snapshot_name: snap_2026-08-01_16-48-36
+    wait_ms: 2000
+    forbidden_targets:
+    - MetaCommute
+    - CampusWalk
+    - TransitLink
+    - OfficeCongestion
+    baseline_required_texts:
+    - Saved routes
+    - Incident reports
+    - No saved routes
+    - No incident reports
+    source_initializer: evaluators.cua_review.initializers.android.opennavigation_records:OpenNavigationRecordsBaselineInitializer
+evaluation:
+  evaluator_id: evaluators.android.opennavigation_meta_campus_transit_records_20260803:OpenNavigationRecordsEvaluator
+  params:
+    app_package: com.killt.opennavigation
+    expected_visible_texts:
+    - Saved routes
+    - Incident reports
+    - MetaCommute
+    - CampusWalk
+    - TransitLink
+    - Heavy traffic
+    - OfficeCongestion
+    expected_route_records:
+    - required_texts:
+      - MetaCommute
+      - Drive
+      - Meta Headquarters
+    - required_texts:
+      - CampusWalk
+      - Walk
+      - Stanford University
+    - required_texts:
+      - TransitLink
+      - Transit
+      - Mountain View Transit Center
+    expected_incident_records:
+    - required_texts:
+      - Heavy traffic
+      - OfficeCongestion
+      - MetaCommute
+    forbidden_texts:
+    - No saved routes
+    - No incident reports
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  tags:
+  - android
+  - opennavigation
+  - saved_routes
+  - incident_reports
+  - records
+  - hard
+  - benchmark
+  app: OpenNavigation
+  app_name: OpenNavigation
+  app_bundle_id: com.killt.opennavigation
+  required_packages_any:
+  - com.killt.opennavigation
+  difficulty: hard
+  android_vm_profile: quail1
+  avd_name: AndroidWorldAvd_20260611_1
+  snapshot_name: snap_2026-08-01_16-48-36
+  snapshot_display_name: snap_2026-08-01_16-48-36
+  task_version: '2026-08-03'
+  description: Create three named OpenNavigation saved route records and one incident
+    report record, then finish on Records with durable route/report evidence visible.
+  prerequisites:
+  - Android Studio profile quail1/AVD AndroidWorldAvd_20260611_1 has snapshot display
+    name snap_2026-08-01_16-48-36 available.
+  - OpenNavigation package com.killt.opennavigation is installed and already signed
+    in.
+  - The snapshot Records baseline has no saved routes and no incident reports for
+    MetaCommute, CampusWalk, TransitLink, or OfficeCongestion.
+  initializer_message: OpenNavigationRecordsBaselineInitializer does not restore snapshots,
+    clear app data, sign in, sign out, or create target route/report records. It launches
+    OpenNavigation, opens Records for precondition inspection, and fails if target
+    evidence is already present.
+  verifier_rules:
+    primary_business_evidence:
+    - Final foreground app must be com.killt.opennavigation.
+    - Final Records UI must show Saved routes and Incident reports.
+    - One saved route record must include MetaCommute, Drive, and Meta Headquarters.
+    - One saved route record must include CampusWalk, Walk, and Stanford University.
+    - One saved route record must include TransitLink, Transit, and Mountain View
+      Transit Center.
+    - One incident report record must include Heavy traffic, OfficeCongestion, and
+      MetaCommute.
+    - Final Records UI must not show No saved routes or No incident reports.
+    instruction_mapping:
+    - Steps 1-7 create and save the MetaCommute Drive route.
+    - Steps 8-12 create and save the CampusWalk Walk route.
+    - Steps 13-17 create and save the TransitLink Transit route.
+    - Steps 18-22 start MetaCommute navigation, save the Heavy traffic/OfficeCongestion
+      incident report, then return to Records.
+    data_source_priority:
+    - Android foreground package and final uiautomator UI dump are authoritative.
+    - The initializer baseline UI dump is authoritative for clean-baseline precondition
+      checks during full runs.
+    forbidden_assumptions:
+    - Do not pass from route/report names alone without the associated mode/type and
+      endpoint/route evidence.
+    - Do not treat intermediate Directions, route cards, keyboards, dropdowns, preference
+      dialogs, or navigation overlays as final evidence.
+  evaluation_standard: The task passes only when the final Records page visibly contains
+    all three named saved routes and the associated Heavy traffic incident report
+    with the required unique note.
+  durable_checks:
+  - MetaCommute route record includes Drive and Meta Headquarters.
+  - CampusWalk route record includes Walk and Stanford University.
+  - TransitLink route record includes Transit and Mountain View Transit Center.
+  - Heavy traffic report record includes OfficeCongestion and MetaCommute.
+  weak_or_unverifiable_steps:
+  - Keyboard dismissal, long press, Select all, specific search/dropdown interactions,
+    and route preference checkbox toggles are process actions and are not independently
+    verified unless their saved final route/report records expose resulting durable
+    text.
+  false_positive_controls:
+  - 'Uses four task-specific nonce strings: MetaCommute, CampusWalk, TransitLink,
+    OfficeCongestion.'
+  - Initializer fails full runs if those nonce strings are already visible in the
+    Records baseline.
+  - Evaluator requires route/report association text, not only standalone substring
+    presence.
+  manual_verifier_note: scripts/evaluate_android_task_only.py skips snapshot reset,
+    initializer, and AI GUI actions. It evaluates the current VM final Records UI
+    only.
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: opennavigation/Android/android.opennavigation.meta_campus_transit_records_20260803
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: b525fe3e9a22ebb9dd9303f126f0f4c7f43801f051387e897244643fd72bdc82
+    source_instruction: '请只通过可见的 Android GUI 完成这个 OpenNavigation 工作流。从 Android Studio
+      快照 `snap_2026-08-01_16-48-36` 的干净状态开始，OpenNavigation 已安装并已登录；不要 Sign Out / 不要退出登录。最终停留在左侧栏的
+      Records 页面，使页面同时显示 MetaCommute、CampusWalk、TransitLink、Heavy traffic 和 OfficeCongestion。
+
+
+      1. 点击 OpenNavigation 应用图标，打开应用到地图首页。
+
+      2. 点击顶部搜索框，输入 Meta，收起软键盘，然后点击搜索结果中的 Meta Headquarters。
+
+      3. 点击顶部搜索框右侧的菱形 Directions 按钮，选择 Drive，保持 Leave now。
+
+      4. 点击起点和目的地之间的 + 添加途经点按钮，在新增途经点文本栏输入 Googleplex，收起软键盘，然后点击结果列表中的 Googleplex。
+
+      5. 打开出发时间右侧的 Options 路线设置按钮，在 Route preferences 弹窗中勾选 Avoid highways，然后点击 Apply
+      preferences。
+
+      6. 点击路线摘要下方标签栏最右侧的 Routes；它位于 Saved 的右边。点击该标签下方显示的第一张 Drive 路线卡片。
+
+      7. 点击路线名称文本栏，输入 MetaCommute，收起软键盘，然后点击路线名称右侧的 Save route 按钮。
+
+      8. 点击左侧栏的 Records，再点击左侧栏的 Saved，点击收藏地点列表中的 Stanford University。
+
+      9. 点击顶部搜索框右侧的菱形 Directions 按钮，点击起点和目的地之间的 + 添加途经点按钮。
+
+      10. 在新增途经点文本栏输入 Mountain View，收起软键盘，然后点击结果列表中的 Mountain View Transit Center。
+
+      11. 选择 Walk，点击 Other time，打开 Options，在 Route preferences 弹窗中勾选 Accessible route，然后点击
+      Apply preferences；路线生成后顶部按钮显示为 Start。
+
+      12. 点击显示 MetaCommute 的路线名称文本栏，长按 MetaCommute 后松开，点击浮动文本菜单中的 Select all，输入 CampusWalk，收起软键盘，然后点击蓝色
+      Save route 按钮。
+
+      13. 点击左侧栏的 Records，再点击左侧栏的 Recent，点击最近地点列表中的 Mountain View Transit Center。
+
+      14. 点击顶部搜索框右侧的菱形 Directions 按钮，点击起点和目的地之间的 + 添加途经点按钮。
+
+      15. 在新增途经点文本栏输入 Googleplex，收起软键盘，然后点击结果列表中的 Googleplex。
+
+      16. 选择 Transit，点击 Other time，打开 Options，在 Route preferences 弹窗中勾选 Fewer transfers，然后点击
+      Apply preferences；路线生成后顶部按钮显示为 Start。
+
+      17. 点击显示 CampusWalk 的路线名称文本栏，长按 CampusWalk 后松开，点击浮动文本菜单中的 Select all，输入 TransitLink，收起软键盘，然后点击
+      Save route 按钮。
+
+      18. 点击左侧栏的 Records，在 Saved routes 区域点击 MetaCommute 路线卡片。
+
+      19. 点击路线摘要下方标签栏最右侧的 Routes；它位于 Saved 的右边。点击该标签下方显示的第一张 Drive 路线卡片，然后点击页面标题行右侧的蓝色
+      Start 按钮。
+
+      20. 点击导航覆盖层中的 Report，打开 Report an incident 弹窗中的 Incident type 下拉框，选择 Heavy traffic。
+
+      21. 点击 Report note 文本栏，输入 OfficeCongestion，收起软键盘，然后点击 Save report。
+
+      22. 点击左侧栏的 Records，使最终页面同时显示 MetaCommute、CampusWalk、TransitLink、Heavy traffic
+      和 OfficeCongestion。'
+    release_path: benchmark/tasks/opennavigation/Android/android.opennavigation.meta_campus_transit_records_20260803
+    original_evaluator_id: evaluators.android.opennavigation_records:OpenNavigationRecordsEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.opennavigation_records:OpenNavigationRecordsBaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/opennavigation_meta_campus_transit_records_20260803.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

@@ -1,0 +1,39 @@
+task_id: ios.openphotoedit.community_activity_cards_memory_482863
+platform: ios
+instruction: Save the default Window portrait sample from OpenPhotoEdit unchanged as
+  `community activity main cover.png` in the app's Exports folder.
+init:
+  initializer_id: evaluators.cua_review.initializers.ios.openphotoedit_community_activity_cards_memory_482863:OpenPhotoEditCommunityActivityCardsMemory482863Initializer
+  params:
+    bundle_id: com.killt.openphotoedit
+    wait_ms: 1200
+    return_home_after_init: false
+evaluation:
+  evaluator_id: evaluators.ios.openphotoedit_community_activity_cards_memory_482863:OpenPhotoEditCommunityActivityCardsMemory482863Evaluator
+  params:
+    bundle_id: com.killt.openphotoedit
+    export_filename: community activity main cover.png
+    source_sample: Window
+    source_sample_sha256: 8cfbd4717868d17193f29e209a524e83cc82d75fec266b1b42418fee3c025536
+limits:
+  max_steps: 40
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - ios
+  - openphotoedit
+  - image-export
+  - file-name
+  app: OpenPhotoEdit
+  app_bundle_id: com.killt.openphotoedit
+  task_revision: 2
+  evaluation_revision: 2
+  evaluation_rationale: >-
+    The restored app source showed that its Back and Save handlers were empty and
+    its seeded editor opens on the Window sample; the original four-photo task
+    required an unavailable import workflow and absent source assets. This task
+    preserves the image-export intent using the app behavior and asset that are
+    present. A positive exact-byte reference and wrong-content negative case are
+    checked independently.
+  expected_source_sha256: 8cfbd4717868d17193f29e209a524e83cc82d75fec266b1b42418fee3c025536
+  app_source_tree_sha256: 5a9b084b63bf579f9e1bfe9ba3492260bfaedfe626d0f364793e3059c439c2e8

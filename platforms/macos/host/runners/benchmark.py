@@ -3,10 +3,14 @@
 Benchmark runner for serial clone -> run -> delete macOS experiments.
 """
 
+import hashlib
+import json
 import logging
 import os
+import shutil
 import subprocess
 import sys
+import tarfile
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -37,7 +41,701 @@ GUEST_RUNTIME_LABEL = "com.yourlab.macui.runtime"
 GUEST_RUNTIME_SYNC_RETRIES = 20
 GUEST_RUNTIME_SYNC_INTERVAL_SECONDS = 2.0
 
+OS_OMNI_CAPTURE_MACOS_FINAL_STATE_ENV = "OS_OMNI_CAPTURE_MACOS_FINAL_STATE"
+MACOS_FINAL_STATE_DIRNAME = "final_state"
+MACOS_FINAL_STATE_ARCHIVE_NAME = "final_state.tar.gz"
+MACOS_FINAL_STATE_MANIFEST_NAME = "manifest.json"
+MACOS_FINAL_STATE_SCREENSHOT_NAME = "final_screenshot.jpg"
+MACOS_FINAL_STATE_MAX_FILE_BYTES = 32 * 1024 * 1024
+MACOS_FINAL_STATE_MAX_TOTAL_BYTES = 128 * 1024 * 1024
+MACOS_FINAL_STATE_MAX_FILES = 32
+MACOS_FINAL_STATE_GUEST_TIMEOUT = 30
+
+# File-name hints for secrets/credentials. Matching guest files are never
+# fetched into the final-state archive; the exclusion is recorded instead.
+_MACOS_FINAL_STATE_CREDENTIAL_HINTS = (
+    "keychain",
+    "credential",
+    "password",
+    "secret",
+    "token",
+    "auth",
+    "id_rsa",
+    "id_ed25519",
+    ".pem",
+    ".p12",
+)
+_MACOS_FINAL_STATE_EXACT_SECRET_BASENAMES = frozenset({".env"})
+
+# Guest path components that are never collected (caches/cookies/keychains).
+_MACOS_FINAL_STATE_EXCLUDED_COMPONENTS = frozenset(
+    {"caches", "cache", "__pycache__", "cookies", "keychains"}
+)
+
+# Absolute guest roots under which task-bound evidence files may live.
+# Anything outside these roots (notably ~Library keychains, ~/.ssh, /etc,
+# and the VM home directory at large) is rejected without a guest call.
+_MACOS_FINAL_STATE_ALLOWED_FILE_ROOTS = (
+    "/Users/bench/Downloads",
+    "/Users/bench/Documents",
+    "/Users/bench/Desktop",
+    "/tmp",
+    "/private/tmp",
+)
+
+# Library roots readable only for explicitly task-bound native stores
+# (Photos/Thunderbird/Contacts/Calendars/Reminders DBs resolved below).
+_MACOS_FINAL_STATE_ALLOWED_LIBRARY_ROOTS = (
+    "/Users/bench/Library/Thunderbird",
+    "/Users/bench/Library/Calendars",
+    "/Users/bench/Library/Reminders",
+    "/Users/bench/Library/Application Support/AddressBook",
+    "/Users/bench/Pictures",
+)
+
+_MACOS_FINAL_STATE_SQLITE_SIDECAR_SUFFIXES = ("-wal", "-shm", "-journal")
+
+# Fixed guest-side stat probe. The guest path travels as subprocess argv
+# (never interpolated into shell or into this code string).
+_MACOS_FINAL_STATE_STAT_CODE = (
+    "import json, os, stat, sys\n"
+    "path = sys.argv[1] if len(sys.argv) > 1 else ''\n"
+    "try:\n"
+    "    info = os.lstat(path)\n"
+    "    result = {\n"
+    "        'exists': True,\n"
+    "        'is_file': stat.S_ISREG(info.st_mode),\n"
+    "        'is_symlink': stat.S_ISLNK(info.st_mode),\n"
+    "        'size': int(info.st_size),\n"
+    "    }\n"
+    "except FileNotFoundError:\n"
+    "    result = {'exists': False}\n"
+    "except Exception as error:\n"
+    "    result = {'exists': False, 'error': str(error)}\n"
+    "print(json.dumps(result))\n"
+)
+
+# Fully static Thunderbird calendar-DB discovery probe: no caller input is
+# interpolated. Bounded to direct profile children and a small result cap.
+_MACOS_FINAL_STATE_THUNDERBIRD_DISCOVERY_CODE = (
+    "import json;"
+    "from pathlib import Path;"
+    "root=Path('/Users/bench/Library/Thunderbird/Profiles');"
+    "found=[];"
+    "try:\n"
+    "    entries=sorted(root.iterdir()) if root.is_dir() else [];"
+    "except Exception:\n"
+    "    entries=[];"
+    "for _profile in entries:\n"
+    "    try:\n"
+    "        if not _profile.is_dir() or _profile.is_symlink():\n"
+    "            continue;"
+    "        _cand=_profile/'calendar-data'/'local.sqlite';"
+    "        if _cand.is_file() and not _cand.is_symlink():\n"
+    "            found.append(str(_cand));"
+    "    except Exception:\n"
+    "        continue;"
+    "    if len(found)>=4:\n"
+    "        break;"
+    "print(json.dumps({'dbs':found}))"
+)
+
 logger = logging.getLogger(__name__)
+
+
+def macos_final_state_capture_enabled() -> bool:
+    """Return True only when the opt-in final-state capture env flag is set."""
+    return (
+        os.environ.get(OS_OMNI_CAPTURE_MACOS_FINAL_STATE_ENV, "").strip().lower()
+        in {"1", "true", "yes"}
+    )
+
+
+def _macos_final_state_normalize_guest_path(raw: Any) -> Optional[str]:
+    """Normalize a candidate guest path or return None when unusable."""
+    if not isinstance(raw, str):
+        return None
+    text = raw.strip()
+    if not text or "\x00" in text:
+        return None
+    if text.startswith("~"):
+        # Only the bench user's home is addressable; anything else is unsafe.
+        if text != "~" and not text.startswith("~/"):
+            return None
+        text = "/Users/bench" + text[1:]
+    if not text.startswith("/"):
+        return None
+    normalized = os.path.normpath(text)
+    if not normalized.startswith("/") or normalized == "/":
+        return None
+    return normalized
+
+
+def _is_allowed_macos_evidence_path(
+    normalized: str, *, library_scope: bool = False
+) -> bool:
+    roots = _MACOS_FINAL_STATE_ALLOWED_FILE_ROOTS
+    if library_scope:
+        roots = roots + _MACOS_FINAL_STATE_ALLOWED_LIBRARY_ROOTS
+    for root in roots:
+        if normalized == root or normalized.startswith(root + "/"):
+            return True
+    return False
+
+
+def _macos_evidence_exclusion_reason(normalized: str) -> Optional[str]:
+    lowered = normalized.lower()
+    basename = os.path.basename(lowered)
+    if basename in _MACOS_FINAL_STATE_EXACT_SECRET_BASENAMES:
+        return "credential-name-excluded"
+    if any(hint in basename for hint in _MACOS_FINAL_STATE_CREDENTIAL_HINTS):
+        return "credential-name-excluded"
+    components = [part.lower() for part in normalized.split("/") if part]
+    if any(part in _MACOS_FINAL_STATE_EXCLUDED_COMPONENTS for part in components):
+        return "cache-or-system-excluded"
+    return None
+
+
+def _collect_candidate_path_strings(node: Any, *, depth: int = 0) -> List[str]:
+    """Collect absolute-looking guest path strings from task param mappings."""
+    found: List[str] = []
+    if depth > 6 or node is None:
+        return found
+    if isinstance(node, str):
+        text = node.strip()
+        if text.startswith(("/", "~")) and len(text) < 1024:
+            found.append(text)
+        return found
+    if isinstance(node, dict):
+        for key, value in node.items():
+            key_lower = str(key or "").lower()
+            if key_lower.endswith(("_path", "_file", "_dir", "_folder")) or key_lower in {
+                "path",
+                "open_file",
+                "db_path",
+            }:
+                found.extend(_collect_candidate_path_strings(value, depth=depth + 1))
+            elif isinstance(value, (dict, list)):
+                found.extend(_collect_candidate_path_strings(value, depth=depth + 1))
+        return found
+    if isinstance(node, (list, tuple)):
+        for item in node:
+            found.extend(_collect_candidate_path_strings(item, depth=depth + 1))
+        return found
+    return found
+
+
+def resolve_macos_task_evidence_paths(
+    task_file: Any,
+) -> Tuple[List[str], List[Dict[str, Any]]]:
+    """Resolve task-bound guest file paths without importing task semantics.
+
+    Reads only the task YAML's ``evaluation.params``/``init.params`` string
+    values that look like absolute guest paths. Returns
+    ``(allowed_paths, skipped)`` where skipped entries carry explicit
+    reasons. Never raises.
+    """
+    allowed: List[str] = []
+    skipped: List[Dict[str, Any]] = []
+    try:
+        payload = yaml.safe_load(Path(task_file).read_text(encoding="utf-8")) or {}
+    except Exception as exc:
+        skipped.append({"path": str(task_file), "reason": f"task-file-unreadable: {exc}"})
+        return allowed, skipped
+    if not isinstance(payload, dict):
+        return allowed, skipped
+    candidates: List[str] = []
+    for section in ("evaluation", "init"):
+        section_node = payload.get(section)
+        params = section_node.get("params") if isinstance(section_node, dict) else None
+        if isinstance(params, dict):
+            candidates.extend(_collect_candidate_path_strings(params))
+    seen: set[str] = set()
+    for raw in candidates:
+        normalized = _macos_final_state_normalize_guest_path(raw)
+        if normalized is None:
+            skipped.append({"path": str(raw)[:256], "reason": "unsafe-or-relative-path"})
+            continue
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        exclusion = _macos_evidence_exclusion_reason(normalized)
+        if exclusion is not None:
+            skipped.append({"path": normalized, "reason": exclusion})
+            continue
+        if not _is_allowed_macos_evidence_path(normalized):
+            skipped.append({"path": normalized, "reason": "path-not-allowed"})
+            continue
+        allowed.append(normalized)
+    return allowed, skipped
+
+
+def _native_macos_state_candidates(
+    *, task_id: str, task_file: Any
+) -> Tuple[Dict[str, List[str]], List[Dict[str, Any]]]:
+    """Map capture label to task-bound native store paths. Never raises.
+
+    Contacts/Calendar/Reminders/Photos DBs (or task export paths) are
+    returned ONLY when the task id, evaluator id, or explicit ``db_path``
+    param binds them to this task.
+    """
+    wanted: Dict[str, List[str]] = {}
+    skipped: List[Dict[str, Any]] = []
+    tid = str(task_id or "").lower()
+    evaluator_id = ""
+    explicit_db: Optional[str] = None
+    try:
+        payload = yaml.safe_load(Path(task_file).read_text(encoding="utf-8")) or {}
+        if isinstance(payload, dict):
+            evaluation = payload.get("evaluation")
+            if isinstance(evaluation, dict):
+                evaluator_id = str(evaluation.get("evaluator_id") or "").lower()
+                params = evaluation.get("params")
+                if isinstance(params, dict) and isinstance(params.get("db_path"), str):
+                    explicit_db = params["db_path"]
+    except Exception as exc:
+        skipped.append({"path": "native-discovery", "reason": f"task-file-unreadable: {exc}"})
+    blob = f"{tid} {evaluator_id}"
+    if "photo" in blob:
+        wanted["photos"] = [
+            "/Users/bench/Pictures/Photos Library.photoslibrary/database/Photos.sqlite"
+        ]
+    if "thunderbird" in blob and "calendar" in blob:
+        wanted["thunderbird_calendar"] = ["__thunderbird_discovery__"]
+    if "contact" in blob:
+        wanted["contacts"] = [
+            "/Users/bench/Library/Application Support/AddressBook/AddressBook-v22.abcddb"
+        ]
+    if "reminder" in blob or ("calendar" in blob and "thunderbird" not in blob):
+        wanted["reminders"] = [
+            "/Users/bench/Library/Reminders/Container_v1/Stores/Data.store.sqlitedb"
+        ]
+    if explicit_db:
+        normalized = _macos_final_state_normalize_guest_path(explicit_db)
+        if normalized is None:
+            skipped.append({"path": str(explicit_db)[:256], "reason": "unsafe-or-relative-path"})
+        elif _macos_evidence_exclusion_reason(normalized) is not None:
+            skipped.append({"path": normalized, "reason": "credential-name-excluded"})
+        elif not _is_allowed_macos_evidence_path(normalized, library_scope=True):
+            skipped.append({"path": normalized, "reason": "path-not-allowed"})
+        else:
+            wanted.setdefault("task_db", []).append(normalized)
+    return wanted, skipped
+
+
+def _sha256_of_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _sha256_of_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _safe_jsonable(value: Any, *, depth: int = 0) -> Any:
+    """Convert guest payloads into JSON-serializable structures. Never raises."""
+    if depth > 8:
+        return str(value)[:512]
+    if value is None or isinstance(value, (bool, int, float, str)):
+        if isinstance(value, float) and (value != value or value in (float("inf"), float("-inf"))):
+            return str(value)
+        return value
+    if isinstance(value, bytes):
+        return {"bytes_sha256": _sha256_of_bytes(value), "size": len(value)}
+    if isinstance(value, dict):
+        safe: Dict[str, Any] = {}
+        for key in list(value.keys())[:256]:
+            try:
+                safe[str(key)[:256]] = _safe_jsonable(value[key], depth=depth + 1)
+            except Exception:
+                safe[str(key)[:256]] = "<unserializable>"
+        return safe
+    if isinstance(value, (list, tuple)):
+        return [_safe_jsonable(item, depth=depth + 1) for item in list(value)[:256]]
+    try:
+        return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+    except Exception:
+        return str(value)[:2048]
+
+
+def _guest_stat_file(controller: Any, guest_path: str) -> Dict[str, Any]:
+    """Stat one guest path via argv-form /setup/execute (no shell)."""
+    result = controller.execute_command(
+        ["/usr/bin/python3", "-c", _MACOS_FINAL_STATE_STAT_CODE, guest_path],
+        shell=False,
+        timeout=MACOS_FINAL_STATE_GUEST_TIMEOUT,
+    )
+    output = str((result or {}).get("output") or "").strip()
+    try:
+        parsed = json.loads(output)
+    except Exception as exc:
+        raise RuntimeError(f"stat probe returned non-JSON output: {exc}")
+    if not isinstance(parsed, dict):
+        raise RuntimeError("stat probe returned unexpected payload")
+    return parsed
+
+
+def _guest_discover_thunderbird_calendar_dbs(controller: Any) -> List[str]:
+    """Run the static Thunderbird discovery probe. Returns guest DB paths."""
+    result = controller.run_python_script(
+        _MACOS_FINAL_STATE_THUNDERBIRD_DISCOVERY_CODE,
+        timeout=MACOS_FINAL_STATE_GUEST_TIMEOUT,
+    )
+    output = str((result or {}).get("output") or "").strip()
+    try:
+        parsed = json.loads(output)
+    except Exception as exc:
+        raise RuntimeError(f"thunderbird discovery returned non-JSON output: {exc}")
+    dbs = (parsed or {}).get("dbs") if isinstance(parsed, dict) else None
+    if not isinstance(dbs, list):
+        raise RuntimeError("thunderbird discovery returned unexpected payload")
+    cleaned: List[str] = []
+    for entry in dbs[:4]:
+        normalized = _macos_final_state_normalize_guest_path(entry)
+        if normalized is None:
+            continue
+        if not _is_allowed_macos_evidence_path(normalized, library_scope=True):
+            continue
+        if _macos_evidence_exclusion_reason(normalized) is not None:
+            continue
+        cleaned.append(normalized)
+    return cleaned
+
+
+def _macos_stage_bytes(
+    *,
+    payload: bytes,
+    arc_rel: str,
+    staging_root: Path,
+    files: List[Dict[str, Any]],
+    skipped: List[Dict[str, Any]],
+    budget_bytes: List[int],
+    seen_arcs: set[str],
+) -> None:
+    size = len(payload)
+    if size > MACOS_FINAL_STATE_MAX_FILE_BYTES:
+        skipped.append({"path": arc_rel, "reason": "file-size-exceeded"})
+        return
+    if budget_bytes[0] + size > MACOS_FINAL_STATE_MAX_TOTAL_BYTES:
+        skipped.append({"path": arc_rel, "reason": "total-budget-exceeded"})
+        return
+    if len(files) >= MACOS_FINAL_STATE_MAX_FILES:
+        skipped.append({"path": arc_rel, "reason": "file-count-exceeded"})
+        return
+    unique_rel = arc_rel
+    counter = 2
+    while unique_rel in seen_arcs:
+        unique_rel = f"{arc_rel}.{counter}"
+        counter += 1
+    seen_arcs.add(unique_rel)
+    dest = staging_root / unique_rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(payload)
+    budget_bytes[0] += size
+    files.append(
+        {
+            "path": unique_rel,
+            "guest_path": arc_rel,
+            "size": size,
+            "sha256": _sha256_of_bytes(payload),
+        }
+    )
+
+
+def _macos_fetch_one_guest_file(
+    *,
+    controller: Any,
+    guest_path: str,
+    arc_rel: str,
+    staging_root: Path,
+    files: List[Dict[str, Any]],
+    skipped: List[Dict[str, Any]],
+    errors: List[str],
+    budget_bytes: List[int],
+    seen_arcs: set[str],
+) -> None:
+    try:
+        stat = _guest_stat_file(controller, guest_path)
+    except Exception as exc:
+        errors.append(f"{arc_rel}: stat failed: {exc}")
+        return
+    if not stat.get("exists"):
+        skipped.append({"path": arc_rel, "reason": "missing"})
+        return
+    if stat.get("is_symlink"):
+        skipped.append({"path": arc_rel, "reason": "symlink-excluded"})
+        return
+    if not stat.get("is_file"):
+        skipped.append({"path": arc_rel, "reason": "not-a-regular-file"})
+        return
+    try:
+        size = int(stat.get("size", -1))
+    except Exception:
+        size = -1
+    if size < 0:
+        errors.append(f"{arc_rel}: stat returned invalid size")
+        return
+    if size > MACOS_FINAL_STATE_MAX_FILE_BYTES:
+        skipped.append({"path": arc_rel, "reason": "file-size-exceeded"})
+        return
+    try:
+        payload = bytes(controller.get_file(guest_path))
+    except Exception as exc:
+        message = str(exc)
+        if "404" in message or "file not found" in message.lower():
+            skipped.append({"path": arc_rel, "reason": "missing"})
+        else:
+            errors.append(f"{arc_rel}: download failed: {exc}")
+        return
+    _macos_stage_bytes(
+        payload=payload,
+        arc_rel=arc_rel,
+        staging_root=staging_root,
+        files=files,
+        skipped=skipped,
+        budget_bytes=budget_bytes,
+        seen_arcs=seen_arcs,
+    )
+
+
+def _macos_arc_for_guest_path(guest_path: str) -> str:
+    cleaned = guest_path.lstrip("/")
+    if guest_path.startswith("/Users/bench/"):
+        cleaned = "HOME/" + guest_path[len("/Users/bench/"):]
+    return f"task_files/{cleaned}"
+
+
+def capture_macos_final_state(
+    *,
+    runtime_url: str,
+    token: str,
+    task_id: str,
+    task_file: Any,
+    model_output_dir: Any,
+    run_index: int,
+    clone_name: Optional[str] = None,
+    vm_ip: Optional[str] = None,
+    model: Optional[str] = None,
+    success: Optional[bool] = None,
+    return_code: Optional[int] = None,
+    controller: Any = None,
+) -> Dict[str, Any]:
+    """Archive post-run macOS state for later FAIL audits. Never raises.
+
+    Administrative evidence only: the manifest is tagged as such and is
+    never passed to the decision/scoring system; the child's PASS/FAIL
+    outcome passes through untouched. Collection is read-only and bounded
+    to task-relevant guest paths plus task-bound native stores, fetched
+    through the supported guest APIs (``/health``, ``/version``,
+    ``/device_info``, ``/screenshot``, ``/setup/execute``, ``/run_python``,
+    ``/file``). Guest paths are validated before any guest call and are
+    never interpolated into shell strings. Binary payloads are hashed, not
+    embedded or logged.
+    """
+    manifest: Dict[str, Any] = {
+        "evidence_kind": "administrative-final-state",
+        "for_decision_system": False,
+        "capture_notes": (
+            "Administrative evidence only; never passed to DS/scoring. "
+            "Live VM validation pending."
+        ),
+        "task_id": str(task_id),
+        "task_file": str(task_file),
+        "run_index": int(run_index),
+        "model": str(model) if model is not None else None,
+        "clone_name": str(clone_name) if clone_name else None,
+        "vm_ip": str(vm_ip) if vm_ip else None,
+        "runtime_url": str(runtime_url),
+        "child_success": success,
+        "child_return_code": return_code,
+        "health": None,
+        "version": None,
+        "device_info": None,
+        "screenshot": None,
+        "archive": None,
+        "archive_sha256": None,
+        "archive_size": None,
+        "archive_members": [],
+        "files": [],
+        "skipped": [],
+        "errors": [],
+    }
+    final_state_dir = Path(model_output_dir) / MACOS_FINAL_STATE_DIRNAME
+    errors: List[str] = manifest["errors"]
+    files: List[Dict[str, Any]] = manifest["files"]
+    skipped: List[Dict[str, Any]] = manifest["skipped"]
+    budget_bytes = [0]
+    seen_arcs: set[str] = set()
+    try:
+        final_state_dir.mkdir(parents=True, exist_ok=True)
+        staging = final_state_dir / "_staging"
+        if staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)
+        staging.mkdir(parents=True, exist_ok=True)
+
+        if controller is None:
+            from platforms.macos.host.runtime_env.vm_runtime_controller import (
+                VMRuntimeController,
+            )
+
+            controller = VMRuntimeController(
+                runtime_url=str(runtime_url), token=str(token), timeout=20.0
+            )
+
+        try:
+            manifest["health"] = _safe_jsonable(controller.health())
+        except Exception as exc:
+            errors.append(f"health: {exc}")
+        try:
+            manifest["version"] = _safe_jsonable(
+                controller._request_json("GET", "/version")
+            )
+        except Exception as exc:
+            errors.append(f"version: {exc}")
+        try:
+            manifest["device_info"] = _safe_jsonable(controller.get_device_info())
+        except Exception as exc:
+            errors.append(f"device_info: {exc}")
+
+        screenshot_path = final_state_dir / MACOS_FINAL_STATE_SCREENSHOT_NAME
+        try:
+            shot_bytes = bytes(controller._request_binary("GET", "/screenshot"))
+            if not shot_bytes:
+                errors.append("screenshot: guest returned empty payload")
+            else:
+                screenshot_path.write_bytes(shot_bytes)
+                manifest["screenshot"] = {
+                    "path": MACOS_FINAL_STATE_SCREENSHOT_NAME,
+                    "size": len(shot_bytes),
+                    "sha256": _sha256_of_bytes(shot_bytes),
+                }
+        except Exception as exc:
+            errors.append(f"screenshot: {exc}")
+
+        allowed_paths, path_skipped = resolve_macos_task_evidence_paths(task_file)
+        skipped.extend(path_skipped)
+        for guest_path in allowed_paths:
+            arc_rel = _macos_arc_for_guest_path(guest_path)
+            _macos_fetch_one_guest_file(
+                controller=controller,
+                guest_path=guest_path,
+                arc_rel=arc_rel,
+                staging_root=staging,
+                files=files,
+                skipped=skipped,
+                errors=errors,
+                budget_bytes=budget_bytes,
+                seen_arcs=seen_arcs,
+            )
+
+        native_wanted, native_skipped = _native_macos_state_candidates(
+            task_id=task_id, task_file=task_file
+        )
+        skipped.extend(native_skipped)
+        for label, relpaths in native_wanted.items():
+            for rel in relpaths:
+                try:
+                    if rel == "__thunderbird_discovery__":
+                        try:
+                            discovered = _guest_discover_thunderbird_calendar_dbs(
+                                controller
+                            )
+                        except Exception as exc:
+                            errors.append(f"native/{label}: discovery failed: {exc}")
+                            continue
+                        if not discovered:
+                            skipped.append(
+                                {
+                                    "path": f"native/{label}/calendar-data/local.sqlite",
+                                    "reason": "missing",
+                                }
+                            )
+                            continue
+                        for db_path in discovered:
+                            _macos_fetch_one_guest_file(
+                                controller=controller,
+                                guest_path=db_path,
+                                arc_rel=f"native/{label}/local.sqlite",
+                                staging_root=staging,
+                                files=files,
+                                skipped=skipped,
+                                errors=errors,
+                                budget_bytes=budget_bytes,
+                                seen_arcs=seen_arcs,
+                            )
+                            for suffix in _MACOS_FINAL_STATE_SQLITE_SIDECAR_SUFFIXES:
+                                _macos_fetch_one_guest_file(
+                                    controller=controller,
+                                    guest_path=db_path + suffix,
+                                    arc_rel=f"native/{label}/local.sqlite{suffix}",
+                                    staging_root=staging,
+                                    files=files,
+                                    skipped=skipped,
+                                    errors=errors,
+                                    budget_bytes=budget_bytes,
+                                    seen_arcs=seen_arcs,
+                                )
+                        continue
+                    _macos_fetch_one_guest_file(
+                        controller=controller,
+                        guest_path=rel,
+                        arc_rel=f"native/{label}/{os.path.basename(rel)}",
+                        staging_root=staging,
+                        files=files,
+                        skipped=skipped,
+                        errors=errors,
+                        budget_bytes=budget_bytes,
+                        seen_arcs=seen_arcs,
+                    )
+                    for suffix in _MACOS_FINAL_STATE_SQLITE_SIDECAR_SUFFIXES:
+                        if rel.lower().endswith((".sqlite", ".sqlitedb", ".abcddb", ".store.sqlitedb")):
+                            _macos_fetch_one_guest_file(
+                                controller=controller,
+                                guest_path=rel + suffix,
+                                arc_rel=f"native/{label}/{os.path.basename(rel)}{suffix}",
+                                staging_root=staging,
+                                files=files,
+                                skipped=skipped,
+                                errors=errors,
+                                budget_bytes=budget_bytes,
+                                seen_arcs=seen_arcs,
+                            )
+                except Exception as exc:
+                    errors.append(f"native/{label}: {exc}")
+
+        archive_path = final_state_dir / MACOS_FINAL_STATE_ARCHIVE_NAME
+        try:
+            members: List[str] = []
+            with tarfile.open(archive_path, "w:gz") as tar:
+                for src in sorted(staging.rglob("*")):
+                    if src.is_file():
+                        arcname = src.relative_to(staging).as_posix()
+                        tar.add(str(src), arcname=arcname)
+                        members.append(arcname)
+            manifest["archive"] = MACOS_FINAL_STATE_ARCHIVE_NAME
+            manifest["archive_members"] = sorted(members)
+            manifest["archive_sha256"] = _sha256_of_file(archive_path)
+            manifest["archive_size"] = archive_path.stat().st_size
+        except Exception as exc:
+            errors.append(f"archive: {exc}")
+
+        try:
+            shutil.rmtree(staging, ignore_errors=False)
+        except Exception as exc:
+            errors.append(f"staging_cleanup: {exc}")
+    except Exception as exc:
+        errors.append(f"capture: {exc}")
+    finally:
+        try:
+            (final_state_dir / MACOS_FINAL_STATE_MANIFEST_NAME).write_text(
+                json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
+            )
+        except Exception:
+            pass
+    return manifest
 
 
 class MacOSBenchmarkRunner(BaseBenchmarkRunner):
@@ -250,6 +948,7 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
         runtime_url: Optional[str] = None,
         cleanup_error: Optional[str] = None,
         base_vm_name: Optional[str] = None,
+        final_state: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         return {
             "run_index": run_index,
@@ -273,6 +972,7 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
             "runtime_url": runtime_url,
             "cleanup_error": cleanup_error,
             "base_vm_name": base_vm_name,
+            "final_state": final_state,
         }
 
     @staticmethod
@@ -469,6 +1169,73 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
     def _resolve_cli_entry_path(self) -> str:
         return str(MACOS_PLATFORM_DIR / "host" / "cli.py")
 
+    def _maybe_capture_macos_final_state(
+        self,
+        *,
+        runtime_url: Optional[str],
+        token: Optional[str],
+        task_id: str,
+        task_file: str,
+        model_output_dir: Path,
+        run_index: int,
+        clone_name: Optional[str] = None,
+        vm_ip: Optional[str] = None,
+        model: Optional[str] = None,
+        success: Optional[bool] = None,
+        return_code: Optional[int] = None,
+        runner_log_path: Optional[Path] = None,
+        controller: Any = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Opt-in post-run state archive. Returns manifest dict or None.
+
+        Returns None when the ``OS_OMNI_CAPTURE_MACOS_FINAL_STATE=1`` flag
+        is unset or no runtime URL is available. Never raises and never
+        alters the run's PASS/FAIL outcome; per-step failures are recorded
+        in the manifest and runner log only. The auth token is never logged
+        or stored in the manifest.
+        """
+        if not macos_final_state_capture_enabled():
+            return None
+        if not str(runtime_url or "").strip():
+            return None
+        try:
+            manifest = capture_macos_final_state(
+                runtime_url=str(runtime_url),
+                token=str(token or ""),
+                task_id=task_id,
+                task_file=task_file,
+                model_output_dir=model_output_dir,
+                run_index=run_index,
+                clone_name=clone_name,
+                vm_ip=vm_ip,
+                model=model,
+                success=success,
+                return_code=return_code,
+                controller=controller,
+            )
+        except Exception as exc:
+            manifest = {
+                "evidence_kind": "administrative-final-state",
+                "for_decision_system": False,
+                "task_id": str(task_id),
+                "run_index": int(run_index),
+                "errors": [f"capture: {exc}"],
+            }
+        if runner_log_path is not None:
+            try:
+                self.append_runner_log(
+                    runner_log_path,
+                    (
+                        f"[Run {run_index}] final_state "
+                        f"dir={Path(model_output_dir) / MACOS_FINAL_STATE_DIRNAME} "
+                        f"archive={manifest.get('archive') or ''} "
+                        f"errors={manifest.get('errors') or []}"
+                    ),
+                )
+            except Exception:
+                pass
+        return manifest
+
     def _execute_single_run(
         self,
         *,
@@ -520,6 +1287,9 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
         runtime_url: Optional[str] = None
         cleanup_error: Optional[str] = None
         record: Optional[Dict[str, Any]] = None
+        child_started = False
+        child_success: Optional[bool] = None
+        child_return_code: Optional[int] = None
 
         try:
             reset_ok, reset_error, clone_name, resolved_vm_ip, runtime_url = self._prepare_vm_for_run(
@@ -590,6 +1360,7 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
             )
 
             run_start = time.time()
+            child_started = True
             return_code = self.run_command_streaming(
                 cmd,
                 runner_log_path,
@@ -598,6 +1369,8 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
                 child_log_mode="logger",
             )
             duration_seconds = time.time() - run_start
+            child_return_code = return_code
+            child_success = return_code == 0
 
             artifact_paths = self.resolve_run_artifact_paths(model_output_dir)
             trajectory_path = artifact_paths["trajectory_path"]
@@ -640,6 +1413,33 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
             )
             return record
         finally:
+            # Opt-in final-state capture runs after the child stops and BEFORE
+            # clone cleanup, so the clone's guest state still exists. Capture
+            # failures are recorded in the manifest/runner log and never
+            # change the run outcome.
+            final_state_info: Optional[Dict[str, Any]] = None
+            if child_started and runtime_url:
+                try:
+                    final_state_info = self._maybe_capture_macos_final_state(
+                        runtime_url=runtime_url,
+                        token=str(getattr(args, "vm_token", "") or ""),
+                        task_id=task_id,
+                        task_file=task_file,
+                        model_output_dir=model_output_dir,
+                        run_index=run_index,
+                        clone_name=clone_name,
+                        vm_ip=vm_ip,
+                        model=model,
+                        success=child_success,
+                        return_code=child_return_code,
+                        runner_log_path=runner_log_path,
+                    )
+                except Exception as capture_exc:
+                    logger.warning(
+                        "[Run %d] final-state capture warning: %s",
+                        run_index,
+                        capture_exc,
+                    )
             if clone_name and self._manager is not None:
                 _, cleanup_error = self._cleanup_ephemeral_vm(self._manager, clone_name)
                 if cleanup_error:
@@ -650,6 +1450,7 @@ class MacOSBenchmarkRunner(BaseBenchmarkRunner):
                 )
             if record is not None:
                 record["cleanup_error"] = cleanup_error
+                record["final_state"] = final_state_info
 
     def _build_exception_record(
         self,

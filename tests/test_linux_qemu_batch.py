@@ -13,6 +13,7 @@ from platforms.linux.agent.prompt_builder import LinuxPromptBuilder
 
 
 @pytest.mark.parametrize("failure", [False, True])
+@pytest.mark.skipif(not hasattr(socket, "AF_UNIX"), reason="QMP Unix sockets require an AF_UNIX-capable host")
 def test_qmp_matches_responses_while_ignoring_events(tmp_path, failure):
     address = tmp_path / "qmp.sock"
     requests = []

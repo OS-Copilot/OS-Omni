@@ -25,6 +25,7 @@ from evaluators.cua_review.platforms.ios.opendriver_store import (
     OpenDriverStoreError,
     UDID_PARAM_KEYS,
     date_text,
+    datetime_value,
     is_after,
     stamp_keys,
 )
@@ -51,6 +52,7 @@ DRIVER_PROFILE = {
     "licensePlate": "8XJR214",
     "vehicleColor": "Pearl White",
     "verificationStatus": "approved",
+    # Logout cancels a seeded account's active trip and returns the driver online.
     "driverStatus": "online",
 }
 LICENCE_DOCUMENT = {
@@ -376,14 +378,15 @@ class OpenDriverDriverPayoutTripSupportProfileEvaluator(BaseEvaluator):
     @classmethod
     def _contract(cls, params: Mapping[str, Any]) -> dict[str, Any]:
         """Return the bound check contract, overridden by task parameters."""
+        params = dict(params or {})
         return {
-            "driver_profile": DRIVER_PROFILE,
-            "driver_document": LICENCE_DOCUMENT,
-            "payout": PAYOUT,
-            "support_ticket": SUPPORT_TICKET,
-            "rejected_request": REJECTED_REQUEST,
-            "accepted_trip": ACCEPTED_TRIP,
-            "logged_out_user": LOGGED_OUT_USER,
+            "driver_profile": dict(params.get("driver_profile") or DRIVER_PROFILE),
+            "driver_document": dict(params.get("driver_document") or LICENCE_DOCUMENT),
+            "payout": dict(params.get("payout") or PAYOUT),
+            "support_ticket": dict(params.get("support_ticket") or SUPPORT_TICKET),
+            "rejected_request": dict(params.get("rejected_request") or REJECTED_REQUEST),
+            "accepted_trip": dict(params.get("accepted_trip") or ACCEPTED_TRIP),
+            "logged_out_user": dict(params.get("logged_out_user") or LOGGED_OUT_USER),
         }
 
     # -- judgement -----------------------------------------------------
@@ -427,6 +430,13 @@ class OpenDriverDriverPayoutTripSupportProfileEvaluator(BaseEvaluator):
             walk, rides, dict(bound.get("rejected_request") or {}), seed_time
         )
         cls._check_accepted_trip(walk, rides, dict(bound.get("accepted_trip") or {}), seed_time)
+        cls._check_request_order(
+            walk,
+            rides,
+            dict(bound.get("rejected_request") or {}),
+            dict(bound.get("accepted_trip") or {}),
+            seed_time,
+        )
         cls._check_logout(walk, sessions, dict(bound.get("logged_out_user") or {}), driver_id)
 
         counts = {
@@ -666,6 +676,58 @@ class OpenDriverDriverPayoutTripSupportProfileEvaluator(BaseEvaluator):
             failure_reason=(
                 "no post-seed trip contains durable acceptance evidence for the primary driver"
             ),
+        )
+
+    @classmethod
+    def _check_request_order(
+        cls,
+        walk: _Walk,
+        rides: Sequence[Mapping[str, Any]],
+        rejected_expectation: Mapping[str, Any],
+        accepted_expectation: Mapping[str, Any],
+        seed_time: str,
+    ) -> None:
+        """Require the first generated request to be rejected and the next accepted."""
+        driver_id = str(
+            rejected_expectation.get("driver_id")
+            or accepted_expectation.get("driverId")
+            or DRIVER_ID
+        )
+        ordered: dict[str, tuple[Any, Mapping[str, Any]]] = {}
+        for index, ride in enumerate(rides):
+            stamp = _stamp(ride)
+            moment = datetime_value(stamp)
+            if moment is None or not is_after(stamp, seed_time):
+                continue
+            identity = _ride_id(ride) or f"anonymous-{index}-{stamp}"
+            ordered.setdefault(identity, (moment, ride))
+        generated = [ride for _, ride in sorted(ordered.values(), key=lambda pair: pair[0])]
+        first = generated[0] if generated else None
+        second = generated[1] if len(generated) > 1 else None
+        first_rejected = bool(first and driver_id in [str(value) for value in _rejected_ids(first)])
+        second_accepted = bool(
+            second
+            and str(_field_value(second, "driverId") or "")
+            == str(accepted_expectation.get("driverId") or driver_id)
+            and _accepted_stamp(second)
+            and (
+                not accepted_expectation.get("status_in")
+                or str(second.get("status") or "")
+                in {str(value) for value in accepted_expectation.get("status_in") or []}
+            )
+        )
+        walk.record(
+            "first_rejected_then_second_accepted",
+            passed=first_rejected and second_accepted,
+            expected={"first_request_rejected_by": driver_id, "second_request_accepted_by": driver_id},
+            actual={
+                "post_seed_request_count": len(generated),
+                "first_request": _present(first, ("id", "createdAt", "driverId", "status", "rejectedDriverIds")) if first else None,
+                "second_request": _present(second, ("id", "createdAt", "driverId", "status", "acceptedAt")) if second else None,
+                "first_rejected_by_driver": first_rejected,
+                "second_accepted_by_driver": second_accepted,
+            },
+            failure_reason="the first generated request was not rejected before the second was accepted",
         )
 
     @classmethod

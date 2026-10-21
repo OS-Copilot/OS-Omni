@@ -17,6 +17,9 @@ init:
     app_name: OpenBank
     bundle_id: local.osomni.openbank
     port: 4340
+    expected_customer_id: cust-jordan
+    expected_customer_email: jordan@openbank.local
+    expected_login_label: Sign In
     boot_timeout_seconds: 45
     expected_snapshot_display_name: macOS1
     base_vm_name: allapps-base
@@ -154,19 +157,22 @@ metadata:
     tart_base_vm_name: allapps-base
     run_slot_profile: macOS1
   snapshot_dependencies:
-  - configs/macos.yaml exposes macOS1 as the Tart task run slot; full execution recreates macOS1 as a
-    fresh APFS COW clone from the stopped allapps-base base VM.
+  - The author queue reuses the single running allapps-base VM. macOS1 names the OpenBank seed state;
+    no per-task VM clone is created.
   - macOS1 contains the signed-out Jordan Lee account, both required accounts, both billers, Maya Patel,
     the internal Rainy Day Savings recipient, and TextEdit.
   - macOS1 contains no bill payments, no transfers, and no guest file ~/Desktop/Reserve-Plan.txt.
-  - The initializer only launches, foregrounds, and read-only validates OpenBank; it does not restore
-    a snapshot, sign in, schedule records, or create the target text file.
-  - Manual execution begins after the human restores and opens macOS1; evaluate-only does not run the
+  - On the persistent allapps-base VM, the initializer restores OpenBank's app-local macOS1 seed through
+    its /api/dev/reset endpoint, removes only this task's expected Desktop output if left by an earlier
+    attempt, then validates the signed-out seed and login screen. It does not perform any requested
+    payment, transfer, or document-writing action.
+  - Manual execution begins after the author initializes allapps-base; evaluate-only does not run the
     initializer.
-  initializer_message: The initializer opens and foregrounds OpenBank, reads GET /api/evaluation to validate
-    the signed-out Jordan Lee seed, accounts, billers, recipients, empty payment and transfer collections,
-    and absent ~/Desktop/Reserve-Plan.txt, then observes the login controls. It never restores a snapshot
-    or performs an evaluator-checked target action.
+  initializer_message: The initializer restores OpenBank's app-local macOS1 seed, removes only a leftover
+    ~/Desktop/Reserve-Plan.txt from an earlier attempt, then reads GET /api/evaluation to validate the
+    signed-out Jordan Lee seed, accounts, billers, recipients, empty payment and transfer collections,
+    and login controls. It does not sign in, schedule records, create the document, or perform any
+    evaluator-checked target action.
   verifier_rules:
     data_source_priority:
     - Read-only OpenBank guest-loopback GET /api/evaluation for session, billPayments, transfers, and

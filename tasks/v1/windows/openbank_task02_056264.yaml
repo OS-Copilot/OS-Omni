@@ -23,7 +23,7 @@ instruction: Configure the OpenBank application so that the Security section dis
   the From account “Rainy Day Savings ...9140”, an Amount of “340.25”, a Date of “2026-06-12”, and a Memo
   of “T2 card”.
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.openbank_rebuilt:OpenBankRebuiltInitializer
   params:
     app_name: OpenBank
     wait_ms: 1200

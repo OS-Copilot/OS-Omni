@@ -1,0 +1,1373 @@
+{
+  "task_id": "ios.flow.rework_budget_with_transfer_and_income",
+  "platform": "ios",
+  "model_id": "deepseek_chat",
+  "status": "FAIL",
+  "started_at": "2026-10-14T01:32:41.873319+08:00",
+  "ended_at": "2026-10-14T01:35:34.483899+08:00",
+  "steps_taken": 17,
+  "latency_ms": 172610.58,
+  "episode_result": {
+    "status": "FAIL",
+    "message": "Flow ObjectBox state does not match the expected task outcome"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Prepared Flow with seeded ObjectBox state",
+    "metadata": {
+      "bundle_id": "mn.flow.flow",
+      "flow_repo_path": "/Users/zhuhan/Documents/Research/ios-flow-rework-investigation/source/platforms/ios/flow_benchmark",
+      "seed_accounts": 3,
+      "seed_transactions": 5,
+      "return_home_after_init": "skipped"
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "Flow ObjectBox state does not match the expected task outcome",
+    "metadata": {
+      "attempts": 1,
+      "failures": [
+        "missing transaction {\"type\":\"expense\",\"title\":\"Bench Taxi Receipt\",\"description\":\"Late train replacement ride\",\"amount\":-16.2,\"account\":\"Bench Cash\",\"category\":\"Bench Transport\"}",
+        "missing transaction {\"type\":\"transfer\",\"title\":\"Bench Cash Refill\",\"description\":\"Refill field wallet.\",\"amount\":-60.0,\"account\":\"Bench Checking\",\"from_account\":\"Bench Checking\",\"to_account\":\"Bench Cash\"}",
+        "missing transaction {\"type\":\"transfer\",\"title\":\"Bench Cash Refill\",\"description\":\"Refill field wallet.\",\"amount\":60.0,\"account\":\"Bench Cash\",\"from_account\":\"Bench Checking\",\"to_account\":\"Bench Cash\"}",
+        "missing transaction {\"type\":\"income\",\"title\":\"Bench Vendor Rebate\",\"description\":\"Vendor paid back snack budget.\",\"amount\":95.0,\"account\":\"Bench Checking\",\"category\":\"Bench Income\"}",
+        "unexpected title still present: Bench Taxi Draft",
+        "account Bench Checking balance expected 535.0 but got 500.0",
+        "account Bench Cash balance expected 101.8 but got 43.7",
+        "transaction count expected 8 but got 5"
+      ],
+      "summary": {
+        "accounts": [
+          {
+            "name": "Bench Cash",
+            "currency": "USD",
+            "balance": 43.7
+          },
+          {
+            "name": "Bench Checking",
+            "currency": "USD",
+            "balance": 500.0
+          },
+          {
+            "name": "Bench Savings",
+            "currency": "USD",
+            "balance": 300.0
+          }
+        ],
+        "categories": [
+          "Bench Coffee",
+          "Bench Groceries",
+          "Bench Income",
+          "Bench Transport"
+        ],
+        "transactions": [
+          {
+            "id": 41,
+            "uuid": "c712eb60-a008-43ed-a166-b5548e91fb3d",
+            "title": "Bench Checking Opening Balance",
+            "description": null,
+            "amount": 500.0,
+            "type": "income",
+            "account": "Bench Checking",
+            "category": null,
+            "transaction_date": "2026-10-12T00:00:00.000",
+            "is_pending": false,
+            "is_transfer": false,
+            "related_transaction_uuid": null,
+            "to_account": null,
+            "from_account": null
+          },
+          {
+            "id": 42,
+            "uuid": "a1903f77-3bdd-4068-9c86-daeb28448cc0",
+            "title": "Bench Cash Opening Balance",
+            "description": null,
+            "amount": 80.0,
+            "type": "income",
+            "account": "Bench Cash",
+            "category": null,
+            "transaction_date": "2026-10-12T00:00:00.000",
+            "is_pending": false,
+            "is_transfer": false,
+            "related_transaction_uuid": null,
+            "to_account": null,
+            "from_account": null
+          },
+          {
+            "id": 43,
+            "uuid": "8419bf8b-b9c4-466f-b54a-38d756be7629",
+            "title": "Bench Savings Opening Balance",
+            "description": null,
+            "amount": 300.0,
+            "type": "income",
+            "account": "Bench Savings",
+            "category": null,
+            "transaction_date": "2026-10-12T00:00:00.000",
+            "is_pending": false,
+            "is_transfer": false,
+            "related_transaction_uuid": null,
+            "to_account": null,
+            "from_account": null
+          },
+          {
+            "id": 44,
+            "uuid": "cca093bc-bbdf-4b36-9481-a0c4d98b5525",
+            "title": "Bench Taxi Draft",
+            "description": "Placeholder ride note",
+            "amount": -14.3,
+            "type": "expense",
+            "account": "Bench Cash",
+            "category": "Bench Coffee",
+            "transaction_date": "2026-10-13T00:00:00.000",
+            "is_pending": false,
+            "is_transfer": false,
+            "related_transaction_uuid": null,
+            "to_account": null,
+            "from_account": null
+          },
+          {
+            "id": 45,
+            "uuid": "33c934f1-7d75-4386-8194-f2b38f6c089f",
+            "title": "Bench Grocery Buffer",
+            "description": "Keep this one unchanged",
+            "amount": -22.0,
+            "type": "expense",
+            "account": "Bench Cash",
+            "category": "Bench Groceries",
+            "transaction_date": "2026-10-13T00:00:00.000",
+            "is_pending": false,
+            "is_transfer": false,
+            "related_transaction_uuid": null,
+            "to_account": null,
+            "from_account": null
+          }
+        ]
+      }
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots/final.png",
+    "a11y_tree": [
+      {
+        "id": "n0",
+        "type": "Application",
+        "text": "Flow",
+        "selector": "Flow",
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "w": 440.0,
+          "h": 956.0
+        },
+        "tap": [
+          220,
+          478
+        ],
+        "tap_norm": [
+          0.5,
+          0.5
+        ],
+        "enabled": true
+      },
+      {
+        "id": "n1",
+        "type": "Other",
+        "text": "Bold",
+        "selector": "Bold",
+        "rect": {
+          "x": 0.0,
+          "y": 0.0,
+          "w": 440.0,
+          "h": 956.0
+        },
+        "tap": [
+          220,
+          478
+        ],
+        "tap_norm": [
+          0.5,
+          0.5
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n2",
+        "type": "Button",
+        "rect": {
+          "x": 0.0,
+          "y": 66.0,
+          "w": 40.0,
+          "h": 48.0
+        },
+        "tap": [
+          20,
+          90
+        ],
+        "tap_norm": [
+          0.0455,
+          0.0941
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n3",
+        "type": "Button",
+        "text": "Save",
+        "selector": "Save",
+        "rect": {
+          "x": 392.0,
+          "y": 66.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          416,
+          90
+        ],
+        "tap_norm": [
+          0.9455,
+          0.0941
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n4",
+        "type": "Button",
+        "text": "Undo",
+        "selector": "Undo",
+        "rect": {
+          "x": 4.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          28,
+          142
+        ],
+        "tap_norm": [
+          0.0636,
+          0.1485
+        ],
+        "enabled": false
+      },
+      {
+        "id": "n5",
+        "type": "Button",
+        "text": "Redo",
+        "selector": "Redo",
+        "rect": {
+          "x": 56.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          80,
+          142
+        ],
+        "tap_norm": [
+          0.1818,
+          0.1485
+        ],
+        "enabled": false
+      },
+      {
+        "id": "n6",
+        "type": "Button",
+        "rect": {
+          "x": 108.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          132,
+          142
+        ],
+        "tap_norm": [
+          0.3,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n7",
+        "type": "Button",
+        "rect": {
+          "x": 160.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          184,
+          142
+        ],
+        "tap_norm": [
+          0.4182,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n8",
+        "type": "Button",
+        "rect": {
+          "x": 212.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          236,
+          142
+        ],
+        "tap_norm": [
+          0.5364,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n9",
+        "type": "Button",
+        "rect": {
+          "x": 264.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          288,
+          142
+        ],
+        "tap_norm": [
+          0.6545,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n10",
+        "type": "Button",
+        "rect": {
+          "x": 316.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          340,
+          142
+        ],
+        "tap_norm": [
+          0.7727,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n11",
+        "type": "Button",
+        "text": "Clear format",
+        "selector": "Clear format",
+        "rect": {
+          "x": 368.0,
+          "y": 118.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          392,
+          142
+        ],
+        "tap_norm": [
+          0.8909,
+          0.1485
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n12",
+        "type": "Button",
+        "text": "Normal\nHeader style",
+        "selector": "Normal\nHeader style",
+        "rect": {
+          "x": 16.0,
+          "y": 170.0,
+          "w": 88.0,
+          "h": 48.0
+        },
+        "tap": [
+          60,
+          194
+        ],
+        "tap_norm": [
+          0.1364,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n13",
+        "type": "Button",
+        "rect": {
+          "x": 127.0,
+          "y": 170.0,
+          "w": 49.0,
+          "h": 48.0
+        },
+        "tap": [
+          151,
+          194
+        ],
+        "tap_norm": [
+          0.3432,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n14",
+        "type": "Button",
+        "rect": {
+          "x": 179.0,
+          "y": 170.0,
+          "w": 49.0,
+          "h": 48.0
+        },
+        "tap": [
+          203,
+          194
+        ],
+        "tap_norm": [
+          0.4614,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n15",
+        "type": "Button",
+        "rect": {
+          "x": 231.0,
+          "y": 170.0,
+          "w": 49.0,
+          "h": 48.0
+        },
+        "tap": [
+          255,
+          194
+        ],
+        "tap_norm": [
+          0.5795,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n16",
+        "type": "Button",
+        "rect": {
+          "x": 283.0,
+          "y": 170.0,
+          "w": 49.0,
+          "h": 48.0
+        },
+        "tap": [
+          307,
+          194
+        ],
+        "tap_norm": [
+          0.6977,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n17",
+        "type": "Button",
+        "rect": {
+          "x": 355.0,
+          "y": 170.0,
+          "w": 49.0,
+          "h": 48.0
+        },
+        "tap": [
+          379,
+          194
+        ],
+        "tap_norm": [
+          0.8614,
+          0.2029
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n18",
+        "type": "Button",
+        "text": "Insert URL",
+        "selector": "Insert URL",
+        "rect": {
+          "x": 170.0,
+          "y": 222.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          194,
+          246
+        ],
+        "tap_norm": [
+          0.4409,
+          0.2573
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n19",
+        "type": "Button",
+        "text": "Search",
+        "selector": "Search",
+        "rect": {
+          "x": 222.0,
+          "y": 222.0,
+          "w": 48.0,
+          "h": 48.0
+        },
+        "tap": [
+          246,
+          246
+        ],
+        "tap_norm": [
+          0.5591,
+          0.2573
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n20",
+        "type": "StaticText",
+        "text": "Placeholder ride note",
+        "selector": "Placeholder ride note",
+        "rect": {
+          "x": 16.0,
+          "y": 286.0,
+          "w": 408.0,
+          "h": 17.0
+        },
+        "tap": [
+          220,
+          294
+        ],
+        "tap_norm": [
+          0.5,
+          0.3075
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n21",
+        "type": "Other",
+        "text": "UIKeyboardLayoutStar Preview",
+        "selector": "UIKeyboardLayoutStar Preview",
+        "rect": {
+          "x": 0.0,
+          "y": 655.0,
+          "w": 440.0,
+          "h": 243.0
+        },
+        "tap": [
+          220,
+          776
+        ],
+        "tap_norm": [
+          0.5,
+          0.8117
+        ],
+        "enabled": true
+      },
+      {
+        "id": "n22",
+        "type": "Key",
+        "text": "q",
+        "selector": "q",
+        "rect": {
+          "x": 4.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          26,
+          690
+        ],
+        "tap_norm": [
+          0.0591,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n23",
+        "type": "Key",
+        "text": "w",
+        "selector": "w",
+        "rect": {
+          "x": 47.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          69,
+          690
+        ],
+        "tap_norm": [
+          0.1568,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n24",
+        "type": "Key",
+        "text": "e",
+        "selector": "e",
+        "rect": {
+          "x": 90.0,
+          "y": 662.0,
+          "w": 45.0,
+          "h": 56.0
+        },
+        "tap": [
+          112,
+          690
+        ],
+        "tap_norm": [
+          0.2545,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n25",
+        "type": "Key",
+        "text": "r",
+        "selector": "r",
+        "rect": {
+          "x": 134.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          156,
+          690
+        ],
+        "tap_norm": [
+          0.3545,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n26",
+        "type": "Key",
+        "text": "t",
+        "selector": "t",
+        "rect": {
+          "x": 177.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          199,
+          690
+        ],
+        "tap_norm": [
+          0.4523,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n27",
+        "type": "Key",
+        "text": "y",
+        "selector": "y",
+        "rect": {
+          "x": 221.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          243,
+          690
+        ],
+        "tap_norm": [
+          0.5523,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n28",
+        "type": "Key",
+        "text": "u",
+        "selector": "u",
+        "rect": {
+          "x": 264.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          286,
+          690
+        ],
+        "tap_norm": [
+          0.65,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n29",
+        "type": "Key",
+        "text": "i",
+        "selector": "i",
+        "rect": {
+          "x": 307.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          329,
+          690
+        ],
+        "tap_norm": [
+          0.7477,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n30",
+        "type": "Key",
+        "text": "o",
+        "selector": "o",
+        "rect": {
+          "x": 351.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          373,
+          690
+        ],
+        "tap_norm": [
+          0.8477,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n31",
+        "type": "Key",
+        "text": "p",
+        "selector": "p",
+        "rect": {
+          "x": 394.0,
+          "y": 662.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          416,
+          690
+        ],
+        "tap_norm": [
+          0.9455,
+          0.7218
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n32",
+        "type": "Key",
+        "text": "a",
+        "selector": "a",
+        "rect": {
+          "x": 25.0,
+          "y": 718.0,
+          "w": 45.0,
+          "h": 56.0
+        },
+        "tap": [
+          47,
+          746
+        ],
+        "tap_norm": [
+          0.1068,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n33",
+        "type": "Key",
+        "text": "s",
+        "selector": "s",
+        "rect": {
+          "x": 69.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          91,
+          746
+        ],
+        "tap_norm": [
+          0.2068,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n34",
+        "type": "Key",
+        "text": "d",
+        "selector": "d",
+        "rect": {
+          "x": 112.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          134,
+          746
+        ],
+        "tap_norm": [
+          0.3045,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n35",
+        "type": "Key",
+        "text": "f",
+        "selector": "f",
+        "rect": {
+          "x": 156.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          178,
+          746
+        ],
+        "tap_norm": [
+          0.4045,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n36",
+        "type": "Key",
+        "text": "g",
+        "selector": "g",
+        "rect": {
+          "x": 199.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          221,
+          746
+        ],
+        "tap_norm": [
+          0.5023,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n37",
+        "type": "Key",
+        "text": "h",
+        "selector": "h",
+        "rect": {
+          "x": 242.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          264,
+          746
+        ],
+        "tap_norm": [
+          0.6,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n38",
+        "type": "Key",
+        "text": "j",
+        "selector": "j",
+        "rect": {
+          "x": 286.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          308,
+          746
+        ],
+        "tap_norm": [
+          0.7,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n39",
+        "type": "Key",
+        "text": "k",
+        "selector": "k",
+        "rect": {
+          "x": 329.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          351,
+          746
+        ],
+        "tap_norm": [
+          0.7977,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n40",
+        "type": "Key",
+        "text": "l",
+        "selector": "l",
+        "rect": {
+          "x": 372.0,
+          "y": 718.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          394,
+          746
+        ],
+        "tap_norm": [
+          0.8955,
+          0.7803
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n41",
+        "type": "Button",
+        "text": "shift",
+        "selector": "shift",
+        "rect": {
+          "x": 4.0,
+          "y": 774.0,
+          "w": 57.0,
+          "h": 56.0
+        },
+        "tap": [
+          32,
+          802
+        ],
+        "tap_norm": [
+          0.0727,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n42",
+        "type": "Key",
+        "text": "z",
+        "selector": "z",
+        "rect": {
+          "x": 69.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          91,
+          802
+        ],
+        "tap_norm": [
+          0.2068,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n43",
+        "type": "Key",
+        "text": "x",
+        "selector": "x",
+        "rect": {
+          "x": 112.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          134,
+          802
+        ],
+        "tap_norm": [
+          0.3045,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n44",
+        "type": "Key",
+        "text": "c",
+        "selector": "c",
+        "rect": {
+          "x": 156.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          178,
+          802
+        ],
+        "tap_norm": [
+          0.4045,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n45",
+        "type": "Key",
+        "text": "v",
+        "selector": "v",
+        "rect": {
+          "x": 199.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          221,
+          802
+        ],
+        "tap_norm": [
+          0.5023,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n46",
+        "type": "Key",
+        "text": "b",
+        "selector": "b",
+        "rect": {
+          "x": 242.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          264,
+          802
+        ],
+        "tap_norm": [
+          0.6,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n47",
+        "type": "Key",
+        "text": "n",
+        "selector": "n",
+        "rect": {
+          "x": 286.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          308,
+          802
+        ],
+        "tap_norm": [
+          0.7,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n48",
+        "type": "Key",
+        "text": "m",
+        "selector": "m",
+        "rect": {
+          "x": 329.0,
+          "y": 774.0,
+          "w": 44.0,
+          "h": 56.0
+        },
+        "tap": [
+          351,
+          802
+        ],
+        "tap_norm": [
+          0.7977,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n49",
+        "type": "Key",
+        "text": "delete",
+        "selector": "delete",
+        "rect": {
+          "x": 381.0,
+          "y": 774.0,
+          "w": 57.0,
+          "h": 56.0
+        },
+        "tap": [
+          409,
+          802
+        ],
+        "tap_norm": [
+          0.9295,
+          0.8389
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n50",
+        "type": "Key",
+        "text": "numbers",
+        "selector": "more",
+        "rect": {
+          "x": 4.0,
+          "y": 830.0,
+          "w": 109.0,
+          "h": 56.0
+        },
+        "tap": [
+          58,
+          858
+        ],
+        "tap_norm": [
+          0.1318,
+          0.8975
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n51",
+        "type": "Key",
+        "text": "space",
+        "selector": "space",
+        "rect": {
+          "x": 112.0,
+          "y": 830.0,
+          "w": 218.0,
+          "h": 56.0
+        },
+        "tap": [
+          221,
+          858
+        ],
+        "tap_norm": [
+          0.5023,
+          0.8975
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n52",
+        "type": "Button",
+        "text": "return",
+        "selector": "Return",
+        "rect": {
+          "x": 329.0,
+          "y": 830.0,
+          "w": 109.0,
+          "h": 56.0
+        },
+        "tap": [
+          383,
+          858
+        ],
+        "tap_norm": [
+          0.8705,
+          0.8975
+        ],
+        "enabled": true,
+        "accessible": true
+      },
+      {
+        "id": "n53",
+        "type": "Button",
+        "text": "Emoji",
+        "selector": "Emoji",
+        "rect": {
+          "x": 2.0,
+          "y": 887.0,
+          "w": 81.0,
+          "h": 70.0
+        },
+        "tap": [
+          42,
+          922
+        ],
+        "tap_norm": [
+          0.0955,
+          0.9644
+        ],
+        "enabled": true
+      },
+      {
+        "id": "n54",
+        "type": "Button",
+        "text": "Dictate",
+        "selector": "dictation",
+        "rect": {
+          "x": 357.0,
+          "y": 887.0,
+          "w": 81.0,
+          "h": 70.0
+        },
+        "tap": [
+          397,
+          922
+        ],
+        "tap_norm": [
+          0.9023,
+          0.9644
+        ],
+        "enabled": true
+      },
+      {
+        "id": "n55",
+        "type": "Button",
+        "text": "Dictate",
+        "selector": "dictation",
+        "rect": {
+          "x": 357.0,
+          "y": 887.0,
+          "w": 81.0,
+          "h": 70.0
+        },
+        "tap": [
+          397,
+          922
+        ],
+        "tap_norm": [
+          0.9023,
+          0.9644
+        ],
+        "enabled": true
+      }
+    ],
+    "addition_info": {
+      "width": 440,
+      "height": 956,
+      "viewport_rect": {
+        "left": 0,
+        "top": 162,
+        "width": 1320,
+        "height": 2706
+      },
+      "foreground_bundle_id": "mn.flow.flow",
+      "device_info": {
+        "product_type": null,
+        "product_version": null
+      },
+      "is_keyboard_shown": true
+    }
+  }
+}

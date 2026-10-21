@@ -475,7 +475,8 @@ class MailyInstruction32StateEvaluator(BaseEvaluator):
             text=True,
             timeout=30,
         )
-        container = Path(proc.stdout.strip()) if proc.returncode == 0 and proc.stdout.strip() else None
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        container = remap_simulator_container_path(proc.stdout.strip(), udid) if proc.returncode == 0 and proc.stdout.strip() else None
         passed = bool(container and container.is_dir())
         return {
             "pass": passed,

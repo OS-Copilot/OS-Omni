@@ -1,0 +1,51 @@
+task_id: macos.spotube.dark_profile_with_plugins
+platform: macos
+instruction: 'Open Spotube and prepare a dark listening profile without using login or external media search.
+
+
+  Complete these changes in order:
+
+  1. Keep Marketplace Region as **United States**.
+
+  2. Turn **Endless Playback** off.
+
+  3. Set Theme to **Dark**.
+
+  4. Turn **Normalize audio** on.
+
+  5. Turn **AMOLED dark theme** on.
+
+  6. Turn **Skip non-music** on.
+
+  7. Turn **Cache music** off.
+
+  8. Set the default metadata source to **Musicbrainz and Listenbrainz**.
+
+  9. Set the default audio source to **YouTube Audio**.
+
+  10. Leave Spotube open when you finish.
+
+  '
+init:
+  initializer_id: initializers.macos.spotube:SpotubeInitializer
+  params:
+    wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.spotube:SpotubeEvaluator
+  params:
+    mode: state_check
+    expected_metadata_plugin_name: Musicbrainz and Listenbrainz
+    expected_audio_source_plugin_name: YouTube Audio
+    expected_preferences:
+      market: US
+      endless_playback: false
+      theme_mode: dark
+      normalize_audio: true
+      amoled_dark_theme: true
+      skip_non_music: true
+      cache_music: false
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

@@ -1,0 +1,93 @@
+task_id: ios.calendar_reminders.finalize_launch_plan
+platform: ios
+instruction: >
+  In Calendar, update today's event Bench Launch Draft so the title becomes Bench
+  Launch Final, the time becomes 15:30-16:15, and the location becomes Harbor Room.
+  Delete the event Bench Old Pickup. Create a new event for two days from now titled
+  Bench Launch Debrief from 10:00-10:30 at Harbor Room. Then switch to Reminders,
+  open the list Bench Launch Follow-up, rename Pack draft cables to Pack final cables,
+  delete Old printout copy, keep Charge speaker unchanged, and add three new reminders:
+  Send Bench Launch Final slides, Confirm Harbor Room seating, and Review Bench Launch Debrief notes.
+init:
+  initializer_id: initializers.ios.calendar_reminders_cross_app:CalendarRemindersCrossAppInitializer
+  params:
+    bundle_id: com.apple.mobilecal
+    reminder_params:
+      bundle_id: com.apple.reminders
+      list_name: "Bench Launch Follow-up"
+      purge_existing_reminders: true
+      seed_reminders:
+        - title: "Pack draft cables"
+        - title: "Old printout copy"
+        - title: "Charge speaker"
+    calendar_params:
+      bundle_id: com.apple.mobilecal
+      purge_all_events: true
+      purge_summaries:
+        - "Bench Launch Draft"
+        - "Bench Launch Final"
+        - "Bench Old Pickup"
+        - "Bench Launch Debrief"
+        - "Bench Coffee Check"
+      seed_events:
+        - summary: "Bench Launch Draft"
+          day_offset: 0
+          start_time: "14:45"
+          end_time: "15:15"
+          location: "Maple Room"
+        - summary: "Bench Old Pickup"
+          day_offset: 0
+          start_time: "16:30"
+          end_time: "17:00"
+          location: "Lobby"
+        - summary: "Bench Coffee Check"
+          day_offset: 1
+          start_time: "09:00"
+          end_time: "09:15"
+          location: "Studio Kitchen"
+      wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.ios.calendar_reminders_cross_app:CalendarRemindersCrossAppEvaluator
+  params:
+    calendar_params:
+      present_events:
+        - summary: "Bench Launch Final"
+          day_offset: 0
+          start_time: "15:30"
+          end_time: "16:15"
+          location: "Harbor Room"
+        - summary: "Bench Coffee Check"
+          day_offset: 1
+          start_time: "09:00"
+          end_time: "09:15"
+          location: "Studio Kitchen"
+        - summary: "Bench Launch Debrief"
+          day_offset: 2
+          start_time: "10:00"
+          end_time: "10:30"
+          location: "Harbor Room"
+      absent_summaries:
+        - "Bench Launch Draft"
+        - "Bench Old Pickup"
+      timeout_seconds: 10
+      poll_interval_seconds: 0.5
+    reminder_params:
+      bundle_id: com.apple.reminders
+      list_name: "Bench Launch Follow-up"
+      present_titles:
+        - "Pack final cables"
+        - "Charge speaker"
+        - "Send Bench Launch Final slides"
+        - "Confirm Harbor Room seating"
+        - "Review Bench Launch Debrief notes"
+      absent_titles:
+        - "Pack draft cables"
+        - "Old printout copy"
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [cross_app, calendar, reminders, ios, native, productivity, hard, benchmark]
+  app: Calendar
+  app_bundle_id: com.apple.mobilecal
+  description: "Finalize a seeded launch plan across Calendar and Reminders with one event edit, one deletion, one new event, and a linked reminder cleanup."

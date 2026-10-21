@@ -1,0 +1,105 @@
+task_id: ios.flow.transfer_and_cash_expense
+platform: ios
+instruction: >
+  In Flow, first edit the existing transaction titled Bench Grocery Buffer. Change its title to
+  Bench Setup Snacks, change the amount to 18.40, and change the note to Water and crackers for
+  setup. Then create a transfer of 120.00 from Bench Checking to Bench Savings. Set the title to
+  Bench Emergency Transfer and the note to Move part of this week's budget. After that, create a
+  cash expense titled Bench Platform Snack for 9.80 in the Bench Groceries category with the note
+  Snack for after the platform check.
+init:
+  initializer_id: initializers.ios.flow_seed_open_app:FlowSeedOpenAppInitializer
+  params:
+    bundle_id: mn.flow.flow
+    seed_spec:
+      accounts:
+        - name: "Bench Checking"
+          currency: "USD"
+          icon: "card"
+        - name: "Bench Cash"
+          currency: "USD"
+          icon: "cash"
+        - name: "Bench Savings"
+          currency: "USD"
+          icon: "savings"
+          exclude_from_total_balance: true
+      categories:
+        - name: "Bench Coffee"
+        - name: "Bench Transport"
+          icon: "transport"
+        - name: "Bench Groceries"
+          icon: "groceries"
+        - name: "Bench Income"
+          icon: "income"
+      opening_balances:
+        - account: "Bench Checking"
+          amount: 500.00
+          title: "Bench Checking Opening Balance"
+          day_offset: -2
+        - account: "Bench Cash"
+          amount: 80.00
+          title: "Bench Cash Opening Balance"
+          day_offset: -2
+        - account: "Bench Savings"
+          amount: 300.00
+          title: "Bench Savings Opening Balance"
+          day_offset: -2
+      transactions:
+        - kind: "expense"
+          account: "Bench Cash"
+          category: "Bench Groceries"
+          amount: 22.00
+          title: "Bench Grocery Buffer"
+          description: "Keep this one unchanged"
+          day_offset: -1
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.flow_state:FlowStateEvaluator
+  params:
+    assert_spec:
+      absent_titles:
+        - "Bench Grocery Buffer"
+      present_transactions:
+        - type: "expense"
+          title: "Bench Setup Snacks"
+          description: "Water and crackers for setup."
+          amount: -18.40
+          account: "Bench Cash"
+          category: "Bench Groceries"
+        - type: "transfer"
+          title: "Bench Emergency Transfer"
+          description: "Move part of this week's budget."
+          amount: -120.00
+          account: "Bench Checking"
+          from_account: "Bench Checking"
+          to_account: "Bench Savings"
+        - type: "transfer"
+          title: "Bench Emergency Transfer"
+          description: "Move part of this week's budget."
+          amount: 120.00
+          account: "Bench Savings"
+          from_account: "Bench Checking"
+          to_account: "Bench Savings"
+        - type: "expense"
+          title: "Bench Platform Snack"
+          description: "Snack for after the platform check."
+          amount: -9.80
+          account: "Bench Cash"
+          category: "Bench Groceries"
+      transaction_count: 7
+      account_balances:
+        Bench Checking: 380.00
+        Bench Cash: 51.80
+        Bench Savings: 420.00
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [finance, flow, ios, transfer, expense, hard, multi_step, benchmark]
+  app: Flow
+  app_bundle_id: mn.flow.flow
+  description: "Edit a seeded expense, then create a transfer and a new cash expense in Flow while matching the final balances."
+  prerequisites:
+    - "Flow is installed on the simulator."

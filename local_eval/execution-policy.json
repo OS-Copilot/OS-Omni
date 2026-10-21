@@ -1,0 +1,7 @@
+{
+  "changed_at": "2026-10-08T04:31:11.243643+00:00",
+  "reasoning_effort": "none",
+  "max_steps": 180,
+  "reason": "User requested disabled thinking and at most 180 agent steps",
+  "prior_runs_preserved": true
+}

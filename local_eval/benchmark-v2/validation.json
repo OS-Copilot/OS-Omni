@@ -1,0 +1,3336 @@
+[
+  {
+    "group": "guitar",
+    "case": "positive-repeat",
+    "expected": "PASS",
+    "actual": "PASS",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 206647,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 206647,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "electric_guitar_portrait_21": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "score": {
+            "profile_id": "electric_guitar_portrait_21",
+            "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+            "source_file": "portrait_21.jpg",
+            "expected_median_rgb": {
+              "red": [
+                229,
+                40,
+                41
+              ],
+              "green": [
+                35,
+                224,
+                34
+              ],
+              "blue": [
+                3,
+                12,
+                229
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          }
+        },
+        "wood_guitar_portrait_17": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "score": {
+            "profile_id": "wood_guitar_portrait_17",
+            "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+            "source_file": "portrait_17.jpg",
+            "expected_median_rgb": {
+              "red": [
+                225,
+                48,
+                40
+              ],
+              "green": [
+                51,
+                213,
+                39
+              ],
+              "blue": [
+                50,
+                44,
+                204
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": true,
+        "distinct_files_for_profiles": true,
+        "final_editor_visible": true,
+        "correct_source_and_render": true
+      },
+      "failures": [],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        }
+      ],
+      "reference_matches": {
+        "electric_guitar_portrait_21": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+        "wood_guitar_portrait_17": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg"
+      }
+    }
+  },
+  {
+    "group": "guitar",
+    "case": "unedited",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 296586,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 176439,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 296586,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 176439,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 35,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 9.855005696614583,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 86.94082139756944,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 88.15912353515625,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 11.386280381944445,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "guitar",
+    "case": "wrong-exposure",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 370499,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 224031,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 370499,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              54,
+              54
+            ],
+            "green": [
+              47,
+              255,
+              47
+            ],
+            "blue": [
+              15,
+              24,
+              253
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 31,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 49,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 224031,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              61,
+              52
+            ],
+            "green": [
+              64,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              58,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 61,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 12.643028700086807,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 95.00321234809029,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 91.90701144748265,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 13.319950086805555,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "guitar",
+    "case": "duplicate-source",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 353543,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 353543,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 47,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "electric_guitar_portrait_21": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "score": {
+            "profile_id": "electric_guitar_portrait_21",
+            "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+            "source_file": "portrait_21.jpg",
+            "expected_median_rgb": {
+              "red": [
+                229,
+                40,
+                41
+              ],
+              "green": [
+                35,
+                224,
+                34
+              ],
+              "blue": [
+                3,
+                12,
+                229
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 91.21946831597222,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {
+        "electric_guitar_portrait_21": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg"
+      }
+    }
+  },
+  {
+    "group": "guitar",
+    "case": "wrong-source",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 535292,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 535292,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "electric_guitar_portrait_21",
+              "role": "\u84dd\u8272\u7535\u5409\u4ed6\u7279\u5199",
+              "source_file": "portrait_21.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  229,
+                  40,
+                  41
+                ],
+                "green": [
+                  35,
+                  224,
+                  34
+                ],
+                "blue": [
+                  3,
+                  12,
+                  229
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "wood_guitar_portrait_17",
+              "role": "\u7ea2\u8272\u7ec7\u7269\u4e0a\u7684\u6728\u5409\u4ed6",
+              "source_file": "portrait_17.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  225,
+                  48,
+                  40
+                ],
+                "green": [
+                  51,
+                  213,
+                  39
+                ],
+                "blue": [
+                  50,
+                  44,
+                  204
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "electric_guitar_portrait_21",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "wood_guitar_portrait_17",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "guitar",
+    "case": "preexisting-export-baseline",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": true,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 0,
+      "candidate_exports": [],
+      "file_evidence": [],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": false,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "candidate_export_count_at_least_2",
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": "C:\\Users\\ZHUHAN~1\\AppData\\Local\\Temp\\tmpjogn7cff\\trajectory.jsonl",
+        "agent_step_count": null,
+        "min_agent_steps": 65,
+        "min_agent_steps_required": true,
+        "min_agent_steps_met": false
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "positive-repeat",
+    "expected": "PASS",
+    "actual": "PASS",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 535292,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 535292,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "indoor_cooking_portrait_20": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "score": {
+            "profile_id": "indoor_cooking_portrait_20",
+            "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+            "source_file": "portrait_20.jpg",
+            "expected_median_rgb": {
+              "red": [
+                230,
+                48,
+                47
+              ],
+              "green": [
+                46,
+                226,
+                41
+              ],
+              "blue": [
+                54,
+                51,
+                228
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          }
+        },
+        "outdoor_cooking_portrait_16": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "score": {
+            "profile_id": "outdoor_cooking_portrait_16",
+            "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+            "source_file": "portrait_16.jpg",
+            "expected_median_rgb": {
+              "red": [
+                217,
+                47,
+                47
+              ],
+              "green": [
+                32,
+                224,
+                29
+              ],
+              "blue": [
+                49,
+                47,
+                216
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              217,
+              47,
+              47
+            ],
+            "green": [
+              32,
+              224,
+              29
+            ],
+            "blue": [
+              49,
+              47,
+              216
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": true,
+        "distinct_files_for_profiles": true,
+        "final_editor_visible": true,
+        "correct_source_and_render": true
+      },
+      "failures": [],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        }
+      ],
+      "reference_matches": {
+        "indoor_cooking_portrait_20": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+        "outdoor_cooking_portrait_16": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg"
+      }
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "unedited",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 351793,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 501636,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 351793,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 501636,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              190,
+              40,
+              41
+            ],
+            "green": [
+              40,
+              190,
+              39
+            ],
+            "blue": [
+              40,
+              40,
+              190
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 40,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 34,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 17.140145941840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 70.6415109592014,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 74.68734429253472,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 14.907103407118056,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "wrong-exposure",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 418691,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 581982,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 418691,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              58,
+              255,
+              51
+            ],
+            "blue": [
+              64,
+              63,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 29,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 581982,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              255,
+              59,
+              60
+            ],
+            "green": [
+              40,
+              255,
+              38
+            ],
+            "blue": [
+              62,
+              60,
+              255
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 29,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 39,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 17.961817491319444,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 83.25688937717014,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 78.03271538628472,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 21.234688856336806,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "duplicate-source",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 383277,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 383277,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 383277,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 0,
+              "within_tolerance": true
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {
+        "indoor_cooking_portrait_20": {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "score": {
+            "profile_id": "indoor_cooking_portrait_20",
+            "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+            "source_file": "portrait_20.jpg",
+            "expected_median_rgb": {
+              "red": [
+                230,
+                48,
+                47
+              ],
+              "green": [
+                46,
+                226,
+                41
+              ],
+              "blue": [
+                54,
+                51,
+                228
+              ]
+            },
+            "max_channel_delta": 0,
+            "within_tolerance": true
+          },
+          "sample_median_rgb": {
+            "red": [
+              230,
+              48,
+              47
+            ],
+            "green": [
+              46,
+              226,
+              41
+            ],
+            "blue": [
+              54,
+              51,
+              228
+            ]
+          }
+        }
+      },
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 0.0,
+          "mae_tolerance": 2.0,
+          "calibration_ok": true,
+          "accepted": true
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 74.83683376736111,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {
+        "indoor_cooking_portrait_20": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg"
+      }
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "wrong-source",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": false,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 2,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000
+        },
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 206647,
+          "mtime": 1001
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "size": 353543,
+          "mtime": 1000,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              40,
+              41
+            ],
+            "green": [
+              35,
+              224,
+              34
+            ],
+            "blue": [
+              3,
+              12,
+              229
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 51,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 46,
+              "within_tolerance": false
+            }
+          ]
+        },
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "size": 206647,
+          "mtime": 1001,
+          "pull_output": "pulled",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              225,
+              48,
+              40
+            ],
+            "green": [
+              51,
+              213,
+              39
+            ],
+            "blue": [
+              50,
+              44,
+              204
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "\u5ba4\u5185\u591a\u4eba\u5907\u9910",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 24,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "\u6237\u5916\u591a\u4eba\u70f9\u996a",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 19,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": true,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": null,
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": false,
+        "min_agent_steps_met": true
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 102.68614691840277,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 91.53477213541667,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_0.jpg",
+          "whole_image_mae": 104.9477419704861,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_test_1.jpg",
+          "whole_image_mae": 92.13459038628473,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  {
+    "group": "cooking",
+    "case": "preexisting-export-baseline",
+    "expected": "FAIL",
+    "actual": "FAIL",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": true,
+      "baseline_count": 0,
+      "current_valid_export_count": 2,
+      "candidate_export_count": 0,
+      "candidate_exports": [],
+      "file_evidence": [],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": false,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "candidate_export_count_at_least_2",
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Export",
+          "Edit"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Edit"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": false,
+        "path": "C:\\Users\\ZHUHAN~1\\AppData\\Local\\Temp\\tmpo8wlwhqf\\trajectory.jsonl",
+        "agent_step_count": null,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": true,
+        "min_agent_steps_met": false
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [],
+      "reference_matches": {}
+    }
+  }
+]

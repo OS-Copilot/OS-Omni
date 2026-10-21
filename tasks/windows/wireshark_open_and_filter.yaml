@@ -1,0 +1,36 @@
+task_id: windows.wireshark.open_and_filter
+platform: windows
+instruction: In Wireshark (already showing "C:\Users\User\Downloads\sample.pcapng"), apply the display filter "http" and save the displayed (filtered) packets to a new file called "http_only.pcapng" in the same Downloads folder.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: upload_file
+      local_path: platforms/windows/vm/setup/sample.pcapng
+      path: C:\Users\User\Downloads\sample.pcapng
+    - type: run_powershell
+      script: "$dlDir = \"C:\\Users\\User\\Downloads\"\nif (-not (Test-Path $dlDir)) { New-Item -ItemType Directory -Path $dlDir -Force | Out-Null }\n$pcap = Join-Path $dlDir \"sample.pcapng\"\n\nif (-not (Test-Path $pcap)) {\n  $url = \"https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/http.cap\"\n  try {\n    Invoke-WebRequest -Uri $url -OutFile $pcap -UseBasicParsing\n  } catch {\n    [IO.File]::WriteAllBytes($pcap, [byte[]](0))\n  }\n}\n\n# Remove any previous output\n$out = Join-Path $dlDir \"http_only.pcapng\"\nif (Test-Path $out) { Remove-Item $out -Force }\n\n$wiresharkExe = \"C:\\Program Files\\Wireshark\\Wireshark.exe\"\nif (Test-Path $wiresharkExe) {\n  Start-Process -FilePath $wiresharkExe -ArgumentList $pcap\n  Write-Output \"INIT_OK\"\n} else {\n  Write-Error \"Wireshark not installed\"\n}\n"
+      timeout: 60
+    - type: wait
+      ms: 6000
+evaluation:
+  evaluator_id: evaluators.windows.wireshark:WiresharkEvaluator
+  params:
+    check_id: wireshark_open_and_filter
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 15
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - wireshark
+  - filter
+  - pcap
+  - easy
+  difficulty: easy
+  app_name: wireshark
+  human_steps: 9
+  description: 'Easy Wireshark task: open a pcap, apply "http" display filter, export filtered packets to a new pcapng file. Evaluation checks the output file exists and is non-empty.
+
+    '

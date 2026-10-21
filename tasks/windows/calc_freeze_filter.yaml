@@ -1,0 +1,43 @@
+task_id: windows.calc.freeze_filter
+platform: windows
+instruction: A sales data spreadsheet is open in LibreOffice Calc. Freeze the header row so it stays visible when scrolling and enable auto-filter on the data columns. Save when done.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "py -3 -W ignore -c \"\nimport os, subprocess, sys\ntry:\n    from openpyxl import Workbook\nexcept ImportError:\n    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'openpyxl', '-q'])\n    from openpyxl import Workbook\n\nout_path = os.path.join(os.environ['USERPROFILE'], 'Downloads', 'sales.xlsx')\nwb = Workbook()\nws = wb.active\nws.title = 'Sales'\n\nws['A1'] = 'Product';  ws['B1'] = 'Region';  ws['C1'] = 'Q1 Sales'\nws['D1'] = 'Q2 Sales'; ws['E1'] = 'Q3 Sales'\n\ndata = [\n    ('Widget A', 'North', 15000, 18000, 21000),\n    ('Widget B', 'South', 12000, 14000, 16000),\n    ('Widget C', 'East',  22000, 19000, 25000),\n    ('Widget D', 'North',  8000,  9500, 11000),\n    ('Widget E', 'West',  17000, 20000, 23000),\n    ('Widget F', 'South', 13000, 15500, 18000),\n]\nfor i, row in enumerate(data, start=2):\n    for j, val in enumerate(row, start=1):\n        ws.cell(i, j, val)\n\nwb.save(out_path)\nprint('INIT_OK')\n\"\n"
+      timeout: 120
+    - type: run_powershell
+      script: '$sheetPath = Join-Path $env:USERPROFILE "Downloads\sales.xlsx"
+
+        Start-Process $sheetPath
+
+        '
+      timeout: 15
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.windows.libreoffice_calc:LibreOfficeCalcEvaluator
+  params:
+    check_id: calc_freeze_filter
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 120
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - libreoffice
+  - calc
+  - freeze
+  - filter
+  - easy
+  difficulty: easy
+  app_name: libreoffice-calc
+  human_steps: 8
+  description: 'Easy Calc task: freeze header row and enable auto-filter. Checks: freeze_panes==A2, auto_filter enabled, data integrity.
+
+    '
+  oracle_task: tasks/windows/oracle/calc_freeze_filter_oracle.yaml
+  oracle_model: cross_vm_oracle_wait

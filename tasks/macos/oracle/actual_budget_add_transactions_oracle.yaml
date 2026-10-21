@@ -1,0 +1,37 @@
+task_id: macos.oracle.actual_budget.create_travel_fund_account
+platform: macos
+instruction: Oracle sanity task for macos.actual_budget.create_travel_fund_account.
+  Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "pkill -x Actual >/dev/null 2>&1 || true\nmkdir -p \"$HOME/Documents/Actual\"\nmkdir -p \"$HOME/Library/Application Support/Actual\"\n"
+    - type: wait
+      ms: 300
+evaluation:
+  evaluator_id: evaluators.macos.actual_budget:ActualBudgetEvaluator
+  params:
+    mode: add_transactions
+    account_name: Travel Fund
+    opening_balance: 2500
+    transactions:
+    - payee: SkyJet
+      category: Flights
+      amount: 640
+    - payee: Harbor Hotel
+      category: Lodging
+      amount: 480
+    - payee: Metro Pass
+      category: Local Transit
+      amount: 75
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.actual_budget.create_travel_fund_account
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

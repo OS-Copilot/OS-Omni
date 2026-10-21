@@ -90,7 +90,7 @@ TICKET_EXPECTATIONS = (
     {
         "userId": RIDER_ID,
         "category": "safety concern",
-        "message": "I need help with my ride.Card charged",
+        "message": "Card charged",
         "status": "open",
     },
 )
@@ -136,7 +136,13 @@ TICKET_MATCH_FIELDS = ("userId", "category", "message", "status")
 ACCOUNT_FIELDS = {"id": "id", "email": "email", "role": "role"}
 
 #: A route ride is stored with an ``id``; refunds and tickets name it explicitly.
-FIELD_ALIASES = {"ride_id": "id"}
+FIELD_ALIASES = {
+    "ride_id": "id",
+    # Historical seed records persist addresses as pickupAddress and
+    # destinationAddress; the check specs keep the shorter readable keys.
+    "pickup": "pickupAddress",
+    "destination": "destinationAddress",
+}
 
 _RIDE_IDENTITY = ("id", "tier", "status", "destination", "paymentMethod", "waypoints", "createdAt")
 
@@ -348,7 +354,7 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         cls._check_account(walk, users)
         cls._check_new_card(walk, payments, boundary)
         cls._check_default_payment(walk, payments)
-        ride = cls._check_ride(walk, rides, payments)
+        ride = cls._check_ride(walk, rides, payments, boundary)
         cls._check_no_active_ride(walk, rides)
         cls._check_refund_targets(walk, rides)
         cls._check_refunds(walk, refunds, boundary)
@@ -429,7 +435,12 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         payments: Sequence[Mapping[str, Any]],
         boundary: str,
     ) -> None:
-        matches = [payment for payment in payments if _record_matches(payment, NEW_CARD)]
+        matches = [
+            payment
+            for payment in payments
+            if str(payment.get("userId") or "") == RIDER_ID
+            and _record_matches(payment, NEW_CARD)
+        ]
         current = [payment for payment in matches if cls._after_boundary(payment, boundary)]
         walk.record(
             "exactly_one_current_session_active_visa_1111",
@@ -453,7 +464,10 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         walk: _Walk,
         payments: Sequence[Mapping[str, Any]],
     ) -> None:
-        defaults = [payment for payment in payments if payment.get("isDefault") is True]
+        rider_methods = [
+            payment for payment in payments if str(payment.get("userId") or "") == RIDER_ID
+        ]
+        defaults = [payment for payment in rider_methods if payment.get("isDefault") is True]
         matching = [payment for payment in defaults if _record_matches(payment, DEFAULT_PAYMENT_METHOD)]
         passed = len(defaults) == 1 and len(matching) == 1
         walk.record(
@@ -464,6 +478,12 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
                 "default_count": len(defaults),
                 "record_ids": [payment.get("id") for payment in defaults],
                 "records": [_project(payment, DEFAULT_FIELDS) for payment in defaults[:3]],
+                "other_users_default_count": sum(
+                    1
+                    for payment in payments
+                    if str(payment.get("userId") or "") != RIDER_ID
+                    and payment.get("isDefault") is True
+                ),
             },
             failure_reason=(
                 "PayPal rider@example.com must be the unique payment method marked as default"
@@ -476,22 +496,32 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         walk: _Walk,
         rides: Sequence[Mapping[str, Any]],
         payments: Sequence[Mapping[str, Any]],
+        boundary: str,
     ) -> Mapping[str, Any] | None:
         card_ids = [
             str(payment.get("id") or "")
             for payment in payments
-            if _record_matches(payment, NEW_CARD) and str(payment.get("id") or "")
+            if str(payment.get("userId") or "") == RIDER_ID
+            and cls._after_boundary(payment, boundary)
+            and _record_matches(payment, NEW_CARD)
+            and str(payment.get("id") or "")
+        ]
+        current_rides = [
+            ride
+            for ride in rides
+            if str(ride.get("riderId") or "") == RIDER_ID
+            and cls._after_boundary(ride, boundary)
         ]
         expected = dict(RIDE)
-        matches = [ride for ride in rides if _record_matches(ride, expected)]
+        matches = [ride for ride in current_rides if _record_matches(ride, expected)]
+        paid = [
+            ride for ride in matches if str(ride.get("paymentMethod") or "") in set(card_ids)
+        ]
         if card_ids:
-            paid = [
-                ride for ride in matches if str(ride.get("paymentMethod") or "") in set(card_ids)
-            ]
             chosen = paid[0] if len(paid) == 1 else None
         else:
             chosen = matches[0] if len(matches) == 1 else None
-        passed = bool(chosen)
+        passed = len(matches) == 1 and len(paid) == 1 and bool(chosen)
         walk.record(
             "exactly_one_current_session_green_visa_ride_via_downtown_cancelled",
             passed=passed,
@@ -508,7 +538,7 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
                 "record_id": str(chosen.get("id") or "") if chosen else None,
                 "records": [_project(ride, RIDE_FIELDS) for ride in (matches or [])[:3]],
                 "candidates": (
-                    [_identity(ride, _RIDE_IDENTITY) for ride in rides[:3]] if not matches else []
+                    [_identity(ride, _RIDE_IDENTITY) for ride in current_rides[:3]] if not matches else []
                 ),
             },
             failure_reason=(
@@ -521,7 +551,10 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
     @classmethod
     def _check_no_active_ride(cls, walk: _Walk, rides: Sequence[Mapping[str, Any]]) -> None:
         active = [
-            ride for ride in rides if str(ride.get("status") or "").strip() in ACTIVE_RIDE_STATUSES
+            ride
+            for ride in rides
+            if str(ride.get("riderId") or "") == RIDER_ID
+            and str(ride.get("status") or "").strip() in ACTIVE_RIDE_STATUSES
         ]
         walk.record(
             "no_active_ride_remains",
@@ -548,13 +581,13 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
                 actual={
                     "match_count": len(matches),
                     "ride_id": str(chosen.get("id") or "") if chosen else None,
-                    "pickup": chosen.get("pickup") if chosen else None,
-                    "destination": chosen.get("destination") if chosen else None,
+                    "pickup": _field_value(chosen, "pickup") if chosen else None,
+                    "destination": _field_value(chosen, "destination") if chosen else None,
                     "matches": [
                         {
                             "ride_id": ride.get("id"),
-                            "pickup": ride.get("pickup"),
-                            "destination": ride.get("destination"),
+                            "pickup": _field_value(ride, "pickup"),
+                            "destination": _field_value(ride, "destination"),
                             "status": ride.get("status"),
                         }
                         for ride in matches[:3]
@@ -573,11 +606,20 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         refunds: Sequence[Mapping[str, Any]],
         boundary: str,
     ) -> None:
-        current = [refund for refund in refunds if cls._after_boundary(refund, boundary)]
+        current = [
+            refund
+            for refund in refunds
+            if str(refund.get("userId") or "") == RIDER_ID
+            and cls._after_boundary(refund, boundary)
+        ]
         matched: set[int] = set()
         positions: dict[str, int] = {}
         for target in REFUND_TARGETS:
-            wanted = {"ride_id": target["ride_id"], **REFUND_EXPECTATION}
+            wanted = {
+                "ride_id": target["ride_id"],
+                "userId": RIDER_ID,
+                **REFUND_EXPECTATION,
+            }
             for index, refund in enumerate(current):
                 if index in matched:
                     continue
@@ -617,7 +659,12 @@ class OpenDriverCardDefaultPaymentRefundEvaluator(BaseEvaluator):
         tickets: Sequence[Mapping[str, Any]],
         boundary: str,
     ) -> None:
-        current = [ticket for ticket in tickets if cls._after_boundary(ticket, boundary)]
+        current = [
+            ticket
+            for ticket in tickets
+            if str(ticket.get("userId") or "") == RIDER_ID
+            and cls._after_boundary(ticket, boundary)
+        ]
         used: set[int] = set()
         found: list[Mapping[str, Any]] = []
         for expectation in TICKET_EXPECTATIONS:

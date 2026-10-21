@@ -1,0 +1,27 @@
+task_id: windows.actual_budget.create_account
+platform: windows
+instruction: Please open Actual Budget and create a new bank account called "Checking Account" with an initial balance of $5,000.
+init:
+  initializer_id: initializers.windows.actual_budget:ActualBudgetInitializer
+evaluation:
+  evaluator_id: evaluators.windows.actual_budget:ActualBudgetEvaluator
+  params:
+    check_id: budget_create_account
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - actual_budget
+  - account
+  - create
+  - easy
+  difficulty: easy
+  app_name: actual-budget
+  description: 'Simple budget task: create a Checking Account with $5,000 balance. Evaluation searches Actual Budget data files for the account name.
+
+    '
+  oracle_task: tasks/windows/oracle/actual_budget_create_account_oracle.yaml
+  oracle_model: cross_vm_oracle_wait

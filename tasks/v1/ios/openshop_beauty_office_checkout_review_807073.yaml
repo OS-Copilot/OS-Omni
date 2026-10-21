@@ -21,7 +21,7 @@ init:
   params:
     bundle_id: com.killt.openshop
     local_state_key: openshop.localState.v3
-    wait_ms: 1200
+    wait_ms: 4000
     return_home_after_init: false
     ios_device_profile: iphone17-2
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax

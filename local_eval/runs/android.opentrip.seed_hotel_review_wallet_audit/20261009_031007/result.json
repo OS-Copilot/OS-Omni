@@ -1,0 +1,478 @@
+{
+  "task_id": "android.opentrip.seed_hotel_review_wallet_audit",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T03:13:12.109259+08:00",
+  "ended_at": "2026-10-09T03:21:20.123618+08:00",
+  "steps_taken": 55,
+  "latency_ms": 488014.359,
+  "episode_result": {
+    "status": "PASS",
+    "terminal_reason": "success",
+    "execution_message": "Model declared task complete",
+    "execution_valid": true,
+    "message": "OpenTrip orders and wallet do not match the requested outcome"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.opentrip",
+      "source_initializer": "initializers.android.opentrip:OpenTripSnapshotOpenInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenTrip orders and wallet do not match the requested outcome",
+    "metadata": {
+      "read_only": true,
+      "app_package": "com.killt.opentrip",
+      "checks": [
+        {
+          "name": "hotel_order_unique",
+          "passed": true,
+          "expected": 1,
+          "observed": 1,
+          "failure_reason": null
+        },
+        {
+          "name": "hotel_order_hotel_name",
+          "passed": false,
+          "expected": "Shanghai Riverlight Suites",
+          "observed": null,
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "hotel_order_status",
+          "passed": true,
+          "expected": "Completed",
+          "observed": "Completed",
+          "failure_reason": null
+        },
+        {
+          "name": "hotel_order_review_rating",
+          "passed": true,
+          "expected": 4,
+          "observed": 4,
+          "failure_reason": null
+        },
+        {
+          "name": "hotel_order_review_text",
+          "passed": true,
+          "expected": "quiet room and clean",
+          "observed": "quiet room and clean",
+          "failure_reason": null
+        },
+        {
+          "name": "session_signed_in",
+          "passed": true,
+          "expected": true,
+          "observed": true,
+          "failure_reason": null
+        },
+        {
+          "name": "wallet_flight",
+          "passed": true,
+          "expected": 170,
+          "observed": 170,
+          "failure_reason": null
+        },
+        {
+          "name": "wallet_hotel",
+          "passed": true,
+          "expected": 230,
+          "observed": 230,
+          "failure_reason": null
+        },
+        {
+          "name": "wallet_baggage",
+          "passed": true,
+          "expected": 3,
+          "observed": 3,
+          "failure_reason": null
+        },
+        {
+          "name": "redeemed_code_FLY50",
+          "passed": false,
+          "expected": "FLY50",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "redeemed_code_FLY120",
+          "passed": false,
+          "expected": "FLY120",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "redeemed_code_HOTEL80",
+          "passed": false,
+          "expected": "HOTEL80",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "redeemed_code_STAY150",
+          "passed": false,
+          "expected": "STAY150",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "redeemed_code_BAGFREE",
+          "passed": false,
+          "expected": "BAGFREE",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        },
+        {
+          "name": "redeemed_code_BAGPLUS2",
+          "passed": false,
+          "expected": "BAGPLUS2",
+          "observed": [],
+          "failure_reason": "exact value mismatch"
+        }
+      ],
+      "failures": [
+        "hotel_order_hotel_name"
+      ],
+      "orders": {
+        "hotel_order": {
+          "id": "OT-SEED-HOTEL-2",
+          "type": "hotel",
+          "status": "Completed",
+          "cabin": null,
+          "from": null,
+          "to": null,
+          "date": null,
+          "charges": {
+            "baseFare": 190,
+            "serviceFee": 38,
+            "nights": 2,
+            "total": 228
+          },
+          "review": {
+            "id": "OT-SEED-HOTEL-2-review",
+            "bookingId": "OT-SEED-HOTEL-2",
+            "hotelId": "h3001",
+            "user": "Lucas Lin",
+            "rating": 4,
+            "date": "2026-10-08",
+            "room": "Standard Queen Room",
+            "text": "quiet room and clean"
+          }
+        }
+      },
+      "wallet": {
+        "flight": 170,
+        "hotel": 230,
+        "baggage": 3
+      }
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opentrip:id/action_bar_root",
+        "resource-id": "com.killt.opentrip:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opentrip:id/webview",
+        "resource-id": "com.killt.opentrip:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opentrip",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

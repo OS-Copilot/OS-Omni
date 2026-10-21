@@ -98,7 +98,13 @@ TICKET_FIELDS = {
 ACCOUNT_FIELDS = {"id": "id", "email": "email", "role": "role"}
 
 #: A route ride is stored with an ``id``; refunds and tickets name it explicitly.
-FIELD_ALIASES = {"ride_id": "id"}
+FIELD_ALIASES = {
+    "ride_id": "id",
+    # Historical seed rides use the API schema's address field names. Keep
+    # the human-readable check keys while resolving them to persisted fields.
+    "pickup": "pickupAddress",
+    "destination": "destinationAddress",
+}
 
 _RIDE_IDENTITY = ("id", "tier", "status", "destination", "paymentMethod", "waypoints", "createdAt")
 
@@ -482,13 +488,13 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             actual = {
                 "match_count": len(matches),
                 "ride_id": cls._record_id(chosen) if chosen else None,
-                "pickup": chosen.get("pickup") if chosen else None,
-                "destination": chosen.get("destination") if chosen else None,
+                "pickup": _field_value(chosen, "pickup") if chosen else None,
+                "destination": _field_value(chosen, "destination") if chosen else None,
                 "matches": [
                     {
                         "ride_id": ride.get("id"),
-                        "pickup": ride.get("pickup"),
-                        "destination": ride.get("destination"),
+                        "pickup": _field_value(ride, "pickup"),
+                        "destination": _field_value(ride, "destination"),
                     }
                     for ride in matches[:3]
                 ],

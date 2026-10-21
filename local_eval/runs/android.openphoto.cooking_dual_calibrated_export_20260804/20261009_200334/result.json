@@ -1,0 +1,2541 @@
+{
+  "task_id": "android.openphoto.cooking_dual_calibrated_export_20260804",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T20:06:00.796009+08:00",
+  "ended_at": "2026-10-09T20:47:20.825773+08:00",
+  "steps_taken": 180,
+  "latency_ms": 2480029.764,
+  "episode_result": {
+    "status": "FAIL",
+    "terminal_reason": "fail_max_steps",
+    "execution_message": "Exceeded max steps (180)",
+    "execution_valid": true,
+    "message": "Author photo v2 export checks failed"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Calibrated photo inputs and export baseline",
+    "metadata": {
+      "paths": [],
+      "reconstructed": true,
+      "calibration_input": "unclipped primary color patches RGB190/40/40,40/190/40,40/40/190",
+      "provenance": [
+        {
+          "source": "portrait_20.jpg",
+          "source_path": "local_eval\\benchmark-v2\\assets\\indoor-cooking-v2.jpg",
+          "target": "portrait_20.jpg",
+          "source_sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d",
+          "fixture_sha256": "0a34d9283cc5e6146dc9348680fa3b4412dcbfd2bde41ae49dc2e81310e998b4"
+        },
+        {
+          "source": "portrait_16.jpg",
+          "source_path": "local_eval\\benchmark-v2\\assets\\outdoor-cooking-v2.jpg",
+          "target": "portrait_16.jpg",
+          "source_sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d",
+          "fixture_sha256": "46b3a976b4862a3169c734f07e1b80a0975ac459961113b5a0460da50639e2c7"
+        }
+      ],
+      "limitations": [],
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "source_revision": "Author-authorized generated indoor and outdoor cooking photographs; original downloaded source retained separately."
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "Author photo v2 export checks failed",
+    "metadata": {
+      "app_package": "com.killt.openphotoedit",
+      "export_dir": "/sdcard/Pictures/OpenPhotoEdit",
+      "min_file_size_bytes": 100000,
+      "channel_tolerance": 1,
+      "expected_dimensions": [
+        960,
+        1280
+      ],
+      "sample_boxes": {
+        "red": [
+          826,
+          194,
+          846,
+          294
+        ],
+        "green": [
+          866,
+          194,
+          886,
+          294
+        ],
+        "blue": [
+          906,
+          194,
+          926,
+          294
+        ]
+      },
+      "baseline_available": true,
+      "baseline_count": 0,
+      "current_valid_export_count": 1,
+      "candidate_export_count": 1,
+      "candidate_exports": [
+        {
+          "path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_123538.jpg",
+          "size": 381378,
+          "mtime": 1791549338
+        }
+      ],
+      "file_evidence": [
+        {
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_123538.jpg",
+          "size": 381378,
+          "mtime": 1791549338,
+          "pull_output": "",
+          "local_pull_exists": true,
+          "dimensions": [
+            960,
+            1280
+          ],
+          "sample_median_rgb": {
+            "red": [
+              229,
+              49,
+              48
+            ],
+            "green": [
+              46,
+              224,
+              42
+            ],
+            "blue": [
+              54,
+              51,
+              226
+            ]
+          },
+          "dimension_ok": true,
+          "profile_scores": [
+            {
+              "profile_id": "indoor_cooking_portrait_20",
+              "role": "室内多人备餐",
+              "source_file": "portrait_20.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  230,
+                  48,
+                  47
+                ],
+                "green": [
+                  46,
+                  226,
+                  41
+                ],
+                "blue": [
+                  54,
+                  51,
+                  228
+                ]
+              },
+              "max_channel_delta": 2,
+              "within_tolerance": false
+            },
+            {
+              "profile_id": "outdoor_cooking_portrait_16",
+              "role": "户外多人烹饪",
+              "source_file": "portrait_16.jpg",
+              "expected_median_rgb": {
+                "red": [
+                  217,
+                  47,
+                  47
+                ],
+                "green": [
+                  32,
+                  224,
+                  29
+                ],
+                "blue": [
+                  49,
+                  47,
+                  216
+                ]
+              },
+              "max_channel_delta": 14,
+              "within_tolerance": false
+            }
+          ]
+        }
+      ],
+      "matched_profiles": {},
+      "checks": {
+        "baseline_available_or_not_required": true,
+        "candidate_export_count_at_least_2": false,
+        "all_expected_profiles_matched": false,
+        "distinct_files_for_profiles": false,
+        "final_editor_visible": true,
+        "correct_source_and_render": false
+      },
+      "failures": [
+        "candidate_export_count_at_least_2",
+        "all_expected_profiles_matched",
+        "distinct_files_for_profiles",
+        "correct_source_and_render"
+      ],
+      "ui_evidence": {
+        "foreground_bundle_id": null,
+        "foreground_app": null,
+        "foreground_window": null,
+        "observed_node_packages": [
+          "com.killt.openphotoedit"
+        ],
+        "visible_texts": [
+          "Back",
+          "Edit",
+          "Undo",
+          "Redo",
+          "View original",
+          "Export",
+          "Exposure",
+          "6",
+          "Brightness",
+          "Contrast",
+          "Curve",
+          "Saturation",
+          "Temperature",
+          "Portrait",
+          "Landscape",
+          "HSL",
+          "Filters"
+        ],
+        "visible_anchors": [
+          "Export",
+          "Undo",
+          "Redo",
+          "Edit",
+          "Exposure",
+          "Filters",
+          "Landscape",
+          "HSL"
+        ],
+        "foreground_ok": true,
+        "final_editor_visible": true
+      },
+      "trajectory": {
+        "available": true,
+        "path": ".\\local_eval\\runs\\android.openphoto.cooking_dual_calibrated_export_20260804\\20261009_200334\\trajectory.jsonl",
+        "agent_step_count": 180,
+        "min_agent_steps": 74,
+        "min_agent_steps_required": true,
+        "min_agent_steps_met": true,
+        "parse_errors": []
+      },
+      "evidence_note": "Pixel evidence uses median RGB from central regions of the source-image calibration stripes. It rejects pre-existing exports through the initializer baseline during full runs.",
+      "benchmark_version": "author-rebuilt-photo-v2",
+      "reference_image_evidence": [
+        {
+          "profile_id": "indoor_cooking_portrait_20",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_123538.jpg",
+          "whole_image_mae": 1.2128068033854167,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        },
+        {
+          "profile_id": "outdoor_cooking_portrait_16",
+          "remote_path": "/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_20261009_123538.jpg",
+          "whole_image_mae": 74.6217835828993,
+          "mae_tolerance": 2.0,
+          "calibration_ok": false,
+          "accepted": false
+        }
+      ],
+      "reference_matches": {}
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "androidx.compose.ui.platform.ComposeView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "androidx.compose.ui.viewinterop.ViewFactoryHolder",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,296][1080,1381]",
+        "tap": {
+          "x": 540,
+          "y": 838
+        },
+        "rect": {
+          "x": 0,
+          "y": 296,
+          "w": 1080,
+          "h": 1085
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,296][1080,1381]",
+        "tap": {
+          "x": 540,
+          "y": 838
+        },
+        "rect": {
+          "x": 0,
+          "y": 296,
+          "w": 1080,
+          "h": 1085
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,296][1080,1381]",
+        "tap": {
+          "x": 540,
+          "y": 838
+        },
+        "rect": {
+          "x": 0,
+          "y": 296,
+          "w": 1080,
+          "h": 1085
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,296][1080,1381]",
+        "tap": {
+          "x": 540,
+          "y": 838
+        },
+        "rect": {
+          "x": 0,
+          "y": 296,
+          "w": 1080,
+          "h": 1085
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,296][1080,1381]",
+        "tap": {
+          "x": 540,
+          "y": 838
+        },
+        "rect": {
+          "x": 0,
+          "y": 296,
+          "w": 1080,
+          "h": 1085
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,296]",
+        "tap": {
+          "x": 540,
+          "y": 148
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 296
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[12,150][138,276]",
+        "tap": {
+          "x": 75,
+          "y": 213
+        },
+        "rect": {
+          "x": 12,
+          "y": 150,
+          "w": 126,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Back",
+        "content-desc": "Back",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[43,181][106,244]",
+        "tap": {
+          "x": 74,
+          "y": 212
+        },
+        "rect": {
+          "x": 43,
+          "y": 181,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[22,160][127,265]",
+        "tap": {
+          "x": 74,
+          "y": 212
+        },
+        "rect": {
+          "x": 22,
+          "y": 160,
+          "w": 105,
+          "h": 105
+        }
+      },
+      {
+        "index": "1",
+        "text": "Edit",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[456,175][554,249]",
+        "tap": {
+          "x": 505,
+          "y": 212
+        },
+        "rect": {
+          "x": 456,
+          "y": 175,
+          "w": 98,
+          "h": 74
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[566,150][692,276]",
+        "tap": {
+          "x": 629,
+          "y": 213
+        },
+        "rect": {
+          "x": 566,
+          "y": 150,
+          "w": 126,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Undo",
+        "content-desc": "Undo",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[597,181][660,244]",
+        "tap": {
+          "x": 628,
+          "y": 212
+        },
+        "rect": {
+          "x": 597,
+          "y": 181,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[576,160][681,265]",
+        "tap": {
+          "x": 628,
+          "y": 212
+        },
+        "rect": {
+          "x": 576,
+          "y": 160,
+          "w": 105,
+          "h": 105
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[692,150][818,276]",
+        "tap": {
+          "x": 755,
+          "y": 213
+        },
+        "rect": {
+          "x": 692,
+          "y": 150,
+          "w": 126,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Redo",
+        "content-desc": "Redo",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[723,181][786,244]",
+        "tap": {
+          "x": 754,
+          "y": 212
+        },
+        "rect": {
+          "x": 723,
+          "y": 181,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[702,160][807,265]",
+        "tap": {
+          "x": 754,
+          "y": 212
+        },
+        "rect": {
+          "x": 702,
+          "y": 160,
+          "w": 105,
+          "h": 105
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[818,150][944,276]",
+        "tap": {
+          "x": 881,
+          "y": 213
+        },
+        "rect": {
+          "x": 818,
+          "y": 150,
+          "w": 126,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "View original",
+        "content-desc": "View original",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[849,181][912,244]",
+        "tap": {
+          "x": 880,
+          "y": 212
+        },
+        "rect": {
+          "x": 849,
+          "y": 181,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[828,160][933,265]",
+        "tap": {
+          "x": 880,
+          "y": 212
+        },
+        "rect": {
+          "x": 828,
+          "y": 160,
+          "w": 105,
+          "h": 105
+        }
+      },
+      {
+        "index": "5",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[944,150][1070,276]",
+        "tap": {
+          "x": 1007,
+          "y": 213
+        },
+        "rect": {
+          "x": 944,
+          "y": 150,
+          "w": 126,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Export",
+        "content-desc": "Export",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[975,181][1038,244]",
+        "tap": {
+          "x": 1006,
+          "y": 212
+        },
+        "rect": {
+          "x": 975,
+          "y": 181,
+          "w": 63,
+          "h": 63
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[954,160][1059,265]",
+        "tap": {
+          "x": 1006,
+          "y": 212
+        },
+        "rect": {
+          "x": 954,
+          "y": 160,
+          "w": 105,
+          "h": 105
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,1381][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1890
+        },
+        "rect": {
+          "x": 0,
+          "y": 1381,
+          "w": 1080,
+          "h": 1019
+        }
+      },
+      {
+        "index": "0",
+        "text": "Exposure",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[47,1407][199,1460]",
+        "tap": {
+          "x": 123,
+          "y": 1433
+        },
+        "rect": {
+          "x": 47,
+          "y": 1407,
+          "w": 152,
+          "h": 53
+        }
+      },
+      {
+        "index": "1",
+        "text": "6",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[1010,1407][1033,1460]",
+        "tap": {
+          "x": 1021,
+          "y": 1433
+        },
+        "rect": {
+          "x": 1010,
+          "y": 1407,
+          "w": 23,
+          "h": 53
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.SeekBar",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[21,1476][1059,1592]",
+        "tap": {
+          "x": 540,
+          "y": 1534
+        },
+        "rect": {
+          "x": 21,
+          "y": 1476,
+          "w": 1038,
+          "h": 116
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.HorizontalScrollView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,1911][1080,2127]",
+        "tap": {
+          "x": 540,
+          "y": 2019
+        },
+        "rect": {
+          "x": 0,
+          "y": 1911,
+          "w": 1080,
+          "h": 216
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,1932][78,2106]",
+        "tap": {
+          "x": 39,
+          "y": 2019
+        },
+        "rect": {
+          "x": 0,
+          "y": 1932,
+          "w": 78,
+          "h": 174
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Exposure",
+        "content-desc": "Exposure",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,1961][23,2019]",
+        "tap": {
+          "x": 11,
+          "y": 1990
+        },
+        "rect": {
+          "x": 0,
+          "y": 1961,
+          "w": 23,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Exposure",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2064][58,2106]",
+        "tap": {
+          "x": 29,
+          "y": 2085
+        },
+        "rect": {
+          "x": 0,
+          "y": 2064,
+          "w": 58,
+          "h": 42
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[104,1932][272,2106]",
+        "tap": {
+          "x": 188,
+          "y": 2019
+        },
+        "rect": {
+          "x": 104,
+          "y": 1932,
+          "w": 168,
+          "h": 174
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Brightness",
+        "content-desc": "Brightness",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[159,1961][217,2019]",
+        "tap": {
+          "x": 188,
+          "y": 1990
+        },
+        "rect": {
+          "x": 159,
+          "y": 1961,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Brightness",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[116,2064][261,2106]",
+        "tap": {
+          "x": 188,
+          "y": 2085
+        },
+        "rect": {
+          "x": 116,
+          "y": 2064,
+          "w": 145,
+          "h": 42
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[298,1932][466,2106]",
+        "tap": {
+          "x": 382,
+          "y": 2019
+        },
+        "rect": {
+          "x": 298,
+          "y": 1932,
+          "w": 168,
+          "h": 174
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Contrast",
+        "content-desc": "Contrast",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[353,1961][411,2019]",
+        "tap": {
+          "x": 382,
+          "y": 1990
+        },
+        "rect": {
+          "x": 353,
+          "y": 1961,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Contrast",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[324,2064][440,2106]",
+        "tap": {
+          "x": 382,
+          "y": 2085
+        },
+        "rect": {
+          "x": 324,
+          "y": 2064,
+          "w": 116,
+          "h": 42
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[492,1932][660,2106]",
+        "tap": {
+          "x": 576,
+          "y": 2019
+        },
+        "rect": {
+          "x": 492,
+          "y": 1932,
+          "w": 168,
+          "h": 174
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Curve",
+        "content-desc": "Curve",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[547,1961][605,2019]",
+        "tap": {
+          "x": 576,
+          "y": 1990
+        },
+        "rect": {
+          "x": 547,
+          "y": 1961,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Curve",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[537,2064][616,2106]",
+        "tap": {
+          "x": 576,
+          "y": 2085
+        },
+        "rect": {
+          "x": 537,
+          "y": 2064,
+          "w": 79,
+          "h": 42
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[686,1932][854,2106]",
+        "tap": {
+          "x": 770,
+          "y": 2019
+        },
+        "rect": {
+          "x": 686,
+          "y": 1932,
+          "w": 168,
+          "h": 174
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Saturation",
+        "content-desc": "Saturation",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[741,1961][799,2019]",
+        "tap": {
+          "x": 770,
+          "y": 1990
+        },
+        "rect": {
+          "x": 741,
+          "y": 1961,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Saturation",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[700,2064][841,2106]",
+        "tap": {
+          "x": 770,
+          "y": 2085
+        },
+        "rect": {
+          "x": 700,
+          "y": 2064,
+          "w": 141,
+          "h": 42
+        }
+      },
+      {
+        "index": "5",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[880,1911][1048,2127]",
+        "tap": {
+          "x": 964,
+          "y": 2019
+        },
+        "rect": {
+          "x": 880,
+          "y": 1911,
+          "w": 168,
+          "h": 216
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Temperature",
+        "content-desc": "Temperature",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[935,1940][993,1998]",
+        "tap": {
+          "x": 964,
+          "y": 1969
+        },
+        "rect": {
+          "x": 935,
+          "y": 1940,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Temperature",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[880,2043][1048,2127]",
+        "tap": {
+          "x": 964,
+          "y": 2085
+        },
+        "rect": {
+          "x": 880,
+          "y": 2043,
+          "w": 168,
+          "h": 84
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "6",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[1074,1932][1080,2106]",
+        "tap": {
+          "x": 1077,
+          "y": 2019
+        },
+        "rect": {
+          "x": 1074,
+          "y": 1932,
+          "w": 6,
+          "h": 174
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.HorizontalScrollView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2148][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 2242
+        },
+        "rect": {
+          "x": 0,
+          "y": 2148,
+          "w": 1080,
+          "h": 189
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[21,2180][226,2306]",
+        "tap": {
+          "x": 123,
+          "y": 2243
+        },
+        "rect": {
+          "x": 21,
+          "y": 2180,
+          "w": 205,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Edit",
+        "content-desc": "Edit",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[95,2187][153,2245]",
+        "tap": {
+          "x": 124,
+          "y": 2216
+        },
+        "rect": {
+          "x": 95,
+          "y": 2187,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Edit",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[97,2256][151,2298]",
+        "tap": {
+          "x": 124,
+          "y": 2277
+        },
+        "rect": {
+          "x": 97,
+          "y": 2256,
+          "w": 54,
+          "h": 42
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[237,2180][442,2306]",
+        "tap": {
+          "x": 339,
+          "y": 2243
+        },
+        "rect": {
+          "x": 237,
+          "y": 2180,
+          "w": 205,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Portrait",
+        "content-desc": "Portrait",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[311,2187][369,2245]",
+        "tap": {
+          "x": 340,
+          "y": 2216
+        },
+        "rect": {
+          "x": 311,
+          "y": 2187,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Portrait",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[288,2256][392,2298]",
+        "tap": {
+          "x": 340,
+          "y": 2277
+        },
+        "rect": {
+          "x": 288,
+          "y": 2256,
+          "w": 104,
+          "h": 42
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[453,2180][658,2306]",
+        "tap": {
+          "x": 555,
+          "y": 2243
+        },
+        "rect": {
+          "x": 453,
+          "y": 2180,
+          "w": 205,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Landscape",
+        "content-desc": "Landscape",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[527,2187][585,2245]",
+        "tap": {
+          "x": 556,
+          "y": 2216
+        },
+        "rect": {
+          "x": 527,
+          "y": 2187,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Landscape",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[481,2256][630,2298]",
+        "tap": {
+          "x": 555,
+          "y": 2277
+        },
+        "rect": {
+          "x": 481,
+          "y": 2256,
+          "w": 149,
+          "h": 42
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[669,2180][874,2306]",
+        "tap": {
+          "x": 771,
+          "y": 2243
+        },
+        "rect": {
+          "x": 669,
+          "y": 2180,
+          "w": 205,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "HSL",
+        "content-desc": "HSL",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[743,2187][801,2245]",
+        "tap": {
+          "x": 772,
+          "y": 2216
+        },
+        "rect": {
+          "x": 743,
+          "y": 2187,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "HSL",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[743,2256][800,2298]",
+        "tap": {
+          "x": 771,
+          "y": 2277
+        },
+        "rect": {
+          "x": 743,
+          "y": 2256,
+          "w": 57,
+          "h": 42
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[885,2180][1080,2306]",
+        "tap": {
+          "x": 982,
+          "y": 2243
+        },
+        "rect": {
+          "x": 885,
+          "y": 2180,
+          "w": 195,
+          "h": 126
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "Filters",
+        "content-desc": "Filters",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[959,2187][1017,2245]",
+        "tap": {
+          "x": 988,
+          "y": 2216
+        },
+        "rect": {
+          "x": 959,
+          "y": 2187,
+          "w": 58,
+          "h": 58
+        }
+      },
+      {
+        "index": "1",
+        "text": "Filters",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.TextView",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[945,2256][1031,2298]",
+        "tap": {
+          "x": 988,
+          "y": 2277
+        },
+        "rect": {
+          "x": 945,
+          "y": 2256,
+          "w": 86,
+          "h": 42
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openphotoedit",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

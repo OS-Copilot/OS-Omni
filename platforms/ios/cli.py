@@ -146,7 +146,8 @@ def _run_execution_command(args: argparse.Namespace) -> int:
 
     execution = load_execution_handoff(args.execution)
     runtime_config = load_ios_runtime_config()
-    clone_source_udid = runtime_config.source_simulator_udid
+    direct_udid = str(execution.get("metadata", {}).get("direct_udid") or "").strip()
+    clone_source_udid = "" if direct_udid else runtime_config.source_simulator_udid
 
     action_mode = _normalize_action_mode(execution.get("action_mode"))
     observation_mode = _normalize_observation_mode(execution.get("observation_mode"))
@@ -200,6 +201,7 @@ def _run_execution_command(args: argparse.Namespace) -> int:
                 history_window=history_window,
                 max_steps=None,
                 timeout=None,
+                direct_udid=direct_udid,
                 clone_source_udid=clone_source_udid,
                 appium_host=runtime_config.appium_host,
                 appium_port=runtime_config.appium_port,

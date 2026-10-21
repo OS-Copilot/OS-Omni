@@ -1,0 +1,517 @@
+{
+  "schema_version": 1,
+  "fixture_version": "rgb-calibration-v3-author-rebuilt",
+  "generated_at_utc": "2026-10-12T06:30:07+00:00",
+  "provenance": {
+    "tool": "OpenAI built-in ImageGen",
+    "raw_sources_directory": "tasks/v1/macos/assets/openphotoedit/generated",
+    "rebuild_script": "scripts/rebuild_macos_openphotoedit_assets.py",
+    "note": "The original rgb-calibration-v2 source fixtures and references were absent. These replacement scenes preserve the requested anime portrait, floral still-life, and fruit product-editing semantics. Source images and all derived file hashes are recorded here."
+  },
+  "output_dimensions": [
+    2512,
+    832
+  ],
+  "marker_box_fraction": [
+    0.645,
+    0.026,
+    0.712,
+    0.227
+  ],
+  "marker_grid": [
+    3,
+    3
+  ],
+  "sources": {
+    "anime_portrait.png": {
+      "purpose": "Anime portrait / soft cream source",
+      "prompt": "Use case: benchmark photo-editing source asset. Asset type: original wide landscape illustration for a desktop photo-editing task, later saved as a JPEG. Scene/backdrop: softly lit pale cream interior with a large window, subtle garden blur outside, uncluttered background. Subject: a thoughtful young anime-style woman with dark brown shoulder-length hair and a cream knit blouse, shown in a tasteful three-quarter portrait from shoulders up, hands outside frame, calm expression. Style/medium: polished hand-painted animation-film illustration with delicate linework and natural skin shading. Composition/framing: panoramic 3:1 landscape crop, portrait subject placed just left of center with ample light background and room across width, keep upper-right corner quiet and uncluttered for a separate RGB calibration patch. Lighting/mood: diffused morning light, soft elegant portrait. Palette: warm ivory, muted blue, natural dark brown. Constraints: distinct clean neutral source, no filters, no calibration patch, no text, no logo, no watermark, no extra people.",
+      "sha256": "5d6a201c2f74292c0df9ce68ed017315279e53349d2296322c58849f9e832b5e",
+      "bytes": 1983975,
+      "dimensions": [
+        2172,
+        724
+      ]
+    },
+    "anime_floral.png": {
+      "purpose": "Anime floral composite source",
+      "prompt": "Use case: benchmark photo-editing source asset. Asset type: wide landscape source image for a real photo-editing task, to be saved as a JPEG and edited later. Scene/backdrop: an elegant field of delicate blue, white, and pale pink flowers with soft natural depth of field. Subject: a single young anime-style woman with dark hair in a simple cream coat, shown from chest up among the flowers, calm neutral expression, refined hand-painted animation-film illustration style. Composition/framing: extremely wide panoramic 3:1 landscape composition, subject centered slightly left, preserve rich scene detail across the full width, leave the upper-right corner calm and uncluttered for a small calibration patch that will be added separately. Lighting/mood: soft overcast daylight, gentle and readable. Palette: cool blue flowers balanced by cream and soft green. Constraints: original clean source image, no image-processing look or filter, no calibration blocks, no text, no logos, no watermark, no extra faces, natural consistent anatomy.",
+      "sha256": "e8447865b45558357b5bf868ce047e5f96827d20bfd5aed309989e1cfcda2443",
+      "bytes": 2511425,
+      "dimensions": [
+        2172,
+        724
+      ]
+    },
+    "blue_floral.png": {
+      "purpose": "Blue floral still-life source",
+      "prompt": "Use case: benchmark photo-editing source asset. Asset type: wide landscape original photograph for a desktop photo-editing task. Scene/backdrop: a lush arrangement of blue delphinium, pale-blue hydrangea, white daisies, a few lavender blossoms, and deep green leaves on a light stone garden table. Subject: a refined blue floral arrangement, no people. Style/medium: natural editorial still-life photography with realistic petals and leaf texture. Composition/framing: very wide panoramic 3:1 landscape image, dense flowers across frame but maintain calm negative space at the upper-right corner for a small RGB calibration patch added separately; crisp central detail. Lighting/mood: soft morning daylight, cool and serene. Constraints: unedited neutral source photo, no filters, no text, no watermark, no labels, no logos.",
+      "sha256": "85437e91fad59736d976f2afb772db0959a38b09e774d1b46120f5dc4c6ff1ac",
+      "bytes": 3021836,
+      "dimensions": [
+        2172,
+        724
+      ]
+    },
+    "fruit_pair.png": {
+      "purpose": "Fruit product source",
+      "prompt": "Use case: benchmark photo-editing source asset. Asset type: wide landscape original commercial product photograph for a desktop photo-editing task. Scene/backdrop: a carefully arranged pair of ripe fruit on a clean warm-neutral tabletop with a softly blurred orchard background. Subject: one glossy red apple and one deep purple plum, small green leaf, realistic natural fruit textures with tiny dew droplets, tasteful premium grocery campaign photography. Composition/framing: very wide panoramic 3:1 landscape, fruit pairing placed near center-left with ample environment visible across width, keep upper-right corner relatively uncluttered for a separate small calibration patch. Lighting/mood: soft studio daylight, realistic highlights, neutral unedited source. Constraints: no people, no labels, no text, no logo, no watermark, no filter effect.",
+      "sha256": "72ba1cc5cab18122b321d088c2062f7c1c7cab9f7a6507e9a593ea0640d76523",
+      "bytes": 2336506,
+      "dimensions": [
+        2172,
+        724
+      ]
+    }
+  },
+  "fixtures": {
+    "Anime-Portrait.jpg": {
+      "source": "anime_portrait.png",
+      "transform": "identity",
+      "sha256": "10ccee39929edce4c9651e2c8b22397b9e613009fd5ca0a986ce84ed5bd50e70",
+      "bytes": 652839,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Anime-Portrait-Mirror.jpg": {
+      "source": "anime_portrait.png",
+      "transform": "mirror",
+      "sha256": "13392afd591f495311596bf4637ccacb9508208cf454b426964a5e5da43db117",
+      "bytes": 648049,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Anime-Floral-Composite.jpg": {
+      "source": "anime_floral.png",
+      "transform": "identity",
+      "sha256": "536d5df2a4ceab29f13ed4d688d19d3670faac18a407542e56a3bdcf45460b30",
+      "bytes": 953174,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Blue-Floral.jpg": {
+      "source": "blue_floral.png",
+      "transform": "identity",
+      "sha256": "b752b7c11f5cc0acb26f63de2a0c48dad210dfa8f01d008ec8991a3393e59106",
+      "bytes": 1216168,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Blue-Floral-Mirror.jpg": {
+      "source": "blue_floral.png",
+      "transform": "mirror",
+      "sha256": "c2b4008736180103957002ed75842c30edab259e6af2d353fb9126ee0ba7c0fe",
+      "bytes": 1201794,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Blue-Floral-Rotated.jpg": {
+      "source": "blue_floral.png",
+      "transform": "rotate180",
+      "sha256": "30fe3b149f6edabe357151d369a7bb622e34edaf57d3fb50b83f9a96a0f2e6ae",
+      "bytes": 1202641,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Fruit-Pair.jpg": {
+      "source": "fruit_pair.png",
+      "transform": "identity",
+      "sha256": "ebcd69fad67d82f4d1ffac05ce3b2f0859fe2a8e5c313a4050ff2de59fd50f61",
+      "bytes": 867633,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    },
+    "Fruit-Pair-Rotated.jpg": {
+      "source": "fruit_pair.png",
+      "transform": "rotate180",
+      "sha256": "4d430f62a7b9ebf9667831c529cdc0a8c1487697eeaad3487b2f112729bb9156",
+      "bytes": 858372,
+      "dimensions": [
+        2512,
+        832
+      ],
+      "marker": {
+        "fraction": [
+          0.645,
+          0.026,
+          0.712,
+          0.227
+        ],
+        "pixel_box": [
+          1620,
+          22,
+          1789,
+          189
+        ],
+        "grid": [
+          3,
+          3
+        ],
+        "colors": [
+          [
+            "#F00020",
+            "#00D030",
+            "#2030F0"
+          ],
+          [
+            "#F0D020",
+            "#D020E0",
+            "#00D0E0"
+          ],
+          [
+            "#F07818",
+            "#6020D0",
+            "#202020"
+          ]
+        ]
+      }
+    }
+  },
+  "evaluation_references": {
+    "Anime-Portrait.reference.png": {
+      "source": "Anime-Portrait.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "5114fef59c648071f0b8beda8be203b874e2960e77c1e44fc585e60438bfaef0",
+      "bytes": 2230776,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Anime-Portrait-Mirror.reference.png": {
+      "source": "Anime-Portrait-Mirror.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "a6371fd3601e0a6f530ac701f88f56f8a2a34310aac4549c43d9dbf82eef2b42",
+      "bytes": 2213706,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Anime-Floral-Composite.reference.png": {
+      "source": "Anime-Floral-Composite.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "812e1f9f1b92c2c4b0c443fba378e8f07e92427d5514cc48f3613a5461e421f8",
+      "bytes": 2967399,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Blue-Floral.reference.png": {
+      "source": "Blue-Floral.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "14d963183673349d13ac12020393d117273dafa19f8d672ac05503fda8d54929",
+      "bytes": 3514982,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Blue-Floral-Mirror.reference.png": {
+      "source": "Blue-Floral-Mirror.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "eb328c673b53df4b3935b852de8053fb73b6843912cf49afb85db8bda31e4f62",
+      "bytes": 3469419,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Blue-Floral-Rotated.reference.png": {
+      "source": "Blue-Floral-Rotated.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "a3a6c16184e0459bce60a9731827d20c40a5df298eb4b2d5e68c5bb933dfd71f",
+      "bytes": 3480552,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Fruit-Pair.reference.png": {
+      "source": "Fruit-Pair.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "c9fce769919139116ff0d374514eaab5598641e5c12f14c2c4393f46accbbb6b",
+      "bytes": 2694167,
+      "dimensions": [
+        2512,
+        832
+      ]
+    },
+    "Fruit-Pair-Rotated.reference.png": {
+      "source": "Fruit-Pair-Rotated.jpg",
+      "transform": "identity/no-edit export reference",
+      "sha256": "96bfe6cff43466e858542fb1634ce009009632954a26195a80c3a5df0d5971be",
+      "bytes": 2671774,
+      "dimensions": [
+        2512,
+        832
+      ]
+    }
+  },
+  "evaluation_revision": {
+    "version": "openphotoedit-export-only-v1",
+    "rationale": "Original edited-output hashes and RGB reference files were absent. The task was revised to test source identification and lossless PNG export, with independent pixel references generated from the versioned replacement JPEGs.",
+    "generator": "scripts/rebuild_macos_openphotoedit_references.py",
+    "comparison": "RGB pixel comparison with small decoder tolerance; wrong-source or edited output fails."
+  }
+}

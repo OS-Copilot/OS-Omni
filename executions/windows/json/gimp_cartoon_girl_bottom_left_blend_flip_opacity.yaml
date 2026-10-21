@@ -1,0 +1,9 @@
+tasks:
+  - tasks/windows/gimp_cartoon_girl_bottom_left_blend_flip_opacity.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows GIMP task - composite a flipped cartoon girl onto a background with exact size, opacity, and agent export

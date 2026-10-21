@@ -61,8 +61,6 @@ init:
     - type: run_bash
       script: |
         set -e
-        killall "draw.io" >/dev/null 2>&1 || true
-        sleep 1
         APP_PATH=""
         for candidate in "$HOME/Applications/draw.io.app" "/Applications/draw.io.app"; do
           if [ -d "$candidate" ]; then
@@ -74,6 +72,19 @@ init:
           APP_PATH="$(mdfind 'kMDItemFSName == "draw.io.app"' | head -n 1 || true)"
         fi
         [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "draw.io.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
+        # killall by display name can miss the packaged Electron process, leaving
+        # an unsaved prior diagram open and a modal over the task's starter file.
+        DRAWIO_PID="$(osascript -e 'tell application "System Events" to get unix id of first application process whose name is "draw.io"' 2>/dev/null || true)"
+        if [ -n "$DRAWIO_PID" ]; then
+          kill -TERM "$DRAWIO_PID" >/dev/null 2>&1 || true
+          for _ in 1 2 3 4 5; do
+            kill -0 "$DRAWIO_PID" >/dev/null 2>&1 || break
+            sleep 0.2
+          done
+          kill -KILL "$DRAWIO_PID" >/dev/null 2>&1 || true
+        fi
+        killall "draw.io" >/dev/null 2>&1 || true
+        sleep 1
         rm -f /Users/bench/Downloads/launch_matrix_sync.drawio
         rm -f /Users/bench/Downloads/.$launch_matrix_sync.drawio.dtmp
     - type: upload_file

@@ -1,0 +1,86 @@
+task_id: macos.photos.oracle.import_receipts_easy
+platform: macos
+instruction: Oracle sanity task for macos.photos.import_receipts_easy. Complete the Photos import and finish.
+init:
+  initializer_id: initializers.macos.photos:PhotosInitializer
+  params:
+    mode: import_prompt
+    open_files:
+      - client_receipt_blue_final_774.png
+      - client_receipt_green_final_610.png
+      - client_receipt_red_final_203.png
+    final_wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.macos.photos:PhotosStateEvaluator
+  params:
+    any_text_groups:
+      - - Photos
+        - 照片
+      - - Imports
+        - 导入项目
+    expected_assets:
+      - client_receipt_blue_final_774.png
+      - client_receipt_green_final_610.png
+      - client_receipt_red_final_203.png
+    exact_asset_set: true
+metadata:
+  app: Photos
+  app_name: apple-photos
+  difficulty: easy
+  tags: [macos, gui, photos, native, easy, oracle]
+  human_steps: 8
+  oracle_for: macos.photos.import_receipts_easy
+  oracle_model: macos_script_oracle
+  oracle_actions:
+    - type: run_bash_script
+      timeout: 60
+      script: |
+        osascript <<'APPLESCRIPT' >/dev/null 2>&1 || true
+        on clickWalk(e, targetName, depth)
+          if depth > 12 then return false
+          tell application "System Events"
+            set roleName to ""
+            set titleName to ""
+            set descName to ""
+            set valueName to ""
+            try
+              set roleName to role of e
+            end try
+            try
+              set titleName to title of e
+            end try
+            try
+              set descName to description of e
+            end try
+            try
+              set valueName to value of e as text
+            end try
+            if (roleName is "AXButton" or roleName is "AXCheckBox") and (titleName is targetName or descName is targetName or valueName is targetName) then
+              click e
+              return true
+            end if
+            try
+              repeat with k in UI elements of e
+                if my clickWalk(k, targetName, depth + 1) then return true
+              end repeat
+            end try
+          end tell
+          return false
+        end clickWalk
+        tell application "Photos" to activate
+        tell application "System Events"
+          repeat with targetName in {"Import All New Photos", "Import All", "导入所有新照片", "导入全部"}
+            tell process "Photos"
+              repeat with w in windows
+                if my clickWalk(w, targetName as text, 0) then delay 1
+              end repeat
+            end tell
+          end repeat
+        end tell
+        APPLESCRIPT
+        sleep 14
+    - type: success
+      message: Photos import receipts oracle completed.
+limits:
+  max_steps: 8
+  step_timeout_seconds: 120

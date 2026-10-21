@@ -1,0 +1,8 @@
+{
+  "repair": "opennavigation-records-v1",
+  "source": "original APK plus locally reconstructed missing workflow controls",
+  "original_sha256": "96e65a9588c4befd6965c312b71d066b06fc6039ca57f7208b54f82949fcabd4",
+  "patched_sha256": "aaadb8be1a1fcd05ce7912f822ec5639fffbcca68ce7154784613aba75b67a82",
+  "behavior": "Preferences apply to route request; actual selected route saves durable route/mode/destination; actual navigation report saves linked incident; no task target prepopulation",
+  "limitations": "original author workflow unavailable; controls reconstructed against released instruction, underlying routing backend unchanged; compatibility unverified until device probe"
+}

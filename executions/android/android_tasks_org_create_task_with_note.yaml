@@ -1,0 +1,9 @@
+tasks:
+  - tasks/android/tasks_org_create_task_with_note.yaml
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 4
+metadata:
+  description: Android single-task validation for Tasks.org note-task creation

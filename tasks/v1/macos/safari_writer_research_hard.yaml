@@ -34,7 +34,7 @@ init:
       ms: 5000
     - type: run_bash
       script: |
-        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+        nohup /Applications/LibreOffice.app/Contents/MacOS/soffice --writer >/dev/null 2>&1 &
     - type: wait
       ms: 5000
 evaluation:

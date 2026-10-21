@@ -9,7 +9,15 @@ to settle.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 from evaluators.cua_review.core.initialization import BaseInitializer
+from evaluators.cua_review.core.evaluation import EvalResult, EvalStatus
+from evaluators.cua_review.initializers.ios.opentrip_seed_state import (
+    restore_opentrip_seed_state,
+    verify_opentrip_seed_state,
+)
 
 
 class OpenTripSanyaParklineReviewMj2158638214Initializer(BaseInitializer):
@@ -23,3 +31,44 @@ class OpenTripSanyaParklineReviewMj2158638214Initializer(BaseInitializer):
     BUNDLE_ID = "com.killt.opentrip"
 
     SETTLE_MS = 1200
+
+    def initialize(self, context: Mapping[str, Any]) -> EvalResult:
+        params = {**dict(self.TASK_PARAMS), **dict(context.get("params") or {})}
+        udid = str(params.get("udid") or context.get("udid") or "").strip()
+        bundle_id = str(params.get("bundle_id") or self.BUNDLE_ID).strip()
+        if not udid or bundle_id != self.BUNDLE_ID:
+            return self._result(
+                EvalStatus.ERROR,
+                "seed reset needs the bound simulator and OpenTrip bundle",
+                {"udid": udid or None, "bundle_id": bundle_id},
+            )
+        try:
+            seed_metadata = restore_opentrip_seed_state(udid, bundle_id)
+        except Exception as exc:  # noqa: BLE001
+            return self._result(
+                EvalStatus.ERROR,
+                f"could not restore OpenTrip task seed: {type(exc).__name__}: {exc}",
+                {"udid": udid, "bundle_id": bundle_id, "read_only": False},
+            )
+
+        result = super().initialize(context)
+        if result.status != EvalStatus.PASS:
+            return result
+        try:
+            settled_state = verify_opentrip_seed_state(udid, bundle_id)
+        except Exception as exc:  # noqa: BLE001
+            return self._result(
+                EvalStatus.ERROR,
+                f"OpenTrip baseline did not survive launch: {type(exc).__name__}: {exc}",
+                {"udid": udid, "bundle_id": bundle_id, "read_only": True},
+            )
+        result.metadata.update(
+            {
+                "read_only": False,
+                "seed_state_restored": True,
+                **seed_metadata,
+                "settled_state_verified": True,
+                **settled_state,
+            }
+        )
+        return result

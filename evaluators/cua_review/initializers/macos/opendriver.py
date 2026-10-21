@@ -11,24 +11,95 @@ no ticket and requests no payout.
 
 from __future__ import annotations
 
+import shlex
 from typing import Any, Mapping
 
-from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
+from evaluators.cua_review.core.evaluation import EvalResult, EvalStatus
+from evaluators.cua_review.core.initialization import (
+    InitializationError,
+    MacAppInitializer,
+)
 
 #: OpenDriver's durable database, relative to the guest home directory.
 DEFAULT_DB_PATH = (
     "~/Library/Application Support/OS-Omni Open Apps/opendriver/"
     "src/shared/backend/data/opendriver-db.json"
 )
+DEFAULT_BACKEND_DIR = (
+    "~/Library/Application Support/OS-Omni Open Apps/opendriver/"
+    "src/shared/backend"
+)
 
 
 class OpenDriverInitializer(MacAppInitializer):
-    """Confirm the signed-out OpenDriver starting point an episode assumes."""
+    """Restore OpenDriver's seeded starting point and confirm it is ready.
+
+    The macOS author queue deliberately reuses one VM.  Each OpenDriver task
+    still assumes the app's seeded, signed-out state, as it did when tasks ran
+    in fresh snapshot clones.  Re-seed this app's own database before every
+    OpenDriver episode; this leaves the VM and all other apps untouched.
+    """
 
     INITIALIZER_ID = "initializers.macos.opendriver:OpenDriverInitializer"
     APP_NAME = "OpenDriver"
     BUNDLE_ID = "local.osomni.opendriver"
     SETTLE_MS = 2000
+
+    def initialize(self, context: Mapping[str, Any]) -> EvalResult:
+        params = {**dict(self.TASK_PARAMS), **dict(context.get("params") or {})}
+        try:
+            controller = self._controller(context)
+            if not controller.is_alive():
+                raise InitializationError("the in-guest runtime is not answering")
+            self._restore_seeded_state(controller, params)
+        except InitializationError as exc:
+            return self._result(
+                EvalStatus.ERROR,
+                f"preparation could not be completed: {exc}",
+                {"app_name": params.get("app_name") or self.APP_NAME,
+                 "bundle_id": params.get("bundle_id") or self.BUNDLE_ID},
+            )
+        return super().initialize(context)
+
+    @classmethod
+    def _restore_seeded_state(cls, controller: Any, params: Mapping[str, Any]) -> None:
+        backend_dir = str(params.get("backend_dir") or DEFAULT_BACKEND_DIR)
+        if backend_dir.startswith("~/"):
+            backend_expr = '"$HOME"/' + shlex.quote(backend_dir[2:])
+        elif backend_dir == "~":
+            backend_expr = '"$HOME"'
+        else:
+            backend_expr = shlex.quote(backend_dir)
+        seed = controller.run_bash_script(
+            "NODE_BIN=\"\"\n"
+            "for CANDIDATE in /Applications/OS-Omni\\ Open\\ Runtime/node-v*/bin; do\n"
+            "  if [ -x \"$CANDIDATE/npm\" ]; then NODE_BIN=\"$CANDIDATE\"; break; fi\n"
+            "done\n"
+            "if [ -z \"$NODE_BIN\" ]; then echo 'bundled npm runtime not found' >&2; exit 1; fi\n"
+            "export PATH=\"$NODE_BIN:$PATH\"\n"
+            f"cd {backend_expr} && npm run seed",
+            timeout=60,
+        )
+        if int(seed.get("returncode", -1)) != 0 or "Seeded opendriver backend" not in str(
+            seed.get("stdout") or ""
+        ):
+            detail = str(seed.get("stderr") or seed.get("stdout") or "seed command failed").strip()
+            raise InitializationError(f"OpenDriver seed data could not be restored: {detail}")
+
+        # Clear the app's in-memory/local authentication view so launch_app in
+        # MacAppInitializer opens the freshly seeded signed-out state.
+        quit_result = controller.run_bash_script(
+            "osascript -e 'tell application id \"local.osomni.opendriver\" to quit' "
+            ">/dev/null 2>&1 || true\n"
+            "for _ in $(seq 1 24); do\n"
+            "  if ! pgrep -f '/OpenDriver.app/Contents/MacOS/OpenAppShell' >/dev/null; then exit 0; fi\n"
+            "  sleep 0.25\n"
+            "done\n"
+            "exit 1",
+            timeout=12,
+        )
+        if int(quit_result.get("returncode", -1)) != 0:
+            raise InitializationError("OpenDriver did not quit after its seeded state was restored")
 
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
         db_path = str(params.get("db_path") or DEFAULT_DB_PATH)

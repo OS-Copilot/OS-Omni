@@ -983,7 +983,8 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
         )
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container {kind} failed: {proc.stderr.strip()}")
-        path = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        path = remap_simulator_container_path(proc.stdout.strip(), udid)
         if not path.exists():
             raise FileNotFoundError(f"simctl {kind} container does not exist: {path}")
         return path

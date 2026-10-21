@@ -19,6 +19,9 @@ init:
     app_name: OpenBank
     bundle_id: local.osomni.openbank
     port: 4340
+    expected_customer_id: cust-jordan
+    expected_customer_email: jordan@openbank.local
+    expected_login_label: Sign In
     boot_timeout_seconds: 45
     expected_snapshot_display_name: macOS1
     base_vm_name: allapps-base
@@ -143,14 +146,16 @@ metadata:
   - macOS1 contains the signed-out Jordan Lee OpenBank account, Everyday Checking ...2381, Rainy Day Savings
     ...9140, Maya Patel, exactly three seeded recipients, and TextEdit.
   - macOS1 contains no transfers, no Sofia Reed or Ethan Cole recipient, and no guest file ~/Desktop/Studio-Pay.txt.
-  - The initializer only launches, foregrounds, and read-only validates OpenBank; it does not restore
-    a snapshot, sign in, add recipients, submit transfers, select Maya form values, or create Studio-Pay.txt.
-  - Manual execution begins after the human restores and opens macOS1; evaluate-only does not run the
+  - On the persistent allapps-base VM, the initializer restores OpenBank's app-local macOS1 seed through
+    its /api/dev/reset endpoint, removes only this task's expected Desktop output if left by an earlier
+    attempt, then validates the signed-out seed and login screen. It does not add recipients, submit
+    transfers, or create the target document.
+  - Manual execution begins after the author initializes allapps-base; evaluate-only does not run the
     initializer.
-  initializer_message: The initializer opens and foregrounds OpenBank, reads GET /api/evaluation to validate
-    the signed-out Jordan Lee seed, three original recipients, empty transfers, absent target recipients,
-    and absent ~/Desktop/Studio-Pay.txt, then observes the login controls. It never restores a snapshot
-    or performs any evaluator-checked target action.
+  initializer_message: The initializer restores OpenBank's app-local macOS1 seed, removes only a leftover
+    ~/Desktop/Studio-Pay.txt from an earlier attempt, then reads GET /api/evaluation to validate the signed-out
+    Jordan Lee seed, three original recipients, empty transfers, absent target recipients, and login controls.
+    It does not add recipients, submit transfers, create the document, or perform an evaluator-checked action.
   verifier_rules:
     data_source_priority:
     - Read-only OpenBank guest-loopback GET /api/evaluation for session, recipients, transfers, and event

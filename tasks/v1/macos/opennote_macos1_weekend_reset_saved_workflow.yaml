@@ -191,17 +191,20 @@ metadata:
   - Step 6 requires the final session to remain logged in as Lina Park with handle lina; the login page
     is a flow-only state.
   - Steps 7-20 require exactly one Lina-authored Quiet Weekend Reset post with body Meet in Garden Room
-    at 10:00 for a calm device-free reset., category Mind, location Garden Room, exact tags reset and
-    slow, and durable text-cover evidence.
+    at 10:00 for a calm device-free reset., category Mind, location Garden Room, ordered tags reset and
+    slow (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable text-cover
+    evidence.
   - Steps 21-30 require exactly one source note titled Weekend-realistic soft apology for a normal day,
     a Lina comment Keep noon unplanned., its durable note id in Lina's likedNoteIds, and its snapshot-provided
     durable note id still in Lina's savedNoteIds.
   - Steps 37-50 require exactly one Lina-authored Weekend Reset Checklist post with body Bring a notebook,
-    water, and one easy plan for afternoon., category Mind, location Garden Room, exact tags reset and
-    slow, and durable text-cover evidence.
+    water, and one easy plan for afternoon., category Mind, location Garden Room, ordered tags reset and
+    slow (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable text-cover
+    evidence.
   - Steps 56-69 require exactly one Lina-authored Reset Room Access post with body Use garden door. Phones
-    stay in the entry basket., category Mind, location Garden Room, exact tags reset and slow, and durable
-    text-cover evidence.
+    stay in the entry basket., category Mind, location Garden Room, ordered tags reset and slow
+    (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable text-cover
+    evidence.
   - Steps 70-71 require the final durable event to be feed_view with view saved, while accessibility evidence
     shows OpenNote foreground, the Saved label, the source-note title, and no open detail/comment form.
   - Desktop/Weekend-Reset-Plan.txt, Finder, TextEdit document positions, Recommended feed scrolling, Post

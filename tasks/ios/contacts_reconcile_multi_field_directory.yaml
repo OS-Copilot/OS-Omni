@@ -1,0 +1,93 @@
+task_id: ios.contacts.reconcile_multi_field_directory
+platform: ios
+instruction: >
+  Clean up the seeded contacts list. Update Bench Logistics so its company becomes
+  Bench Logistics Desk, its phone numbers are 555-010-4400 and 555-010-4401, its email
+  address is logistics@bench-example.test, and its note is Use loading dock entrance.
+  Update Bench Catering Lead so its phone number becomes 555-010-4510 and its email
+  address becomes catering-lead@bench-example.test. Delete the outdated contact Bench Venue Old.
+  Then create a new contact named Bench Security with company North Gate Team, phone numbers
+  555-010-4620 and 555-010-4621, email security@bench-example.test, and note Badge desk closes at 21:00.
+  Leave Bench Office unchanged.
+init:
+  initializer_id: initializers.ios.contacts_seed_open_app:ContactsSeedOpenAppInitializer
+  params:
+    bundle_id: com.apple.MobileAddressBook
+    purge_all_contacts: true
+    seed_contacts:
+      - first_name: "Bench"
+        last_name: "Logistics"
+        organization: "Bench Logistics Old"
+        phones: ["555-010-4000"]
+        emails: ["dock-old@bench-example.test"]
+        note: "Old dock instructions."
+      - first_name: "Bench"
+        last_name: "Catering Lead"
+        organization: "Bench Catering"
+        phones: ["555-010-4111"]
+        emails: ["catering-old@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Venue Old"
+        organization: "Bay Hall Old"
+        phones: ["555-010-4222"]
+        emails: ["venue-old@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Office"
+        organization: "Bench HQ"
+        phones: ["555-010-4333"]
+        emails: ["office@bench-example.test"]
+        note: "Keep this record unchanged."
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.contacts_state:ContactsStateEvaluator
+  params:
+    exact_count: 4
+    present_contacts:
+      - first_name: "Bench"
+        last_name: "Logistics"
+        organization: "Bench Logistics Desk"
+        phones: ["555-010-4400", "555-010-4401"]
+        emails: ["logistics@bench-example.test"]
+        note: "Use loading dock entrance."
+      - first_name: "Bench"
+        last_name: "Catering Lead"
+        organization: "Bench Catering"
+        phones: ["555-010-4510"]
+        emails: ["catering-lead@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Security"
+        organization: "North Gate Team"
+        phones: ["555-010-4620", "555-010-4621"]
+        emails: ["security@bench-example.test"]
+        note: "Badge desk closes at 21:00."
+      - first_name: "Bench"
+        last_name: "Office"
+        organization: "Bench HQ"
+        phones: ["555-010-4333"]
+        emails: ["office@bench-example.test"]
+        note: "Keep this record unchanged."
+    absent_contacts:
+      - first_name: "Bench"
+        last_name: "Venue Old"
+      - first_name: "Bench"
+        last_name: "Logistics"
+        phones: ["555-010-4000"]
+      - first_name: "Bench"
+        last_name: "Logistics"
+        emails: ["dock-old@bench-example.test"]
+      - first_name: "Bench"
+        last_name: "Catering Lead"
+        phones: ["555-010-4111"]
+      - first_name: "Bench"
+        last_name: "Catering Lead"
+        emails: ["catering-old@bench-example.test"]
+    timeout_seconds: 8
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [contacts, ios, native, create, edit, delete, hard, benchmark]
+  app: Contacts
+  app_bundle_id: com.apple.MobileAddressBook
+  description: "Reconcile a seeded contact directory with two multi-field edits, one deletion, and one fully populated new contact."

@@ -1,0 +1,37 @@
+task_id: windows.blender.marker_cube_scene
+platform: windows
+instruction: 'In Blender, starting from the default startup scene: 1. Dismiss the splash screen. 2. Rename the default cube to "MarkerCube". 3. Set MarkerCube location to X = 2, Y = -1, Z = 1. 4. Save the currently opened scene. It is already opened from C:\Users\User\Documents\blender_tasks\marker_cube_scene.blend. Leave Blender open after saving. You may use Blender''s graphical UI controls, Blender Python Console, bpy commands, scripts, macros, or pasted/executed code to create or edit the scene, as long as the final saved scene matches the requested state.'
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "$ErrorActionPreference = \"Stop\"\n\nGet-Process blender -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue\nStart-Sleep -Seconds 1\n\n$sceneDir = \"C:\\Users\\User\\Documents\\blender_tasks\"\n$scenePath = Join-Path $sceneDir \"marker_cube_scene.blend\"\nNew-Item -ItemType Directory -Force -Path $sceneDir | Out-Null\nif (Test-Path $scenePath) {\n  Remove-Item -LiteralPath $scenePath -Force\n}\n\n$blenderExeCandidates = @(\n  \"C:\\Tools\\Blender279b\\blender-2.79b-windows64\\blender.exe\",\n  \"C:\\Program Files\\Blender Foundation\\Blender 2.79\\blender.exe\",\n  \"C:\\Program Files\\Blender Foundation\\Blender\\blender.exe\",\n  \"$env:LOCALAPPDATA\\Programs\\Blender Foundation\\Blender\\blender.exe\"\n)\n$blenderExe = $blenderExeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1\nif (-not $blenderExe) {\n  $cmd = Get-Command blender.exe -ErrorAction SilentlyContinue\n  if ($cmd) {\n    $blenderExe = $cmd.Source\n  }\n}\n\
+        if (-not $blenderExe -or -not (Test-Path $blenderExe)) {\n  throw \"Blender executable not found\"\n}\n\n$prepareScript = Join-Path $env:TEMP \"hw_prepare_marker_cube_scene.py\"\n$preparePython = [string]::Join([Environment]::NewLine, @(\n  'import bpy, os',\n  'os.makedirs(r\"C:\\\\Users\\\\User\\\\Documents\\\\blender_tasks\", exist_ok=True)',\n  'bpy.ops.wm.save_as_mainfile(filepath=r\"C:\\\\Users\\\\User\\\\Documents\\\\blender_tasks\\\\marker_cube_scene.blend\")'\n)) + [Environment]::NewLine\nSet-Content -LiteralPath $prepareScript -Encoding UTF8 -Value $preparePython\n& $blenderExe --background --factory-startup --python $prepareScript | Out-String | Write-Output\nif ($LASTEXITCODE -ne 0) {\n  throw \"Failed to create baseline Blender scene at $scenePath\"\n}\n\nStart-Process -FilePath $blenderExe -ArgumentList @($scenePath)\n"
+      timeout: 60
+    - type: wait
+      ms: 12000
+evaluation:
+  evaluator_id: evaluators.windows.blender:BlenderEvaluator
+  params:
+    check_id: blender_marker_cube_scene
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 30
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - blender
+  - scene_edit
+  - transform
+  - save
+  - easy
+  difficulty: easy
+  app_name: blender
+  estimated_min_steps: 7
+  description: 'Short Blender task that should take a careful human around seven minimal steps: dismiss splash, rename the cube, set three location fields, and save.
+
+    '
+  oracle_task: tasks/windows/oracle/blender_marker_cube_scene_oracle.yaml
+  oracle_model: cross_vm_oracle_wait

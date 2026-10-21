@@ -35,7 +35,7 @@ evaluation:
     manual_window_start: '2026-08-03T13:21:53+08:00'
     manual_window_end: '2026-08-03T13:28:33.700000+08:00'
     expected_instruction_sha256: a6439fc20e4a76095be752adf0f077c301dfd2c84a636a77ecd15e98d9a5c8bf
-    expected_ruleset_sha256: c48c80fb17756d7e4e10edbe45cdc9fb52498b1ef382136937c20cca7fae8015
+    expected_ruleset_sha256: 27f8f316f7e12c0dca1799a83f0ffee1fd2cfd969b5bfb2c55c0cafb81c13f87
     expected_app_js_sha256: 6b610b9585adb61e626c8e36461bd2aebd64870505de31e40edf5a9403791a9b
     expected_seed_data_sha256: 51ec46d3a918193fec4c5a74d06a2f32cc5a5dd6a4c6a2eca100f82186a58178
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
@@ -61,7 +61,7 @@ metadata:
   ios_device_profile: iphone17-1
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: ed7fd84245411d78ceb60187e60e46636e099943c8b9385b0a10cb6207a3fec8
-  evaluator_ruleset_sha256: c48c80fb17756d7e4e10edbe45cdc9fb52498b1ef382136937c20cca7fae8015
+  evaluator_ruleset_sha256: 27f8f316f7e12c0dca1799a83f0ffee1fd2cfd969b5bfb2c55c0cafb81c13f87
   recording: 2026-08-03_13-21-53.mp4
   description: OpenShop4 exact two-order and one-review strict read-only verification under fresh task
     identity 263796.

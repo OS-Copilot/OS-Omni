@@ -199,17 +199,20 @@ metadata:
   - Step 6 requires the final session to remain logged in as Lina Park with handle lina; the login page
     is a flow-only state.
   - Steps 7-20 require exactly one Lina-authored Riverside Coat Swap post with body Bring one clean coat.
-    Check in at North Hall at 14:00., category Fashion, location North Hall, exact tags coatswap and repair,
-    and durable text-cover evidence.
+    Check in at North Hall at 14:00., category Fashion, location North Hall, ordered tags coatswap and
+    repair (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable text-cover
+    evidence.
   - Steps 26-39 require exactly one Lina-authored Coat Swap Checklist post with body Pack a tote, name
-    tag, and repair kit for the coat swap., category Fashion, location North Hall, exact tags coatswap
-    and repair, and durable text-cover evidence.
+    tag, and repair kit for the coat swap., category Fashion, location North Hall, ordered tags coatswap
+    and repair (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable
+    text-cover evidence.
   - Steps 40-49 require exactly one source note titled Secondhand coat notes from tiny bedroom, a Lina
     comment Bring a light knit layer., and the source note id in Lina's savedNoteIds. A source-note like
     is not required.
   - Steps 56-69 require exactly one Lina-authored Coat Access Note post with body Use north door. Late
-    coats go to repair table., category Fashion, location North Hall, exact tags coatswap and repair,
-    and durable text-cover evidence.
+    coats go to repair table., category Fashion, location North Hall, ordered tags coatswap and repair
+    (case-insensitive because OpenNote canonicalizes tag casing on publish), and durable text-cover
+    evidence.
   - Steps 70-71 require the final durable event to be feed_view with view saved, while accessibility evidence
     shows OpenNote foreground, the Saved label, and no open detail/comment form.
   - Desktop/Coat-Swap-Plan.txt, Finder, TextEdit document positions, Fashion feed scrolling, Post forms,

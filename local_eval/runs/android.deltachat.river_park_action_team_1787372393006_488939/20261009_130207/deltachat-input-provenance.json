@@ -1,0 +1,28 @@
+{
+  "original_initializer": "evaluators.cua_review.initializers.android.android_deltachat_river_park_action_team_1787372393006_488939:DeltaChatRiverParkActionTeam1787372393006488939Initializer",
+  "source_input_repair": true,
+  "reconstructed_media": {
+    "provenance": "Generated reconstruction with built-in imagegen; not original benchmark photos",
+    "media_index_verified": true,
+    "photos": [
+      {
+        "scene": "park_event",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_01.png",
+        "sha256": "37f0f06f8bd5385cf17166a47a89ab9f5ee132ecd1566d92272d637762f400d4"
+      },
+      {
+        "scene": "grocery_bag",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_02.png",
+        "sha256": "c8c0fee62ba4016f9837e6a9e0e0b5d85acc824f2e4734b6559d8d776030b7c4"
+      },
+      {
+        "scene": "restaurant_meal",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_03.png",
+        "sha256": "e2b4786d2a8d6c15e0795d23e7a9523aefab4562d35a8172f29a610447c3d4be"
+      }
+    ]
+  },
+  "added_source_token": "android_zoe_unread_11",
+  "source_payload": "Unread Zoe expansion 11; timestamp immediately before existing final headline message",
+  "original_headline_preserved": true
+}

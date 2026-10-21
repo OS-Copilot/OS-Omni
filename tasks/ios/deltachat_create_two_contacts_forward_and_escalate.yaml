@@ -1,0 +1,82 @@
+task_id: ios.deltachat.create_two_contacts_forward_and_escalate
+platform: ios
+instruction: >
+  In Delta Chat, create a new contact with email address benchrecv@example.test and name
+  "Bench Courier". Create another contact with email address benchops@example.test and name
+  "Bench Escalations". Then open the existing conversation with benchsender@example.test and
+  forward the message "handoff_bundle_91A" to Bench Courier. Also forward the separate message
+  "handoff_window_17B" to Bench Escalations. After that, open the conversation with Bench
+  Escalations and send "Bench Courier has the first bundle, and Escalations has the second window."
+  Finally, return to the conversation with benchsender@example.test and send
+  "I forwarded handoff_bundle_91A and alerted Bench Escalations."
+init:
+  initializer_id: initializers.ios.greenmail_seed_open_app:GreenMailSeedOpenAppInitializer
+  params:
+    bundle_id: chat.delta
+    api_base_url: "http://127.0.0.1:8081"
+    purge_greenmail: true
+    seed_after_launch: true
+    launch_before_seed_wait_ms: 3000
+    seed_messages:
+      - sender_email: "benchsender@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchchat@example.test"
+        subject: "Handoff bundle"
+        body: "handoff_bundle_91A"
+        chat_version: "1.0"
+      - sender_email: "benchsender@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchchat@example.test"
+        subject: "Handoff window"
+        body: "handoff_window_17B"
+        chat_version: "1.0"
+    wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.ios.deltachat_multi_step_workflow:DeltaChatMultiStepWorkflowEvaluator
+  params:
+    forward_params:
+      api_base_url: "http://127.0.0.1:8081"
+      sender_email: "benchchat@example.test"
+      recipient_email: "benchrecv@example.test"
+      body: "handoff_bundle_91A"
+      mailbox: "INBOX"
+      timeout_seconds: 20
+      poll_interval_seconds: 1
+    courier_followup_params:
+      api_base_url: "http://127.0.0.1:8081"
+      sender_email: "benchchat@example.test"
+      recipient_email: "benchops@example.test"
+      body: "Bench Courier has the first bundle, and Escalations has the second window."
+      mailbox: "INBOX"
+      timeout_seconds: 20
+      poll_interval_seconds: 1
+    teammate_notify_params:
+      api_base_url: "http://127.0.0.1:8081"
+      sender_email: "benchchat@example.test"
+      recipient_email: "benchsender@example.test"
+      body: "I forwarded handoff_bundle_91A and alerted Bench Escalations."
+      mailbox: "INBOX"
+      timeout_seconds: 20
+      poll_interval_seconds: 1
+    additional_message_params:
+      - api_base_url: "http://127.0.0.1:8081"
+        sender_email: "benchchat@example.test"
+        recipient_email: "benchops@example.test"
+        body: "handoff_window_17B"
+        mailbox: "INBOX"
+        timeout_seconds: 20
+        poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [chat, deltachat, greenmail, communication, contacts, forward, hard, multi_step, benchmark]
+  app: Delta Chat
+  app_bundle_id: chat.delta
+  description: >
+    Create two new contacts in Delta Chat, forward two specific inbound messages to different
+    contacts, and send two follow-up messages across separate conversations.
+  prerequisites:
+    - "Delta Chat is installed on the simulator."
+    - "The benchchat@example.test account is already configured in Delta Chat."
+    - "GreenMail is running on the host and reachable at http://127.0.0.1:8081."

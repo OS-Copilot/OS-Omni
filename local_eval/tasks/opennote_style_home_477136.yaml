@@ -1,0 +1,371 @@
+task_id: android.opennote.style_home_477136
+platform: android
+instruction: '1. 点击 Email 输入框使其获得焦点。
+
+  2. 在 Email 输入框中输入 lina@opennote.local。
+
+  3. 点击 Password 输入框使其获得焦点。
+
+  4. 在 Password 输入框中输入 note2026。
+
+  5. 点击 Login 按钮登录 Lina 的 OpenNote 账户。
+
+  6. 点击标题为 Friday cushion foundation with one shade too peachy 的笔记卡片。
+
+  7. 在笔记详情页面向上滑动，直到 Like、Save 和评论区同时可见，以便随后点击 Save 并发送评论。
+
+  8. 点击 Like 按钮为该笔记点赞。
+
+  9. 点击 Save 按钮收藏该笔记。
+
+  10. 点击评论输入框使其获得焦点。
+
+  11. 在评论输入框中输入 Shade check helps。
+
+  12. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+  13. 点击 Send 按钮发布评论。
+
+  14. 点击详情右上角的 X 按钮关闭笔记详情。
+
+  15. 点击标题为 Secondhand coat notes from tiny bedroom 的笔记卡片。
+
+  16. 在笔记详情页面向上滑动，直到 Like、Save 和评论区同时可见，以便随后点击 Save 并发送评论。
+
+  17. 点击 Like 按钮为该笔记点赞。
+
+  18. 点击 Save 按钮收藏该笔记。
+
+  19. 点击评论输入框使其获得焦点。
+
+  20. 在评论输入框中输入 Repair list noted。
+
+  21. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+  22. 点击 Send 按钮发布评论。
+
+  23. 点击详情右上角的 X 按钮关闭笔记详情。
+
+  24. 点击底部 Me 标签进入个人主页。
+
+  25. 点击 Edit Profile 按钮展开资料表单。
+
+  26. 点击 Role 行中的现有角色文本。
+
+  27. 选择 Role 行中的全部现有角色文本。
+
+  28. 在 Role 输入框中输入 Home style editor。
+
+  29. 点击 Save Profile 按钮保存新的角色信息。
+
+  30. 点击底部中央的 + 按钮打开 New Note 表单。
+
+  31. 在已自动获得焦点的 Title 输入框中输入 Closet repair log。
+
+  32. 点击 Body 文本框使其获得焦点。
+
+  33. 在 Body 文本框中输入 Mend cuffs tonight。
+
+  34. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+  35. 在分类列表中点击 Fashion 选项。
+
+  36. 点击 Location 输入框使其获得焦点。
+
+  37. 在 Location 输入框中输入 Cedar Room。
+
+  38. 点击 Tags 输入框使其获得焦点。
+
+  39. 在 Tags 输入框中输入 repair style。
+
+  40. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+  41. 点击 Use text cover 复选框启用文字封面。
+
+  42. 点击文字封面提示输入框使其获得焦点。
+
+  43. 在文字封面提示输入框中输入 Repair log cover。
+
+  44. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+  45. 点击 Publish 按钮提交并发布当前笔记。
+
+  46. 点击底部中央的 + 按钮打开 New Note 表单。
+
+  47. 在已自动获得焦点的 Title 输入框中输入 Desk reset plan。
+
+  48. 点击 Body 文本框使其获得焦点。
+
+  49. 在 Body 文本框中输入 Sort cables first。
+
+  50. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+  51. 在分类列表中点击 Home 选项。
+
+  52. 点击 Location 输入框使其获得焦点。
+
+  53. 在 Location 输入框中输入 North Studio。
+
+  54. 点击 Tags 输入框使其获得焦点。
+
+  55. 在 Tags 输入框中输入 desk reset。
+
+  56. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+  57. 点击 Use text cover 复选框启用文字封面。
+
+  58. 点击文字封面提示输入框使其获得焦点。
+
+  59. 在文字封面提示输入框中输入 Desk plan cover。
+
+  60. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+  61. 点击 Publish 按钮提交并发布当前笔记。
+
+  62. 点击底部中央的 + 按钮打开 New Note 表单。
+
+  63. 在已自动获得焦点的 Title 输入框中输入 Peach shade note。
+
+  64. 点击 Body 文本框使其获得焦点。
+
+  65. 在 Body 文本框中输入 Test by window。
+
+  66. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+  67. 在分类列表中点击 Beauty 选项。
+
+  68. 点击 Location 输入框使其获得焦点。
+
+  69. 在 Location 输入框中输入 Oak Vanity。
+
+  70. 点击 Tags 输入框使其获得焦点。
+
+  71. 在 Tags 输入框中输入 shade test。
+
+  72. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+  73. 点击 Use text cover 复选框启用文字封面。
+
+  74. 点击文字封面提示输入框使其获得焦点。
+
+  75. 在文字封面提示输入框中输入 Shade note cover。
+
+  76. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+  77. 点击 Publish 按钮提交并发布当前笔记。
+
+  '
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.opennote
+    app_activity: com.killt.opennote.MainActivity
+    wait_ms: 2200
+    source_initializer: evaluators.cua_review.initializers.android.opennote_login_start:OpenNoteLoginStartInitializer
+evaluation:
+  evaluator_id: local_eval.opennote_evaluator:InstalledOpenNoteEvaluator
+  params:
+    app_package: com.killt.opennote
+    local_state_key: opennote.localState.v2
+    expected_ruleset_sha256: 670fc251a91ac73221e878b5d9dd6ecbb515cd8e7fd9cd6589e4585a771c5f43
+    source_evaluator: evaluators.android.opennote_style_home_477136:OpenNoteStyleHome477136Evaluator
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  tags:
+  - android
+  - opennote
+  - s1
+  - hard
+  - benchmark
+  app: opennote
+  app_name: opennote
+  app_bundle_id: com.killt.opennote
+  required_packages_any:
+  - com.killt.opennote
+  difficulty: hard
+  android_vm_profile: quail2
+  avd_name: AndroidWorldAvd_quail2
+  snapshot_name: s1
+  initializer_message: Starts OpenNote and validates the login page only; it does
+    not clear data, seed records, authenticate, or complete checked outcomes.
+  evaluation_standard: Exact login/profile state, both source-note interactions, three
+    exact published notes with generated text covers, ordered durable events, and
+    final Me/Posts UI are required.
+  task_version: '1.1'
+  evaluator_ruleset_sha256: 670fc251a91ac73221e878b5d9dd6ecbb515cd8e7fd9cd6589e4585a771c5f43
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: opennote/Android/android.opennote.style_home_477136
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 3eafa060d57ffe452bc95c16fc6f6d8cfab02aeea1e2c7e88c8034205f80257b
+    source_instruction: '1. 点击 Email 输入框使其获得焦点。
+
+      2. 在 Email 输入框中输入 lina@opennote.local。
+
+      3. 点击 Password 输入框使其获得焦点。
+
+      4. 在 Password 输入框中输入 note2026。
+
+      5. 点击 Login 按钮登录 Lina 的 OpenNote 账户。
+
+      6. 点击标题为 Friday cushion foundation with one shade too peachy 的笔记卡片。
+
+      7. 在笔记详情页面向上滑动，直到 Like、Save 和评论区同时可见，以便随后点击 Save 并发送评论。
+
+      8. 点击 Like 按钮为该笔记点赞。
+
+      9. 点击 Save 按钮收藏该笔记。
+
+      10. 点击评论输入框使其获得焦点。
+
+      11. 在评论输入框中输入 Shade check helps。
+
+      12. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+      13. 点击 Send 按钮发布评论。
+
+      14. 点击详情右上角的 X 按钮关闭笔记详情。
+
+      15. 点击标题为 Secondhand coat notes from tiny bedroom 的笔记卡片。
+
+      16. 在笔记详情页面向上滑动，直到 Like、Save 和评论区同时可见，以便随后点击 Save 并发送评论。
+
+      17. 点击 Like 按钮为该笔记点赞。
+
+      18. 点击 Save 按钮收藏该笔记。
+
+      19. 点击评论输入框使其获得焦点。
+
+      20. 在评论输入框中输入 Repair list noted。
+
+      21. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+      22. 点击 Send 按钮发布评论。
+
+      23. 点击详情右上角的 X 按钮关闭笔记详情。
+
+      24. 点击底部 Me 标签进入个人主页。
+
+      25. 点击 Edit Profile 按钮展开资料表单。
+
+      26. 点击 Role 行中的现有角色文本。
+
+      27. 选择 Role 行中的全部现有角色文本。
+
+      28. 在 Role 输入框中输入 Home style editor。
+
+      29. 点击 Save Profile 按钮保存新的角色信息。
+
+      30. 点击底部中央的 + 按钮打开 New Note 表单。
+
+      31. 在已自动获得焦点的 Title 输入框中输入 Closet repair log。
+
+      32. 点击 Body 文本框使其获得焦点。
+
+      33. 在 Body 文本框中输入 Mend cuffs tonight。
+
+      34. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+      35. 在分类列表中点击 Fashion 选项。
+
+      36. 点击 Location 输入框使其获得焦点。
+
+      37. 在 Location 输入框中输入 Cedar Room。
+
+      38. 点击 Tags 输入框使其获得焦点。
+
+      39. 在 Tags 输入框中输入 repair style。
+
+      40. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+      41. 点击 Use text cover 复选框启用文字封面。
+
+      42. 点击文字封面提示输入框使其获得焦点。
+
+      43. 在文字封面提示输入框中输入 Repair log cover。
+
+      44. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+      45. 点击 Publish 按钮提交并发布当前笔记。
+
+      46. 点击底部中央的 + 按钮打开 New Note 表单。
+
+      47. 在已自动获得焦点的 Title 输入框中输入 Desk reset plan。
+
+      48. 点击 Body 文本框使其获得焦点。
+
+      49. 在 Body 文本框中输入 Sort cables first。
+
+      50. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+      51. 在分类列表中点击 Home 选项。
+
+      52. 点击 Location 输入框使其获得焦点。
+
+      53. 在 Location 输入框中输入 North Studio。
+
+      54. 点击 Tags 输入框使其获得焦点。
+
+      55. 在 Tags 输入框中输入 desk reset。
+
+      56. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+      57. 点击 Use text cover 复选框启用文字封面。
+
+      58. 点击文字封面提示输入框使其获得焦点。
+
+      59. 在文字封面提示输入框中输入 Desk plan cover。
+
+      60. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+      61. 点击 Publish 按钮提交并发布当前笔记。
+
+      62. 点击底部中央的 + 按钮打开 New Note 表单。
+
+      63. 在已自动获得焦点的 Title 输入框中输入 Peach shade note。
+
+      64. 点击 Body 文本框使其获得焦点。
+
+      65. 在 Body 文本框中输入 Test by window。
+
+      66. 点击 New Note 表单中的 Category 下拉框以打开分类选项列表。
+
+      67. 在分类列表中点击 Beauty 选项。
+
+      68. 点击 Location 输入框使其获得焦点。
+
+      69. 在 Location 输入框中输入 Oak Vanity。
+
+      70. 点击 Tags 输入框使其获得焦点。
+
+      71. 在 Tags 输入框中输入 shade test。
+
+      72. 点击屏幕左下方的收起键盘箭头隐藏软键盘。
+
+      73. 点击 Use text cover 复选框启用文字封面。
+
+      74. 点击文字封面提示输入框使其获得焦点。
+
+      75. 在文字封面提示输入框中输入 Shade note cover。
+
+      76. 在 New Note 表单页面向上滑动，直到 Publish 按钮完整可见，以便随后点击 Publish 提交并发布当前笔记。
+
+      77. 点击 Publish 按钮提交并发布当前笔记。
+
+      '
+    release_path: benchmark/tasks/opennote/Android/android.opennote.style_home_477136
+    original_evaluator_id: evaluators.android.opennote_style_home_477136:OpenNoteStyleHome477136Evaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.opennote_login_start:OpenNoteLoginStartInitializer
+  local_repair:
+    source_task: tasks/v1/android/opennote_style_home_477136.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true
+    evaluator_repair: Installed APK whitespace-delimited tags; both original and repaired
+      judgements retained
+task_version: '1.1'

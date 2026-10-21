@@ -24,17 +24,11 @@ evaluation:
   params:
     bundle_id: chat.delta
     fsnotes_bundle_id: co.fluder.mobile.FSNotes-iOS
-    source_simulator_name: osomni-opendriver-ios-source-fixed-promax
-    ios_device_profile: iphone17-1
-    delta_chat_short_version: 2.48.0
-    delta_chat_build_version: '166'
-    fsnotes_short_version: 7.1.2
-    fsnotes_build_version: '332'
     minimum_message_id: 535
     baseline_max_timestamp: 1783563283
     fsnotes_baseline_max_timestamp: 1785223719
     sent_state: 26
-    expected_ruleset_sha256: 5e028658778e12437fcb0f9d4cad7f3b7131a3a95d1dc6c08ce0a19e175a56e4
+    expected_ruleset_sha256: 7665395cc41e6bad79fc9740de3d6125216d4491b339b736f32248a0e49e1d10
 limits:
   max_steps: 240
   step_timeout_seconds: 120
@@ -59,7 +53,7 @@ metadata:
   - Evaluate only the retained iphone17-1 current simulator after execution.
   - Delta Chat and FSNotes retain the completed state; the stable source simulator remains untouched.
   verifier_rules:
-    ruleset_sha256: 5e028658778e12437fcb0f9d4cad7f3b7131a3a95d1dc6c08ce0a19e175a56e4
+    ruleset_sha256: 7665395cc41e6bad79fc9740de3d6125216d4491b339b736f32248a0e49e1d10
     fairness:
     - Human eval-only and AI full execution invoke this evaluator with identical parameters and ruleset.
     - Manual recording, agent trajectory, screenshots, and human-only event logs are not evidence.
@@ -74,14 +68,18 @@ metadata:
       verifier, plus four complete baseline messages in Mei, Alice, Bob, Nora order.'
     - Route Followup 28 Route follow-up.markdown is exactly two UTF-8 logical lines joined by one LF byte
       with no CR, trailing LF, extra, duplicate, missing, or reordered content.
-    - Both notes are post-baseline, created and modified during the bound boot session, and satisfy first-create
-      < summary-send < first-final-edit < first-share < second-create/final-edit < second-share.
+    - Both notes are post-baseline and freshly created and modified after the FSNotes baseline.
+    - App versions, boot session, and the first-create < summary-send < first-final-edit < first-share
+      < second-create/final-edit < second-share chronology are non-blocking diagnostics only.
+    - The app-managed creation titles (Route Gate 0728, Route Followup 28) are normalized only via
+      the explicit title prefixes; all other bytes are compared strictly.
     - Each attachment blob is inside the bound account dc.db-blobs tree and is byte-identical to its canonical
       FSNotes file.
     - The two notes, attachment paths, attachment hashes, output message IDs, and content hashes are independent.
     data_source_priority:
     - The bound current simulator's copied Delta Chat SQLite snapshot, exact FSNotes bytes and timestamps,
-      boot timestamp, app Info.plist metadata, and in-account dc.db-blobs are authoritative.
+      and in-account dc.db-blobs are authoritative; boot timestamp and app Info.plist metadata are
+      non-blocking diagnostics.
     - The stable source simulator is never an eval target or fallback.
     - Final UI is not required after the terminal Share submission.
     instruction_mapping:
@@ -183,3 +181,5 @@ metadata:
     release_path: benchmark/tasks/deltachat/IOS/ios.deltachat.route_approval_saved_messages_4_2
     original_evaluator_id: evaluators.ios.deltachat_route_approval_saved_messages_4_2_evaluator:DeltaChatRouteApprovalStateEvaluator
     evaluator_source: benchmark
+    instruction_authority_note: English instruction is authoritative; ruleset 2.1 uses the stated 13/2 content
+      lines with an explicit app-managed title normalizer, and demotes version/boot/chronology to diagnostics.

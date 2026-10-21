@@ -1,0 +1,15 @@
+{
+  "method": "cold_boot_original_downloaded_disks",
+  "archive": "C:\\Users\\Zhuhan Bao\\Downloads\\OS-Omni-VM\\android\\v2\\AndroidWorldAvd_v2_20260625.zip",
+  "disks": [
+    "userdata-qemu.img",
+    "userdata-qemu.img.qcow2",
+    "cache.img",
+    "cache.img.qcow2",
+    "encryptionkey.img",
+    "encryptionkey.img.qcow2"
+  ],
+  "gpu": "host",
+  "emulator_pid": 7684,
+  "reason": "Repeated live snapshot restores caused Android service and shared-storage failures"
+}

@@ -10,11 +10,16 @@ instruction: |-
 
   Two product reviews must be submitted for specific items within these orders. The review for the "CasaPure Bamboo Storage Bin Set" in the second order must have a rating of 5 / 5 and the text "Bins fit shelves". The review for the "Mukawa Folding Camping Table and Chair Set" in the first order must have a rating of 4 / 5 and the text "Stable patio set". No reviews may be submitted for any other products.
 init:
-  initializer_id: initializers.ios.open_app:OpenAppInitializer
+  initializer_id: initializers.ios.openshop_seed_open_app:OpenShopSeedOpenAppInitializer
   params:
     bundle_id: com.killt.openshop
-    wait_ms: 1200
+    local_state_key: openshop.localState.v3
+    login_session: true
+    cart_items: []
+    bootstrap_webview: true
+    clear_saved_state: true
     return_home_after_init: false
+    wait_ms: 1200
 evaluation:
   evaluator_id: evaluators.ios.openshop_home_four_item_cart_checkout_368575:OpenShopHomeFourItemCartCheckout368575Evaluator
   params:

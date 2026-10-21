@@ -10,6 +10,8 @@ launches the application and gives that entry surface time to settle.
 from __future__ import annotations
 
 from evaluators.cua_review.core.initialization import BaseInitializer
+from core.init import InitResult, InitStatus
+from platforms.ios.openshop_store import OpenShopStore
 
 
 class OpenShopLoginEntryInitializer(BaseInitializer):
@@ -19,4 +21,65 @@ class OpenShopLoginEntryInitializer(BaseInitializer):
 
     BUNDLE_ID = "com.killt.openshop"
 
-    SETTLE_MS = 1200
+    SETTLE_MS = 4000
+
+    def initialize(self, context):
+        """Open from SpringBoard so iOS cannot expose a stale app-return link.
+
+        A reused simulator may retain the previous app in iOS's status-bar
+        back-to-app affordance. Starting OpenShop directly from that app makes
+        the affordance look like part of OpenShop and can switch the task back
+        to the prior app. Return to SpringBoard first, then launch OpenShop.
+        """
+        controller = context.get("controller")
+        if controller is None:
+            return InitResult(
+                status=InitStatus.ERROR,
+                message="OpenShop initialization requires the bound iOS controller",
+                metadata={"read_only": True, "initializer_id": self.INITIALIZER_ID},
+            )
+
+        params = {**dict(context.get("params") or {})}
+        udid = str(params.get("udid") or context.get("udid") or "").strip()
+        if not udid:
+            return InitResult(
+                status=InitStatus.ERROR,
+                message="OpenShop initialization needs the bound simulator UDID",
+                metadata={"read_only": True, "initializer_id": self.INITIALIZER_ID},
+            )
+
+        try:
+            controller.press_home()
+            controller.terminate_app(self.BUNDLE_ID)
+            store0 = OpenShopStore.from_simulator(udid, bundle_id=self.BUNDLE_ID)
+            store = OpenShopStore(
+                store0.db_path,
+                bundle_id=self.BUNDLE_ID,
+                data_container_path=store0.data_container_path,
+                seed_data_path=store0.seed_data_path,
+                local_state_key=str(
+                    params.get("local_state_key") or "openshop.localState.v3"
+                ),
+            )
+            store.reset_state(login_session=False)
+            store.clear_saved_state()
+        except Exception as exc:
+            return InitResult(
+                status=InitStatus.ERROR,
+                message=f"could not restore the OpenShop login baseline: {exc}",
+                metadata={"read_only": True, "initializer_id": self.INITIALIZER_ID},
+            )
+
+        result = super().initialize(context)
+        if result.status != InitStatus.PASS:
+            return result
+
+        result.metadata["springboard_launch"] = "PASS"
+        result.metadata["baseline_reset"] = {
+            "status": "PASS",
+            "local_state_key": store.local_state_key,
+            "logged_in": False,
+            "cart_count": 0,
+            "order_count": 0,
+        }
+        return result

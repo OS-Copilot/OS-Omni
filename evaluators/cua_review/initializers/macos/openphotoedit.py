@@ -12,12 +12,15 @@ no source image and writes nothing.
 
 from __future__ import annotations
 
+import shlex
+from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.initialization import InitializationError, MacAppInitializer
 
 #: Where the calibration sources live, relative to the guest home directory.
 DEFAULT_FIXTURE_DIR = "~/Desktop/PhotoFixtures"
+REBUILT_FIXTURE_ROOT = Path(__file__).resolve().parents[4] / "tasks/v1/macos/assets/openphotoedit/PhotoFixtures"
 
 
 class OpenPhotoEditInitializer(MacAppInitializer):
@@ -28,11 +31,21 @@ class OpenPhotoEditInitializer(MacAppInitializer):
     BUNDLE_ID = "com.killt.openphotoedit"
     SETTLE_MS = 2000
 
+    def initialize(self, context: Mapping[str, Any]):
+        self._asset_repairs: list[dict[str, Any]] = []
+        result = super().initialize(context)
+        if self._asset_repairs:
+            result.metadata["read_only"] = False
+            result.metadata["asset_reconstruction"] = list(self._asset_repairs)
+        return result
+
     def verify_preconditions(self, controller: Any, params: Mapping[str, Any]) -> str:
         fixture_dir = str(params.get("fixture_dir") or DEFAULT_FIXTURE_DIR)
         expected_files = [str(name) for name in (params.get("expected_files") or [])]
         expected_exports = [str(name) for name in (params.get("expected_exports") or [])]
         manifest = str(params.get("manifest_name") or "")
+
+        self._restore_missing_fixtures(controller, fixture_dir)
 
         def listing(directory: str) -> dict[str, Any]:
             script = "\n".join(
@@ -65,12 +78,48 @@ class OpenPhotoEditInitializer(MacAppInitializer):
         export_names = set(exports.get("names") or [])
         stale = [name for name in expected_exports if name in export_names]
         if stale:
-            raise InitializationError(
-                "the task export(s) already exist before the task ran: " + ", ".join(stale)
+            paths = [f"{fixture_dir.rstrip('/')}/{name}" for name in stale]
+            command = "rm -f " + " ".join(shlex.quote(path) for path in paths)
+            result = controller.run_bash_script(command, timeout=20)
+            if str(result.get("status") or "").lower() in {"error", "failed", "fail"} or result.get("returncode", 0) != 0:
+                raise InitializationError(
+                    "stale task export(s) could not be cleared: " + ", ".join(stale)
+                )
+            self._asset_repairs.append(
+                {"removed_stale_exports": stale, "reason": "fresh initial task state on reused VM"}
             )
 
         return (
             f"the fixture directory carries {len(expected_files)} calibration sources "
-            f"with {manifest or 'its manifest'}, and none of the "
-            f"{len(expected_exports)} target export(s) is present"
+            f"with {manifest or 'its manifest'}, and the {len(expected_exports)} "
+            f"target export(s) have been cleared for a fresh initial state"
         )
+
+    def _restore_missing_fixtures(self, controller: Any, fixture_dir: str) -> None:
+        """Upload versioned task sources and references without replacing files."""
+        sources = sorted(
+            path for path in REBUILT_FIXTURE_ROOT.rglob("*") if path.is_file()
+        )
+        if not sources:
+            raise InitializationError(
+                f"the repository's rebuilt OpenPhotoEdit fixtures are missing at {REBUILT_FIXTURE_ROOT}"
+            )
+        remote_root = "~/Desktop/PhotoFixtures"
+        mkdir = controller.run_bash_script('mkdir -p "$HOME/Desktop/PhotoFixtures"', timeout=20)
+        if str(mkdir.get("status") or "").lower() in {"error", "failed", "fail"} or mkdir.get("returncode", 0) != 0:
+            raise InitializationError("the PhotoFixtures directory could not be prepared")
+
+        for source in sources:
+            relative = source.relative_to(REBUILT_FIXTURE_ROOT).as_posix()
+            remote = f"/Users/bench/Desktop/PhotoFixtures/{relative}"
+            check_script = "import json\nfrom pathlib import Path\n"
+            check_script += f"p=Path({remote!r})\nprint(json.dumps(p.is_file()))"
+            check = self._guest_json(controller, check_script, what=f"fixture {relative}")
+            if check:
+                continue
+            parent = str(Path(remote).parent)
+            controller.run_bash_script(f"mkdir -p {shlex.quote(parent)}", timeout=20)
+            controller.upload_file(str(source), remote)
+            self._asset_repairs.append(
+                {"restored_file": relative, "source": str(source)}
+            )

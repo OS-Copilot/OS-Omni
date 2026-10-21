@@ -101,7 +101,7 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
             resolved = self._resolve_openfood_state(storage, params)
         except Exception as exc:
             return EvalResult(
-                status=EvalStatus.ERROR,
+                status=EvalStatus.FAIL if isinstance(exc, ValueError) and str(exc).startswith("selected restaurant ") and "does not resolve to" in str(exc) else EvalStatus.ERROR,
                 message=f"OpenFood state resolution failed: {type(exc).__name__}: {exc}",
                 metadata={"read_only": True, "checks": checks},
             )
@@ -442,7 +442,9 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
 
         restaurant_id = str(state.get("selectedRestaurantId") or "")
         restaurant = find_seed_object(restaurant_id)
-        if restaurant is None or str(restaurant.get("name") or "") != str(params["cart"]["restaurant_name"]):
+        if restaurant is None:
+            raise ValueError(f"restaurant seed record could not be decoded for {restaurant_id!r}")
+        if str(restaurant.get("name") or "") != str(params["cart"]["restaurant_name"]):
             raise ValueError(
                 f"selected restaurant {restaurant_id!r} does not resolve to {params['cart']['restaurant_name']!r}"
             )

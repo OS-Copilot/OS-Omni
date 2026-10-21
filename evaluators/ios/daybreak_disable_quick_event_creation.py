@@ -84,8 +84,11 @@ class DayBreakDisableQuickEventCreationEvaluator(BaseEvaluator):
                 },
             )
 
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        container = remap_simulator_container_path(container_path, udid)
+
         prefs_path = str(
-            Path(container_path) / self.DEFAULT_PREFS_DIR / f"{prefs_domain}.plist"
+            container / self.DEFAULT_PREFS_DIR / f"{prefs_domain}.plist"
         )
         prefs_data = self._load_prefs(Path(prefs_path))
 

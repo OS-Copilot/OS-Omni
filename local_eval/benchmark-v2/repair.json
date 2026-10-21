@@ -1,0 +1,37 @@
+{
+  "version": "author-rebuilt-photo-v2",
+  "authorization": "Benchmark author explicitly authorized generating missing Cooking images and recalibrating evaluation",
+  "scope": [
+    "android.openphoto.cooking_dual_calibrated_export_20260804",
+    "android.openphoto.guitar_dual_calibrated_export_20260804"
+  ],
+  "source_replacements": [
+    "indoor-cooking-v2.jpg",
+    "outdoor-cooking-v2.jpg"
+  ],
+  "old_results": "local_eval/benchmark-v2/legacy",
+  "recipes_changed": false,
+  "independent_correct_reference_profiles": 4,
+  "deterministic_repeat_profiles": 4,
+  "positive_negative_checks": 12,
+  "real_device_positive_groups": [
+    "guitar",
+    "cooking"
+  ],
+  "channel_tolerance": 1,
+  "full_image_mae_tolerance": 2.0,
+  "probe_results_not_model_scores": true,
+  "created_at": 1791547003.9349475,
+  "reference_sha256": {
+    "references\\electric_guitar_portrait_21\\correct.jpg": "c6fe24c21fad703bc9f2305551e3ad4b24e379c9dbb394b77725d6e2822ba063",
+    "references\\indoor_cooking_portrait_20\\correct.jpg": "cff3a7fab73aae70950b34ddb5e396258f2456c52f566af623b669d1085db9f1",
+    "references\\outdoor_cooking_portrait_16\\correct.jpg": "bf050fec3828515d1079122f87a4a6c01b32aafdf400ff08f74de3de39b943c3",
+    "references\\wood_guitar_portrait_17\\correct.jpg": "6f88325fb47d9b812fc61814e7e5094f1227ad941be1a7f01e32407b70e7f0c3"
+  },
+  "cold_preflight": {
+    "run_dir": "local_eval\\runs\\android.openphoto.cooking_dual_calibrated_export_20260804\\20261009_195528",
+    "initializer": "PASS",
+    "untouched_baseline": "FAIL",
+    "fixture_hashes_match_reference_inputs": true
+  }
+}

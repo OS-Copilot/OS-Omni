@@ -307,20 +307,21 @@ class ObjectBox {
   Future<void> eraseMainData() async {
     _log.severe("Erasing all data, except for Profile and BackupEntry");
 
-    try {
-      await Future.wait([
-        box<Transaction>().removeAllAsync(),
-        box<Category>().removeAllAsync(),
-        box<Account>().removeAllAsync(),
-        box<Profile>().removeAllAsync(),
-        box<UserPreferences>().removeAllAsync(),
-        box<Budget>().removeAllAsync(),
-        box<Goal>().removeAllAsync(),
-        box<TransactionTag>().removeAllAsync(),
-        box<FileAttachment>().removeAllAsync(),
-        box<RecurringTransaction>().removeAllAsync(),
-        box<TransactionFilterPreset>().removeAllAsync(),
-      ]);
-    } finally {}
+    // These operations share one ObjectBox store. Running removeAllAsync on
+    // every box at once can leave the native ObjectBox workers contending on
+    // the same store (the iOS benchmark seed reproducibly stalled in
+    // obx_box_remove_all). Keep the existing dependency order, but serialize
+    // each write so the store releases its transaction before the next box.
+    await box<Transaction>().removeAllAsync();
+    await box<Category>().removeAllAsync();
+    await box<Account>().removeAllAsync();
+    await box<Profile>().removeAllAsync();
+    await box<UserPreferences>().removeAllAsync();
+    await box<Budget>().removeAllAsync();
+    await box<Goal>().removeAllAsync();
+    await box<TransactionTag>().removeAllAsync();
+    await box<FileAttachment>().removeAllAsync();
+    await box<RecurringTransaction>().removeAllAsync();
+    await box<TransactionFilterPreset>().removeAllAsync();
   }
 }

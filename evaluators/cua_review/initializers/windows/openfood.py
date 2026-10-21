@@ -11,6 +11,7 @@ data present and the task's target orders not yet placed.
 from __future__ import annotations
 
 import json
+import struct
 from typing import Any, Mapping
 
 from evaluators.cua_review.initializers.windows.setup import (
@@ -36,10 +37,18 @@ class OpenFoodInitializer(BaseWindowsInitializer):
 
     def _prepare(self, controller: Any, params: Mapping[str, Any]) -> str:
         prepared = super()._prepare(controller, params)
-        state = read_local_state(controller, STORE_DIR, STATE_KEY)
-        if not isinstance(state, Mapping):
-            raise WindowsPreparationError(
-                "the OpenFood local store does not hold the seeded state")
+        # The shipped current build holds static restaurants/users/orders in
+        # app.asar's shared seed; Local Storage holds only mutable UI/cart data
+        # and may legitimately be absent before the first launch.
+        archive = controller.get_file(r"C:\OS-Omni\Apps\OpenFood\resources\app.asar")
+        header_size = struct.unpack_from("<I", archive, 4)[0]
+        json_size = struct.unpack_from("<I", archive, 12)[0]
+        header = json.loads(archive[16:16 + json_size])
+        entry = header["files"]["shared"]["files"]["seed-data.json"]
+        start = 8 + header_size + int(entry["offset"])
+        state = json.loads(archive[start:start + entry["size"]])
+        if not isinstance(state, Mapping) or not state.get("restaurants"):
+            raise WindowsPreparationError("the installed OpenFood static seed is invalid")
         expected = [str(name) for name in (params.get("expected_restaurants") or [])]
         present = {str(row.get("name") or "") for row in (state.get("restaurants") or [])
                    if isinstance(row, Mapping)}

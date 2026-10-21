@@ -1,0 +1,815 @@
+{
+  "task_id": "android.opendriver.rider_full_service_logout",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T08:15:41.001727+08:00",
+  "ended_at": "2026-10-09T08:24:24.391132+08:00",
+  "steps_taken": 68,
+  "latency_ms": 523389.405,
+  "episode_result": {
+    "status": "PASS",
+    "terminal_reason": "success",
+    "execution_message": "Model declared task complete",
+    "execution_valid": true,
+    "message": "Rider workflow or final logout incomplete"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed OpenDriver API baseline; native Flutter startup allowed to settle",
+    "metadata": {
+      "replacement_backend": true,
+      "original_initializer": "initializers.android.cua_review:SnapshotOpenAppInitializer"
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "Rider workflow or final logout incomplete",
+    "metadata": {
+      "original_status": "PASS",
+      "original_metadata": {
+        "app_package": "com.killt.opendriver",
+        "foreground": "topResumedActivity=ActivityRecord{fa46c0 u0 com.killt.opendriver/.MainActivity} t2019} | mCurrentFocus=Window{9815e6b u0 com.killt.opendriver/com.killt.opendriver.MainActivity} | mFocusedApp=ActivityRecord{fa46c0 u0 com.killt.opendriver/.MainActivity} t2019}",
+        "foreground_ok": true,
+        "required_text_tokens": [],
+        "missing_required": [],
+        "required_any_text_tokens": [
+          "Login",
+          "Sign in"
+        ],
+        "matched_required_any": [
+          "Sign in"
+        ],
+        "forbidden_text_tokens": [
+          "Logout",
+          "Active",
+          "History",
+          "Safety",
+          "Account",
+          "Create support ticket",
+          "Reply to ticket",
+          "Save invoice PDF"
+        ],
+        "forbidden_matches": [],
+        "ui_text_excerpt": "opendriver\nopendriver\nRider access\nRider access\nDispatch ready\nDispatch ready\nPayments synced\nPayments synced\nSecure session\nSecure session\nSign in\nSign in\nChoose a workspace and continue.\nChoose a workspace and continue.\nRider\nRider\nDriver\nDriver\nAdmin\nAdmin"
+      },
+      "workflow_events_verified": false,
+      "repair": "Final login screen is also the initial screen; require login, requested support ticket creation, and logout in sequence",
+      "read_only": true
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.ScrollView",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "true",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "opendriver",
+        "content-desc": "opendriver",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[270,265][578,349]",
+        "tap": {
+          "x": 424,
+          "y": 307
+        },
+        "rect": {
+          "x": 270,
+          "y": 265,
+          "w": 308,
+          "h": 84
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Rider access",
+        "content-desc": "Rider access",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[168,866][595,942]",
+        "tap": {
+          "x": 381,
+          "y": 904
+        },
+        "rect": {
+          "x": 168,
+          "y": 866,
+          "w": 427,
+          "h": 76
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Dispatch ready",
+        "content-desc": "Dispatch ready",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[255,1000][475,1044]",
+        "tap": {
+          "x": 365,
+          "y": 1022
+        },
+        "rect": {
+          "x": 255,
+          "y": 1000,
+          "w": 220,
+          "h": 44
+        }
+      },
+      {
+        "index": "3",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Payments synced",
+        "content-desc": "Payments synced",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[612,1000][872,1044]",
+        "tap": {
+          "x": 742,
+          "y": 1022
+        },
+        "rect": {
+          "x": 612,
+          "y": 1000,
+          "w": 260,
+          "h": 44
+        }
+      },
+      {
+        "index": "4",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Secure session",
+        "content-desc": "Secure session",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[255,1107][480,1152]",
+        "tap": {
+          "x": 367,
+          "y": 1129
+        },
+        "rect": {
+          "x": 255,
+          "y": 1107,
+          "w": 225,
+          "h": 45
+        }
+      },
+      {
+        "index": "5",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Sign in",
+        "content-desc": "Sign in",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[118,1422][962,1517]",
+        "tap": {
+          "x": 540,
+          "y": 1469
+        },
+        "rect": {
+          "x": 118,
+          "y": 1422,
+          "w": 844,
+          "h": 95
+        }
+      },
+      {
+        "index": "6",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "Choose a workspace and continue.",
+        "content-desc": "Choose a workspace and continue.",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[118,1532][962,1585]",
+        "tap": {
+          "x": 540,
+          "y": 1558
+        },
+        "rect": {
+          "x": 118,
+          "y": 1532,
+          "w": 844,
+          "h": 53
+        }
+      },
+      {
+        "index": "7",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.opendriver",
+        "content_description": "Rider",
+        "content-desc": "Rider",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "true",
+        "bounds": "[118,1643][399,1769]",
+        "tap": {
+          "x": 258,
+          "y": 1706
+        },
+        "rect": {
+          "x": 118,
+          "y": 1643,
+          "w": 281,
+          "h": 126
+        }
+      },
+      {
+        "index": "8",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.opendriver",
+        "content_description": "Driver",
+        "content-desc": "Driver",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[399,1643][681,1769]",
+        "tap": {
+          "x": 540,
+          "y": 1706
+        },
+        "rect": {
+          "x": 399,
+          "y": 1643,
+          "w": 282,
+          "h": 126
+        }
+      },
+      {
+        "index": "9",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.Button",
+        "package": "com.killt.opendriver",
+        "content_description": "Admin",
+        "content-desc": "Admin",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[681,1643][962,1769]",
+        "tap": {
+          "x": 821,
+          "y": 1706
+        },
+        "rect": {
+          "x": 681,
+          "y": 1643,
+          "w": 281,
+          "h": 126
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "10",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.EditText",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[118,1816][962,1963]",
+        "tap": {
+          "x": 540,
+          "y": 1889
+        },
+        "rect": {
+          "x": 118,
+          "y": 1816,
+          "w": 844,
+          "h": 147
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "11",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.EditText",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[118,1994][962,2141]",
+        "tap": {
+          "x": 540,
+          "y": 2067
+        },
+        "rect": {
+          "x": 118,
+          "y": 1994,
+          "w": 844,
+          "h": 147
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "12",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.EditText",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "true",
+        "selected": "false",
+        "bounds": "[118,2173][962,2320]",
+        "tap": {
+          "x": 540,
+          "y": 2246
+        },
+        "rect": {
+          "x": 118,
+          "y": 2173,
+          "w": 844,
+          "h": 147
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opendriver",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

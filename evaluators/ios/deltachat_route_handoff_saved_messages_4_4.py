@@ -56,13 +56,12 @@ SOURCE_SPECS: tuple[dict[str, Any], ...] = (
 )
 
 V1_LINE_SPEC: tuple[tuple[str, str], ...] = (
-    ("literal", "Handoff Log 0728"),
     ("literal", "# Handoff log"),
     ("literal", "Route handoff"),
     ("source", "mei_copy"),
     ("literal", "Owner Mei"),
-    ("literal", "Receiver Nora"),
     ("source", "nora_copy"),
+    ("literal", "Receiver Nora"),
     ("literal", "Status offered"),
 )
 V2_LINE_SPEC: tuple[tuple[str, str], ...] = V1_LINE_SPEC + (
@@ -201,8 +200,11 @@ CHECKPOINT_SPECS: tuple[dict[str, Any], ...] = (
 )
 
 RULESET_SPEC: dict[str, Any] = {
-    "schema_version": "2.0",
+    "schema_version": "2.1",
     "task_id": TASK_ID,
+    "supersedes_ruleset_sha256": "4dd7f27a4bd97fd7c09dbd38e7accc51ee8c9a3355c0c7a2f4bad284792e38dd",
+    "revision_basis": "instructions authoritative over historical trace; v1 is the 7 instruction-ordered content lines without the filename title, v2 appends the same 11 lines (18 total)",
+    "title_handling": "filename title 'Handoff Log 0728' is not note content; no app-managed title prefix is stripped (strict bytes; root GUI-validates)",
     "minimum_message_id": DEFAULT_MINIMUM_MESSAGE_ID,
     "baseline_max_timestamp": DEFAULT_BASELINE_MAX_TIMESTAMP,
     "sent_state": DEFAULT_SENT_STATE,
@@ -662,13 +664,14 @@ class DeltaChatRouteHandoffStateEvaluator(BaseEvaluator):
 
         ordered_ids = [int(row["id"]) for row in attachment_rows]
         ordered_timestamps = [int(row["timestamp"] or 0) for row in attachment_rows]
+        timestamps_sorted = ordered_timestamps == sorted(ordered_timestamps)
+        timestamps_distinct = len(set(ordered_timestamps)) == 2
         order_ok = (
             len(new_saved_rows) == 2
             and len(attachment_rows) == 2
             and ordered_ids == sorted(ordered_ids)
             and len(set(ordered_ids)) == 2
-            and ordered_timestamps == sorted(ordered_timestamps)
-            and len(set(ordered_timestamps)) == 2
+            and timestamps_sorted
         )
         checks.append(
             cls._check(
@@ -676,10 +679,11 @@ class DeltaChatRouteHandoffStateEvaluator(BaseEvaluator):
                 order_ok,
                 steps=[34, 75],
                 dimension="source_process",
-                expected="exactly v1 < v2 by distinct message id and current-session timestamp",
+                expected="exactly v1 < v2 by distinct message id and non-decreasing current-session timestamp (equal timestamps are a non-blocking diagnostic)",
                 observed={
                     "message_ids": ordered_ids,
                     "timestamps": ordered_timestamps,
+                    "timestamps_distinct_diagnostic": timestamps_distinct,
                     "all_new_saved_ids": [int(row["id"]) for row in new_saved_rows],
                 },
                 failure_reason="Saved Messages outputs are missing, extra, duplicated, or out of order",
@@ -904,7 +908,8 @@ class DeltaChatRouteHandoffStateEvaluator(BaseEvaluator):
             timeout=30,
         )
         if proc.returncode == 0 and proc.stdout.strip():
-            root = Path(proc.stdout.strip()).resolve()
+            from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+            root = remap_simulator_container_path(proc.stdout.strip(), udid)
         else:
             container = _find_app_data_container_by_metadata(udid=udid, bundle_id=bundle_id)
             if container is None:
