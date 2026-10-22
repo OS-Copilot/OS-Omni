@@ -233,6 +233,17 @@ class BaseEpisodeRunner(ABC):
             "import pyautogui, time, subprocess",
             "pyautogui.PAUSE = 0",
             "pyautogui.FAILSAFE = False",
+            # PyAutoGUI's macOS backend only knows 'command' and silently drops
+            # unknown key names, so hotkey('cmd', 'a') would just type 'a'.
+            "try:",
+            "    __HELLOWORLD_KEY_MAP = pyautogui.platformModule.keyboardMapping",
+            "    for __helloworld_alias, __helloworld_target in (('cmd', 'command'),):",
+            "        if __helloworld_alias not in __HELLOWORLD_KEY_MAP and __helloworld_target in __HELLOWORLD_KEY_MAP:",
+            "            __HELLOWORLD_KEY_MAP[__helloworld_alias] = __HELLOWORLD_KEY_MAP[__helloworld_target]",
+            "        if __helloworld_alias not in pyautogui.KEY_NAMES:",
+            "            pyautogui.KEY_NAMES.append(__helloworld_alias)",
+            "except Exception:",
+            "    pass",
             # Use System Events' Unicode text injection rather than PyAutoGUI
             # key names for printable characters. macOS keyboard layouts can
             # map symbols such as @ to unrelated shortcuts or drop characters.
