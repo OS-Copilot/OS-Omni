@@ -26,8 +26,8 @@ evaluation:
       expected_text: 'Coordination update: Alice confirmed for 3 PM in Cedar-3, Bob
         gets budget-april-v7.xlsx by 5 PM, Nora needs CFX-2048 from Northwind Beans.'
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

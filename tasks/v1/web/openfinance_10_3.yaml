@@ -43,7 +43,7 @@ evaluation:
     - Check bill edits/payments, payee favorite/rename, qamarket rule, schedule actions, Groceries/Transportation
       budgets, and QA Reserve goal from OpenFinance localStorage.
 limits:
-  max_steps: 150
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

@@ -103,8 +103,8 @@ evaluation:
     owner_post_text: Owners aligned.
     owner_reply_text: Next steps assigned
 limits:
-  max_steps: 150
-  step_timeout_seconds: 150
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: 1
   app: OpenTwitter

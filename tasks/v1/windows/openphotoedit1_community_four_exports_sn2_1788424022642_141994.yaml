@@ -19,8 +19,8 @@ evaluation:
   params:
     asset_set: set1
 limits:
-  max_steps: 180
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: author-rebuilt-images-v1
   source: author-generated deterministic asymmetric graphics; not recovered photographs

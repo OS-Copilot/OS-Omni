@@ -189,8 +189,8 @@ evaluation:
         freeze=A1:B1
         status=ready-for-review
 limits:
-  max_steps: 100
-  timeout_seconds: 0
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

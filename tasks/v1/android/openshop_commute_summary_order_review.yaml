@@ -76,8 +76,8 @@ evaluation:
     review_text: Fits work laptop
     reviewed_after: '2026-08-21T00:00:00Z'
 limits:
-  max_steps: 180
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: 2
   supersedes_task_id: android.openshop.commute_kit_order_review

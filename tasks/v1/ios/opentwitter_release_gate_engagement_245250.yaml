@@ -59,8 +59,8 @@ evaluation:
     expected_instruction_sha256: 217e2e2503a33d04030cd05f2582c5c80c16fb601832b25cb2d8836216b85204
     expected_ruleset_sha256: a38e8686a3c24a57f270bbdb8257148a8f8d685e3eb32bb8754acbc160ac286d
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

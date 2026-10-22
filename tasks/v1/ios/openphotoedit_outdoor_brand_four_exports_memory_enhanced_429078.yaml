@@ -17,8 +17,8 @@ evaluation:
     source_sample: Studio
     source_sample_sha256: 99398bdc8212f5975caa9160c34a13b17155db186ee578c5f51b4c19e7e477c6
 limits:
-  max_steps: 40
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

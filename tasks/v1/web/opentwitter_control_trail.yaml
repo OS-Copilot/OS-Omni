@@ -67,8 +67,8 @@ evaluation:
     notifications:
       all_read: true
 limits:
-  max_steps: 220
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: opentwitter
   difficulty: hard

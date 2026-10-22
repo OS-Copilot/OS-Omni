@@ -45,7 +45,7 @@ evaluation:
     - config/incident.json
     - .vscode/settings.json
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

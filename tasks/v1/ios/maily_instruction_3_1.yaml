@@ -28,8 +28,8 @@ evaluation:
     bundle_id: de.enough.maily
     expected_ruleset_sha256: 50df17a635f877602e7eae65a654781802e9e343fe732eb2c4a319bea6290e97
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

@@ -19,7 +19,7 @@ evaluation:
     app_package: chat.delta
     source_state_mode: fresh_clone_verified
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: Delta Chat + Markor

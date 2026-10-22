@@ -64,5 +64,5 @@ metadata:
   evaluation_standard: exact imported asset set, ZASSET.ZFAVORITE state, and album membership through Z_30ASSETS are checked in Photos.sqlite
   oracle_task: tasks/v1/macos/oracle/photos_favorite_receipts_hard_oracle.yaml
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180

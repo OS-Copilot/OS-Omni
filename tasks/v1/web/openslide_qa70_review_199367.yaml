@@ -24,8 +24,8 @@ evaluation:
     expected_ruleset_sha256: 00c754b53b8cae31537b9975956ed5ce27832526180d4747ec413a6225fff261
     timeout: 60
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: openslide_qa70
   bundle_id: openslide

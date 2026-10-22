@@ -46,7 +46,7 @@ evaluation:
     - chat_name: Sticker Bot
       token: 'Unread Sticker expansion 04: final visible marker android_sticker_unread_04.'
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: Delta Chat + Markor

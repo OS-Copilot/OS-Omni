@@ -80,8 +80,8 @@ evaluation:
       - "Bring recipe book"
       - "Change tablet batteries"
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags: [reminders, edit, create, delete, ios, native, productivity, hard, benchmark]
   app: Reminders

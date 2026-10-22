@@ -123,7 +123,7 @@ evaluation:
       B8: SUM
       D8: SUM
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

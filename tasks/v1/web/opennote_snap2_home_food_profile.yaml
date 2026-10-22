@@ -77,8 +77,8 @@ evaluation:
       saved: true
     require_alerts_read: true
 limits:
-  max_steps: 320
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: opennote
   app_name: OpenNote

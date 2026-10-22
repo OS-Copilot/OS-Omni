@@ -54,8 +54,8 @@ evaluation:
       minimum_visible_order_cards: 2
     expected_ruleset_sha256: e545445338337dced1283cf85fe503f6ec4addc0533c5f9d6be5b51a0cc0d963
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - windows

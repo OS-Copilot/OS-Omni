@@ -148,8 +148,8 @@ evaluation:
       grep -R -a -q "Bench Coffee Restock Review" /home/user/.thunderbird
       echo "PASS"
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags: [linux, cross_app, calendar, shopping, thunderbird, openshop, hard]
   app_name: thunderbird_calendar + openshop

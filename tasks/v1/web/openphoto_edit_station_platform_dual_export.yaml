@@ -70,8 +70,8 @@ evaluation:
     - Verify Dodge/Burn/Mosaic/Heal marks were added to plausible station-photo target areas and did not
       cover the top-left RGB marker.
 limits:
-  max_steps: 320
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: OpenPhoto Edit
   app_name: OpenPhoto Edit

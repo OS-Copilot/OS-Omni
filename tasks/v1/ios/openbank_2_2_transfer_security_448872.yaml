@@ -36,8 +36,8 @@ evaluation:
     expected_ruleset_sha256: e5babced4619451b19f878ccbb512a84ee21049778e77d1d0545c63446cfbcc3
     requires_ui_observation: false
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - openbank

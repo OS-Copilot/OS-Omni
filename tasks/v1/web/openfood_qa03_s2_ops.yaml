@@ -69,8 +69,8 @@ evaluation:
       position, and final Courier scroll/click position are manual UI evidence when exact item ids are
       not durable in openfood-static-state-v1.
 limits:
-  max_steps: 700
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: openfood
   app_name: OpenFood

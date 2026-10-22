@@ -20,7 +20,7 @@ evaluation:
     local_state_key: opennote.localState.v2
     expected_ruleset_sha256: 765b55c1fdff3b862ef7bb88909f3d92e20dcf9c24f1d5e6dccc24cf36005d59
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

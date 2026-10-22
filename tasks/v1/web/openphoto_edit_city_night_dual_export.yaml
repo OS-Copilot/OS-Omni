@@ -68,8 +68,8 @@ evaluation:
     - Verify the exact slider values and Night preset/Strength were selected in the UI; the final JPEG
       can prove an edit occurred but cannot prove every transient slider interaction.
 limits:
-  max_steps: 260
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: OpenPhoto Edit
   app_name: OpenPhoto Edit

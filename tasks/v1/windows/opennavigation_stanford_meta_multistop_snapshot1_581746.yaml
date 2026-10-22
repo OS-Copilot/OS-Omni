@@ -33,8 +33,8 @@ evaluation:
       mode: Driving
       departure: '17:20'
 limits:
-  max_steps: 180
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: author-routes-v1
   original_idea: ordered driving/walking and connected routes with exact departure

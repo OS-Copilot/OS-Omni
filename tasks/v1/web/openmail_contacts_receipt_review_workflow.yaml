@@ -68,8 +68,8 @@ evaluation:
       discarded_draft_body: Contact card compose route verified for receipts.
       final_search_query: RN-2041
 limits:
-  max_steps: 190
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

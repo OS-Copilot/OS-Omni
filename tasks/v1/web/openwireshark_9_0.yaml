@@ -41,7 +41,7 @@ evaluation:
     - OpenWireshark
     required_final_terms: []
 limits:
-  max_steps: 120
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

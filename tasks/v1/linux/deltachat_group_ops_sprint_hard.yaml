@@ -36,8 +36,8 @@ evaluation:
         by 5 PM, Nora CFX-2048 for Northwind Beans before 4:30 PM, Support SR-88/WX-17
         owned by Malik during 19:30-20:00.'
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

@@ -41,7 +41,7 @@ evaluation:
     - Check Housing budget, QA Reserve goal, schedule/bill/payee/holding updates, and final Reports page
       evidence from OpenFinance localStorage.
 limits:
-  max_steps: 150
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

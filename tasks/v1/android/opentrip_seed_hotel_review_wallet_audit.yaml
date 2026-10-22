@@ -47,8 +47,8 @@ evaluation:
     timeout_seconds: 12
     poll_interval_seconds: 0.5
 limits:
-  max_steps: 260
-  step_timeout_seconds: 240
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - android

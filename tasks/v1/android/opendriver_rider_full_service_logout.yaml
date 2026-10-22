@@ -46,8 +46,8 @@ evaluation:
     - Reply to ticket
     - Save invoice PDF
 limits:
-  max_steps: 160
-  step_timeout_seconds: 240
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - android

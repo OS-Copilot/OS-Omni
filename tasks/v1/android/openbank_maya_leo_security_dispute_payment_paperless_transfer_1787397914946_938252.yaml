@@ -23,7 +23,7 @@ evaluation:
   params:
     expected_ruleset_sha256: dda0eca80e9b69e547d9a8658cff798c5a71b57f37d455aa00bb6382e95364c0
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenBank

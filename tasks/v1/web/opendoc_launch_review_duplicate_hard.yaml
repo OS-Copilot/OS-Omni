@@ -76,8 +76,8 @@ evaluation:
       - OpenDoc should remain open.
       - The left search box should contain Launch.
 limits:
-  max_steps: 120
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDoc
   vm_profile: ubuntu0

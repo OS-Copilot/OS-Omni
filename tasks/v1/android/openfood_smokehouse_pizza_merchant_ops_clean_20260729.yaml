@@ -132,7 +132,7 @@ evaluation:
     - The evaluator is read-only and does not click, type, scroll, submit, restore snapshots, run the
       initializer, or mutate Android/app/server state.
 limits:
-  max_steps: 180
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

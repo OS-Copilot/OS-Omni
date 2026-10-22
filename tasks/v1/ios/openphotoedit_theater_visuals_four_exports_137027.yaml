@@ -17,8 +17,8 @@ evaluation:
     source_sample: Light
     source_sample_sha256: cb9d820b07274a84e825dbea271244683453a6cc78bf0dca92585bc4acdc7087
 limits:
-  max_steps: 40
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

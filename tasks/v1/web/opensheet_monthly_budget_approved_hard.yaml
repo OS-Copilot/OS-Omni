@@ -22,8 +22,8 @@ evaluation:
     expected_workbook_title: monthly-budget-approved
     original_workbook_title: Monthly budget
 limits:
-  max_steps: 320
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux
