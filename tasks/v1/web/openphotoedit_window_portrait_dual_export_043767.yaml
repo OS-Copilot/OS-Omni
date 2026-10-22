@@ -19,8 +19,8 @@ evaluation:
     timeout: 90
     expected_ruleset_sha256: 0d7e8ecdd12c5a450dadda51a8904029d9486ed7fda6e211ee3e7c1dd836100b
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: OpenPhotoEdit
   app_name: OpenPhotoEdit

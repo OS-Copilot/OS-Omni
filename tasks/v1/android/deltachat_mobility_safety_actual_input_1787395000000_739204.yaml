@@ -19,7 +19,7 @@ evaluation:
     source_state_mode: fresh_clone_verified
     expected_ruleset_sha256: 06c4c54a6574b6dac355a3e9c8a145418967c6a782089e917a2b5da3c9477cd0
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: deltachat

@@ -26,8 +26,8 @@ evaluation:
     expected_ruleset_sha256: 3a6f01e1c60ef77cf10007f4fb032d9679ba3b0ed1148e2abf0e8c8373a34671
     source_state_mode: fresh_clone_verified
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: OpenBank
   app_name: OpenBank

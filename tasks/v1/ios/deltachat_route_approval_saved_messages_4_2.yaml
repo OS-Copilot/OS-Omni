@@ -30,8 +30,8 @@ evaluation:
     sent_state: 26
     expected_ruleset_sha256: 7665395cc41e6bad79fc9740de3d6125216d4491b339b736f32248a0e49e1d10
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

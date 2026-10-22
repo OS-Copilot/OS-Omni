@@ -32,7 +32,7 @@ evaluation:
     port: 4340
     expected_ruleset_sha256: 5ee8e473b50600a2c10b854a380929822efafacdb129ffceb136883b42b5e5d5
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenBank

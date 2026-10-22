@@ -99,8 +99,8 @@ evaluation:
     app_names:
     - OpenTwitter
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard
   app: OpenTwitter

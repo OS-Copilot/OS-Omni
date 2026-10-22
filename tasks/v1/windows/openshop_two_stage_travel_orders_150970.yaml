@@ -28,7 +28,7 @@ evaluation:
     timeout: 12
     expected_ruleset_sha256: 9e45048fa916392b56d5cb0a0cdb12145319e6513f52c6f9b6b9907db14d9c43
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

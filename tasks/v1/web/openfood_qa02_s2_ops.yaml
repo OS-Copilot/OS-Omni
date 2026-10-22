@@ -69,8 +69,8 @@ evaluation:
     - If Golden Curry Garden and Pancake Social item ids are not exposed in snap_2 metadata, their submitted
       orders are verified by durable WELCOME12 coupon notes and quantity patterns.
 limits:
-  max_steps: 520
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: openfood
   app_name: OpenFood

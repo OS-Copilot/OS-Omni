@@ -122,7 +122,7 @@ evaluation:
       scale: [0.18, 0.18, 0.18]
       material_diffuse_color: [1.0, 0.2, 0.45, 1.0]
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

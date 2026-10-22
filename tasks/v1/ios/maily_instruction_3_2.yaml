@@ -49,8 +49,8 @@ evaluation:
     manual_window_start: '2026-08-01T16:43:40+08:00'
     manual_window_end: '2026-08-01T16:51:12.200000+08:00'
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

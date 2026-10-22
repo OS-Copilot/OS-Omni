@@ -173,8 +173,8 @@ evaluation:
         expected_exit_code: 0
         timeout: 10
 limits:
-  max_steps: 220
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - blender

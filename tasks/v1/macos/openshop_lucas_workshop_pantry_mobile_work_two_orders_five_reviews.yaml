@@ -166,8 +166,8 @@ evaluation:
         productId: p1005
         rating: 4
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   task_version: 2.0.0
   difficulty: hard

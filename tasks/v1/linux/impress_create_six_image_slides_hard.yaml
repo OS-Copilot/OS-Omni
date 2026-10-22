@@ -127,8 +127,8 @@ evaluation:
         owner=media-desk
         status=ready-for-preview
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

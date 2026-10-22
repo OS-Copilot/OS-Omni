@@ -18,7 +18,7 @@ evaluation:
     expected_format: PNG
     expected_image_path: tasks/v1/macos/files/gimp/transform/expected/gimp_rotate_flip_output.png
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

@@ -80,7 +80,7 @@ evaluation:
       note: Audit stay
     final_selected_type: hotel
 limits:
-  max_steps: 180
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

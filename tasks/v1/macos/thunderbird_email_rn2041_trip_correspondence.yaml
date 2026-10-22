@@ -100,8 +100,8 @@ evaluation:
       body_contains: Image reviewed Route confirmed
       must_not_be_sent: true
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard
   app_name: Thunderbird

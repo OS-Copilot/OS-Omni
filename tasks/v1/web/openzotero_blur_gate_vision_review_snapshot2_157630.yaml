@@ -21,8 +21,8 @@ evaluation:
     timeout: 60
     expected_ruleset_sha256: 7dc2729d0ac8ff886f2d5db23c4c38146a846acd83c97a390d26e195e217be0f
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: openzotero
   bundle_id: openzotero

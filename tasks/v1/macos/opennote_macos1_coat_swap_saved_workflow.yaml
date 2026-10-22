@@ -69,8 +69,8 @@ evaluation:
     expected_final_ui_markers:
     - Saved
 limits:
-  max_steps: 180
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard
   app: OpenNote

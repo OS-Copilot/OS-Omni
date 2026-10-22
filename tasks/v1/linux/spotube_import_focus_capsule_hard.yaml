@@ -102,8 +102,8 @@ evaluation:
       current_track_name: midnight_loop_take2
       current_track_path: /home/user/Music/Workbench/Reference Sets/Night Shift/Focus Capsule/midnight_loop_take2.wav
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

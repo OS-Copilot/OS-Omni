@@ -74,7 +74,7 @@ evaluation:
     logged_out_user:
       userId: usr_driver_primary
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenDriver

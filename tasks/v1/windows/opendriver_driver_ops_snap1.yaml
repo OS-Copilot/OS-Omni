@@ -65,7 +65,7 @@ evaluation:
     required_logged_out_ui_text: []
     forbidden_logged_in_ui_text: []
 limits:
-  max_steps: 420
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

@@ -61,7 +61,7 @@ evaluation:
         - contains: Train tickets
           suffix: ' | frontend proof'
 limits:
-  max_steps: 420
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: DeltaChat

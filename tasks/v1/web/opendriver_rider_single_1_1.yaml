@@ -53,8 +53,8 @@ evaluation:
       console.log(JSON.stringify({rideId: target.id, status: target.status, tier: target.rideTier, promo: target.promoCode}, null, 2));
       NODE
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDriver
   task_number: 1-1

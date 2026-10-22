@@ -63,8 +63,8 @@ evaluation:
         alarm_keywords:
         - -pt30m
 limits:
-  max_steps: 120
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: Thunderbird Calendar
   app_name: thunderbird_calendar

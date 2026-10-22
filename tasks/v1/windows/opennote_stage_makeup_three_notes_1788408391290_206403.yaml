@@ -44,8 +44,8 @@ evaluation:
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenNote
   bundle_id: com.killt.openrednote

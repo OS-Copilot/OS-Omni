@@ -48,8 +48,8 @@ evaluation:
     expected_ios_device_type_identifier: com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max
     expected_ruleset_sha256: c6f515324e3f92ff8dd0576f4539d838225b192ae41f22bad36b7e4850fc6024
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

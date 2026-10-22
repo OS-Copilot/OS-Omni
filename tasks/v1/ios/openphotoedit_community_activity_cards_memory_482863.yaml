@@ -16,8 +16,8 @@ evaluation:
     source_sample: Window
     source_sample_sha256: 8cfbd4717868d17193f29e209a524e83cc82d75fec266b1b42418fee3c025536
 limits:
-  max_steps: 40
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

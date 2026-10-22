@@ -23,7 +23,7 @@ evaluation:
     port: 4350
     expected_ruleset_sha256: 80c299a3eeb889211cd8a1baf49ea833f77bd075f5ad60666d0cc44b3bc190a6
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenTwitter

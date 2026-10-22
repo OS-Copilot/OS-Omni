@@ -104,7 +104,7 @@ evaluation:
     require_openfood_window: true
     expected_ruleset_sha256: d21317a22dfd1a9cae9985866716e7f0b8a7677c2624daa2f99381bfbc9e1e4b
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

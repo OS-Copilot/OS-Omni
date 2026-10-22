@@ -60,8 +60,8 @@ evaluation:
       quantity: 1
       selected_spec: White
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: 1
   app: OpenShop

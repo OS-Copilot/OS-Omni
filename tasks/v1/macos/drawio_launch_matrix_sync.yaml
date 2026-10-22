@@ -117,7 +117,7 @@ evaluation:
     actual_path: /Users/bench/Downloads/launch_matrix_sync.drawio
     expected_path: files/drawio/launch_matrix_sync/expected/launch_matrix_sync.drawio
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

@@ -73,8 +73,8 @@ evaluation:
       required: true
       min_steps: 74
 limits:
-  max_steps: 260
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: opentwitter
   app_name: opentwitter

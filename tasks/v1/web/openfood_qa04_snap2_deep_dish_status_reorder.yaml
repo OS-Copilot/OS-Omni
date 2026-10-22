@@ -76,8 +76,8 @@ evaluation:
     - The OF-2001 Smokehouse reorder is verified as a non-Dumpling WELCOME12 created order because the
       static createdOrders payload may not preserve sourceOrderId.
 limits:
-  max_steps: 520
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: openfood
   app_name: OpenFood

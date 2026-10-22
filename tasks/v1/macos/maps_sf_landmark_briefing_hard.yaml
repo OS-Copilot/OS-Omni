@@ -35,5 +35,5 @@ metadata:
   evaluation_standard: foreground Maps text, final Coit Tower detail state, Recents visibility, and prior landmark address recents are checked
   oracle_task: tasks/v1/macos/oracle/maps_sf_landmark_briefing_hard_oracle.yaml
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180

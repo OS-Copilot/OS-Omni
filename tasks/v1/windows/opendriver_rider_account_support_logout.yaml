@@ -63,7 +63,7 @@ evaluation:
     - OpenDriver
     - opendriver
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

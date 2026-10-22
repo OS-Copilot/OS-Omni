@@ -20,7 +20,7 @@ evaluation:
   params:
     expected_ruleset_sha256: 68e51725abd2bc38b2a1d264e88eddbab820109dca25b97930ee4bcd1cb9002f
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: Delta Chat + Markor

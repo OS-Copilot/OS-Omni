@@ -95,8 +95,8 @@ evaluation:
       current_track_name: city_rain
       current_track_path: /home/user/Music/BenchVault/Archive Shelf/April Samples/City Weather Mix/city_rain.wav
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux
