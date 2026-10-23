@@ -37,6 +37,7 @@ V2_BASE_DIR = Path(__file__).resolve().parents[4]
 MACOS_DEFAULT_EPISODES_DIR = str(V2_BASE_DIR / "results" / "macos" / "episodes")
 MACOS_EPISODE_OUTPUT_DIR_ENV = "MACOS_OUTPUT_DIR"
 MACOS_SKIP_VM_CLONE_ENV = "MACOS_SKIP_VM_CLONE"
+MACOS_RUNTIME_READY_TIMEOUT_ENV = "MACOS_RUNTIME_READY_TIMEOUT_SECONDS"
 RUNTIME_READY_TIMEOUT_SECONDS = 60.0
 RUNTIME_READY_POLL_INTERVAL_SECONDS = 1.0
 CONTROLLER_TIMEOUT_SECONDS = 20.0
@@ -122,6 +123,19 @@ def runtime_screen_smoke_check(
         return False, f"runtime screenshot is {image_width}x{image_height}; expected {expected_width}x{expected_height}"
 
     return True, f"runtime screenshot smoke passed at {image_width}x{image_height}"
+
+
+def runtime_ready_timeout_seconds() -> float:
+    """Return the runtime readiness timeout, overridable for slow-booting hosts."""
+    raw = os.environ.get(MACOS_RUNTIME_READY_TIMEOUT_ENV, "").strip()
+    if not raw:
+        return RUNTIME_READY_TIMEOUT_SECONDS
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning("Ignoring invalid %s=%r", MACOS_RUNTIME_READY_TIMEOUT_ENV, raw)
+        return RUNTIME_READY_TIMEOUT_SECONDS
+    return value if value > 0 else RUNTIME_READY_TIMEOUT_SECONDS
 
 
 def wait_for_runtime_ready(
@@ -342,7 +356,7 @@ def run_benchmark_task_command(args) -> int:
         wait_for_runtime_ready(
             runtime_url,
             runtime_token,
-            timeout_seconds=RUNTIME_READY_TIMEOUT_SECONDS,
+            timeout_seconds=runtime_ready_timeout_seconds(),
             poll_interval_seconds=RUNTIME_READY_POLL_INTERVAL_SECONDS,
         )
 
