@@ -342,3 +342,15 @@ models:
     metadata:
       api_mode: responses
       reasoning_effort: none
+  together_qwen_test2:
+    provider: together
+    model_name: red-lobster-7636/qwen-test2
+    api_key_env: TOGETHER_API_KEY
+    base_url: https://api.together.xyz/v1
+  openlux_qwen3_8_max:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENLUX_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
