@@ -1,5 +1,5 @@
 platform,deepseek-flash (no thinking),deepseek-v4.1-flash（1017，high）,gpt-5.5(high),gpt-5.5(low),Kimi-K3(no thinking),Kimi-K3(high),gpt-astra,gemini4,opus5.5,Qwen3.8-2.4T-A95B,Qwen3.8-27B,Qwen3.5-9B,GLM-5.3-753B,Kimi K3 2.8T,ScaleCUA-32B,OpenCUA-72B
-Android,7/48,20/48,6/48,,2/48,8/48,,,,,,,,,,
+Android,,20/48,6/48,,2/48,8/48,,,,,,,,,,
 iOS,5/48,,1/48,,,,,,,,,,,,,
 macOS,2/48,,6/48,,,,,,,,,,,,,
 Windows,0/48,,2/48,,3/48,5/48,,,,,,,,,,
