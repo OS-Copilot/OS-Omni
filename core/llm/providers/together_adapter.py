@@ -152,7 +152,13 @@ class TogetherAdapter(ProviderAdapter):
         metadata_extra_body = metadata.get("extra_body")
         if isinstance(metadata_extra_body, Mapping):
             extra_body = _deep_merge_dicts(extra_body, metadata_extra_body)
-        payload["extra_body"] = extra_body
+        # This adapter posts raw JSON with httpx, so there is no SDK to unpack
+        # `extra_body` for us. Together ignores an unknown top-level key, which
+        # silently dropped top_k/min_p and chat_template_kwargs (so
+        # enable_thinking=false never reached the model). Merge the fields into
+        # the request body itself, keeping explicit payload keys authoritative.
+        for key, value in extra_body.items():
+            payload.setdefault(key, value)
 
         if request.response_mode == "tool_calling":
             if request.tools:
