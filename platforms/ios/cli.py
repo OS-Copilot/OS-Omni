@@ -124,6 +124,14 @@ def _normalize_history_window(history_window_raw: object) -> int:
     return int(history_window_raw)
 
 
+def _normalize_optional_positive_int(value_raw: object, *, field_name: str) -> int | None:
+    if value_raw is None:
+        return None
+    if isinstance(value_raw, bool) or not isinstance(value_raw, int) or value_raw <= 0:
+        raise ValueError(f"execution.{field_name} must be a positive integer for iOS when provided.")
+    return int(value_raw)
+
+
 def _resolve_execution_base_name(execution_path: Path) -> str:
     return _safe_name(execution_path.stem)
 
@@ -152,6 +160,7 @@ def _run_execution_command(args: argparse.Namespace) -> int:
     action_mode = _normalize_action_mode(execution.get("action_mode"))
     observation_mode = _normalize_observation_mode(execution.get("observation_mode"))
     history_window = _normalize_history_window(execution.get("history_window"))
+    max_steps = _normalize_optional_positive_int(execution.get("max_steps"), field_name="max_steps")
     model_ids = list(dict.fromkeys(execution.get("models", [])))
     if not model_ids:
         raise ValueError("execution.models cannot be empty for iOS.")
@@ -199,7 +208,7 @@ def _run_execution_command(args: argparse.Namespace) -> int:
                 action_mode=action_mode,
                 observation_mode=observation_mode,
                 history_window=history_window,
-                max_steps=None,
+                max_steps=max_steps,
                 timeout=None,
                 direct_udid=direct_udid,
                 clone_source_udid=clone_source_udid,
