@@ -1,0 +1,57 @@
+tasks:
+- tasks/v1/macos/actual_budget_full_setup.yaml
+- tasks/v1/macos/actual_budget_add_transactions.yaml
+- tasks/v1/macos/blender_prepare_social_render.yaml
+- tasks/v1/macos/blender_restage_product_objects.yaml
+- tasks/v1/macos/safari_writer_research_hard.yaml
+- tasks/v1/macos/deltachat_atlas_access_fixes.yaml
+- tasks/v1/macos/deltachat_harbor_migration_brief.yaml
+- tasks/v1/macos/deltachat_nova_command_event_clearance.yaml
+- tasks/v1/macos/drawio_launch_matrix_sync.yaml
+- tasks/v1/macos/gimp_transform_pipeline_export.yaml
+- tasks/v1/macos/libreoffice_calc_add_formulas.yaml
+- tasks/v1/macos/maps_sf_landmark_briefing_hard.yaml
+- tasks/v1/macos/openbank_macos1_june_home_bills_transfer_textedit.yaml
+- tasks/v1/macos/openbank_macos1_reserve_plan_bills_transfers_textedit.yaml
+- tasks/v1/macos/openbank_macos1_studio_recipients_transfers_textedit.yaml
+- tasks/v1/macos/opendriver_driver_docs_support_payout_textedit.yaml
+- tasks/v1/macos/opendriver_driver_weekly_closeout_textedit.yaml
+- tasks/v1/macos/opendriver_rider_commute_fare_review_textedit.yaml
+- tasks/v1/macos/opendriver_rider_priority_lost_textedit.yaml
+- tasks/v1/macos/opennote_macos1_canal_train_walk_liked_profile_workflow.yaml
+- tasks/v1/macos/opennote_macos1_coat_swap_saved_workflow.yaml
+- tasks/v1/macos/opennote_macos1_harbor_coffee_saved_workflow.yaml
+- tasks/v1/macos/opennote_macos1_weekend_reset_saved_workflow.yaml
+- tasks/v1/macos/openphotoedit_macos1_anime_clean_floral_cool_exports.yaml
+- tasks/v1/macos/openphotoedit_macos1_anime_soft_cream_exports.yaml
+- tasks/v1/macos/openphotoedit_macos1_floral_warm_night_exports.yaml
+- tasks/v1/macos/openphotoedit_macos1_fruit_product_film_exports.yaml
+- tasks/v1/macos/openshop_lucas_client_room_hybrid_work_two_orders_five_reviews.yaml
+- tasks/v1/macos/openshop_lucas_coffee_trailmix_backpack_reviews.yaml
+- tasks/v1/macos/openshop_lucas_team_starter_set_order_six_reviews.yaml
+- tasks/v1/macos/openshop_lucas_workshop_pantry_mobile_work_two_orders_five_reviews.yaml
+- tasks/v1/macos/opentrip_macos1_sanya_family_flights_textedit.yaml
+- tasks/v1/macos/opentrip_macos1_sanya_family_jw1294_textedit.yaml
+- tasks/v1/macos/opentrip_macos1_sanya_jun15_roundtrip_hotel_textedit.yaml
+- tasks/v1/macos/opentrip_macos1_sanya_roundtrip_hotel_textedit.yaml
+- tasks/v1/macos/opentwitter_alex_community_handoff_social_workflow.yaml
+- tasks/v1/macos/opentwitter_alex_control_guide_runbook_workflow.yaml
+- tasks/v1/macos/opentwitter_alex_launch_audit_social_workflow.yaml
+- tasks/v1/macos/opentwitter_alex_security_closure_social_workflow.yaml
+- tasks/v1/macos/photos_favorite_receipts_hard.yaml
+- tasks/v1/macos/spotube_dark_profile_with_plugins.yaml
+- tasks/v1/macos/textedit_config_rewrite.yaml
+- tasks/v1/macos/thunderbird_calendar_budget_release_schedule.yaml
+- tasks/v1/macos/thunderbird_calendar_inventory_client_schedule.yaml
+- tasks/v1/macos/thunderbird_email_rn2041_trip_correspondence.yaml
+- tasks/v1/macos/vscodium_incident_handoff_refresh.yaml
+- tasks/v1/macos/wireshark_http_objects_and_filtered_capture.yaml
+- tasks/v1/macos/zotero_dual_collection_articles.yaml
+models:
+- together_qwen_test2
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: all 48 macos benchmark tasks (Qwen3.8-27B NVFP4, Together dedicated endpoint red-lobster-7636/qwen-test2).'
