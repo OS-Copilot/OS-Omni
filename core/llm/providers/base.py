@@ -21,6 +21,7 @@ from .utils import (
     extract_openai_text_content,
     extract_responses_reasoning,
     extract_responses_text_content,
+    fold_system_into_first_user,
     messages_to_openai,
     messages_to_responses,
     openai_tool_choice_value,
@@ -191,9 +192,15 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         return self._build_chat_completions_payload(request)
 
     def _build_chat_completions_payload(self, request: ProviderRequest) -> Dict[str, Any]:
+        messages = messages_to_openai(request.messages)
+        metadata = request.model_spec.metadata if isinstance(request.model_spec.metadata, dict) else {}
+        if metadata.get("system_prompt_as_user"):
+            # Some gateways drop the system role (openlux kimi-k3 / glm-5.3), which
+            # loses the task instruction; send it inside the first user message.
+            messages = fold_system_into_first_user(messages)
         payload: Dict[str, Any] = {
             "model": request.model_spec.model_name,
-            "messages": messages_to_openai(request.messages),
+            "messages": messages,
         }
 
         self._apply_common_parameters(payload, request.parameters, api_mode="chat_completions")

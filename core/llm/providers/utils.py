@@ -66,6 +66,24 @@ def messages_to_openai(messages: List[Message]) -> List[Dict[str, Any]]:
     return converted
 
 
+def fold_system_into_first_user(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Move OpenAI-format system messages to the front of the first user message.
+
+    For gateways that silently drop the system role. The system text is kept
+    verbatim and stays ahead of everything else the model sees.
+    """
+
+    system_parts = [part for message in messages if message.get("role") == "system" for part in message["content"]]
+    if not system_parts:
+        return messages
+    folded = [message for message in messages if message.get("role") != "system"]
+    for index, message in enumerate(folded):
+        if message.get("role") == "user":
+            folded[index] = {**message, "content": system_parts + list(message["content"])}
+            return folded
+    return [{"role": "user", "content": system_parts}] + folded
+
+
 def messages_to_responses(messages: List[Message]) -> List[Dict[str, Any]]:
     """Convert unified messages to OpenAI Responses API input format."""
 
