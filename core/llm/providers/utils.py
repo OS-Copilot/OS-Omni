@@ -395,6 +395,77 @@ def parse_responses_tool_calls(output_items: Any) -> List[ToolCall]:
     return tool_calls
 
 
+def aggregate_chat_completion_sse(body: str) -> Optional[Dict[str, Any]]:
+    """Rebuild a chat.completion object from an SSE chat.completion.chunk stream.
+
+    Some OpenAI-compatible gateways answer with a stream even when the request
+    did not ask for one. Returns None when the body is not such a stream.
+    """
+
+    chunks: List[Dict[str, Any]] = []
+    for line in str(body or "").splitlines():
+        line = line.strip()
+        if not line.startswith("data:"):
+            continue
+        data = line[len("data:"):].strip()
+        if not data or data == "[DONE]":
+            continue
+        try:
+            chunk = json.loads(data)
+        except ValueError:
+            return None
+        if isinstance(chunk, dict):
+            chunks.append(chunk)
+    if not chunks or not any(isinstance(chunk.get("choices"), list) for chunk in chunks):
+        return None
+
+    content: List[str] = []
+    reasoning: List[str] = []
+    tool_calls: Dict[int, Dict[str, Any]] = {}
+    finish_reason: Optional[str] = None
+    usage: Optional[Dict[str, Any]] = None
+    for chunk in chunks:
+        if isinstance(chunk.get("usage"), dict):
+            usage = chunk["usage"]
+        for choice in chunk.get("choices") or []:
+            if not isinstance(choice, Mapping):
+                continue
+            if choice.get("finish_reason"):
+                finish_reason = choice["finish_reason"]
+            delta = choice.get("delta") if isinstance(choice.get("delta"), Mapping) else {}
+            if isinstance(delta.get("content"), str):
+                content.append(delta["content"])
+            if isinstance(delta.get("reasoning_content"), str):
+                reasoning.append(delta["reasoning_content"])
+            for raw_call in delta.get("tool_calls") or []:
+                if not isinstance(raw_call, Mapping):
+                    continue
+                call = tool_calls.setdefault(
+                    int(raw_call.get("index") or 0),
+                    {"type": "function", "function": {"name": "", "arguments": ""}},
+                )
+                if raw_call.get("id"):
+                    call["id"] = raw_call["id"]
+                function_obj = raw_call.get("function") if isinstance(raw_call.get("function"), Mapping) else {}
+                call["function"]["name"] += function_obj.get("name") or ""
+                call["function"]["arguments"] += function_obj.get("arguments") or ""
+
+    message: Dict[str, Any] = {"role": "assistant", "content": "".join(content)}
+    if reasoning:
+        message["reasoning_content"] = "".join(reasoning)
+    if tool_calls:
+        message["tool_calls"] = [tool_calls[index] for index in sorted(tool_calls)]
+    first = chunks[0]
+    return {
+        "id": first.get("id"),
+        "object": "chat.completion",
+        "created": first.get("created"),
+        "model": first.get("model"),
+        "choices": [{"index": 0, "message": message, "finish_reason": finish_reason}],
+        "usage": usage,
+    }
+
+
 def extract_openai_text_content(content: Any) -> Optional[str]:
     """Extract assistant text from OpenAI-like message content payload."""
 

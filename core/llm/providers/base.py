@@ -16,6 +16,7 @@ import httpx
 from ..errors import LLMClientError, LLMErrorCode
 from ..types import Message, ModelSpec, ProviderCredentials, ToolCall, ToolDefinition
 from .utils import (
+    aggregate_chat_completion_sse,
     build_assistant_message,
     extract_openai_text_content,
     extract_responses_reasoning,
@@ -420,6 +421,9 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         try:
             data = response.json()
         except ValueError as exc:
+            data = aggregate_chat_completion_sse(response.text)
+            if data is not None:
+                return data
             raise LLMClientError(
                 LLMErrorCode.INVALID_PROVIDER_RESPONSE,
                 "Provider returned non-JSON response.",
