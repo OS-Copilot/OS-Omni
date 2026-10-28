@@ -132,6 +132,7 @@ class LLMClientManager:
     @staticmethod
     def build_default_provider_registry() -> ProviderRegistry:
         from .providers.android_oracle_adapter import AndroidOracleAdapter
+        from .providers.anthropic_adapter import AnthropicAdapter
         from .providers.deepseek_adapter import DeepSeekAdapter
         from .providers.deltachat_oracle_adapter import DeltaChatOracleAdapter
         from .providers.gimp_oracle_adapter import GimpOracleAdapter
@@ -161,6 +162,7 @@ class LLMClientManager:
 
         adapters = [
             OpenAIAdapter(),
+            AnthropicAdapter(),
             GoogleAdapter(),
             InternAdapter(),
             TaobaoAdapter(),
