@@ -84,6 +84,34 @@ def fold_system_into_first_user(messages: List[Dict[str, Any]]) -> List[Dict[str
     return [{"role": "user", "content": system_parts}] + folded
 
 
+def messages_to_anthropic(messages: List[Message]) -> Tuple[Optional[str], List[Dict[str, Any]]]:
+    """Convert unified messages to Anthropic Messages API (system text, messages)."""
+
+    system_texts: List[str] = []
+    converted: List[Dict[str, Any]] = []
+    for message in messages:
+        if message.role == "system":
+            system_texts.extend(part.text for part in message.parts if isinstance(part, TextPart) and part.text)
+            continue
+        content_parts: List[Dict[str, Any]] = []
+        for part in message.parts:
+            if isinstance(part, TextPart):
+                # The Messages API rejects empty text blocks.
+                if part.text:
+                    content_parts.append({"type": "text", "text": part.text})
+            elif isinstance(part, ImagePart):
+                inline = image_path_to_inline_data(part.path)
+                content_parts.append(
+                    {
+                        "type": "image",
+                        "source": {"type": "base64", "media_type": inline["mimeType"], "data": inline["data"]},
+                    }
+                )
+        if content_parts:
+            converted.append({"role": message.role, "content": content_parts})
+    return ("\n\n".join(system_texts) or None), converted
+
+
 def messages_to_responses(messages: List[Message]) -> List[Dict[str, Any]]:
     """Convert unified messages to OpenAI Responses API input format."""
 
