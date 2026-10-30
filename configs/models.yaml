@@ -354,3 +354,12 @@ models:
     base_url: https://api.openlux.ai/v1
     metadata:
       reasoning_effort: none
+  deepseek_flash_high:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
+    max_output_tokens: 4096
+    metadata:
+      api_mode: responses
+      reasoning_effort: high
