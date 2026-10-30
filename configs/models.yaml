@@ -354,3 +354,34 @@ models:
     base_url: https://api.openlux.ai/v1
     metadata:
       reasoning_effort: none
+  openlux_glm_5_3:
+    provider: openai
+    model_name: glm-5.3
+    api_key_env: OPENLUX_GLM_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
+  openlux_kimi_k3_high:
+    provider: openai
+    model_name: kimi-k3
+    api_key_env: KIMI_K3_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: high
+      system_prompt_as_user: true
+  deepseek_flash_high_uncapped:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
+    metadata:
+      api_mode: responses
+      reasoning_effort: high
+  claude_opus_5_5_high:
+    provider: anthropic
+    model_name: claude-opus-5-5
+    api_key_env: OPUS55_API_KEY
+    base_url_env: OPUS55_BASE_URL
+    metadata:
+      effort: high
