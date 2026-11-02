@@ -334,10 +334,23 @@ class OpenDocClientPlanHtmlEvaluator(BaseEvaluator):
             structure,
         )
 
+        # The Client Plan HTML export may encode bold as HTML emphasis tags
+        # rather than CSS text; structure.emphasis above already accepts
+        # <strong>/<b>.  Scope the bold tokens to the first heading/paragraph
+        # block so an unrelated stylesheet's "font-weight" does not count
+        # (scan.CSV WEB-020).
+        styled = re.search(r"<h[1-6]\b[\s\S]*?</h[1-6]>", text, re.I) or re.search(
+            r"<p\b[\s\S]*?</p>", text, re.I
+        )
+        styled_low = styled.group(0).lower() if styled else low
+
         formatting = {
             "aptos": "aptos" in low,
             "size14": ("14pt" in low) or ("14px" in low) or ("font-size: 14" in low) or ("font-size:14" in low),
-            "bold": ("bold" in low) or ("font-weight" in low),
+            "bold": any(
+                token in styled_low
+                for token in ("bold", "font-weight", "<b>", "<b ", "</b>", "<strong", "</strong>")
+            ),
             "black": ("#000" in low) or ("black" in low) or ("rgb(0, 0, 0)" in low) or ("rgb(0,0,0)" in low),
             "highlight": ("background-color" in low) or ("<mark" in low) or ("hilitecolor" in low) or ("#fff2a8" in low),
         }
