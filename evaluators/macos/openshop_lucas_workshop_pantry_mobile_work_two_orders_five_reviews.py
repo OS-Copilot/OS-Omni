@@ -115,16 +115,19 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
         observed: Any,
         passed: bool,
         failure_reason: str,
+        *,
+        diagnostic: bool = False,
     ) -> None:
-        metadata.setdefault("checks", []).append(
-            {
-                "check": name,
-                "expected": expected,
-                "observed": observed,
-                "pass": bool(passed),
-            }
-        )
-        if not passed:
+        entry = {
+            "check": name,
+            "expected": expected,
+            "observed": observed,
+            "pass": bool(passed),
+        }
+        if diagnostic:
+            entry["diagnostic"] = True
+        metadata.setdefault("checks", []).append(entry)
+        if not passed and not diagnostic:
             metadata.setdefault("failure_reasons", []).append(f"{name}: {failure_reason}")
 
     @classmethod
@@ -602,6 +605,12 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
         ordered = expectation.get("ordered")
         if not isinstance(ordered, list):
             return
+        # Restored benchmark instrumentation: the English brief only specifies the
+        # final orders/reviews/cart/session, never this exact interaction order.
+        # Keep the scripted ledger diagnostic unless a task explicitly opts in
+        # (scan_work/parts/macos_01.csv rows MAC-003/MAC-005, class step_gate).
+        require_ordered = bool(expectation.get("require_ordered", False))
+        prefix = "benchmark.ordered" if require_ordered else "benchmark.ordered.diagnostic"
         events = list((payload or {}).get("events") or [])
         cursor = 0
         for position, expected_event in enumerate(ordered):
@@ -611,11 +620,12 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
             if not event_type:
                 cls._record(
                     metadata,
-                    f"benchmark.ordered[{position}]",
+                    f"{prefix}[{position}]",
                     "type present",
                     "missing",
                     False,
                     "benchmark event expectation is missing type",
+                    diagnostic=not require_ordered,
                 )
                 continue
             matcher = {key: value for key, value in expected_event.items() if key != "type"}
@@ -629,11 +639,12 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
                     break
             cls._record(
                 metadata,
-                f"benchmark.ordered[{position}]",
+                f"{prefix}[{position}]",
                 {"type": event_type, **matcher},
                 found_at if found_at is not None else "no matching event",
                 found_at is not None,
                 f"expected ordered benchmark event {event_type} with {matcher}, observed none after cursor {cursor}",
+                diagnostic=not require_ordered,
             )
             if found_at is not None:
                 cursor = found_at + 1
