@@ -573,6 +573,7 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
         *,
         observed_at: str,
         session_id: str,
+        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
@@ -581,6 +582,7 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
             "predicate": spec["predicate"],
             "value_contract_id": spec["value_contract_id"],
             "match_mode": spec["match_mode"],
+            "diagnostic": bool(diagnostic),
             "passed": bool(passed),
             "expected": expected,
             "actual": actual,
@@ -595,7 +597,12 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
         }
 
     @classmethod
-    def evaluate_evidence(cls, raw: Mapping[str, Any]) -> EvalResult:
+    def evaluate_evidence(
+        cls,
+        raw: Mapping[str, Any],
+        *,
+        require_timeline_exact: bool = False,
+    ) -> EvalResult:
         observed_at = str(raw.get("observed_at") or "")
         session_id = str(raw.get("evaluation_session_id") or "")
         outcomes = (
@@ -608,10 +615,25 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
             timeline_exact_predicate(raw),
         )
         checks = [
-            cls._checkpoint(spec, outcome, observed_at=observed_at, session_id=session_id)
+            cls._checkpoint(
+                spec,
+                outcome,
+                observed_at=observed_at,
+                session_id=session_id,
+                diagnostic=spec["name"] == "timeline_exact" and not require_timeline_exact,
+            )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
-        failures = [check["name"] for check in checks if not check["passed"]]
+        # The fixed event-suffix order and monotonic timestamps are not stated in the
+        # English brief and every deliverable is already graded by the durable-state
+        # checkpoints, so timeline_exact is diagnostic evidence unless the task opts
+        # in with params["require_timeline_exact"]; see
+        # scan_work/fix_briefs/ios-opennote-sibling-timeline.md.
+        failures = [
+            check["name"]
+            for check in checks
+            if not check["passed"] and not check["diagnostic"]
+        ]
         raw_digest = hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         metadata = {
             "task_id": TASK_ID,
@@ -713,7 +735,10 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
                 },
             )
 
-        result = self.evaluate_evidence(raw)
+        result = self.evaluate_evidence(
+            raw,
+            require_timeline_exact=bool(params.get("require_timeline_exact", False)),
+        )
         result.metadata["observed"] = {
             "udid": udid,
             "applications": applications,
