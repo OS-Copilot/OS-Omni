@@ -23,7 +23,8 @@ evaluation:
     export_dir: /sdcard/Pictures/OpenPhotoEdit
     min_file_size_bytes: 100000
     min_agent_steps: 74
-    require_baseline_for_run_dir: true
+    # The v1 initializer never writes openphoto_calibrated_baseline.json (only local_eval/photo_baseline.py:55 did), so a full v1 run must not require it.
+    require_baseline_for_run_dir: false
     expected_dimensions:
     - 960
     - 1280
