@@ -128,6 +128,7 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
         required_folder = str(params.get("required_folder") or "").strip()
         required_event_title = str(params.get("required_event_title") or "").strip()
         seed_folders = [str(item) for item in (params.get("expected_seed_folders") or [])]
+        require_seed_folders = bool(params.get("require_seed_folders", False))
         if not required_folder and not required_event_title:
             return EvalResult(
                 status=EvalStatus.FAIL,
@@ -152,14 +153,21 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
 
         for name in seed_folders:
             present = name in observed_folders
-            checks.append(
-                {
-                    "check_id": "seed_folder:%s" % name,
-                    "passed": present,
-                    "expected": {"folder": name, "present": True},
-                    "observed": {"present": present},
-                }
-            )
+            check = {
+                "check_id": "seed_folder:%s" % name,
+                "passed": present,
+                "expected": {"folder": name, "present": True},
+                "observed": {"present": present},
+            }
+            # The seed folders pre-exist in the VM snapshot.  The task's own
+            # verifier_rules call their presence diagnostic evidence only and
+            # say a missing seed folder must not fail an otherwise correct
+            # answer (tasks/v1/linux/
+            # thunderbird_qa66_mail_folder_search_calendar.yaml:122-123), so
+            # record them without failing the run unless a task opts in.
+            if not require_seed_folders:
+                check["diagnostic"] = True
+            checks.append(check)
 
         if required_folder:
             present = required_folder in observed_folders
@@ -192,7 +200,16 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
                 }
             )
 
-        failed = [check["check_id"] for check in checks if not check["passed"]]
+        failed = [
+            check["check_id"]
+            for check in checks
+            if not check["passed"] and not check.get("diagnostic")
+        ]
+        diagnostic_failures = [
+            check["check_id"]
+            for check in checks
+            if not check["passed"] and check.get("diagnostic")
+        ]
         metadata = {
             "profile_dir": folders.get("profile_dir"),
             "local_folders_dir": folders.get("local_folders_dir"),
@@ -201,6 +218,8 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
             "calendar_error": calendar_evidence.get("error") or calendar_evidence.get("calendar_error"),
             "checks": checks,
             "failures": failed,
+            "diagnostic_failures": diagnostic_failures,
+            "require_seed_folders": require_seed_folders,
         }
         if not checks:
             return EvalResult(status=EvalStatus.FAIL, message="no folder or calendar requirement was comparable", metadata=metadata)
