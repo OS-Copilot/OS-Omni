@@ -58,7 +58,7 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v1_content_billing_596978',
                            'Feature naming 01': 'p-alex-2003',
                            'Changelog builder 01': 'p-alex-2001'},
  'trend_action_active': {'Help center search': [True, True, True],
-                         'Incident drills 01': [True, True, False],
+                         'Incident drills 01': [True, True, True],
                          'Feature naming 01': [True, True, True],
                          'Changelog builder 01': [True, True, True]},
  'trend_actions': ['post_repost_toggled', 'post_like_toggled', 'post_bookmark_toggled'],
@@ -68,7 +68,7 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v1_content_billing_596978',
               {'handle': 'sofia', 'text': 'Baseline note ready'}],
  'profile': {'handle': 'alex', 'displayName': 'Alex Content', 'bio': 'Billing notes ready'},
  'notifications_all_read': True}
-RULESET_SHA256 = '56496fba09296d5703cb426fd8f87ffc0315c59a75979b77ba4b56a983a83702'
+RULESET_SHA256 = 'cbd5257523bfd4f87ef8ebdc736072140a5d21a6ea87ad70979bacea6fe7267b'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = (
     "evaluators.windows.opentwitter_v1_content_billing_596978:"
