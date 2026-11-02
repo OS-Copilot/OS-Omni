@@ -107,8 +107,12 @@ def qone(sql, args=()):
 
 
 def money_candidates(amount):
+    # Task params are dollar amounts and Actual's DB stores integer cents
+    # (tasks/macos/files/actual/blank-budget-template.zip), so round(dollars *
+    # 100) is the only valid representation. The old helper multiplied by 1,
+    # 10, 100, 1000 and 10000, letting wrong-magnitude entries pass (MAC-004/005).
     value = float(amount)
-    return sorted({int(round(abs(value) * scale)) for scale in (1, 10, 100, 1000, 10000)})
+    return [int(round(abs(value) * 100))]
 
 
 def money_matches(observed, expected):
