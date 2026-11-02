@@ -548,6 +548,9 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
                 metadata={"task_id": TASK_ID, "ruleset_sha256": RULESET_SHA256, "read_only": True},
             )
         preferred_port = int(params.get("port", 4310) or 4310)
+        require_complete_event_coverage = bool(
+            params.get("require_complete_event_coverage", False)
+        )
         checks: list[dict[str, Any]] = []
         metadata: dict[str, Any] = {
             "task_id": TASK_ID,
@@ -561,19 +564,27 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
             "checks": checks,
         }
 
-        def exact(check_id: str, value_contract_id: str, expected: Any, actual: Any) -> None:
+        def exact(
+            check_id: str,
+            value_contract_id: str,
+            expected: Any,
+            actual: Any,
+            *,
+            diagnostic: bool = False,
+        ) -> None:
             passed = actual == expected
-            checks.append(
-                {
-                    "check_id": check_id,
-                    "value_contract_id": value_contract_id,
-                    "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
-                    "expected": expected,
-                    "actual": actual,
-                    "passed": passed,
-                }
-            )
-            if not passed:
+            record = {
+                "check_id": check_id,
+                "value_contract_id": value_contract_id,
+                "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
+                "expected": expected,
+                "actual": actual,
+                "passed": passed,
+            }
+            if diagnostic:
+                record["diagnostic"] = True
+            checks.append(record)
+            if not passed and not diagnostic:
                 raise AssertionError(f"{check_id}: expected {expected!r}, got {actual!r}")
 
         try:
@@ -602,9 +613,25 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
                 exact(f"{name}_order", f"{name}_order_exact", expected, projected)
 
             matched, indices = self._find_sequence(events, EXPECTED_EVENTS)
-            exact("events.count", "ordered_business_events_exact", len(EXPECTED_EVENTS), len(events))
+            # The English brief requires the three Music orders/reviews and the
+            # scripted business events in order, not the absence of harmless extra
+            # UI events. Keep the raw coverage counts as diagnostics unless a task
+            # opts in. See scan_work/parts/windows_01.csv WIN-015 (step_gate).
+            exact(
+                "events.count",
+                "ordered_business_events_exact",
+                len(EXPECTED_EVENTS),
+                len(events),
+                diagnostic=not require_complete_event_coverage,
+            )
             unexpected = [event for i, event in enumerate(events) if i not in set(indices)]
-            exact("events.unexpected", "ordered_business_events_exact", [], unexpected)
+            exact(
+                "events.unexpected",
+                "ordered_business_events_exact",
+                [],
+                unexpected,
+                diagnostic=not require_complete_event_coverage,
+            )
 
             event_groups = (
                 ("first", bound_orders[0], matched[8], matched[9:10]),
