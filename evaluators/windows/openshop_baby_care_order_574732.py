@@ -217,6 +217,9 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
             return EvalResult(status=EvalStatus.ERROR, message="controller.run_python_script is required")
         params = dict(context.get("params") or {})
         port = int(params.get("port", 4310) or 4310)
+        require_complete_event_coverage = bool(
+            params.get("require_complete_event_coverage", False)
+        )
         checks: list[dict[str, Any]] = []
         metadata: dict[str, Any] = {
             "task_id": self.TASK_ID,
@@ -228,19 +231,27 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
             "checks": checks,
         }
 
-        def exact(check_id: str, value_contract_id: str, expected: Any, actual: Any) -> None:
+        def exact(
+            check_id: str,
+            value_contract_id: str,
+            expected: Any,
+            actual: Any,
+            *,
+            diagnostic: bool = False,
+        ) -> None:
             passed = actual == expected
-            checks.append(
-                {
-                    "check_id": check_id,
-                    "value_contract_id": value_contract_id,
-                    "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
-                    "expected": expected,
-                    "actual": actual,
-                    "passed": passed,
-                }
-            )
-            if not passed:
+            record = {
+                "check_id": check_id,
+                "value_contract_id": value_contract_id,
+                "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
+                "expected": expected,
+                "actual": actual,
+                "passed": passed,
+            }
+            if diagnostic:
+                record["diagnostic"] = True
+            checks.append(record)
+            if not passed and not diagnostic:
                 raise AssertionError(f"{check_id}: expected {expected!r}, got {actual!r}")
 
         try:
@@ -292,11 +303,16 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
                 len(self.EXPECTED["events"]),
                 len(matched_events),
             )
+            # The English brief requires the scripted business events in order and
+            # the exact final state, not the absence of harmless extra UI events.
+            # Keep the raw coverage counts as diagnostics unless a task opts in.
+            # See scan_work/parts/windows_02.csv WIN-002 (step_gate).
             exact(
                 "benchmark.navigation_event_count",
                 "allowed_navigation_events",
                 len(self.EXPECTED_NAVIGATION_EVENTS),
                 len(navigation_events),
+                diagnostic=not require_complete_event_coverage,
             )
             exact(
                 "benchmark.raw_event_count",
@@ -305,12 +321,14 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
                 + len(self.EXPECTED_NAVIGATION_EVENTS)
                 + len(optional_navigation_events),
                 len(events),
+                diagnostic=not require_complete_event_coverage,
             )
             exact(
                 "benchmark.unexpected_events",
                 "complete_event_coverage",
                 [],
                 unexpected_events,
+                diagnostic=not require_complete_event_coverage,
             )
             order_id = latest["id"]
             submitted = next(event for event in matched_events if event.get("type") == "checkout_submitted")
