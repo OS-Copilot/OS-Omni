@@ -116,7 +116,7 @@ def _check(check_id: str, expected: Any, actual: Any, passed: bool) -> dict[str,
     return {"check_id": check_id, "mapped_steps": spec["steps"], "value_contract_id": spec["value_contract_id"], "match_mode": spec["match_mode"], "expected": expected, "actual": actual, "passed": bool(passed), "failure_reason": None if passed else "exact value, cardinality, build, or causal-order contract mismatch"}
 
 
-def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, Any]:
+def evaluate_state(raw: Mapping[str, Any], source_state_mode: str, require_workflow_timeline: bool = False) -> dict[str, Any]:
     state = raw.get("state") if isinstance(raw.get("state"), Mapping) else {}
     events = [row for row in state.get("events") or [] if isinstance(row, Mapping)]
     notes = [row for row in state.get("notes") or [] if isinstance(row, Mapping)]
@@ -181,14 +181,20 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     durable_expected = [_event_payload(row) for row in [login_events[0] if len(login_events) == 1 else {}, bakery_events[0] if len(bakery_events) == 1 else {}, created["orange_note"][0] if len(created["orange_note"]) == 1 else {}, like_events[0] if len(like_events) == 1 else {}, picnic_save_events[0] if len(picnic_save_events) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["blue_note"][0] if len(created["blue_note"]) == 1 else {}, created["meal_plan"][0] if len(created["meal_plan"]) == 1 else {}]]
     timeline_actual = {"sequence": seqs, "required_group_counts": [len(group) for group in ordered], "durable_events": durable_actual}
     timeline_expected = {"sequence": "strictly increasing", "required_group_counts": [1] * len(ordered), "durable_events": durable_expected}
-    timeline_ok = all(seq >= 0 for seq in seqs) and seqs == sorted(set(seqs)) and durable_actual == durable_expected and all(row["passed"] for row in checks)
-    checks.append(_check("workflow_timeline_exact", timeline_expected, timeline_actual, timeline_ok))
+    sequence_ok = all(seq >= 0 for seq in seqs) and seqs == sorted(set(seqs))
+    timeline_ok = sequence_ok and durable_actual == durable_expected
+    # The English brief grades the deliverables, not the exact durable event order;
+    # see scan_work/fix_briefs/windows-opennote-timeline-gate.md. The sequence/list
+    # comparison is still recorded but only influences the verdict when opted in.
+    timeline_check = _check("workflow_timeline_exact", timeline_expected, timeline_actual, timeline_ok)
+    timeline_check["diagnostic"] = not require_workflow_timeline
+    checks.append(timeline_check)
 
     build_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     build_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": EXPECTED_BUILD}
     checks.append(_check("task_evaluator_build_binding_exact", build_expected, build_actual, build_actual == build_expected))
     mapped_steps = sorted({step for spec in CHECKPOINT_SPECS for step in spec["steps"]})
-    failures = [row["check_id"] for row in checks if not row["passed"]]
+    failures = [row["check_id"] for row in checks if not row["passed"] and not row.get("diagnostic")]
     return {"status": "PASS" if not failures and mapped_steps == list(range(1, 78)) else "FAIL", "checks": checks, "failures": failures, "mapped_steps": mapped_steps, "complete_step_coverage": mapped_steps == list(range(1, 78)), "current_evidence_nonempty": bool(events and notes), "source_state_mode": source_state_mode, "event_count": len(events), "note_count": len(notes)}
 
 
@@ -227,7 +233,7 @@ class WindowsOpenNoteCommunityMealThreeNotesStrictEvaluator(BaseEvaluator):
                 raise RuntimeError(str(result.get("error") or result.get("output") or "guest read failed"))
             payload = json.loads(str(result.get("stdout") or result.get("output") or "{}"))
             payload.update({"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256})
-            verdict = evaluate_state(payload, source_state_mode)
+            verdict = evaluate_state(payload, source_state_mode, require_workflow_timeline=bool(params.get("require_workflow_timeline", False)))
         except Exception as exc:
             return EvalResult(EvalStatus.ERROR, f"OpenNote read-only evaluation failed: {type(exc).__name__}: {exc}", {"read_only": True, "business_state_mutations": []})
         verdict.update({"task_id": TASK_ID, "evaluator_id": EVALUATOR_ID, "evaluator_source_sha256": _source_sha256(), "instruction_sha256": INSTRUCTION_SHA256, "ruleset_spec": RULESET_SPEC, "ruleset_sha256": RULESET_SHA256, "step_groups": STEP_GROUPS, "checkpoint_specs": CHECKPOINT_SPECS, "read_only": True, "business_state_mutations": [], "data_source": f"read-only GET http://127.0.0.1:{APP_PORT}/api/evaluation plus exact asset/build hashes"})

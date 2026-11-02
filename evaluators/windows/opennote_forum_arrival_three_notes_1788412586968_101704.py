@@ -108,7 +108,7 @@ def _check(check_id: str, expected: Any, actual: Any, passed: bool) -> dict[str,
     return {**spec, "expected": expected, "actual": actual, "passed": bool(passed), "failure_reason": None if passed else "exact value, cardinality, build, final UI, or causal-order mismatch"}
 
 
-def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, Any]:
+def evaluate_state(raw: Mapping[str, Any], source_state_mode: str, require_workflow_timeline: bool = False) -> dict[str, Any]:
     state = raw.get("state") if isinstance(raw.get("state"), Mapping) else {}
     events = [row for row in state.get("events", []) if isinstance(row, Mapping)]
     notes = [row for row in state.get("notes", []) if isinstance(row, Mapping)]
@@ -170,14 +170,19 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     ordered_rows = [login_events[0] if len(login_events) == 1 else {}, created["forum_arrival_note"], likes[0] if len(likes) == 1 else {}, saves[0] if len(saves) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["two_day_note"], created["group_session_note_and_final_ui"]]
     sequence = [int(row.get("seq", -1)) for row in ordered_rows]
     timeline_actual = {"sequence": sequence, "durable_events": durable}
-    prior_ok = all(check["passed"] for check in checks)
-    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, prior_ok and sequence == sorted(set(sequence)) and durable == expected_durable))
+    timeline_ok = sequence == sorted(set(sequence)) and durable == expected_durable
+    # The English brief grades the deliverables, not the exact durable event order;
+    # see scan_work/fix_briefs/windows-opennote-timeline-gate.md. The sequence/list
+    # comparison is still recorded but only influences the verdict when opted in.
+    timeline_check = _check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok)
+    timeline_check["diagnostic"] = not require_workflow_timeline
+    checks.append(timeline_check)
 
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}
     checks.append(_check("task_evaluator_build_binding_exact", binding_expected, binding_actual, binding_actual == binding_expected))
     mapped = sorted({step for spec in CHECKPOINT_SPECS for step in spec["steps"]})
-    failures = [check["check_id"] for check in checks if not check["passed"]]
+    failures = [check["check_id"] for check in checks if not check["passed"] and not check.get("diagnostic")]
     return {"status": "PASS" if not failures and mapped == list(range(1, 77)) else "FAIL", "checks": checks, "failures": failures, "mapped_steps": mapped, "complete_step_coverage": mapped == list(range(1, 77)), "current_evidence_nonempty": bool(events and notes), "source_state_mode": source_state_mode}
 
 
@@ -206,7 +211,7 @@ class WindowsOpenNoteForumArrivalThreeNotesStrictEvaluator(BaseEvaluator):
                 raise RuntimeError(str(probe_result.get("error") or probe_result.get("output") or "OpenNote probe failed"))
             raw = json.loads(str(probe_result.get("stdout") or probe_result.get("output") or "{}"))
             raw |= {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256}
-            verdict = evaluate_state(raw, mode)
+            verdict = evaluate_state(raw, mode, require_workflow_timeline=bool(params.get("require_workflow_timeline", False)))
         except Exception as exc:
             return EvalResult(EvalStatus.ERROR, f"OpenNote read-only evaluation failed: {type(exc).__name__}: {exc}", {"read_only": True, "business_state_mutations": []})
         verdict |= {"task_id": TASK_ID, "evaluator_id": EVALUATOR_ID, "evaluator_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "instruction_sha256": INSTRUCTION_SHA256, "ruleset_spec": RULESET_SPEC, "ruleset_sha256": RULESET_SHA256, "step_groups": STEP_GROUPS, "checkpoint_specs": CHECKPOINT_SPECS, "read_only": True, "business_state_mutations": [], "data_source": "current read-only OpenNote API plus exact asset/build hashes"}

@@ -123,7 +123,7 @@ def _event_payload(event: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in event.items() if key not in {"seq", "timestamp"}}
 
 
-def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, Any]:
+def evaluate_state(raw: Mapping[str, Any], source_state_mode: str, require_workflow_timeline: bool = False) -> dict[str, Any]:
     state = raw.get("state") if isinstance(raw.get("state"), Mapping) else {}
     events = [row for row in state.get("events") or [] if isinstance(row, Mapping)]
     notes = [row for row in state.get("notes") or [] if isinstance(row, Mapping)]
@@ -184,15 +184,21 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     ]
     durable_events = [_event_payload(row) for row in events if row.get("type") not in {"feed_view", "note_detail_opened"}]
     timeline_actual = {"sequence": seqs, "types": [row.get("type") for row in ordered], "all_present": all(seq >= 0 for seq in seqs), "durable_events": durable_events}
-    timeline_ok = all(seq >= 0 for seq in seqs) and seqs == sorted(set(seqs)) and durable_events == expected_durable_events and all(check["passed"] for check in checks)
-    checks.append(_check("workflow_timeline_exact", STEP_GROUPS["workflow_timeline"], RULESET_SPEC["timeline"], timeline_actual, timeline_ok))
+    sequence_ok = all(seq >= 0 for seq in seqs) and seqs == sorted(set(seqs))
+    timeline_ok = sequence_ok and durable_events == expected_durable_events
+    # The English brief grades the deliverables, not the exact durable event order;
+    # see scan_work/fix_briefs/windows-opennote-timeline-gate.md. The sequence/list
+    # comparison is still recorded but only influences the verdict when opted in.
+    timeline_check = _check("workflow_timeline_exact", STEP_GROUPS["workflow_timeline"], RULESET_SPEC["timeline"], timeline_actual, timeline_ok)
+    timeline_check["diagnostic"] = not require_workflow_timeline
+    checks.append(timeline_check)
 
     build_ok = build == RULESET_SPEC["application_build"] and raw.get("task_id") == TASK_ID and raw.get("instruction_sha256") == INSTRUCTION_SHA256 and raw.get("ruleset_sha256") == RULESET_SHA256
     build_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": build}
     checks.append(_check("task_evaluator_build_binding_exact", STEP_GROUPS["task_evaluator_build_binding"], {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": RULESET_SPEC["application_build"]}, build_actual, build_ok))
 
     mapped_steps = sorted({step for spec in CHECKPOINT_SPECS for step in spec["steps"]})
-    failures = [row["check_id"] for row in checks if not row["passed"]]
+    failures = [row["check_id"] for row in checks if not row["passed"] and not row.get("diagnostic")]
     return {"status": "PASS" if not failures and mapped_steps == list(range(1, 78)) else "FAIL", "checks": checks, "failures": failures, "mapped_steps": mapped_steps, "complete_step_coverage": mapped_steps == list(range(1, 78)), "current_evidence_nonempty": bool(events and notes), "source_state_mode": source_state_mode, "event_count": len(events), "note_count": len(notes)}
 
 
@@ -230,7 +236,7 @@ class WindowsOpenNoteStageMakeupThreeNotesStrictEvaluator(BaseEvaluator):
                 raise RuntimeError(str(result.get("error") or result.get("output") or "guest read failed"))
             payload = json.loads(str(result.get("stdout") or result.get("output") or "{}"))
             payload.update({"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256})
-            verdict = evaluate_state(payload, source_state_mode)
+            verdict = evaluate_state(payload, source_state_mode, require_workflow_timeline=bool(params.get("require_workflow_timeline", False)))
         except Exception as exc:
             return EvalResult(EvalStatus.ERROR, f"OpenNote read-only evaluation failed: {type(exc).__name__}: {exc}", {"read_only": True, "business_state_mutations": []})
         verdict.update({"task_id": TASK_ID, "evaluator_id": EVALUATOR_ID, "evaluator_source_sha256": _source_sha256(), "instruction_sha256": INSTRUCTION_SHA256, "ruleset_spec": RULESET_SPEC, "ruleset_sha256": RULESET_SHA256, "step_groups": STEP_GROUPS, "checkpoint_specs": CHECKPOINT_SPECS, "read_only": True, "business_state_mutations": [], "data_source": f"read-only GET http://127.0.0.1:{APP_PORT}/api/evaluation plus exact local asset/build hashes"})
