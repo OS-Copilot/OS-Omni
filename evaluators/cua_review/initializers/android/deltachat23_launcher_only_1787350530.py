@@ -2,7 +2,7 @@
 # Vendored from benchmark/initializers/android/deltachat23_launcher_only_1787350530.py.
 """Preparation for the Android tasks bound to this module.
 
-The tasks bound to this module start from com.killt.opennote being open and ready.
+The tasks bound to this module start from Delta Chat (chat.delta) being open and ready.
 """
 
 from __future__ import annotations
@@ -12,11 +12,11 @@ from evaluators.cua_review.initializers.android._base import BaseAndroidInitiali
 
 
 class DeltaChat23LauncherOnlyInitializer(BaseAndroidInitializer):
-    """Bring com.killt.opennote to the foreground and let it settle before the instruction begins."""
+    """Bring Delta Chat (chat.delta) to the foreground and let it settle before the instruction begins."""
 
     INITIALIZER_ID = "initializers.android.deltachat23_launcher_only_1787350530:DeltaChat23LauncherOnlyInitializer"
 
-    APP_PACKAGE = "com.killt.opennote"
+    APP_PACKAGE = "chat.delta"
 
     APP_ACTIVITY = ""
 
