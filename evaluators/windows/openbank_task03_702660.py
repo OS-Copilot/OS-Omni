@@ -367,9 +367,14 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
 
         transfer_expected = RULESET_SPEC["transfer"]
         transfers = _items(state, "transfers")
-        transfer_matches = [row for row in transfers if recipient and row.get("id") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_expected.items())]
+        # The app mints the transfer id at submission time, so the id recorded in
+        # the human reference run can never be reproduced; RULESET_SPEC["transfer"]["id"]
+        # is documentation-only.  Grade the semantic fields only.  See
+        # scan_work/fix_briefs/windows-openbank-transfer-id.md (transfer_caleb).
+        transfer_fields = {key: value for key, value in transfer_expected.items() if key != "id"}
+        transfer_matches = [row for row in transfers if recipient and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_fields.items())]
         transfer = transfer_matches[0] if len(transfer_matches) == 1 else None
-        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
+        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer.get("id") and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
         transfer_event = transfer_event_matches[0] if len(transfer_event_matches) == 1 else None
         checks.append(cls._check(CHECKPOINT_SPECS[8], transfer is not None and transfer_event is not None, {"object_count": len(transfer_matches), "object": transfer or transfer_matches, "event": _summary(transfer_event or {})}))
         ordered_events.append(transfer_event)
