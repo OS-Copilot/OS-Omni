@@ -686,10 +686,13 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         )
 
         expected_first_lines = cls._resolve_line_spec(FIRST_NOTE_LINE_SPEC, selected_sources)
-        expected_first_bytes = cls._expected_bytes(expected_first_lines)
         expected_second_lines = list(SECOND_NOTE_LINES)
-        expected_second_bytes = cls._expected_bytes(expected_second_lines)
-        first_exact = expected_first_bytes is not None and first_note_bytes == expected_first_bytes
+        # The app prepends its managed creation title to the note file; compare the
+        # explicit title-normalized lines instead of raw file bytes (ruleset
+        # title_handling; scan IOS-003).
+        first_exact = expected_first_lines is not None and first_note_lines == list(
+            expected_first_lines
+        )
         checks.append(
             cls._check(
                 "first_note_exact_bytes_and_newlines",
@@ -716,7 +719,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 failure_reason="the first note has missing, extra, repeated, reordered, or wrongly separated bytes",
             )
         )
-        second_exact = second_note_bytes == expected_second_bytes
+        second_exact = second_note_lines == expected_second_lines
         checks.append(
             cls._check(
                 "second_note_exact_bytes_and_newlines",
@@ -777,7 +780,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             row=first_attachment,
             note_path=first_note_path,
             expected_filename=FIRST_NOTE_NAME,
-            expected_bytes=expected_first_bytes,
+            expected_lines=expected_first_lines,
             sent_state=sent_state,
             baseline_max_timestamp=baseline_max_timestamp,
         )
@@ -786,7 +789,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             row=second_attachment,
             note_path=second_note_path,
             expected_filename=SECOND_NOTE_NAME,
-            expected_bytes=expected_second_bytes,
+            expected_lines=expected_second_lines,
             sent_state=sent_state,
             baseline_max_timestamp=baseline_max_timestamp,
         )
@@ -796,9 +799,9 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 bool(first_attachment_evidence["pass"]),
                 steps=list(range(63, 68)),
                 dimension="final_object",
-                expected="one sent post-baseline first-note attachment with the exact canonical bytes",
+                expected="one sent post-baseline first-note attachment whose content matches the expected lines and whose blob is byte-identical to the note",
                 observed=first_attachment_evidence,
-                failure_reason="the first attachment is missing, unsafe, stale, unsent, misnamed, or byte-different",
+                failure_reason="the first attachment is missing, unsafe, stale, unsent, misnamed, or not byte-identical to the note",
             )
         )
         checks.append(
@@ -807,9 +810,9 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
                 bool(second_attachment_evidence["pass"]),
                 steps=list(range(75, 80)),
                 dimension="final_object",
-                expected="one sent post-baseline second-note attachment with the exact canonical bytes",
+                expected="one sent post-baseline second-note attachment whose content matches the expected lines and whose blob is byte-identical to the note",
                 observed=second_attachment_evidence,
-                failure_reason="the second attachment is missing, unsafe, stale, unsent, misnamed, or byte-different",
+                failure_reason="the second attachment is missing, unsafe, stale, unsent, misnamed, or not byte-identical to the note",
             )
         )
 
@@ -1057,7 +1060,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         row: sqlite3.Row | None,
         note_path: Path,
         expected_filename: str,
-        expected_bytes: bytes | None,
+        expected_lines: Sequence[str] | None,
         sent_state: int,
         baseline_max_timestamp: int,
     ) -> dict[str, Any]:
@@ -1078,6 +1081,18 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
         blob_bytes = blob_path.read_bytes() if blob_path is not None and blob_path.is_file() else b""
         note_hash = cls._sha256_bytes(note_bytes) if note_bytes else None
         blob_hash = cls._sha256_bytes(blob_bytes) if blob_bytes else None
+        expected_bytes = cls._expected_bytes(expected_lines)
+        note_lines = cls._logical_lines(note_bytes)
+        # The share must be byte-identical to the actual note file (which may carry
+        # the app-managed title); content is judged from the normalized lines
+        # (ruleset title_handling; scan IOS-004).
+        content_ok = (
+            expected_lines is not None
+            and bool(note_bytes)
+            and note_lines is not None
+            and note_lines == list(expected_lines)
+            and blob_bytes == note_bytes
+        )
         passed = (
             filename == expected_filename
             and note_path.name == expected_filename
@@ -1086,9 +1101,7 @@ class DeltaChatRouteApprovalStateEvaluator(BaseEvaluator):
             and safe_blob
             and blob_path is not None
             and blob_path.is_file()
-            and expected_bytes is not None
-            and note_bytes == expected_bytes
-            and blob_bytes == expected_bytes
+            and content_ok
         )
         return {
             "pass": passed,
