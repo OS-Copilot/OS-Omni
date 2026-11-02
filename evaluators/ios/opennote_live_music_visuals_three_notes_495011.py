@@ -414,10 +414,12 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
     def _checkpoint(
         spec: Mapping[str, Any], outcome: tuple[bool, Any, Any, str | None],
         *, evidence_source: str, evidence_sha256: str, observed_at: str, session_id: str,
+        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
             "name": spec["name"], "steps": list(spec["steps"]), "predicate": spec["predicate"],
+            "diagnostic": bool(diagnostic),
             "passed": bool(passed), "expected": expected, "actual": actual,
             "ruleset_sha256": RULESET_SHA256,
             "evidence": {"source": evidence_source, "path": "$.groups" if spec["name"] != "timeline_exact" else "$.event_suffix"},
@@ -428,6 +430,7 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
     @classmethod
     def evaluate_evidence(
         cls, raw: Mapping[str, Any], *, evidence_source: str = "memory://opennote-evidence", evidence_sha256: str | None = None,
+        require_timeline_exact: bool = False,
     ) -> EvalResult:
         digest = evidence_sha256 or hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         outcomes = (
@@ -444,10 +447,20 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
                 spec, outcome, evidence_source=evidence_source, evidence_sha256=digest,
                 observed_at=str(raw.get("observed_at") or ""),
                 session_id=str(raw.get("evaluation_session_id") or ""),
+                diagnostic=spec["name"] == "timeline_exact" and not require_timeline_exact,
             )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
-        failures = [check["name"] for check in checks if not check["passed"]]
+        # The fixed event-suffix order and monotonic timestamps are not stated in the
+        # English brief and every deliverable is already graded by the state/engagement
+        # checkpoints, so timeline_exact is diagnostic evidence unless the task opts in
+        # with params["require_timeline_exact"]; see
+        # scan_work/fix_briefs/ios-opennote-timeline-gate.md.
+        failures = [
+            check["name"]
+            for check in checks
+            if not check["passed"] and not check["diagnostic"]
+        ]
         metadata = {
             "task_id": TASK_ID, "evaluator_id": EVALUATOR_ID,
             "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256,
@@ -495,7 +508,10 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
         rain_engagement_exact_predicate(raw)
         curly_note_exact_predicate(raw)
         timeline_exact_predicate(raw)
-        result = self.evaluate_evidence(raw, evidence_source=str(evidence_path), evidence_sha256=evidence_sha)
+        result = self.evaluate_evidence(
+            raw, evidence_source=str(evidence_path), evidence_sha256=evidence_sha,
+            require_timeline_exact=bool(params.get("require_timeline_exact", False)),
+        )
         result.metadata["observed"] = {"udid": udid, "applications": applications, "bundle_id": DEFAULT_BUNDLE_ID, "local_state_key": LOCAL_STATE_KEY}
         result.metadata["evaluator_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
         return result

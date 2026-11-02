@@ -499,6 +499,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
         evidence_sha256: str,
         observed_at: str,
         session_id: str,
+        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
@@ -507,6 +508,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
             "predicate": spec["predicate"],
             "value_contract_id": spec["value_contract_id"],
             "match_mode": spec["match_mode"],
+            "diagnostic": bool(diagnostic),
             "passed": bool(passed),
             "expected": expected,
             "actual": actual,
@@ -531,6 +533,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
         *,
         evidence_source: str = "memory://opennote-evidence",
         evidence_sha256: str | None = None,
+        require_timeline_exact: bool = False,
     ) -> EvalResult:
         digest = evidence_sha256 or hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         outcomes = (
@@ -549,10 +552,20 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
                 evidence_sha256=digest,
                 observed_at=str(raw.get("observed_at") or ""),
                 session_id=str(raw.get("evaluation_session_id") or ""),
+                diagnostic=spec["name"] == "timeline_exact" and not require_timeline_exact,
             )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
-        failures = [check["name"] for check in checks if not check["passed"]]
+        # The fixed event-suffix order is not stated in the English brief and every
+        # deliverable is already graded by the note/profile/engagement checkpoints,
+        # so timeline_exact is recorded as diagnostic evidence unless the task opts
+        # in with params["require_timeline_exact"]; see
+        # scan_work/fix_briefs/ios-opennote-timeline-gate.md.
+        failures = [
+            check["name"]
+            for check in checks
+            if not check["passed"] and not check["diagnostic"]
+        ]
         metadata = {
             "task_id": TASK_ID,
             "evaluator_id": EVALUATOR_ID,
@@ -647,6 +660,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
             raw,
             evidence_source=str(evidence_path),
             evidence_sha256=evidence_sha256,
+            require_timeline_exact=bool(params.get("require_timeline_exact", False)),
         )
         result.metadata["observed"] = {
             "udid": udid,
