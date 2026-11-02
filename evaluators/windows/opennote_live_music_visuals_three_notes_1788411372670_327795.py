@@ -73,6 +73,24 @@ RULESET_SHA256 = hashlib.sha256(json.dumps(RULESET_SPEC, ensure_ascii=False, sor
 def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in row.items() if k not in {"seq", "timestamp"}}
 
+
+def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse retried durable events that repeat the same payload back to back."""
+    collapsed: list[dict[str, Any]] = []
+    for row in rows:
+        if not collapsed or collapsed[-1] != row:
+            collapsed.append(row)
+    return collapsed
+
+
+def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
+    """Match every expected durable event in order, skipping app retries/extras."""
+    matched = 0
+    for row in actual:
+        if matched < len(expected) and row == expected[matched]:
+            matched += 1
+    return matched == len(expected)
+
 def _note(row: Mapping[str, Any] | None) -> dict[str, Any]:
     item = row or {}
     return {k: item.get(k) for k in ("authorHandle", "title", "text", "category", "tags", "location", "cover")}
@@ -81,7 +99,7 @@ def _check(check_id: str, expected: Any, actual: Any, passed: bool) -> dict[str,
     spec = next(s for s in CHECKPOINT_SPECS if s["check_id"] == check_id)
     return {**spec, "expected": expected, "actual": actual, "passed": bool(passed), "failure_reason": None if passed else "exact value, cardinality, build, or causal-order mismatch"}
 
-def evaluate_state(raw: Mapping[str, Any], source_state_mode: str, require_workflow_timeline: bool = False) -> dict[str, Any]:
+def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, Any]:
     state = raw.get("state") if isinstance(raw.get("state"), Mapping) else {}
     events = [r for r in state.get("events", []) if isinstance(r, Mapping)]
     notes = [r for r in state.get("notes", []) if isinstance(r, Mapping)]
@@ -143,18 +161,34 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str, require_workf
     }
     navigation_contract = {key: bool(rows) for key, rows in nav_events.items()}
     navigation_evidence = {key: [{"seq": row.get("seq"), "payload": _payload(row)} for row in rows] for key, rows in nav_events.items()}
-    timeline_actual = {"sequence": seqs, "durable_events": durable, "navigation_contract": navigation_contract, "navigation_evidence": navigation_evidence}
-    timeline_ok = seqs == sorted(set(seqs)) and durable == expected_durable and all(navigation_contract.values())
-    # The English brief grades the deliverables, not the exact durable event order;
-    # see scan_work/fix_briefs/windows-opennote-timeline-gate.md. The sequence/list
-    # comparison is still recorded but only influences the verdict when opted in.
-    timeline_check = _check("workflow_timeline_exact", {"durable_events": expected_durable, "navigation_contract": {k: True for k in navigation_contract}}, timeline_actual, timeline_ok)
-    timeline_check["diagnostic"] = not require_workflow_timeline
-    checks.append(timeline_check)
+    projection = _collapse_consecutive_duplicates(durable)
+    timeline_actual = {"sequence": seqs, "durable_events": durable, "deduplicated_durable_events": projection}
+    # Hard deduplicated ordered projection: every expected durable event must be
+    # present in order, while retried/duplicated app events are tolerated. The old
+    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
+    # Evidence: scan.CSV WIN-057 and
+    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
+    timeline_ok = _is_ordered_projection(projection, expected_durable)
+    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok))
+    # The English brief separately requires both Explore interactions ("with both
+    # interactions completed within the Explore section", task YAML:9), so the
+    # navigation evidence stays a hard checkpoint of its own; it is not part of the
+    # durable-event timeline predicate.
+    navigation_expected = {key: True for key in navigation_contract}
+    navigation_passed = all(navigation_contract.values())
+    checks.append({
+        "check_id": "workflow_navigation_hard",
+        "steps": STEP_GROUPS["workflow_timeline"],
+        "predicate": "workflow_navigation_hard",
+        "expected": {"navigation_contract": navigation_expected},
+        "actual": {"navigation_contract": navigation_contract, "navigation_evidence": navigation_evidence},
+        "passed": navigation_passed,
+        "failure_reason": None if navigation_passed else "Explore-section navigation evidence is missing or out of order",
+    })
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}
     checks.append(_check("task_evaluator_build_binding_exact", binding_expected, binding_actual, binding_actual == binding_expected))
-    mapped = sorted({n for s in CHECKPOINT_SPECS for n in s["steps"]}); failures = [c["check_id"] for c in checks if not c["passed"] and not c.get("diagnostic")]
+    mapped = sorted({n for s in CHECKPOINT_SPECS for n in s["steps"]}); failures = [c["check_id"] for c in checks if not c["passed"]]
     return {"status": "PASS" if not failures and mapped == list(range(1, 74)) else "FAIL", "checks": checks, "failures": failures, "mapped_steps": mapped, "complete_step_coverage": mapped == list(range(1, 74)), "current_evidence_nonempty": bool(events and notes), "source_state_mode": source_state_mode}
 
 def _probe() -> str:
@@ -173,7 +207,7 @@ class WindowsOpenNoteLiveMusicVisualsThreeNotesStrictEvaluator(BaseEvaluator):
             result = controller.run_python_script(_probe(), timeout=int(params.get("timeout", 90)))
             if int(result.get("returncode", result.get("return_code", 0)) or 0): raise RuntimeError(result.get("error") or result.get("output"))
             raw = json.loads(str(result.get("stdout") or result.get("output") or "{}")); raw |= {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256}
-            verdict = evaluate_state(raw, mode, require_workflow_timeline=bool(params.get("require_workflow_timeline", False)))
+            verdict = evaluate_state(raw, mode)
         except Exception as exc:
             return EvalResult(EvalStatus.ERROR, f"OpenNote read-only evaluation failed: {type(exc).__name__}: {exc}", {"read_only": True, "business_state_mutations": []})
         verdict |= {"task_id": TASK_ID, "evaluator_id": EVALUATOR_ID, "evaluator_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "instruction_sha256": INSTRUCTION_SHA256, "ruleset_spec": RULESET_SPEC, "ruleset_sha256": RULESET_SHA256, "step_groups": STEP_GROUPS, "checkpoint_specs": CHECKPOINT_SPECS, "read_only": True, "business_state_mutations": [], "data_source": "current read-only OpenNote API plus exact asset/build hashes"}
