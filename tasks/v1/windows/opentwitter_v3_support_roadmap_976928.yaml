@@ -10,9 +10,10 @@ instruction: |-
 
   Mark all notifications as read. Update the profile by replacing the existing Display name with "Alex Support" and the existing Bio with "Roadmap notes ready", and save these changes. The OpenTwitter application should remain in the foreground upon completion.
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.opentwitter:OpenTwitterInitializer
   params:
     app_name: OpenTwitter
+    port: 4350
     wait_ms: 1500
 evaluation:
   evaluator_id: evaluators.windows.opentwitter_v3_support_roadmap_976928:OpenTwitterV3SupportRoadmap976928Evaluator

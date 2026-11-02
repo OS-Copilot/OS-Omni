@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import find_dispute_route
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -274,7 +275,8 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task01_551454',
                                                               77,
                                                               78],
                                                     'checks': ['ORDERED_EXACT']}}}
-RULESET_SHA256 = '5ee8e473b50600a2c10b854a380929822efafacdb129ffceb136883b42b5e5d5'
+RULESET_SPEC["event_route_policy"] = "search < detail < submit; subsequent inspection does not erase a completed route"
+RULESET_SHA256 = '0b19fdb8397d7093a45328f63761b9d6bb63053dfec75d3680d94205879a6114'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task01_551454:OpenBankTask01551454Evaluator"
 
@@ -384,12 +386,7 @@ class OpenBankTask01551454Evaluator(BaseEvaluator):
         for offset, expected in enumerate(RULESET_SPEC["disputes"], start=8):
             matches = [row for row in disputes if row.get("merchant") == expected["merchant"] and row.get("reason") == expected["reason"] and row.get("contactedMerchant") is True and row.get("details") == expected["details"] and row.get("status") == "Submitted"]
             target = matches[0] if len(matches) == 1 else None
-            search_events = [row for row in events if row.get("type") == "transactions_viewed" and row.get("q") == expected["query"] and int(row.get("total", 0)) > 0]
-            detail_events = [row for row in events if target and row.get("type") == "transaction_details_viewed" and row.get("transactionId") == target.get("transactionId")]
-            submit_events = [row for row in events if target and row.get("type") == "transaction_dispute_submitted" and row.get("disputeId") == target.get("id") and row.get("transactionId") == target.get("transactionId") and row.get("reason") == expected["reason"]]
-            search = search_events[-1] if search_events else None
-            detail = next((row for row in detail_events if search and int(row.get("seq", -1)) > int(search.get("seq", -1))), None)
-            submit = next((row for row in submit_events if detail and int(row.get("seq", -1)) > int(detail.get("seq", -1))), None)
+            search, detail, submit = find_dispute_route(events, target, expected)
             passed = len(matches) == 1 and search is not None and detail is not None and submit is not None
             checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {"object_count": len(matches), "search": _summary(search or {}), "detail": _summary(detail or {}), "submit": _summary(submit or {}), "object": target or matches}))
             ordered_events.append(submit)

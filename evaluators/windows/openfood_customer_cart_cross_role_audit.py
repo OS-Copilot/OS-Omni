@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import io
 import json
 import math
 import re
@@ -688,10 +687,12 @@ $windows = @(
         if int(result.get("returncode", -1)) != 0:
             raise RuntimeError(str(result.get("output") or result.get("error") or "guest PowerShell failed"))
         metadata: dict[str, Any] = {"process_check": json.loads(str(result.get("output") or "{}"))}
-        observation = final_observation or controller.observe(
-            include_ui_tree=True,
-            include_screenshot_data=True,
-        )
+        observation = final_observation
+        # screenshot_only agent observations intentionally omit the UI tree.
+        # That is not evidence that the final application has no visible text.
+        if (observation is None or not getattr(observation, "ui_nodes", None)
+                or not getattr(observation, "screenshot_data", None)):
+            observation = controller.observe(include_ui_tree=True, include_screenshot_data=True)
         ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
 
         def collect_text(value: Any) -> list[str]:
@@ -711,13 +712,8 @@ $windows = @(
         screenshot_data = getattr(observation, "screenshot_data", None) or b""
         if screenshot_data:
             try:
-                import pytesseract
-                from PIL import Image, ImageEnhance, ImageOps
-
-                image = Image.open(io.BytesIO(screenshot_data)).convert("RGB")
-                prepared = ImageOps.grayscale(image)
-                prepared = ImageEnhance.Contrast(prepared).enhance(1.8)
-                ocr_text = pytesseract.image_to_string(prepared, config="--psm 6")
+                from evaluators.windows.ocr import read_screenshot_text
+                ocr_text = read_screenshot_text(screenshot_data)
             except Exception as exc:
                 ocr_error = f"{type(exc).__name__}: {exc}"
 

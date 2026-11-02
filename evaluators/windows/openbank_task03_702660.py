@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import find_dispute_route
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -148,8 +149,7 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
                'routingNumber': '021000021',
                'accountNumber': '8642073159',
                'mask': '3159'},
- 'transfer': {'id': 'transfer-1787670532170',
-              'fromAccountId': 'savings-9140',
+ 'transfer': {'fromAccountId': 'savings-9140',
               'recipientName': 'Caleb Wong',
               'amount': 149.75,
               'scheduledDate': '2026-06-06',
@@ -255,7 +255,9 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
                                                               75,
                                                               76],
                                                     'checks': ['ORDERED_EXACT']}}}
-RULESET_SHA256 = 'ec1492ca27dd4204213465843e54591bcfe7669d6113a6538cf99a0dc980b9e7'
+RULESET_SPEC["event_route_policy"] = "search < detail < submit; subsequent inspection does not erase a completed route"
+RULESET_SPEC["transfer_identity_policy"] = "unique exact business object; bind generated ID to its submission event"
+RULESET_SHA256 = '7c884214acf632a5cde8b9be4b806c4542b212d8287b720f5f661b005bf92575'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task03_702660:OpenBankTask03702660Evaluator"
 
@@ -337,12 +339,7 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
         for index, expected in enumerate(RULESET_SPEC["disputes"]):
             object_matches = [row for row in disputes if row.get("merchant") == expected["merchant"] and row.get("reason") == expected["reason"] and row.get("contactedMerchant") is True and row.get("details") == expected["details"] and row.get("status") == "Submitted"]
             target = object_matches[0] if len(object_matches) == 1 else None
-            search_events = [row for row in events if row.get("type") == "transactions_viewed" and row.get("q") == expected["query"] and int(row.get("total", 0)) > 0]
-            detail_events = [row for row in events if target and row.get("type") == "transaction_details_viewed" and row.get("transactionId") == target.get("transactionId")]
-            submit_events = [row for row in events if target and row.get("type") == "transaction_dispute_submitted" and row.get("disputeId") == target.get("id") and row.get("transactionId") == target.get("transactionId") and row.get("reason") == expected["reason"]]
-            search = search_events[-1] if search_events else None
-            detail = next((row for row in detail_events if search and int(row.get("seq", -1)) > int(search.get("seq", -1))), None)
-            submit = next((row for row in submit_events if detail and int(row.get("seq", -1)) > int(detail.get("seq", -1))), None)
+            search, detail, submit = find_dispute_route(events, target, expected)
             passed = len(object_matches) == 1 and search is not None and detail is not None and submit is not None
             checks.append(cls._check(CHECKPOINT_SPECS[index], passed, {"object_count": len(object_matches), "search": _summary(search or {}), "detail": _summary(detail or {}), "submit": _summary(submit or {}), "object": target or object_matches}))
             ordered_events.append(submit)
@@ -367,9 +364,9 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
 
         transfer_expected = RULESET_SPEC["transfer"]
         transfers = _items(state, "transfers")
-        transfer_matches = [row for row in transfers if recipient and row.get("id") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_expected.items())]
+        transfer_matches = [row for row in transfers if recipient and str(row.get("id") or "").startswith("transfer-") and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_expected.items())]
         transfer = transfer_matches[0] if len(transfer_matches) == 1 else None
-        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
+        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer.get("id") and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
         transfer_event = transfer_event_matches[0] if len(transfer_event_matches) == 1 else None
         checks.append(cls._check(CHECKPOINT_SPECS[8], transfer is not None and transfer_event is not None, {"object_count": len(transfer_matches), "object": transfer or transfer_matches, "event": _summary(transfer_event or {})}))
         ordered_events.append(transfer_event)

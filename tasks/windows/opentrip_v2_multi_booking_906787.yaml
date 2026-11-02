@@ -20,6 +20,11 @@ init:
     app_name: OpenTrip
     port: 4330
     expected_logged_in: false
+    required_inventory:
+      - {type: flight, id: f2008, fields: {flightNo: ES8139, from: PVG, to: CKG, date: '2026-06-01'}}
+      - {type: flight, id: f1001, fields: {flightNo: ES6821, from: SHA, to: SYX, date: '2026-06-12'}}
+      - {type: hotel, id: h4887, fields: {name: 'Chengdu Jade Pavilion Boutique Stay'}}
+      - {type: hotel, id: h4879, fields: {name: 'Beijing Jade Pavilion Boutique Stay'}}
     expected_snapshot_display_name: s1
     final_wait_ms: 1800
     expected_seed:

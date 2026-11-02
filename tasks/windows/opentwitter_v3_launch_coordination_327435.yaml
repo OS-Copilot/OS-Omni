@@ -13,9 +13,10 @@ instruction: Publish four consecutive posts from the Home feed on the OpenTwitte
   name with "Alex Launch" and the existing Bio with "Launch notes ready", then save the changes to ensure
   they are persisted. The OpenTwitter application should remain the foreground application upon completion.
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.opentwitter:OpenTwitterInitializer
   params:
     app_name: OpenTwitter
+    port: 4350
     wait_ms: 1500
 evaluation:
   evaluator_id: evaluators.windows.opentwitter_v3_launch_coordination_327435:OpenTwitterV3LaunchCoordination327435Evaluator

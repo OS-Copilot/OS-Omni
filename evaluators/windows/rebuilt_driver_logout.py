@@ -2,10 +2,11 @@
 from core.evaluation import EvalResult,EvalStatus
 from evaluators.cua_review.evaluators.windows.opendriver import OpenDriverWindowsLogoutEvaluator,ID_KEYS
 def owned_messages(store,accounts):
- target={str(OpenDriverWindowsLogoutEvaluator.scalar(a,ID_KEYS)) for a in accounts};nodes=[n for _,n in OpenDriverWindowsLogoutEvaluator.nodes(store)];tickets={str(n.get('id')):n for n in nodes if 'userId' in n or 'riderId' in n};found=[]
- for n in nodes:
+ target={str(OpenDriverWindowsLogoutEvaluator.scalar(a,ID_KEYS)) for a in accounts};nodes=OpenDriverWindowsLogoutEvaluator.nodes(store);tickets={str(n.get('id')):n for _,n in nodes if 'userId' in n or 'riderId' in n};found=[]
+ for path,n in nodes:
   body=n.get('message') or n.get('body') or n.get('text') or n.get('content')
-  if not isinstance(body,str) or not any(k in n for k in ['ticketId','ticket_id','authorId','sender']):continue
+  initial_ticket=path.startswith('$.supportTickets[') and path.count('.')==1 and 'id' in n and 'userId' in n
+  if not isinstance(body,str) or not (initial_ticket or any(k in n for k in ['ticketId','ticket_id','authorId','sender'])):continue
   owner=n.get('authorId') or n.get('userId') or n.get('sender')
   if owner is None:
    ticket=tickets.get(str(n.get('ticketId') or n.get('ticket_id')),{});owner=ticket.get('userId') or ticket.get('riderId')

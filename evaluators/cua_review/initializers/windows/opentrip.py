@@ -10,11 +10,51 @@ performs.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Mapping
 
-from evaluators.cua_review.initializers.windows.setup import BaseWindowsInitializer, WindowsPreparationError
+from evaluators.cua_review.initializers.windows.setup import (
+    BaseWindowsInitializer, WindowsPreparationError, run_python_json,
+)
 
 DEFAULT_EXECUTABLE = r"C:\Apps\OpenTrip\opentrip.exe"
+
+
+INVENTORY_PROBE = """import json, os, pathlib, struct
+seed = None
+for folder in candidates:
+    folder = pathlib.Path(os.path.expandvars(folder))
+    unpacked = folder / 'app' / 'shared' / 'seed-data.json'
+    if unpacked.is_file():
+        seed = json.loads(unpacked.read_text(encoding='utf8'))
+        break
+    archive = folder / 'app.asar'
+    if not archive.is_file():
+        continue
+    with archive.open('rb') as stream:
+        prefix = stream.read(16)
+        header_size = struct.unpack_from('<I', prefix, 4)[0]
+        json_size = struct.unpack_from('<I', prefix, 12)[0]
+        header = json.loads(stream.read(json_size))
+        entry = header['files']['shared']['files']['seed-data.json']
+        if entry.get('unpacked'):
+            seed = json.loads((folder / 'app.asar.unpacked' / 'shared' / 'seed-data.json').read_text(encoding='utf8'))
+        else:
+            stream.seek(8 + header_size + int(entry['offset']))
+            seed = json.loads(stream.read(entry['size']))
+        break
+if seed is None:
+    raise RuntimeError('OpenTrip seed archive could not be located')
+missing = []
+for entry in required:
+    kind = entry['type']
+    if kind not in ('flight', 'hotel'):
+        raise ValueError('invalid inventory type')
+    matches = [item for item in seed.get(kind + 's', []) if str(item.get('id')) == str(entry['id'])]
+    if len(matches) != 1 or any(str(matches[0].get(key)) != str(value) for key, value in entry.get('fields', {}).items()):
+        missing.append(entry)
+print(json.dumps({'missing': missing, 'flight_date_range': seed.get('flightDateRange')}))
+"""
 
 
 class OpenTripInitializer(BaseWindowsInitializer):
@@ -24,12 +64,13 @@ class OpenTripInitializer(BaseWindowsInitializer):
     APP_NAME = "OpenTrip"
     SHORTCUT_NAMES = ("OpenTrip", "Open Trip")
     EXPECT_PROCESSES = ("opentrip", "OpenTrip")
-    ENTRY_PATHS = (DEFAULT_EXECUTABLE, r"%LOCALAPPDATA%\Programs\OpenTrip\OpenTrip.exe")
+    ENTRY_PATHS = (DEFAULT_EXECUTABLE, r"C:\OS-Omni\Apps\OpenTrip\opentrip.exe", r"%LOCALAPPDATA%\Programs\OpenTrip\OpenTrip.exe")
     WAIT_MS = 1800
     PASS_MESSAGE = "OpenTrip is open on the snapshot the task names"
 
     def _prepare(self, controller: Any, params: Mapping[str, Any]) -> str:
         prepared = super()._prepare(controller, params)
+        self._verify_inventory(controller, params)
         seed = params.get("expected_seed")
         account = dict((seed or {}).get("account") or {}) if isinstance(seed, Mapping) else {}
         if account and not account.get("phone"):
@@ -38,3 +79,24 @@ class OpenTripInitializer(BaseWindowsInitializer):
         if params.get("expected_logged_in") is False:
             return f"{prepared}; the client is expected to be signed out"
         return prepared
+
+    def _verify_inventory(self, controller: Any, params: Mapping[str, Any]) -> None:
+        inventory = list(params.get("required_inventory") or [])
+        if not inventory:
+            return
+        # The newer API scans every daily flight file for legacy IDs. Inspect
+        # the installed seed before launch to avoid that expensive, futile scan.
+        candidates = [
+            r"C:\Apps\OpenTrip\resources",
+            r"C:\OS-Omni\Apps\OpenTrip\resources",
+            r"%LOCALAPPDATA%\Programs\OpenTrip\resources",
+        ]
+        code = f"required = {inventory!r}\ncandidates = {candidates!r}\n" + INVENTORY_PROBE
+        report = run_python_json(controller, code, timeout=30)
+        if report["missing"]:
+            raise WindowsPreparationError(
+                "OpenTrip seed/build does not contain the task's required inventory: "
+                + json.dumps(report["missing"])
+                + "; available flight dates: " + json.dumps(report.get("flight_date_range"))
+                + "; install the matching benchmark application/seed before running this task"
+            )

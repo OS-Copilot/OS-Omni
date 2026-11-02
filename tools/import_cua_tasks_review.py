@@ -1167,7 +1167,12 @@ def _replace_instruction_with_summary(
     if not isinstance(provenance, dict):
         provenance = {}
         metadata["cua_tasks_review"] = provenance
-    if instruction_override is not None:
+    if instruction_override is not None and instruction_override.get("preserve_original_instruction") is True:
+        if summary != original.strip():
+            raise ValueError(f"Original instruction override changed the workflow for {task.get('task_id')}")
+        provenance["instruction_format"] = "original_numbered_workflow"
+        provenance["instruction_summary_source"] = "preserved_source_instruction"
+    elif instruction_override is not None:
         provenance["instruction_format"] = "english_natural_language"
         provenance["instruction_summary_source"] = "generated_english_natural_language"
     elif _clean_summary_text(metadata.get("description")):

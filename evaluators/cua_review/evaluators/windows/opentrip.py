@@ -108,6 +108,32 @@ class OpenTripBookingEvaluator(BaseEvaluator):
         """Read one flat field, looking through the booking's nested records."""
         if key in booking:
             return booking.get(key)
+        # The desktop API stores camelCase fields and nested objects; the task
+        # contract uses explicit snake_case names. Never use booking.id for
+        # item_id, nor item.name for traveler_name/room_name.
+        paths = {
+            "item_id": ("item", "id"),
+            "flight_no": ("item", "flightNo"),
+            "flight_from": ("item", "from"),
+            "flight_to": ("item", "to"),
+            "flight_date": ("item", "date"),
+            "hotel_name": ("item", "name"),
+            "room_id": ("room", "id"),
+            "room_name": ("room", "name"),
+            "traveler_id": ("traveler", "id"),
+            "traveler_name": ("traveler", "name"),
+            "traveler_document_type": ("traveler", "documentType"),
+            "check_in": ("checkIn",),
+            "check_out": ("checkOut",),
+            "contact_phone": ("contactPhone",),
+        }
+        if key in paths:
+            value: Any = booking
+            for part in paths[key]:
+                if not isinstance(value, Mapping):
+                    return None
+                value = value.get(part)
+            return value
         for section in ("item", "traveler", "room", "payment", "charges"):
             nested = booking.get(section)
             if isinstance(nested, Mapping) and key in nested:

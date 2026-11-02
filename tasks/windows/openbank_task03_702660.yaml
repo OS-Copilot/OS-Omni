@@ -18,7 +18,7 @@ evaluation:
   evaluator_id: evaluators.windows.openbank_task03_702660:OpenBankTask03702660Evaluator
   params:
     port: 4340
-    expected_ruleset_sha256: ec1492ca27dd4204213465843e54591bcfe7669d6113a6538cf99a0dc980b9e7
+    expected_ruleset_sha256: 7c884214acf632a5cde8b9be4b806c4542b212d8287b720f5f661b005bf92575
 limits:
   max_steps: 240
   step_timeout_seconds: 180
