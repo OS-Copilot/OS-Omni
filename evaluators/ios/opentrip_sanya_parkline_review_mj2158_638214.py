@@ -712,13 +712,21 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         elif not isinstance(observed, Mapping):
             reasons.append("review object is missing")
         else:
-            if dict(observed) != REVIEW_EXPECTED:
+            # The app stamps review.date at submission time, so the date cannot
+            # be pinned to the manual-recording date embedded in REVIEW_EXPECTED.
+            # Normalize only the date for the exact comparisons below; its causal
+            # window is enforced separately and every other review field (plus
+            # the booking hash and review list/count shape) is still exact.
+            # Evidence: scan.CSV row IOS-001.
+            observed_date = observed.get("date")
+            expected_review = {**REVIEW_EXPECTED, "date": observed_date}
+            if dict(observed) != expected_review:
                 reasons.append("review object does not exactly match all expected fields")
-            if observed.get("date") not in allowed_review_dates:
+            if observed_date not in allowed_review_dates:
                 reasons.append("review.date is outside the causal window UTC dates")
 
             expected_booking = copy.deepcopy(dict(base_booking))
-            expected_booking["review"] = copy.deepcopy(REVIEW_EXPECTED)
+            expected_booking["review"] = copy.deepcopy(expected_review)
             expected_item = expected_booking.get("item")
             if not isinstance(expected_item, dict):
                 reasons.append("baseline review booking item is invalid")
@@ -727,7 +735,7 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 if not isinstance(reviews, list):
                     reasons.append("baseline item.reviews is invalid")
                 else:
-                    expected_item["reviews"] = [copy.deepcopy(REVIEW_EXPECTED), *reviews]
+                    expected_item["reviews"] = [copy.deepcopy(expected_review), *reviews]
                 review_count = expected_item.get("reviewCount")
                 if not isinstance(review_count, int):
                     reasons.append("baseline item.reviewCount is invalid")
