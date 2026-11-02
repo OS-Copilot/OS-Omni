@@ -359,20 +359,42 @@ class OpenShopCoffeeBabyDualCheckout958608Evaluator(BaseEvaluator):
         checks: list[dict[str, Any]] = []
         app_binding = dict(app_binding or {"pass": True, "source": "synthetic", "applications": []})
 
-        expected_session = CHECKPOINT_SPECS[0]["session"]
-        observed_session = state.get("session") if isinstance(state, Mapping) else None
+        # The app persists the legacy session as {loggedIn, user: {name, phone}}
+        # without user.id; accept an absent id but require the benchmark id when
+        # one is present. Same tolerant pattern as the repaired trip-gear sibling.
+        # See docs/ios/OPENSHOP_TRIP_GEAR_AUDIT_20261011.md.
+        session = state.get("session") if isinstance(state, Mapping) else None
+        session_user = (
+            session.get("user")
+            if isinstance(session, Mapping) and isinstance(session.get("user"), Mapping)
+            else {}
+        )
+        session_pass = (
+            isinstance(session, Mapping)
+            and session.get("loggedIn") is True
+            and session_user.get("name") == ACCOUNT_NAME
+            and session_user.get("phone") == ACCOUNT_PHONE
+            and session_user.get("id") in (None, ACCOUNT_ID)
+        )
         checks.append(
             cls._check(
                 "authentication_exact",
                 CHECKPOINT_SPECS[0]["steps"],
                 ["final_object", "content", "source_or_process"],
-                observed_session == expected_session,
+                session_pass,
                 {
-                    "session": expected_session,
+                    "session": {
+                        "loggedIn": True,
+                        "user": {
+                            "id": f"optional; if present must equal {ACCOUNT_ID}",
+                            "name": ACCOUNT_NAME,
+                            "phone": ACCOUNT_PHONE,
+                        },
+                    },
                     "seed_password_hash": EXPECTED_PASSWORD_HASH,
                 },
                 {
-                    "session": observed_session,
+                    "session": session,
                     "seed_password_hash": app_binding.get("seed_account", {}).get("passwordHash"),
                 },
             )
