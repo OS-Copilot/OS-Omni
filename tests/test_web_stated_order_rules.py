@@ -1,8 +1,8 @@
 """Web tasks: only the orders the English instruction states are graded.
 
 OpenNavigation route reviews: the session ordinals ("the first session ...") are labels;
-only "a final seventh session" / "the eighth and final session" and 2_3's "voice ... before
-the Overview is viewed" are orders.  OpenShop core order: "a saved note reading ReviewCoreA,
+only "a final seventh session" is an order in 2_1.  2_3 asks for "eight sequential navigation
+sessions", so its sessions are ordered, and "voice ... before the Overview is viewed" is kept.  OpenShop core order: "a saved note reading ReviewCoreA,
 which must subsequently be replaced with ReviewCoreA-Final".
 """
 
@@ -94,27 +94,25 @@ def test_route_review_2_1_missing_or_wrong_session_fails(monkeypatch):
     assert _grade(monkeypatch, params, once).status is EvalStatus.FAIL
 
 
-def test_route_review_2_3_voice_before_overview_and_final_session(monkeypatch):
+def test_route_review_2_3_sessions_follow_the_stated_sequence(monkeypatch):
     params = _params("opennavigation_route_review_2_3")
     specs = params["expected_sessions"]
-    assert specs[0]["voice_before_overview"] is True and specs[-1]["final"] is True
-    shuffled = [specs[i] for i in (6, 2, 0, 4, 1, 5, 3, 7)]
-    sessions = [_session(spec) for spec in shuffled]
+    assert params["ordered"] is True and specs[0]["voice_before_overview"] is True
+    sessions = [_session(spec) for spec in specs]
     result = _grade(monkeypatch, params, sessions)
     assert result.status is EvalStatus.PASS, result.metadata["failures"]
 
-    overview_first = copy.deepcopy(sessions)
-    overview_first[2]["clicks"] = ["Overview", "Mute", "End"]  # the Stanford Walk session
-    assert "session.1" in _grade(monkeypatch, params, overview_first).metadata["failures"]
-    overview_again = copy.deepcopy(sessions)
-    overview_again[2]["clicks"] = ["Overview", "Mute", "Overview", "End"]
-    assert _grade(monkeypatch, params, overview_again).status is EvalStatus.PASS
+    # "eight sequential navigation sessions": another order fails.
+    shuffled = [sessions[i] for i in (6, 2, 0, 4, 1, 5, 3, 7)]
+    assert _grade(monkeypatch, params, shuffled).status is EvalStatus.FAIL
 
-    # The two Mountain View Transit Center Transit sessions: one of them must come after all the others.
-    meta_drive = shuffled.index(specs[1])
-    transit_not_last = sessions[:meta_drive] + sessions[meta_drive + 1:] + [sessions[meta_drive]]
-    failures = _grade(monkeypatch, params, transit_not_last).metadata["failures"]
-    assert failures == ["stated_order.final_session"]
+    # Stanford Walk: the voice icon must be used before the Overview is viewed.
+    overview_first = copy.deepcopy(sessions)
+    overview_first[0]["clicks"] = ["Overview", "Mute", "End"]
+    assert _grade(monkeypatch, params, overview_first).status is EvalStatus.FAIL
+    overview_again = copy.deepcopy(sessions)
+    overview_again[0]["clicks"] = ["Overview", "Mute", "Overview", "End"]
+    assert _grade(monkeypatch, params, overview_again).status is EvalStatus.PASS
 
 
 def test_route_review_2_2_states_no_order(monkeypatch):

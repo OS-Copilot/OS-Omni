@@ -161,11 +161,10 @@ init:
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator
   params:
-    # "The first session ... The second session ..." are labels, not a required order; the brief
-    # states two orders: in the first (Stanford, Walk) session the voice icon is used "before the
-    # Overview is viewed", and "the eighth and final session" (Mountain View Transit Center,
-    # Transit) comes after the others.
-    ordered: false
+    # The brief asks for "eight sequential navigation sessions" described first to eighth, so the
+    # sessions must follow that order. It also states that in the first (Stanford, Walk) session
+    # the voice icon is used "before the Overview is viewed".
+    ordered: true
     expected_sessions:
     - destination: Stanford University
       mode: walk
