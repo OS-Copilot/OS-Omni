@@ -103,9 +103,50 @@ class OpenTripBookingEvaluator(BaseEvaluator):
             return []
         return [dict(row) for row in rows if isinstance(row, Mapping)]
 
-    @staticmethod
-    def _value(booking: Mapping[str, Any], key: str) -> Any:
-        """Read one flat field, looking through the booking's nested records."""
+    #: Expected booking-spec key -> candidate paths inside one stored
+    #: ``/api/bookings`` row, most specific first.
+    #:
+    #: The Windows app persists a booking in the camelCase shape the sibling
+    #: readers document: ``item.flightNo/from/to/date/name``,
+    #: ``traveler.id/name/documentType``, ``room.id/name``, flat
+    #: ``contactPhone``/``checkIn``/``checkOut`` and ``payment.id/label`` (see
+    #: evaluators/cua_review/evaluators/linux/opentrip.py FIELD_PATHS and
+    #: evaluators/cua_review/evaluators/macos/opentrip_textedit.py
+    #: BOOKING_FIELD_PATHS).  The snake_case spellings stay as fallbacks so
+    #: already-stored legacy evidence still matches.  Before this map every
+    #: field lookup returned None and all four windows.opentrip booking checks
+    #: failed a correct run (scan rows WIN-007..WIN-010).
+    _ALIASES: dict[str, tuple[tuple[str, ...], ...]] = {
+        "item_id": (("item", "id"),),
+        "hotel_name": (("item", "name"),),
+        "airline": (("item", "airline"),),
+        "flight_no": (("item", "flightNo"), ("item", "flight_no")),
+        "flight_from": (("item", "from"),),
+        "flight_to": (("item", "to"),),
+        "flight_date": (("item", "date"),),
+        "traveler_id": (("traveler", "id"),),
+        "traveler_name": (("traveler", "name"),),
+        "traveler_document_type": (("traveler", "documentType"),
+                                   ("traveler", "document_type")),
+        "room_id": (("room", "id"),),
+        "room_name": (("room", "name"),),
+        "check_in": (("checkIn",), ("check_in",)),
+        "check_out": (("checkOut",), ("check_out",)),
+        "contact_phone": (("contactPhone",), ("contact_phone",)),
+    }
+
+    @classmethod
+    def _value(cls, booking: Mapping[str, Any], key: str) -> Any:
+        """Read one field, trying the app's camelCase paths then legacy keys."""
+        for path in cls._ALIASES.get(key, ()):
+            current: Any = booking
+            for part in path:
+                if not isinstance(current, Mapping):
+                    current = None
+                    break
+                current = current.get(part)
+            if current is not None:
+                return current
         if key in booking:
             return booking.get(key)
         # The desktop API stores camelCase fields and nested objects; the task
