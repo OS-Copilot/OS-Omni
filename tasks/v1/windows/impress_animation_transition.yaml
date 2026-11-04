@@ -13,8 +13,9 @@ instruction: 'A 5-slide conference presentation is open in LibreOffice Impress. 
   this content: ''primary_task=windows.impress.animation_transition\nlinux_peer=linux.impress.add_dissolve_transition\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
   C:\Users\User\Documents\helloworld_hard_plus\windows_impress_animation_transition\hard_plus_review_matrix.csv with exactly
   this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
-  Use LibreOffice Impress for the presentation work; create any required .txt, .tsv, or .csv verification files directly at
-  the specified paths using the available automation/runtime file-writing method, not Notepad or another text editor.'
+  Use LibreOffice Impress for the presentation work, and write the .txt, .tsv, and .csv verification files from inside LibreOffice
+  as well (for example with a LibreOffice Basic macro created and run from Tools > Macros), not with Notepad or another text
+  editor.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:

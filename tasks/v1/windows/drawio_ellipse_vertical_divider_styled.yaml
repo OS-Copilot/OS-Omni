@@ -8,14 +8,7 @@ instruction: 'In the draw.io desktop app, use the blank diagram that is already 
   finished file open.
 
   Additional primary hard-mode requirement: Also enable a shadow on the ellipse while keeping the same single shape and no
-  text. Also create these hard-plus verification files so the final state is a multi-artifact handoff bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_handoff.tsv
-  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.drawio.ellipse_vertical_divider_styled\tlinux.drawio.refresh_release_flow\thard-plus-ready\napp\tdraw.io\tevaluator-checked'';
-  C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_dependency_index.txt
-  with exactly this content: ''primary_task=windows.drawio.ellipse_vertical_divider_styled\nlinux_peer=linux.drawio.refresh_release_flow\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
-  C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_review_matrix.csv
-  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
-  Use the target application for the visual work and create required verification files directly at the specified paths using
-  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+  text.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:
@@ -80,51 +73,6 @@ evaluation:
     check_id: drawio_ellipse_vertical_divider_styled
     timeout: 90
     stdout_contains: EVAL_RESULT:PASS
-    supplemental_checks:
-      powershell:
-      - label: primary_hard_mode
-        script: '$path = "C:\Users\User\Documents\drawio_ellipse_vertical_divider_styled.drawio"
-
-          if (-not (Test-Path -LiteralPath $path)) { Write-Output "EVAL_RESULT:FAIL drawio file missing"; exit 1 }
-
-          $raw = Get-Content -LiteralPath $path -Raw
-
-          if ($raw -notlike "*shadow=1*") { Write-Output "EVAL_RESULT:FAIL drawio missing shadow=1"; exit 1 }
-
-          Write-Output "EVAL_RESULT:PASS drawio primary style hardening found"'
-        stdout_contains: EVAL_RESULT:PASS
-        timeout: 90
-      - label: no_notepad_process
-        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
-
-          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
-
-          Write-Output ''NO_NOTEPAD_PROCESS'''
-        stdout_contains: NO_NOTEPAD_PROCESS
-        expected_exit_code: 0
-        timeout: 10
-      files:
-      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_handoff.tsv
-        exact_text: "task_id\tlinux_peer\tstatus\nwindows.drawio.ellipse_vertical_divider_styled\tlinux.drawio.refresh_release_flow\t\
-          hard-plus-ready\napp\tdraw.io\tevaluator-checked"
-      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_dependency_index.txt
-        exact_text: 'primary_task=windows.drawio.ellipse_vertical_divider_styled
-
-          linux_peer=linux.drawio.refresh_release_flow
-
-          difficulty=hard-plus
-
-          requires_multi_artifact_handoff=true
-
-          oracle_receipt=hard_plus_oracle_receipt.txt'
-      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_review_matrix.csv
-        exact_text: 'check,owner,status
-
-          linux_alignment,benchmark-ops,ready
-
-          extra_artifacts,benchmark-ops,ready
-
-          oracle_recheck,benchmark-ops,required'
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -140,7 +88,6 @@ metadata:
   - single_app
   - evaluator_backed
   - hard-plus
-  - multi_artifact_handoff
   - linux_plus
   difficulty: hard
   app: draw.io
@@ -156,6 +103,8 @@ metadata:
   linux_peer: linux.drawio.refresh_release_flow
   linux_peer_file: tasks/linux/drawio_refresh_release_flow_hard.yaml
   alignment_status: difficulty_equivalent
-  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
-  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  hard_plus_alignment: linux_peer_plus_primary_hard_mode
+  hard_plus_note: The Linux-aligned core task remains required; the main evaluator also checks the shadow (on compressed
+    and plain saves). The hard-plus handoff text files were removed because draw.io cannot write them and the agent code
+    sandbox allows only pyautogui actions.
   oracle_model: windows_oracle

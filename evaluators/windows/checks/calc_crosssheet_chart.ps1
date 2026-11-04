@@ -84,27 +84,49 @@ if actual_order != expected_order:
 def norm(cell):
     return str(wsf[cell].value or '').replace('$', '').replace(' ', '').replace(';', ',').replace("'", '').upper()
 
+def number_close(value, expected, tolerance):
+    if isinstance(value, bool):
+        return False
+    try:
+        return abs(float(value) - expected) <= tolerance
+    except (TypeError, ValueError):
+        return False
+
+# The brief asks for C:F to be filled "by looking up the matching product from the
+# corresponding quarter sheet", so those cells must hold a formula that reads that
+# sheet; any lookup style (VLOOKUP, INDEX/MATCH, SUMIF, a direct reference, ...) is
+# accepted.  Category, the derived metrics and Target Status are only described as
+# values ("fill ... as ..."), so either a formula or a typed value is accepted.  Every
+# cell must show the correct value.  A missing cached value (a workbook written by a
+# script and not recalculated) is accepted only for the formula shapes the grader has
+# always recognised, where the formula text itself shows the computation.
 for r in range(2, 7):
     prod = ws.cell(r, 1).value
     if prod not in products:
         print(f'EVAL_RESULT:FAIL unknown_product row={r} prod={prod}')
         sys.exit(1)
     expected_category, expected_target = products[prod]
-    if ws.cell(r, 2).value is not None and ws.cell(r, 2).value != expected_category:
-        print(f'EVAL_RESULT:FAIL category_value_wrong row={r}')
-        sys.exit(1)
     category_formula = norm(f'B{r}')
-    if not category_formula.startswith('=') or 'PRODUCTS' not in category_formula:
-        print(f'EVAL_RESULT:FAIL category_not_lookup_formula row={r} formula={category_formula}')
+    category_value = ws.cell(r, 2).value
+    if category_value is None:
+        if not (category_formula.startswith('=') and 'PRODUCTS' in category_formula):
+            print(f'EVAL_RESULT:FAIL category_value_missing row={r} formula={category_formula}')
+            sys.exit(1)
+    elif str(category_value).strip() != expected_category:
+        print(f'EVAL_RESULT:FAIL category_value_wrong row={r} got={category_value} expected={expected_category}')
         sys.exit(1)
 
     for idx, q in enumerate(['Q1', 'Q2', 'Q3', 'Q4'], start=3):
         cell = ws.cell(r, idx)
         formula = norm(f'{cell.column_letter}{r}')
-        if not formula.startswith('=') or q not in formula or ('VLOOKUP' not in formula and 'INDEX' not in formula and 'MATCH' not in formula and 'XLOOKUP' not in formula):
+        if not formula.startswith('=') or (q not in formula and 'INDIRECT(' not in formula):
             print(f'EVAL_RESULT:FAIL {q}_not_lookup_formula row={r} formula={formula}')
             sys.exit(1)
-        if cell.value is not None and abs(float(cell.value) - rev[prod][q]) > 1:
+        if cell.value is None:
+            if q not in formula or not any(fn in formula for fn in ('VLOOKUP', 'INDEX', 'MATCH', 'XLOOKUP')):
+                print(f'EVAL_RESULT:FAIL {q}_value_missing row={r} formula={formula}')
+                sys.exit(1)
+        elif not number_close(cell.value, rev[prod][q], 1):
             print(f'EVAL_RESULT:FAIL {q}_value_wrong row={r} got={cell.value} expected={rev[prod][q]}')
             sys.exit(1)
 
@@ -116,21 +138,24 @@ for r in range(2, 7):
     ]
     for col, exp, tokens in checks:
         formula = norm(f'{col}{r}')
-        if not formula.startswith('=') or not all(tok in formula for tok in tokens):
-            print(f'EVAL_RESULT:FAIL derived_formula_wrong cell={col}{r} formula={formula}')
-            sys.exit(1)
         value = ws[f'{col}{r}'].value
-        if value is not None and abs(float(value) - exp) > 1e-3:
+        if value is None:
+            if not (formula.startswith('=') and all(tok in formula for tok in tokens)):
+                print(f'EVAL_RESULT:FAIL derived_value_missing cell={col}{r} formula={formula}')
+                sys.exit(1)
+        elif not number_close(value, exp, 1e-3):
             print(f'EVAL_RESULT:FAIL derived_value_wrong cell={col}{r} got={value} expected={exp}')
             sys.exit(1)
 
     status_formula = norm(f'K{r}')
-    if not status_formula.startswith('=') or 'IF(' not in status_formula or 'ABOVETARGET' not in status_formula.replace('"', '') or 'BELOWTARGET' not in status_formula.replace('"', ''):
-        print(f'EVAL_RESULT:FAIL target_status_formula_wrong row={r} formula={status_formula}')
-        sys.exit(1)
     visible_status = ws.cell(r, 11).value
     exp_status = 'Above Target' if variance(prod) >= 0 else 'Below Target'
-    if visible_status is not None and visible_status != exp_status:
+    if visible_status is None:
+        unquoted = status_formula.replace('"', '')
+        if not (status_formula.startswith('=') and 'IF(' in status_formula and 'ABOVETARGET' in unquoted and 'BELOWTARGET' in unquoted):
+            print(f'EVAL_RESULT:FAIL target_status_value_missing row={r} formula={status_formula}')
+            sys.exit(1)
+    elif str(visible_status).strip() != exp_status:
         print(f'EVAL_RESULT:FAIL target_status_value_wrong row={r} got={visible_status} expected={exp_status}')
         sys.exit(1)
     fmt = str(wsf.cell(r, 9).number_format or '')
@@ -172,19 +197,38 @@ if 'Annual Revenue by Product' not in str(getattr(chart, 'title', '') or ''):
     print(f'EVAL_RESULT:FAIL chart_title_wrong got={getattr(chart, "title", None)}')
     sys.exit(1)
 
+from openpyxl.utils.cell import range_boundaries
+
+def covers_target_variance(sqref):
+    # The brief names the Target Variance column, not a range: accept any range
+    # confined to column J that covers the data rows J2:J6 (J2:J6, J1:J6, J:J, ...).
+    rows = set()
+    parts = str(sqref).replace('$', '').split()
+    if not parts:
+        return False
+    for part in parts:
+        try:
+            min_col, min_row, max_col, max_row = range_boundaries(part)
+        except Exception:
+            return False
+        if min_col != 10 or max_col != 10:
+            return False
+        rows.update(range(max(min_row or 1, 2), min(max_row or 1048576, 6) + 1))
+    return rows == {2, 3, 4, 5, 6}
+
 cf_list = list(wsf.conditional_formatting)
 red_ok = green_ok = range_ok = False
 for cf in cf_list:
-    sqref = str(cf.sqref).replace('$', '')
-    if sqref == 'J2:J6':
+    on_target = covers_target_variance(cf.sqref)
+    if on_target:
         range_ok = True
     for rule in getattr(cf, 'rules', []) or []:
         op = str(getattr(rule, 'operator', '') or '').lower()
         formulas = [str(x).strip() for x in (getattr(rule, 'formula', None) or [])]
         joined = ' '.join(formulas)
-        if sqref == 'J2:J6' and '0' in joined and ('less' in op or '<' in joined):
+        if on_target and '0' in joined and ('less' in op or '<' in joined):
             red_ok = True
-        if sqref == 'J2:J6' and '0' in joined and ('greater' in op or '>=' in joined or 'equal' in op):
+        if on_target and '0' in joined and ('greater' in op or '>=' in joined or 'equal' in op):
             green_ok = True
 if not range_ok or not red_ok or not green_ok:
     print(f'EVAL_RESULT:FAIL conditional_formatting_wrong range={range_ok} red={red_ok} green={green_ok}')
