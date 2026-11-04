@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows import opentwitter_explore as explore
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -145,20 +146,6 @@ def _summary(row: Mapping[str, Any] | None) -> dict[str, Any]:
     return {key: row.get(key) for key in keys if key in row}
 
 
-def _matching_posts(posts: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
-    needle = query.strip().casefold()
-    matches: list[dict[str, Any]] = []
-    for post in posts:
-        author = post.get("author") if isinstance(post.get("author"), Mapping) else {}
-        haystack = " ".join(
-            str(value or "")
-            for value in (post.get("text"), post.get("topic"), author.get("handle"))
-        ).casefold()
-        if needle in haystack:
-            matches.append(post)
-    return matches
-
-
 class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
     EVALUATOR_ID = EVALUATOR_ID
     RULESET_SPEC = RULESET_SPEC
@@ -235,60 +222,37 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
             }))
             event_order.append((f"post_{index}", _seq(event)))
 
-        active_sets = {
-            "post_repost_toggled": {str(value) for value in state.get("repostedPostIds", []) if value},
-            "post_like_toggled": {str(value) for value in state.get("likedPostIds", []) if value},
-            "post_bookmark_toggled": {str(value) for value in state.get("bookmarkedPostIds", []) if value},
-        }
+        # "The first post" of a stream is the post the app listed first when the stream was opened,
+        # or the first one it held before the agent's own posts (the "Content" stream lists the
+        # agent's "Content owner ready" on top); see evaluators/windows/opentwitter_explore.py.
+        # trend_target_post_ids are those pre-existing first posts, kept as the reference.  The
+        # buttons toggle, so an action already active when the stream was opened needs no new
+        # event: the seed has p-1001, the first "Design" post, saved (server.js
+        # createSeedUserState), and the restored evaluator demanded a save event that would have
+        # unsaved it.  trend_action_active is True for every action, i.e. the final state.
+        final_sets = explore.active_sets(state)
         for offset, query in enumerate(RULESET_SPEC["trend_queries"], start=5):
             runtime_query = RULESET_SPEC["trend_runtime_queries"][query]
-            matching_posts = _matching_posts(posts, runtime_query)
-            expected_target_id = RULESET_SPEC["trend_target_post_ids"][query]
-            target = next((row for row in posts if row.get("id") == expected_target_id), None)
-            target_id = str(target.get("id")) if target and target.get("id") else None
-            expected_active = RULESET_SPEC["trend_action_active"][query]
-            views = [
-                row for row in events
-                if row.get("type") == "timeline_view"
-                and str(row.get("view") or "").casefold() == "explore"
-                and str(row.get("query") or "").strip().casefold() == runtime_query.casefold()
-            ]
-            chosen_view: dict[str, Any] | None = None
-            chosen_actions: list[dict[str, Any]] = []
-            if target_id:
-                for view in views:
-                    cursor = _seq(view)
-                    actions: list[dict[str, Any]] = []
-                    for action_type, action_active in zip(RULESET_SPEC["trend_actions"], expected_active):
-                        event = next((
-                            row for row in events
-                            if _seq(row) > cursor and row.get("type") == action_type
-                            and row.get("postId") == target_id and row.get("active") is action_active
-                        ), None)
-                        if event is None:
-                            actions = []
-                            break
-                        actions.append(event)
-                        cursor = _seq(event)
-                    if len(actions) == 3:
-                        chosen_view = view
-                        chosen_actions = actions
-                        break
-            active_final = bool(target_id) and all(
-                (target_id in active_sets[action]) is action_active
-                for action, action_active in zip(RULESET_SPEC["trend_actions"], expected_active)
+            engagement = explore.first_post_engagement(
+                posts=posts,
+                all_events=all_events,
+                session_events=events,
+                query=runtime_query,
+                final_sets=final_sets,
+                account_handle=RULESET_SPEC["account"]["handle"],
             )
-            passed = bool(
-                target_id and target in matching_posts and chosen_view and len(chosen_actions) == 3 and active_final
-            )
-            checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {
+            checks.append(cls._check(CHECKPOINT_SPECS[offset], engagement["passed"], {
                 "query": query, "runtime_query": runtime_query,
-                "matching_post_count": len(matching_posts), "expected_target_id": expected_target_id,
-                "target_post": _summary(target), "expected_action_active": expected_active,
-                "matching_view_count": len(views), "view": _summary(chosen_view),
-                "ordered_actions": [_summary(row) for row in chosen_actions], "active_final": active_final,
+                "reference_target_id": RULESET_SPEC["trend_target_post_ids"][query],
+                "expected_action_active": RULESET_SPEC["trend_action_active"][query],
+                "target_post": engagement["first_post"],
+                "target_kind": engagement.get("target_kind"),
+                "matching_view_count": engagement["matching_view_count"], "view": engagement["view"],
+                "already_active_at_view": engagement.get("already_active_at_view", {}),
+                "ordered_actions": engagement["ordered_actions"], "active_final": engagement["active_final"],
+                **({"attempts": engagement["attempts"]} if "attempts" in engagement else {}),
             }))
-            event_order.append((f"trend_{offset - 4}", _seq(chosen_actions[-1] if chosen_actions else None)))
+            event_order.append((f"trend_{offset - 4}", engagement["terminal_seq"]))
 
         messages = _items(state, "messages")
         for offset, expected in enumerate(RULESET_SPEC["messages"], start=9):

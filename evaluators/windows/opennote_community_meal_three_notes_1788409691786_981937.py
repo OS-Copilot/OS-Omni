@@ -83,7 +83,13 @@ RULESET_SPEC = {
     "profile": {"handle": "lina", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Community meal lead"},
     "bakery_save": {"note_id": "n-3343", "authorHandle": "cole_51", "title": "A half-day version of bakery reviews that is easy to follow without overplanning", "category": "Food", "saved": True},
     "picnic_like": {"note_id": "n-3211", "authorHandle": "nora_02", "title": "I tried this picnic boxes 8 times until it finally worked", "category": "Food", "liked": True},
-    "picnic_save": {"note_id": "n-3046", "authorHandle": "lina", "title": "A half-day version of picnic boxes that works for a slow afternoon", "category": "Food", "saved": True},
+    # Step 32 names the card only by its title, and the Food column of the shipped seed
+    # (app.asar shared/seed-data.json) holds three notes with that exact title, none of them saved:
+    # n-3024 (Freya Bloom, 3rd card), n-3046 (Lina Park, 5th) and n-3420 (Noah Pike, 39th).  The
+    # restored evaluator accepted only n-3046; any one of the three is the note the step names.
+    "picnic_save": {"title": "A half-day version of picnic boxes that works for a slow afternoon", "category": "Food", "saved": True,
+                    "same_title_notes": [{"note_id": "n-3024", "authorHandle": "freya_60"}, {"note_id": "n-3046", "authorHandle": "lina"}, {"note_id": "n-3420", "authorHandle": "noah_16"}],
+                    "selection": "any one of same_title_notes, saved by exactly one save event"},
     "notes": EXPECTED_NOTES,
     "matching": {"strings": "case-sensitive exact", "body": "LF-preserving exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes, content type", "business_order": "strict increasing sequence; exact durable task events"},
     "checkpoint_specs": list(CHECKPOINT_SPECS),
@@ -94,7 +100,7 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
-RULESET_SHA256 = "4593f8eef01fd98b857a02596a5807eb1ba4b6ea0aeb6c971a084e08b5740e29"
+RULESET_SHA256 = "9833739df5967c793766728609af01de45ae094ea5bbb0286c4816817dc2bb36"
 assert RULESET_SHA256 == _canonical_sha256(RULESET_SPEC)
 
 
@@ -147,8 +153,8 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     session_actual = {"loggedIn": session.get("loggedIn"), "handle": user.get("handle"), "displayName": user.get("displayName"), "email": user.get("email"), "login_event_count": len(login_events)}
     checks.append(_check("login_identity_exact", RULESET_SPEC["session"] | {"login_event_count": 1}, session_actual, session_actual == RULESET_SPEC["session"] | {"login_event_count": 1}))
 
-    def engagement(key: str, state_key: str, event_type: str) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], dict[str, Any]]:
-        expected = RULESET_SPEC[key]
+    def engagement(key: str, state_key: str, event_type: str, choice: Mapping[str, Any] | None = None) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], dict[str, Any]]:
+        expected = dict(RULESET_SPEC[key]) | dict(choice or {})
         candidates = [row for row in notes if row.get("id") == expected["note_id"] and row.get("authorHandle") == expected["authorHandle"] and row.get("title") == expected["title"] and row.get("category") == expected["category"]]
         active = expected["note_id"] in (state.get(state_key) or [])
         event_rows = [row for row in events if _event_payload(row) == {"type": event_type, "noteId": expected["note_id"], "authorHandle": expected["authorHandle"], "active": True}]
@@ -174,13 +180,23 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         created[group] = event_rows
 
     _, like_events, like_actual = engagement("picnic_like", "likedNoteIds", "note_like_toggled")
-    _, picnic_save_events, save_actual = engagement("picnic_save", "savedNoteIds", "note_save_toggled")
-    picnic_actual = {"like": like_actual, "save": save_actual}
+    like_expected = {"id": "n-3211", "authorHandle": "nora_02", "title": RULESET_SPEC["picnic_like"]["title"], "category": "Food", "like": True, "candidate_count": 1, "event_count": 1}
+    # Any one same-titled Food note counts as "this note" (RULESET_SPEC picnic_save), each under
+    # the same exact contract the single note had: present once, saved, one activating event.
+    save_options: list[tuple[str, list[Mapping[str, Any]], dict[str, Any], bool]] = []
+    for option in RULESET_SPEC["picnic_save"]["same_title_notes"]:
+        _, option_events, option_actual = engagement("picnic_save", "savedNoteIds", "note_save_toggled", option)
+        option_expected = {"id": option["note_id"], "authorHandle": option["authorHandle"], "title": RULESET_SPEC["picnic_save"]["title"], "category": "Food", "save": True, "candidate_count": 1, "event_count": 1}
+        save_options.append((option["note_id"], option_events, option_actual, option_actual == option_expected))
+    saved_options = [row for row in save_options if row[3]]
+    picnic_choice = saved_options[0] if saved_options else next((row for row in save_options if row[2]["save"]), save_options[0])
+    picnic_save_id, picnic_save_events = picnic_choice[0], picnic_choice[1]
+    picnic_actual = {"like": like_actual, "save": {row[0]: row[2] for row in save_options}, "save_note_id": picnic_save_id if saved_options else None}
     picnic_expected = {
-        "like": {"id": "n-3211", "authorHandle": "nora_02", "title": RULESET_SPEC["picnic_like"]["title"], "category": "Food", "like": True, "candidate_count": 1, "event_count": 1},
-        "save": {"id": "n-3046", "authorHandle": "lina", "title": RULESET_SPEC["picnic_save"]["title"], "category": "Food", "save": True, "candidate_count": 1, "event_count": 1},
+        "like": like_expected,
+        "save": "one of " + ", ".join(row["note_id"] for row in RULESET_SPEC["picnic_save"]["same_title_notes"]) + ": saved, candidate_count 1, event_count 1",
     }
-    checks.append(_check("picnic_engagement_exact", picnic_expected, picnic_actual, picnic_actual == picnic_expected))
+    checks.append(_check("picnic_engagement_exact", picnic_expected, picnic_actual, like_actual == like_expected and bool(saved_options)))
 
     current_user = state.get("currentUser") if isinstance(state.get("currentUser"), Mapping) else {}
     profile_events = [row for row in events if _event_payload(row) == {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": RULESET_SPEC["profile"]["bio"]}]
@@ -188,16 +204,25 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     profile_expected = RULESET_SPEC["profile"] | {"profile_update_count": 1}
     checks.append(_check("profile_bio_exact", profile_expected, profile_actual, profile_actual == profile_expected))
 
-    detail_ids = ["n-3343", "n-3211", "n-3046"]
+    durable_types = {"session_login_success", "note_save_toggled", "note_like_toggled", "profile_updated", "note_created"}
+    durable_actual = [_event_payload(row) for row in events if row.get("type") in durable_types]
+    projection = _collapse_consecutive_duplicates(durable_actual)
+
+    def expected_timeline(save_events: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+        return [_event_payload(row) for row in [login_events[0] if len(login_events) == 1 else {}, bakery_events[0] if len(bakery_events) == 1 else {}, created["orange_note"][0] if len(created["orange_note"]) == 1 else {}, like_events[0] if len(like_events) == 1 else {}, save_events[0] if len(save_events) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["blue_note"][0] if len(created["blue_note"]) == 1 else {}, created["meal_plan"][0] if len(created["meal_plan"]) == 1 else {}]]
+
+    # The timeline follows whichever same-titled note was saved.
+    for note_id, option_events, _, _ in saved_options:
+        if _is_ordered_projection(projection, expected_timeline(option_events)):
+            picnic_save_id, picnic_save_events = note_id, option_events
+            break
+    durable_expected = expected_timeline(picnic_save_events)
+    detail_ids = ["n-3343", "n-3211", picnic_save_id]
     detail_events = [[row for row in events if _event_payload(row) == {"type": "note_detail_opened", "noteId": note_id}] for note_id in detail_ids]
     food_views = [row for row in events if row.get("type") == "feed_view" and row.get("view") == "home" and row.get("category") == "Food" and row.get("query") == "" and row.get("tag") == "" and row.get("handle") == ""]
     ordered = [login_events, food_views[:1], detail_events[0], bakery_events, created["orange_note"], food_views[1:2], detail_events[1], like_events, detail_events[2], picnic_save_events, profile_events, created["blue_note"], created["meal_plan"]]
     selected = [group[0] if len(group) == 1 else {} for group in ordered]
     seqs = [int(row.get("seq", -1)) for row in selected]
-    durable_types = {"session_login_success", "note_save_toggled", "note_like_toggled", "profile_updated", "note_created"}
-    durable_actual = [_event_payload(row) for row in events if row.get("type") in durable_types]
-    durable_expected = [_event_payload(row) for row in [login_events[0] if len(login_events) == 1 else {}, bakery_events[0] if len(bakery_events) == 1 else {}, created["orange_note"][0] if len(created["orange_note"]) == 1 else {}, like_events[0] if len(like_events) == 1 else {}, picnic_save_events[0] if len(picnic_save_events) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["blue_note"][0] if len(created["blue_note"]) == 1 else {}, created["meal_plan"][0] if len(created["meal_plan"]) == 1 else {}]]
-    projection = _collapse_consecutive_duplicates(durable_actual)
     timeline_actual = {"sequence": seqs, "required_group_counts": [len(group) for group in ordered], "durable_events": durable_actual, "deduplicated_durable_events": projection}
     timeline_expected = {"sequence": "strictly increasing", "required_group_counts": [1] * len(ordered), "durable_events": durable_expected}
     # Hard deduplicated ordered projection: every expected durable event must be

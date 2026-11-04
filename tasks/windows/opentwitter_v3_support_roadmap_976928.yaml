@@ -19,7 +19,7 @@ evaluation:
   evaluator_id: evaluators.windows.opentwitter_v3_support_roadmap_976928:OpenTwitterV3SupportRoadmap976928Evaluator
   params:
     port: 4350
-    expected_ruleset_sha256: 8e8543953f3ec9bab4ca8cfd06886c087a383814f29cd495cc223d21c1c164fd
+    expected_ruleset_sha256: 5751724a12600bf109fabadb2fd486b94e038e011d8eca08718de3db01a4436b
 limits:
   max_steps: 240
   step_timeout_seconds: 180
@@ -36,7 +36,7 @@ metadata:
   human_steps: 76
   gui_instruction_path: workbench/opentwitter_win11_scan_20260825/deliverables/opentwitter_04_support_roadmap/gui_instruction.txt
   instruction_sha256: 7ff80c676aacd8cbe38a39730b553e56c8986a8f9f8018d43c550da1d62a8f72
-  evaluator_ruleset_sha256: 8e8543953f3ec9bab4ca8cfd06886c087a383814f29cd495cc223d21c1c164fd
+  evaluator_ruleset_sha256: 5751724a12600bf109fabadb2fd486b94e038e011d8eca08718de3db01a4436b
   source_state_mode: human_completed_eval_only
   verifier_rules:
     primary_source: OpenTwitter read-only /api/evaluation durable state and current-session events

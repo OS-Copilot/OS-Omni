@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows import opentwitter_explore as explore
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -49,10 +50,9 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v3_support_roadmap_976928',
                            'Roadmap notes 01': 'Product',
                            'Customer updates 02': 'Support',
                            'Community replies': 'Community'},
- 'trend_target_post_ids': {'Support macros 01': 'p-alex-2001',
-                           'Roadmap notes 01': 'p-alex-2004',
-                           'Customer updates 02': 'p-alex-2002',
-                           'Community replies': 'p-1020'},
+ 'trend_target_rule': 'first post the Explore stream listed when it was opened (or the first one it '
+                      'held before posts the agent published); an action already active on that post '
+                      'then needs no new toggle, only to stay active',
  'trend_categories': {'Support macros 01': 'Policy',
                       'Roadmap notes 01': 'Policy',
                       'Customer updates 02': 'Policy',
@@ -64,7 +64,7 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v3_support_roadmap_976928',
               {'handle': 'colerivera31', 'text': 'Impact tier aligned'}],
  'profile': {'handle': 'alex', 'displayName': 'Alex Support', 'bio': 'Roadmap notes ready'},
  'notifications_all_read': True}
-RULESET_SHA256 = '8e8543953f3ec9bab4ca8cfd06886c087a383814f29cd495cc223d21c1c164fd'
+RULESET_SHA256 = '5751724a12600bf109fabadb2fd486b94e038e011d8eca08718de3db01a4436b'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = (
     "evaluators.windows.opentwitter_v3_support_roadmap_976928:"
@@ -140,17 +140,11 @@ def _summary(row: Mapping[str, Any] | None) -> dict[str, Any]:
     return {key: row.get(key) for key in keys if key in row}
 
 
-def _first_matching_post(posts: list[dict[str, Any]], query: str) -> dict[str, Any] | None:
-    needle = query.strip().casefold()
-    for post in posts:
-        author = post.get("author") if isinstance(post.get("author"), Mapping) else {}
-        haystack = " ".join(
-            str(value or "")
-            for value in (post.get("text"), post.get("topic"), author.get("displayName"), author.get("handle"))
-        ).casefold()
-        if needle in haystack:
-            return post
-    return None
+# "The first post" of a stream is the first post the app listed when the stream was opened
+# (evaluators/windows/opentwitter_explore.py).  The restored evaluator hard-coded p-alex-2004 for
+# "Roadmap notes 01" (query Product) and p-alex-2002 for "Customer updates 02" (query Support), the
+# second posts of those streams: both streams list p-alex-2001 (2026-05-25, topic Product, text
+# "...support owner...") first, the post "Support macros 01" already reposted, liked and saved.
 
 
 class OpenTwitterV3SupportRoadmap976928Evaluator(BaseEvaluator):
@@ -236,19 +230,12 @@ class OpenTwitterV3SupportRoadmap976928Evaluator(BaseEvaluator):
             post_event_rows.append(event)
             event_order.append((f"post_{index}", _seq(event)))
 
-        active_sets = {
-            "post_repost_toggled": set(str(value) for value in state.get("repostedPostIds", []) if value),
-            "post_like_toggled": set(str(value) for value in state.get("likedPostIds", []) if value),
-            "post_bookmark_toggled": set(str(value) for value in state.get("bookmarkedPostIds", []) if value),
-        }
+        final_sets = explore.active_sets(state)
         bootstrap = state.get("bootstrap") if isinstance(state.get("bootstrap"), Mapping) else {}
         bootstrap_trends = _items(bootstrap, "trends")
-        trend_terminal_rows: list[dict[str, Any] | None] = []
         previous_terminal_seq = _seq(post_event_rows[-1] if post_event_rows else login)
         for offset, query in enumerate(RULESET_SPEC["trend_queries"], start=5):
             runtime_query = RULESET_SPEC["trend_runtime_queries"][query]
-            target_id = RULESET_SPEC["trend_target_post_ids"][query]
-            target = next((row for row in posts if str(row.get("id") or "") == target_id), None)
             expected_category = RULESET_SPEC["trend_categories"][query]
             trend_rows = [
                 row for row in bootstrap_trends
@@ -257,56 +244,35 @@ class OpenTwitterV3SupportRoadmap976928Evaluator(BaseEvaluator):
                 and row.get("category") == expected_category
             ]
             trend_row = trend_rows[0] if len(trend_rows) == 1 else None
-            views = [
-                row for row in events
-                if row.get("type") == "timeline_view"
-                and str(row.get("view") or "").casefold() == "explore"
-                and str(row.get("query") or "").strip().casefold() == runtime_query.casefold()
-                and _seq(row) > previous_terminal_seq
-            ]
-            chosen_view: dict[str, Any] | None = None
-            chosen_actions: list[dict[str, Any]] = []
-            if target_id:
-                for view in views:
-                    cursor = _seq(view)
-                    actions: list[dict[str, Any]] = []
-                    for action_type in RULESET_SPEC["trend_actions"]:
-                        event = next((
-                            row for row in events
-                            if _seq(row) > cursor
-                            and row.get("type") == action_type
-                            and row.get("postId") == target_id
-                            and row.get("active") is True
-                        ), None)
-                        if event is None:
-                            actions = []
-                            break
-                        actions.append(event)
-                        cursor = _seq(event)
-                    if len(actions) == 3:
-                        chosen_view = view
-                        chosen_actions = actions
-                        break
-            active_final = bool(target_id) and all(target_id in active_sets[action] for action in RULESET_SPEC["trend_actions"])
-            passed = bool(trend_row and target and chosen_view and len(chosen_actions) == 3 and active_final)
+            engagement = explore.first_post_engagement(
+                posts=posts,
+                all_events=all_events,
+                session_events=events,
+                query=runtime_query,
+                final_sets=final_sets,
+                after_seq=previous_terminal_seq,
+                account_handle=RULESET_SPEC["account"]["handle"],
+            )
+            passed = bool(trend_row and engagement["passed"])
             checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {
                 "query": query,
                 "runtime_query": runtime_query,
                 "trend_directory_match_count": len(trend_rows),
                 "trend_directory_entry": dict(trend_row) if trend_row else {},
                 "expected_category": expected_category,
-                "expected_target_post_id": target_id,
-                "matching_post": _summary(target),
-                "matching_view_count": len(views),
-                "view": _summary(chosen_view),
-                "ordered_actions": [_summary(row) for row in chosen_actions],
-                "active_final": active_final,
+                "target_rule": RULESET_SPEC["trend_target_rule"],
+                "matching_post": engagement["first_post"],
+                "matching_view_count": engagement["matching_view_count"],
+                "view": engagement["view"],
+                "already_active_at_view": engagement.get("already_active_at_view", {}),
+                "ordered_actions": engagement["ordered_actions"],
+                "active_final": engagement["active_final"],
+                **({"attempts": engagement["attempts"]} if "attempts" in engagement else {}),
             }))
-            terminal = chosen_actions[-1] if chosen_actions else None
-            trend_terminal_rows.append(terminal)
-            event_order.append((f"trend_{offset - 4}", _seq(terminal)))
-            if terminal is not None:
-                previous_terminal_seq = _seq(terminal)
+            terminal_seq = engagement["terminal_seq"]
+            event_order.append((f"trend_{offset - 4}", terminal_seq))
+            if terminal_seq >= 0:
+                previous_terminal_seq = terminal_seq
 
         messages = _items(state, "messages")
         message_event_rows: list[dict[str, Any] | None] = []

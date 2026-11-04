@@ -62,7 +62,13 @@ RULESET_SPEC = {
     "application_build": BUILD,
     "session": {"loggedIn": True, "handle": "lina", "displayName": "Lina Park", "email": "lina@opennote.local"},
     "profile": {"handle": "lina", "displayName": "Lina Park", "title": "City life editor Live music editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying."},
-    "drew": {"id": "n-3001", "authorHandle": "drew_49", "title": "shoe pairings: small changes that keeps the whole closet simpler", "category": "Fashion", "followed": True, "liked": True},
+    # Steps 28-31 name the post only by its title, and the shipped seed (app.asar
+    # shared/seed-data.json) has two Fashion notes with that exact title, neither author followed
+    # nor note liked: n-3001 by drew_49 (first card of Explore) and n-3188 by ada_41.  The restored
+    # evaluator accepted only n-3001; either one is the post the steps name.
+    "drew": {"title": "shoe pairings: small changes that keeps the whole closet simpler", "category": "Fashion", "followed": True, "liked": True,
+             "same_title_notes": [{"id": "n-3001", "authorHandle": "drew_49"}, {"id": "n-3188", "authorHandle": "ada_41"}],
+             "selection": "any one of same_title_notes: its author followed and the note liked, one activating event each"},
     "seasonal": {"id": "n-3419", "authorHandle": "lina", "title": "A half-day version of seasonal jackets that keeps the whole closet simpler", "category": "Fashion", "liked": True},
     "notes": EXPECTED_NOTES,
     "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes and content type", "events": "exact durable sequence with exact source identities"},
@@ -127,41 +133,66 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         passed = len(candidates) == len(exact) == len(create) == 1 and assets.get(expected["cover"]) == expected["cover_content"]
         checks.append(_check(group + "_exact", expected | {"cardinality": 1}, actual, passed)); matched[group] = row; created[group] = create[0] if len(create) == 1 else {}
 
-    def engagement(key: str, check_id: str, followed: bool) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], list[Mapping[str, Any]]]:
-        expected = RULESET_SPEC[key]; candidates = [r for r in notes if r.get("id") == expected["id"] and r.get("title") == expected["title"] and r.get("authorHandle") == expected["authorHandle"] and r.get("category") == expected["category"]]
+    def engagement_state(expected: Mapping[str, Any], followed: bool) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], list[Mapping[str, Any]], dict[str, Any], dict[str, Any]]:
+        candidates = [r for r in notes if r.get("id") == expected["id"] and r.get("title") == expected["title"] and r.get("authorHandle") == expected["authorHandle"] and r.get("category") == expected["category"]]
         likes = [r for r in events if _payload(r) == {"type": "note_like_toggled", "noteId": expected["id"], "authorHandle": expected["authorHandle"], "active": True}]
         follows = [r for r in events if _payload(r) == {"type": "follow_toggled", "handle": expected["authorHandle"], "active": True}] if followed else []
         source = candidates[0] if len(candidates) == 1 else {}
         actual = {"candidate_count": len(candidates), "source": {k: source.get(k) for k in ("id", "authorHandle", "title", "category")}, "liked": expected["id"] in state.get("likedNoteIds", []), "like_event_count": len(likes)}
         wanted = {"candidate_count": 1, "source": {k: expected[k] for k in ("id", "authorHandle", "title", "category")}, "liked": True, "like_event_count": 1}
         if followed: actual |= {"followed": expected["authorHandle"] in state.get("following", []), "follow_event_count": len(follows)}; wanted |= {"followed": True, "follow_event_count": 1}
-        checks.append(_check(check_id, expected | wanted, actual, actual == wanted)); return (candidates[0] if len(candidates) == 1 else {}, likes, follows)
+        return source, likes, follows, actual, wanted
 
-    drew, drew_likes, follows = engagement("drew", "drew_engagement_exact", True)
+    def engagement(key: str, check_id: str, followed: bool) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], list[Mapping[str, Any]]]:
+        expected = RULESET_SPEC[key]
+        source, likes, follows, actual, wanted = engagement_state(expected, followed)
+        checks.append(_check(check_id, expected | wanted, actual, actual == wanted)); return (source, likes, follows)
+
+    # Any one same-titled note counts (RULESET_SPEC drew), each under the exact contract the single
+    # note had.  The timeline and navigation below follow the note that was engaged.
+    drew_options = []
+    for option in RULESET_SPEC["drew"]["same_title_notes"]:
+        expected = {**RULESET_SPEC["drew"], **option}
+        source, likes, option_follows, actual, wanted = engagement_state(expected, True)
+        drew_options.append((option, likes, option_follows, actual, actual == wanted))
+    drew_done = [row for row in drew_options if row[4]]
+    drew_choice = drew_done[0] if drew_done else next((row for row in drew_options if row[3]["liked"] or row[3]["followed"]), drew_options[0])
+    drew_wanted = "one of " + ", ".join(row["id"] for row in RULESET_SPEC["drew"]["same_title_notes"]) + ": candidate_count 1, liked, like_event_count 1, author followed, follow_event_count 1"
+    checks.append(_check("drew_engagement_exact", RULESET_SPEC["drew"] | {"wanted": drew_wanted}, {"options": {row[0]["id"]: row[3] for row in drew_options}, "engaged_note_id": drew_choice[0]["id"] if drew_done else None}, bool(drew_done)))
     seasonal, seasonal_likes, _ = engagement("seasonal", "seasonal_engagement_exact", False)
     durable = [_payload(r) for r in events if r.get("type") not in {"feed_view", "note_detail_opened"}]
-    expected_durable = [
-        {"type": "session_login_success", "handle": "lina"},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": RULESET_SPEC["profile"]["title"], "bio": RULESET_SPEC["profile"]["bio"]},
-        {"type": "note_created", "noteId": matched["blue_green_note"].get("id"), "title": "Blue Green Guitar", "category": "Fashion", "tags": ["Guitar", "blue", "green"]},
-        {"type": "follow_toggled", "handle": "drew_49", "active": True},
-        {"type": "note_like_toggled", "noteId": "n-3001", "authorHandle": "drew_49", "active": True},
-        {"type": "note_created", "noteId": matched["live_music_note"].get("id"), "title": "Live Music Visuals", "category": "Fashion", "tags": ["live", "music", "visuals"]},
-        {"type": "note_like_toggled", "noteId": "n-3419", "authorHandle": "lina", "active": True},
-        {"type": "note_created", "noteId": matched["curly_note"].get("id"), "title": "Curly Musician Photo", "category": "Fashion", "tags": ["musician", "curly", "stage"]},
-    ]
+    projection = _collapse_consecutive_duplicates(durable)
+
+    def timeline_for(option: Mapping[str, Any]) -> list[dict[str, Any]]:
+        return [
+            {"type": "session_login_success", "handle": "lina"},
+            {"type": "profile_updated", "displayName": "Lina Park", "title": RULESET_SPEC["profile"]["title"], "bio": RULESET_SPEC["profile"]["bio"]},
+            {"type": "note_created", "noteId": matched["blue_green_note"].get("id"), "title": "Blue Green Guitar", "category": "Fashion", "tags": ["Guitar", "blue", "green"]},
+            {"type": "follow_toggled", "handle": option["authorHandle"], "active": True},
+            {"type": "note_like_toggled", "noteId": option["id"], "authorHandle": option["authorHandle"], "active": True},
+            {"type": "note_created", "noteId": matched["live_music_note"].get("id"), "title": "Live Music Visuals", "category": "Fashion", "tags": ["live", "music", "visuals"]},
+            {"type": "note_like_toggled", "noteId": "n-3419", "authorHandle": "lina", "active": True},
+            {"type": "note_created", "noteId": matched["curly_note"].get("id"), "title": "Curly Musician Photo", "category": "Fashion", "tags": ["musician", "curly", "stage"]},
+        ]
+
+    for row in drew_done:
+        if _is_ordered_projection(projection, timeline_for(row[0])):
+            drew_choice = row
+            break
+    drew_note_id = drew_choice[0]["id"]
+    drew_likes, follows = drew_choice[1], drew_choice[2]
+    expected_durable = timeline_for(drew_choice[0])
     seqs = [int(r.get("seq", -1)) for r in [login[0] if len(login)==1 else {}, profile_events[0] if len(profile_events)==1 else {}, created["blue_green_note"], follows[0] if len(follows)==1 else {}, drew_likes[0] if len(drew_likes)==1 else {}, created["live_music_note"], seasonal_likes[0] if len(seasonal_likes)==1 else {}, created["curly_note"]]]
     details = [r for r in events if r.get("type") == "note_detail_opened"]
     feeds = [r for r in events if r.get("type") == "feed_view"]
     nav_events = {
-        "drew_detail_before_follow": [r for r in details if r.get("noteId") == "n-3001" and seqs[2] < int(r.get("seq", -1)) < seqs[3]],
-        "drew_detail_between_follow_like": [r for r in details if r.get("noteId") == "n-3001" and seqs[3] < int(r.get("seq", -1)) < seqs[4]],
+        "drew_detail_before_follow": [r for r in details if r.get("noteId") == drew_note_id and seqs[2] < int(r.get("seq", -1)) < seqs[3]],
+        "drew_detail_between_follow_like": [r for r in details if r.get("noteId") == drew_note_id and seqs[3] < int(r.get("seq", -1)) < seqs[4]],
         "fashion_feed_before_seasonal": [r for r in feeds if r.get("view") == "home" and r.get("query") == "" and r.get("category") == "Fashion" and seqs[5] < int(r.get("seq", -1)) < seqs[6]],
         "seasonal_detail_before_like": [r for r in details if r.get("noteId") == "n-3419" and seqs[5] < int(r.get("seq", -1)) < seqs[6]],
     }
     navigation_contract = {key: bool(rows) for key, rows in nav_events.items()}
     navigation_evidence = {key: [{"seq": row.get("seq"), "payload": _payload(row)} for row in rows] for key, rows in nav_events.items()}
-    projection = _collapse_consecutive_duplicates(durable)
     timeline_actual = {"sequence": seqs, "durable_events": durable, "deduplicated_durable_events": projection}
     # Hard deduplicated ordered projection: every expected durable event must be
     # present in order, while retried/duplicated app events are tolerated. The old

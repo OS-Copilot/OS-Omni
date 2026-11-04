@@ -91,7 +91,7 @@ evaluation:
   evaluator_id: evaluators.windows.windows_opennote_community_meal_three_notes_1788409691786_981937_evaluator:WindowsOpenNoteCommunityMealThreeNotesStrictEvaluator
   params:
     expected_instruction_sha256: dce4f512896c3d50f6b1edaf7fb3bfdcb9a039a19ad58317bf41bdaf45f6dee0
-    expected_ruleset_sha256: 4593f8eef01fd98b857a02596a5807eb1ba4b6ea0aeb6c971a084e08b5740e29
+    expected_ruleset_sha256: 9833739df5967c793766728609af01de45ae094ea5bbb0286c4816817dc2bb36
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:

@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows import opentwitter_explore as explore
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -139,20 +140,11 @@ def _summary(row: Mapping[str, Any] | None) -> dict[str, Any]:
     return {key: row.get(key) for key in keys if key in row}
 
 
-def _first_matching_post(posts: list[dict[str, Any]], query: str) -> dict[str, Any] | None:
-    needle = query.strip().casefold()
-    for post in posts:
-        if str(post.get("topic") or "").strip().casefold() == needle:
-            return post
-    for post in posts:
-        author = post.get("author") if isinstance(post.get("author"), Mapping) else {}
-        haystack = " ".join(
-            str(value or "")
-            for value in (post.get("text"), post.get("topic"), author.get("displayName"), author.get("handle"))
-        ).casefold()
-        if needle in haystack:
-            return post
-    return None
+# "The first post" of a stream is the first post the app listed when the stream was opened
+# (evaluators/windows/opentwitter_explore.py).  The restored evaluator took the first post whose
+# topic equalled the query, which the app does not do: its search also matches the text, so the
+# "Mobile" stream lists Alex's Product recap p-alex-2004 ("...the mobile draft restore issue...",
+# 2026-05-24) above Elena's Mobile post p-1016 (2026-05-22).
 
 
 class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
@@ -238,59 +230,30 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
             post_event_rows.append(event)
             event_order.append((f"post_{index}", _seq(event)))
 
-        active_sets = {
-            "post_repost_toggled": set(str(value) for value in state.get("repostedPostIds", []) if value),
-            "post_like_toggled": set(str(value) for value in state.get("likedPostIds", []) if value),
-            "post_bookmark_toggled": set(str(value) for value in state.get("bookmarkedPostIds", []) if value),
-        }
-        trend_terminal_rows: list[dict[str, Any] | None] = []
+        final_sets = explore.active_sets(state)
         for offset, query in enumerate(RULESET_SPEC["trend_queries"], start=5):
             runtime_query = RULESET_SPEC["trend_runtime_queries"][query]
-            target = _first_matching_post(posts, runtime_query)
-            target_id = str(target.get("id")) if target and target.get("id") else None
-            views = [
-                row for row in events
-                if row.get("type") == "timeline_view"
-                and str(row.get("view") or "").casefold() == "explore"
-                and str(row.get("query") or "").strip().casefold() == runtime_query.casefold()
-            ]
-            chosen_view: dict[str, Any] | None = None
-            chosen_actions: list[dict[str, Any]] = []
-            if target_id:
-                for view in views:
-                    cursor = _seq(view)
-                    actions: list[dict[str, Any]] = []
-                    for action_type in RULESET_SPEC["trend_actions"]:
-                        event = next((
-                            row for row in events
-                            if _seq(row) > cursor
-                            and row.get("type") == action_type
-                            and row.get("postId") == target_id
-                            and row.get("active") is True
-                        ), None)
-                        if event is None:
-                            actions = []
-                            break
-                        actions.append(event)
-                        cursor = _seq(event)
-                    if len(actions) == 3:
-                        chosen_view = view
-                        chosen_actions = actions
-                        break
-            active_final = bool(target_id) and all(target_id in active_sets[action] for action in RULESET_SPEC["trend_actions"])
-            passed = bool(target_id and chosen_view and len(chosen_actions) == 3 and active_final)
-            checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {
+            engagement = explore.first_post_engagement(
+                posts=posts,
+                all_events=all_events,
+                session_events=events,
+                query=runtime_query,
+                final_sets=final_sets,
+                account_handle=RULESET_SPEC["account"]["handle"],
+            )
+            checks.append(cls._check(CHECKPOINT_SPECS[offset], engagement["passed"], {
                 "query": query,
                 "runtime_query": runtime_query,
-                "matching_post": _summary(target),
-                "matching_view_count": len(views),
-                "view": _summary(chosen_view),
-                "ordered_actions": [_summary(row) for row in chosen_actions],
-                "active_final": active_final,
+                "target_rule": "first post the Explore stream listed at the view (or the first it held before posts the agent published)",
+                "matching_post": engagement["first_post"],
+                "matching_view_count": engagement["matching_view_count"],
+                "view": engagement["view"],
+                "already_active_at_view": engagement.get("already_active_at_view", {}),
+                "ordered_actions": engagement["ordered_actions"],
+                "active_final": engagement["active_final"],
+                **({"attempts": engagement["attempts"]} if "attempts" in engagement else {}),
             }))
-            terminal = chosen_actions[-1] if chosen_actions else None
-            trend_terminal_rows.append(terminal)
-            event_order.append((f"trend_{offset - 4}", _seq(terminal)))
+            event_order.append((f"trend_{offset - 4}", engagement["terminal_seq"]))
 
         messages = _items(state, "messages")
         message_event_rows: list[dict[str, Any] | None] = []

@@ -54,7 +54,7 @@ evaluation:
       flight_from: SHA
       flight_to: SYX
       flight_date: '2026-06-12'
-      cabin: business
+      cabin: economy  # the instruction asks for Economy (the source GUI steps chose Business)
       traveler_id: traveler-maya
       traveler_name: Maya Chen
       traveler_document_type: Passport
