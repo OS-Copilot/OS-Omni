@@ -1,0 +1,60 @@
+tasks:
+- tasks/v1/windows/actual_budget_add_transactions.yaml
+- tasks/v1/windows/blender_robot_tower_layout_scene.yaml
+- tasks/v1/windows/calc_crosssheet_chart.yaml
+- tasks/v1/windows/calendar_create_recurring_event.yaml
+- tasks/v1/windows/cross_app_openshop_calendar_checkout_coffee_followup_hard.yaml
+- tasks/v1/windows/deltachat_atlas_access_audit_snap1.yaml
+- tasks/v1/windows/deltachat_harbor_migration_snap1.yaml
+- tasks/v1/windows/deltachat_nova_event_snap1.yaml
+- tasks/v1/windows/drawio_ellipse_vertical_divider_styled.yaml
+- tasks/v1/windows/gimp_apple_and_orange_focus_blur_bw_upside_down.yaml
+- tasks/v1/windows/impress_animation_transition.yaml
+- tasks/v1/windows/notepad_append_text.yaml
+- tasks/v1/windows/openbank_task01_551454.yaml
+- tasks/v1/windows/openbank_task02_056264.yaml
+- tasks/v1/windows/openbank_task03_702660.yaml
+- tasks/v1/windows/openbank_task04_140186.yaml
+- tasks/v1/windows/opendriver_driver_onboarding_trip_support_snapshot1.yaml
+- tasks/v1/windows/opendriver_driver_ops_snap1.yaml
+- tasks/v1/windows/opendriver_rider_account_support_logout.yaml
+- tasks/v1/windows/opendriver_rider_account_support_logout_snapshot2.yaml
+- tasks/v1/windows/openfood_customer_cart_cross_role_audit.yaml
+- tasks/v1/windows/openfood_multirole_orders_support_cart_snapshot1.yaml
+- tasks/v1/windows/openfood_place_order_from_existing_restaurants.yaml
+- tasks/v1/windows/openfood_two_orders_support_courier_snapshot1.yaml
+- tasks/v1/windows/opennavigation_googleplex_drive_snapshot1_103013.yaml
+- tasks/v1/windows/opennavigation_meta_googleplex_meta_stanford_other_time_snapshot1_098133.yaml
+- tasks/v1/windows/opennavigation_repaired_multistop_routes_snapshot1_069627.yaml
+- tasks/v1/windows/opennavigation_stanford_meta_multistop_snapshot1_581746.yaml
+- tasks/v1/windows/opennote_community_meal_three_notes_1788409691786_981937.yaml
+- tasks/v1/windows/opennote_forum_arrival_three_notes_1788412586968_101704.yaml
+- tasks/v1/windows/opennote_live_music_visuals_three_notes_1788411372670_327795.yaml
+- tasks/v1/windows/opennote_stage_makeup_three_notes_1788408391290_206403.yaml
+- tasks/v1/windows/openphotoedit1_community_four_exports_sn2_1788424022642_141994.yaml
+- tasks/v1/windows/openphotoedit2_experimental_four_exports_sn2_1788426175327_359007.yaml
+- tasks/v1/windows/openphotoedit3_four_exact_exports_sn2_1788428213830_533412.yaml
+- tasks/v1/windows/openphotoedit4_four_exact_exports_sn2_1788431223596_956080.yaml
+- tasks/v1/windows/openshop_baby_care_order_574732.yaml
+- tasks/v1/windows/openshop_core_bundle_reviews_403191.yaml
+- tasks/v1/windows/openshop_music_category_order_100114.yaml
+- tasks/v1/windows/openshop_two_stage_travel_orders_150970.yaml
+- tasks/v1/windows/opentrip_v1_multi_booking_817321.yaml
+- tasks/v1/windows/opentrip_v2_multi_booking_906787.yaml
+- tasks/v1/windows/opentrip_v2_task_01_multi_booking_838785.yaml
+- tasks/v1/windows/opentrip_v2_task_02_multi_booking_352929.yaml
+- tasks/v1/windows/opentwitter_v1_content_billing_596978.yaml
+- tasks/v1/windows/opentwitter_v2_accessibility_performance_231082.yaml
+- tasks/v1/windows/opentwitter_v3_launch_coordination_327435.yaml
+- tasks/v1/windows/opentwitter_v3_support_roadmap_976928.yaml
+models:
+- qwen3_8_max_low
+max_steps: 300
+timeout: 180
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  release: v1
+  description: 'OS-Omni Live v1: 48 Windows tasks, Qwen3.8-max low thinking, latest
+    screenshot only.'

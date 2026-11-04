@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import mimetypes
 import re
@@ -13,7 +14,7 @@ from ..errors import LLMClientError, LLMErrorCode
 from ..types import ImagePart, Message, TextPart, ToolCall, ToolDefinition
 
 
-def image_path_to_data_url(path: str) -> str:
+def image_path_to_data_url(path: str, *, jpeg_quality: Optional[int] = None) -> str:
     """Convert an image file path to a data URL."""
 
     image_path = Path(path)
@@ -23,6 +24,20 @@ def image_path_to_data_url(path: str) -> str:
             "Image file does not exist.",
             details={"path": path},
         )
+
+    if jpeg_quality is not None:
+        from PIL import Image
+
+        if (
+            isinstance(jpeg_quality, bool)
+            or not isinstance(jpeg_quality, int)
+            or not 1 <= jpeg_quality <= 95
+        ):
+            raise ValueError("jpeg_quality must be an integer between 1 and 95")
+        buffer = io.BytesIO()
+        with Image.open(image_path) as image:
+            image.convert('RGB').save(buffer, format='JPEG', quality=jpeg_quality)
+        return 'data:image/jpeg;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
 
     mime_type, _ = mimetypes.guess_type(str(image_path))
     mime_type = mime_type or "image/png"
@@ -46,7 +61,7 @@ def image_path_to_inline_data(path: str) -> Dict[str, str]:
     return {"mimeType": mime_type, "data": data}
 
 
-def messages_to_openai(messages: List[Message]) -> List[Dict[str, Any]]:
+def messages_to_openai(messages: List[Message], *, jpeg_quality: Optional[int] = None) -> List[Dict[str, Any]]:
     """Convert unified messages to OpenAI Chat Completions format."""
 
     converted: List[Dict[str, Any]] = []
@@ -59,7 +74,7 @@ def messages_to_openai(messages: List[Message]) -> List[Dict[str, Any]]:
                 content_parts.append(
                     {
                         "type": "image_url",
-                        "image_url": {"url": image_path_to_data_url(part.path)},
+                        "image_url": {"url": image_path_to_data_url(part.path, jpeg_quality=jpeg_quality)},
                     }
                 )
         converted.append({"role": message.role, "content": content_parts})
