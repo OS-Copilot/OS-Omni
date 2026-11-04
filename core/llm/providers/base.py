@@ -177,6 +177,14 @@ class OpenAICompatibleAdapter(ProviderAdapter):
                     "response_id": data.get("id"), "reasoning_items": len(reasoning_items)}) + "\n")
             if reasoning_items:
                 raise ValueError("DeepSeek returned reasoning despite reasoning.effort=none")
+        if request.model_spec.metadata.get("enable_thinking") is False:
+            for choice in data.get("choices") or []:
+                if (choice.get("message") or {}).get("reasoning_content"):
+                    raise LLMClientError(
+                        LLMErrorCode.INVALID_PROVIDER_RESPONSE,
+                        "Provider returned reasoning_content despite enable_thinking=False.",
+                        details={"provider": self.provider_name},
+                    )
         return self._build_result(data, api_mode=api_mode)
 
     def _build_payload(
@@ -192,8 +200,10 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         return self._build_chat_completions_payload(request)
 
     def _build_chat_completions_payload(self, request: ProviderRequest) -> Dict[str, Any]:
-        messages = messages_to_openai(request.messages)
         metadata = request.model_spec.metadata if isinstance(request.model_spec.metadata, dict) else {}
+        # Optional transport encoding; keep original screenshots and pixel dimensions.
+        jpeg_quality = metadata.get("image_jpeg_quality")
+        messages = messages_to_openai(request.messages, jpeg_quality=jpeg_quality)
         if metadata.get("system_prompt_as_user"):
             # Some gateways drop the system role (openlux kimi-k3 / glm-5.3), which
             # loses the task instruction; send it inside the first user message.
@@ -204,6 +214,17 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         }
 
         self._apply_common_parameters(payload, request.parameters, api_mode="chat_completions")
+        if metadata.get("stream") is True:
+            payload["stream"] = True
+        if "enable_thinking" in metadata:
+            if not isinstance(metadata["enable_thinking"], bool):
+                raise LLMClientError(
+                    LLMErrorCode.INVALID_REQUEST, "enable_thinking must be a boolean."
+                )
+            payload["enable_thinking"] = metadata["enable_thinking"]
+            # Native thinking controls use the flat reasoning_effort field.
+            # Gateways supporting this flag may reject the generic summary object.
+            payload.pop("reasoning", None)
         if request.response_mode == "tool_calling":
             if request.tools:
                 payload["tools"] = tool_defs_to_openai(request.tools)
@@ -384,7 +405,29 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         for attempt in range(1, attempts + 1):
             try:
                 response = self._post(url, api_key, payload, timeout_seconds)
-                return self._parse_response_json(response)
+                data = self._parse_response_json(response)
+                if payload.get("stream") is True:
+                    choices = data.get("choices") or []
+                    complete = bool(choices) and all(
+                        choice.get("finish_reason") for choice in choices
+                    )
+                    event_data = [
+                        line.lstrip()[5:].strip()
+                        for line in response.text.splitlines()
+                        if line.lstrip().startswith("data:")
+                    ]
+                    is_sse = "text/event-stream" in response.headers.get(
+                        "content-type", ""
+                    ).lower() or bool(event_data)
+                    if is_sse:
+                        complete = complete and "[DONE]" in event_data
+                    if not complete:
+                        raise LLMClientError(
+                            LLMErrorCode.INVALID_PROVIDER_RESPONSE,
+                            "Requested completion stream ended without a terminal event.",
+                            details={"provider": self.provider_name},
+                        )
+                return data
             except LLMClientError as exc:
                 last_error = exc
                 if attempt >= attempts or not self._should_retry_transient_error(exc):

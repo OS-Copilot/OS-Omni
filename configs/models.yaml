@@ -1,4 +1,28 @@
 models:
+  qwen3_8_max_low:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENAI_API_KEY
+    base_url_env: OPENAI_BASE_URL
+    max_output_tokens: 16384
+    metadata:
+      api_mode: chat_completions
+      reasoning_effort: low
+      image_jpeg_quality: 85
+      stream: true
+      enable_thinking: true
+  qwen3_8_max_no_thinking:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENAI_API_KEY
+    base_url_env: OPENAI_BASE_URL
+    max_output_tokens: 16384
+    metadata:
+      api_mode: chat_completions
+      reasoning_effort: none
+      image_jpeg_quality: 85
+      stream: true
+      enable_thinking: false
   qwen3_8_27b_local:
     provider: openai
     model_name: Qwen/Qwen3.8-27B
