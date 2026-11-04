@@ -25,6 +25,7 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
                 "final macOS accessibility observation",
             ],
             "state_modified": False,
+            "diagnostics": [],
         }
 
         try:
@@ -58,6 +59,7 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
             metadata,
             list(api_state.get("events") or []),
             list(params.get("required_event_sequence") or []),
+            required=bool(params.get("require_event_sequence", False)),
         )
         self._check_text_file(metadata, file_state, params)
         self._check_final_ui(context, metadata, params)
@@ -70,7 +72,8 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
             )
         return EvalResult(
             EvalStatus.PASS,
-            "Three bill payments, one transfer, ordered events, and June-Home.txt all match",
+            "Three bill payments, one transfer, and June-Home.txt all match "
+            "(event order is diagnostic unless required)",
             metadata,
         )
 
@@ -220,7 +223,17 @@ print(json.dumps({{"api": api_state, "file": file_state}}, ensure_ascii=False, s
         metadata: dict[str, Any],
         events: list[Any],
         expected_sequence: list[Any],
+        *,
+        required: bool = False,
     ) -> None:
+        """Ordered-subsequence match of the app's business-event ledger.
+
+        The English brief lists the three bill payments and the transfer but not
+        the order they are created in, and the exact record/count checks already
+        grade every deliverable (scan.CSV MAC-014, step_gate).  The ledger is
+        therefore kept as a non-blocking diagnostic unless a task opts in with
+        ``params["require_event_sequence"]``.
+        """
         cursor = 0
         matched: list[Mapping[str, Any]] = []
         for raw_expected in expected_sequence:
@@ -238,6 +251,21 @@ print(json.dumps({{"api": api_state, "file": file_state}}, ensure_ascii=False, s
                 break
             matched.append(found)
         passed = len(matched) == len(expected_sequence)
+        if not required:
+            metadata.setdefault("diagnostics", []).append(
+                {
+                    "diagnostic_id": "events.ordered_business_sequence",
+                    "expected": expected_sequence,
+                    "observed": matched,
+                    "passed": passed,
+                    "blocking": False,
+                    "note": (
+                        "The event order is not stated in the brief; PASS/FAIL is "
+                        "determined by the durable records, session, file and final UI."
+                    ),
+                }
+            )
+            return
         self._record(
             metadata,
             "events.ordered_business_sequence",

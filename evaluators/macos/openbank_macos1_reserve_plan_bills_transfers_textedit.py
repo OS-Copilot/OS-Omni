@@ -27,6 +27,7 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
                 "final macOS accessibility observation",
             ],
             "state_modified": False,
+            "diagnostics": [],
             "evidence_contract": {
                 "bill_payment_count": int(params.get("bill_payment_count", 2)),
                 "transfer_count": int(params.get("transfer_count", 2)),
@@ -75,6 +76,7 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
             metadata,
             list(api_state.get("events") or []),
             list(params.get("required_event_sequence") or []),
+            required=bool(params.get("require_event_sequence", False)),
         )
         self._check_reserve_text_file(metadata, file_state, params)
         self._check_final_ui(context, metadata, params)
@@ -87,7 +89,8 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
             )
         return EvalResult(
             EvalStatus.PASS,
-            "Two bill payments, two transfers, ordered events, and Reserve-Plan.txt match",
+            "Two bill payments, two transfers, and Reserve-Plan.txt match "
+            "(event order is diagnostic unless required)",
             metadata,
         )
 
@@ -96,7 +99,17 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
         metadata: dict[str, Any],
         events: list[Any],
         expected_sequence: list[Any],
+        *,
+        required: bool = False,
     ) -> None:
+        """Ordered-subsequence match of the business-event ledger.
+
+        The brief lists the two bill payments and the two transfers but never
+        says bills come before transfers, and the exact record/count checks
+        already grade every deliverable (scan.CSV MAC-015, step_gate).  The
+        ledger is a non-blocking diagnostic unless a task opts in with
+        ``params["require_event_sequence"]``.
+        """
         cursor = 0
         matched: list[Mapping[str, Any]] = []
         for raw_expected in expected_sequence:
@@ -113,10 +126,26 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
             if found is None:
                 break
             matched.append(found)
+        passed = len(matched) == len(expected_sequence)
+        if not required:
+            metadata.setdefault("diagnostics", []).append(
+                {
+                    "diagnostic_id": "events.ordered_business_sequence",
+                    "expected": expected_sequence,
+                    "observed": matched,
+                    "passed": passed,
+                    "blocking": False,
+                    "note": (
+                        "The event order is not stated in the brief; PASS/FAIL is "
+                        "determined by the durable records, session, file and final UI."
+                    ),
+                }
+            )
+            return
         self._record(
             metadata,
             "events.ordered_business_sequence",
-            len(matched) == len(expected_sequence),
+            passed,
             expected_sequence,
             matched,
             "Required login, two bill-payment, and two transfer events are missing or out of order",

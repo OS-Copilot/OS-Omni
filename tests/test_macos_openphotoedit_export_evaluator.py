@@ -288,3 +288,67 @@ def test_live_real_fixture_reencoded_exports_pass_with_task_params(tmp_path) -> 
     )
     assert result.status == EvalStatus.PASS, result.message
     assert result.metadata["validation_mode"] == "reference_tolerance"
+
+
+# ---------------------------------------------------------------------------
+# All four v1 macOS OpenPhotoEdit export tasks (scan.CSV MAC-025/028/031/034):
+# the export is judged against its independent source-pixel reference with the
+# documented decoder tolerance, never against the reference PNG's own digest
+# nor against the stale edited-output digests left in the wrappers' TASK_PARAMS.
+# ---------------------------------------------------------------------------
+import importlib
+
+V1_PHOTOEDIT_TASKS = sorted((ROOT / "tasks/v1/macos").glob("openphotoedit_macos1_*_exports.yaml"))
+
+
+def _task_evaluator(task: dict):
+    module_name, class_name = task["evaluation"]["evaluator_id"].split(":")
+    return getattr(importlib.import_module(module_name), class_name)()
+
+
+@pytest.mark.parametrize("task_path", V1_PHOTOEDIT_TASKS, ids=lambda p: p.stem)
+def test_v1_task_params_select_reference_tolerance_mode(task_path: Path) -> None:
+    task = yaml.safe_load(task_path.read_text(encoding="utf-8"))
+    evaluator = _task_evaluator(task)
+    params = dict(task["evaluation"]["params"])
+    for key, value in type(evaluator).TASK_PARAMS.items():  # the wrapper's own merge
+        params.setdefault(key, value)
+
+    assert params["expected_sha256"] == {}
+    references = params["reference_images"]
+    assert sorted(references) == sorted(params["expected_filenames"])
+    evidence = {"references": {export: dict(entry) for export, entry in references.items()}}
+    for export, entry in references.items():
+        raw = (FIXTURES / entry["name"]).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == entry["expected_sha256"]
+        decoded = decode_png(raw)
+        assert (decoded["width"], decoded["height"]) == (params["expected_width"], params["expected_height"])
+        # No export digest is demanded: neither the reference's nor a stale edited one.
+        assert evaluator._expected_sha(params, evidence, export) is None
+    assert evaluator._resolved_mode(params, evidence) == "reference_tolerance"
+
+
+@pytest.mark.parametrize(
+    "task_path",
+    [path for path in V1_PHOTOEDIT_TASKS if "fruit_product_film" not in path.name],
+    ids=lambda p: p.stem,
+)
+def test_v1_task_reencoded_exports_pass_live(tmp_path, task_path: Path) -> None:
+    """Same as the fruit live test above, for the other three v1 tasks."""
+    task = yaml.safe_load(task_path.read_text(encoding="utf-8"))
+    params = dict(task["evaluation"]["params"])
+    fixtures = tmp_path / "PhotoFixtures"
+    fixtures.mkdir()
+    for export, entry in params["reference_images"].items():
+        raw = (FIXTURES / entry["name"]).read_bytes()
+        (fixtures / entry["name"]).write_bytes(raw)
+        decoded = decode_png(raw)
+        export_bytes = _encode_png(decoded["width"], decoded["height"], decoded["rgb"], level=1)
+        assert export_bytes != raw
+        (fixtures / export).write_bytes(export_bytes)
+    params["fixture_dir"] = str(fixtures)
+    params["exports_dirs"] = [str(tmp_path / "Desktop")]
+    result = _task_evaluator(task).evaluate({"params": params, "controller": _LocalGuestController()})
+
+    assert result.status == EvalStatus.PASS, result.message
+    assert result.metadata["validation_mode"] == "reference_tolerance"
