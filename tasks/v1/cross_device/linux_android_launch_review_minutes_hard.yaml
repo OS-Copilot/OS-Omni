@@ -678,7 +678,7 @@ evaluation:
         stdout_contains: EVAL_RESULT:PASS
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
-        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\nfrom pathlib import\
+        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, re, subprocess, sys\nfrom pathlib import\
           \ Path\ntry:\n    from docx import Document\nexcept ImportError:\n    subprocess.check_call([sys.executable, '-m',\
           \ 'pip', 'install', 'python-docx', '-q'])\n    from docx import Document\ndoc = Document(str(Path(os.environ['USERPROFILE'])\
           \ / 'Documents' / 'launch_review_minutes.docx'))\nparagraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]\n\
@@ -726,23 +726,39 @@ evaluation:
           \ tables must summarize the transferred note only.', 'Director Handoff:', 'Handoff owner: Maya Chen', 'Handoff route:\
           \ launch-readiness archive', 'Handoff status: queued after packet receipt.']\npos = -1\nfor line in expected:\n\
           \    try:\n        nxt = paragraphs.index(line, pos + 1)\n    except ValueError:\n        print('MISSING_OR_OUT_OF_ORDER:'\
-          \ + line + ' PARAGRAPHS=' + repr(paragraphs))\n        raise SystemExit(1)\n    pos = nxt\nactual_tables = []\n\
-          for table in doc.tables:\n    actual_tables.append([[cell.text.strip() for cell in row.cells] for row in table.rows])\n\
-          for expected_table in [[['Route', 'Owner', 'Predecessor', 'Status'], ['vendor-packet', 'Jordan Lee', 'Maya review',\
-          \ 'blocked'], ['demo-audio', 'Priya Nair', 'archive receipt', 'ready'], ['travel-exception', 'Theo Martin', 'director\
-          \ signoff', 'locked']], [['Evidence', 'Gate', 'Status'], ['vendor-staging', 'Gate 1', 'pending'], ['demo-audio',\
-          \ 'Gate 2', 'ready'], ['travel-roster', 'Gate 3', 'ready']], [['Artifact', 'Feeds'], ['Android source note', 'Windows\
-          \ minutes'], ['Windows minutes', 'Owner matrix and archive manifest'], ['Archive manifest', 'Director question packet']],\
-          \ [['Owner', 'Final state'], ['Jordan', 'blocked until vendor credentials are active'], ['Priya', 'ready after dry-run\
-          \ audio validation'], ['Theo', 'locked after travel exception review']], [['Reviewer', 'Area', 'Required check'],\
-          \ ['Maya Chen', 'agenda', 'packet receipts'], ['Jordan Lee', 'vendor access', 'route locks'], ['Priya Nair', 'demo\
-          \ audio', 'field comments'], ['Theo Martin', 'travel roster', 'exception locks']], [['Criterion', 'Expected state'],\
-          \ ['gate ownership', 'named owner on every gate'], ['packet lineage', 'predecessor and status on every packet'],\
-          \ ['evidence mapping', 'every evidence item maps to a gate'], ['blocked escalation', 'blocked item has escalation\
-          \ owner']], [['Consistency check', 'Result'], ['Android source', 'single source of truth'], ['Windows ordering',\
-          \ 'preserves Android ordering'], ['Embedded tables', 'summarize transferred note only']]]:\n    if expected_table\
-          \ not in actual_tables:\n        print('MISSING_TABLE:' + repr(expected_table) + ' ACTUAL=' + repr(actual_tables))\n\
-          \        raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+          \ + line + ' PARAGRAPHS=' + repr(paragraphs))\n        raise SystemExit(1)\n    pos = nxt\n# The brief names seven\
+          \ tables that summarize the note; the note has a section for each of\n# them. Headers, wording and layout are the\
+          \ agent's choice, so each table is graded on the\n# facts of its section: every fact (a set of key terms, '|' separating\
+          \ alternatives, matched\n# at word starts after lower-casing and turning punctuation into spaces) must sit in one\
+          \ row\n# or one column of the table, and each named table must be its own table with at least two\n# rows and two\
+          \ columns.\nSECTIONS = {\n    'Routing Matrix': [['vendor', 'jordan', 'maya'], ['demo|audio', 'priya', 'archive|receipt'],\n\
+          \                       ['travel', 'theo', 'director|signoff']],\n    'Evidence Reconciliation': [['vendor', 'gate\
+          \ 1'], ['demo|audio', 'gate 2'], ['travel|roster', 'gate 3']],\n    'Cross-VM Delivery Chain': [['android', 'minutes'],\
+          \ ['minutes', 'owner matrix'], ['minutes', 'manifest'],\n                                ['manifest', 'director|question']],\n\
+          \    'Final Escalation Summary': [['jordan', 'blocked'], ['priya', 'ready'], ['theo', 'locked']],\n    'Reviewer\
+          \ Rotation': [['maya', 'agenda', 'receipt'], ['jordan', 'vendor', 'route'], ['priya', 'audio', 'comment'],\n   \
+          \                       ['theo', 'roster', 'exception']],\n    'Acceptance Criteria': [['gate', 'owner'], ['packet',\
+          \ 'predecessor', 'status'], ['evidence', 'gate'],\n                            ['blocked', 'escalation']],\n   \
+          \ 'Cross-VM Consistency Checks': [['android', 'truth|single source'], ['minutes|windows', 'order'],\n          \
+          \                          ['table', 'transfer|note only']],\n}\n\n\ndef norm(text):\n    return ' '.join(re.sub(r'[^0-9a-z]+',\
+          \ ' ', text.lower()).split())\n\n\ndef has(text, term):\n    return any(re.search(r'(?:^| )' + re.escape(norm(alt)),\
+          \ text) for alt in term.split('|'))\n\n\ntables = []\nfor table in doc.tables:\n    grid = [[cell.text.strip() for\
+          \ cell in row.cells] for row in table.rows]\n    width = max((len(row) for row in grid), default=0)\n    rows =\
+          \ [norm(' '.join(row)) for row in grid]\n    columns = [norm(' '.join(row[i] for row in grid if i < len(row))) for\
+          \ i in range(width)]\n    tables.append({'grid': grid, 'lines': rows + columns, 'shape': (len(grid), width)})\n\n\
+          \ndef missing_facts(table, facts):\n    if table['shape'][0] < 2 or table['shape'][1] < 2:\n        return facts\n\
+          \    return [fact for fact in facts if not any(all(has(line, term) for term in fact) for line in table['lines'])]\n\
+          \n\ncandidates = {name: [i for i, table in enumerate(tables) if not missing_facts(table, facts)]\n             \
+          \ for name, facts in SECTIONS.items()}\nowner = {}\n\n\ndef assign(name, seen):\n    for i in candidates[name]:\n\
+          \        if i in seen:\n            continue\n        seen.add(i)\n        if i not in owner or assign(owner[i],\
+          \ seen):\n            owner[i] = name\n            return True\n    return False\n\n\nunmatched = [name for name\
+          \ in SECTIONS if not assign(name, set())]\nif unmatched:\n    for name in unmatched:\n        best = min(range(len(tables)),\
+          \ key=lambda i: len(missing_facts(tables[i], SECTIONS[name])), default=None)\n        if best is None:\n       \
+          \     detail = 'no tables'\n        elif candidates[name]:\n            detail = 'its only matching tables %r already\
+          \ stand for other sections' % [i + 1 for i in candidates[name]]\n        else:\n            detail = 'closest table\
+          \ %d misses %r' % (best + 1, missing_facts(tables[best], SECTIONS[name]))\n        print('MISSING_TABLE:' + name\
+          \ + ': ' + detail)\n    print('ACTUAL=' + repr([table['grid'] for table in tables]))\n    raise SystemExit(1)\n\
+          print('EVAL_RESULT:PASS')\nOSOMNI_PY"
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
 import json
+from pathlib import PurePosixPath
 from typing import Any, Mapping
 
 from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
-from evaluators.linux.office_path_resolve import resolve_office_file_pair, unlink_if_temp
+from evaluators.linux.office_path_resolve import resolve_office_file_pair, resolve_office_file_path, unlink_if_temp
 from platforms.linux.office_metrics.slides import compare_pptx_files
 
 
@@ -39,6 +42,9 @@ class PptxCompareEvaluator(BaseEvaluator):
         picture_box_rules = params.get("picture_box_rules") or []
         if picture_box_rules and not isinstance(picture_box_rules, list):
             return EvalResult(status=EvalStatus.ERROR, message="evaluation.params.picture_box_rules must be a list")
+        picture_image_rules = params.get("picture_image_rules") or []
+        if picture_image_rules and not isinstance(picture_image_rules, list):
+            return EvalResult(status=EvalStatus.ERROR, message="evaluation.params.picture_image_rules must be a list")
 
         try:
             actual_path, expected_path, actual_tmp, expected_tmp = resolve_office_file_pair(
@@ -123,6 +129,20 @@ class PptxCompareEvaluator(BaseEvaluator):
                 unlink_if_temp(expected_path, expected_tmp)
                 return EvalResult(status=EvalStatus.ERROR, message=f"picture box validation failed: {exc}", metadata=meta)
             meta["picture_box_rules"] = box_meta
+
+        if picture_image_rules:
+            try:
+                image_meta = self._validate_picture_images(actual_path, picture_image_rules, controller)
+            except AssertionError as exc:
+                meta["picture_image_rules"] = getattr(exc, "metadata", None)
+                unlink_if_temp(actual_path, actual_tmp)
+                unlink_if_temp(expected_path, expected_tmp)
+                return EvalResult(status=EvalStatus.FAIL, message=str(exc), metadata=meta)
+            except Exception as exc:
+                unlink_if_temp(actual_path, actual_tmp)
+                unlink_if_temp(expected_path, expected_tmp)
+                return EvalResult(status=EvalStatus.ERROR, message=f"picture image validation failed: {exc}", metadata=meta)
+            meta["picture_image_rules"] = image_meta
 
         if text_artifacts:
             if controller is None or not hasattr(controller, "run_bash_script"):
@@ -284,6 +304,140 @@ class PptxCompareEvaluator(BaseEvaluator):
                     error.metadata = observed  # type: ignore[attr-defined]
                     raise error
         return observed
+
+    # Mean absolute per-channel difference (0-255) between 96x72 RGB thumbnails. Re-encoding the
+    # six kiosk PNGs as JPEG stays under 2 at quality 60 and half size and under 3 at quality 30;
+    # the closest pair of those images (pic2/pic3, same red template) is 5.5 apart, and a picture
+    # must also be closer to its own source than to any other source in the rules.
+    PICTURE_MAX_MEAN_DIFF = 4.0
+    _THUMB_SIZE = (96, 72)
+
+    @classmethod
+    def _thumbnail(cls, data: bytes):
+        from PIL import Image
+
+        image = Image.open(io.BytesIO(data))
+        image.load()
+        if image.mode in ("RGBA", "LA", "P", "PA"):
+            image = image.convert("RGBA")
+            backdrop = Image.new("RGBA", image.size, (255, 255, 255, 255))
+            backdrop.alpha_composite(image)
+            image = backdrop
+        return image.convert("RGB").resize(cls._THUMB_SIZE, Image.BILINEAR)
+
+    @staticmethod
+    def _mean_diff(left: Any, right: Any) -> float:
+        from PIL import ImageChops, ImageStat
+
+        return float(sum(ImageStat.Stat(ImageChops.difference(left, right)).mean) / 3.0)
+
+    @classmethod
+    def _validate_picture_images(cls, pptx_path: Any, rules: list[Any], controller: Any) -> dict[str, Any]:
+        """Require picture ``picture_index`` (1-based) on ``slide_index`` to show ``source_path``.
+
+        Opt-in per task. The embedded media is accepted when its bytes equal the source file, or,
+        if the office suite re-encoded it, when its decoded pixels are within ``max_mean_diff``
+        (default ``PICTURE_MAX_MEAN_DIFF``) of the source and closer to it than to any other
+        source named in the rules. A picture that is only linked (no embedded media) is accepted
+        when the link target has the source's file name. Source paths under /tmp or /home/user are
+        read from the guest.
+        """
+        from pptx import Presentation
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+        from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+        from pptx.oxml.ns import qn
+
+        sources: dict[str, bytes] = {}
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                continue
+            source = str(rule.get("source_path") or "").strip()
+            if not source:
+                raise ValueError("picture_image_rules entries need source_path")
+            if source in sources:
+                continue
+            local, is_temp = resolve_office_file_path(
+                source, controller, temp_prefix="helloworld_pptx_source_", default_suffix=PurePosixPath(source).suffix
+            )
+            try:
+                sources[source] = local.read_bytes()
+            finally:
+                unlink_if_temp(local, is_temp)
+        source_hashes = {path: hashlib.sha256(data).hexdigest() for path, data in sources.items()}
+        thumbnails: dict[str, Any] = {}
+
+        def source_thumbnail(path: str) -> Any:
+            if path not in thumbnails:
+                thumbnails[path] = cls._thumbnail(sources[path])
+            return thumbnails[path]
+
+        presentation = Presentation(str(pptx_path))
+        by_slide = {
+            index: [shape for shape in slide.shapes if shape.shape_type == MSO_SHAPE_TYPE.PICTURE]
+            for index, slide in enumerate(presentation.slides, start=1)
+        }
+        observed: list[dict[str, Any]] = []
+
+        def fail(message: str) -> None:
+            error = AssertionError(message)
+            error.metadata = {"pictures": observed}  # type: ignore[attr-defined]
+            raise error
+
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                continue
+            slide_index = int(rule.get("slide_index") or 0)
+            picture_index = int(rule.get("picture_index") or 1)
+            source = str(rule.get("source_path") or "").strip()
+            limit = float(rule.get("max_mean_diff", cls.PICTURE_MAX_MEAN_DIFF))
+            entry: dict[str, Any] = {
+                "slide_index": slide_index,
+                "picture_index": picture_index,
+                "source_path": source,
+                "match": None,
+            }
+            observed.append(entry)
+            pictures = by_slide.get(slide_index) or []
+            if picture_index > len(pictures):
+                fail(f"missing picture {picture_index} on slide {slide_index} for image validation")
+            shape = pictures[picture_index - 1]
+            blip = shape._element.blipFill.blip if shape._element.blipFill is not None else None
+            embed_rid = blip.rEmbed if blip is not None else None
+            if not embed_rid:
+                link_rid = blip.get(qn("r:link")) if blip is not None else None
+                target = ""
+                if link_rid and link_rid in shape.part.rels:
+                    relation = shape.part.rels[link_rid]
+                    if relation.reltype == RT.IMAGE and relation.is_external:
+                        target = str(relation.target_ref)
+                entry["linked_target"] = target
+                if target and PurePosixPath(target.replace("\\", "/")).name == PurePosixPath(source).name:
+                    entry["match"] = "linked"
+                    continue
+                fail(f"slide {slide_index} picture {picture_index} has no embedded image matching {source}")
+            blob = shape.image.blob
+            digest = hashlib.sha256(blob).hexdigest()
+            entry["sha256"] = digest
+            if digest == source_hashes[source]:
+                entry["match"] = "exact"
+                continue
+            try:
+                picture_thumbnail = cls._thumbnail(blob)
+            except Exception as exc:  # e.g. a vector or unreadable blob
+                entry["decode_error"] = repr(exc)
+                fail(f"slide {slide_index} picture {picture_index} is not {source} (cannot decode embedded image)")
+            distances = {path: cls._mean_diff(picture_thumbnail, source_thumbnail(path)) for path in sources}
+            entry["mean_diff"] = {path: round(value, 3) for path, value in distances.items()}
+            nearest = min(distances, key=distances.get)
+            others = [value for path, value in distances.items() if path != source]
+            if distances[source] <= limit and (not others or distances[source] < min(others)):
+                entry["match"] = "pixels"
+                continue
+            fail(
+                f"slide {slide_index} picture {picture_index} is not {source}: mean pixel difference "
+                f"{distances[source]:.2f} (limit {limit}), closest source {nearest}"
+            )
+        return {"pictures": observed}
 
     @staticmethod
     def _validate_text_artifacts(controller: Any, artifacts: list[Any]) -> dict[str, Any]:

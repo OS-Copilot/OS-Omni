@@ -119,6 +119,21 @@ evaluation:
     - slide_index: 6
       picture_index: 1
       descr: pic6.png
+    # Alt text alone does not identify the picture: slide N must show the Desktop picN.png
+    # (same bytes, or the same pixels if Impress re-encoded it).
+    picture_image_rules:
+    - slide_index: 1
+      source_path: /home/user/Desktop/pic1.png
+    - slide_index: 2
+      source_path: /home/user/Desktop/pic2.png
+    - slide_index: 3
+      source_path: /home/user/Desktop/pic3.png
+    - slide_index: 4
+      source_path: /home/user/Desktop/pic4.png
+    - slide_index: 5
+      source_path: /home/user/Desktop/pic5.png
+    - slide_index: 6
+      source_path: /home/user/Desktop/pic6.png
     text_artifacts:
     - path: /tmp/helloworld_office/impress_asset_manifest.csv
       equals: |
