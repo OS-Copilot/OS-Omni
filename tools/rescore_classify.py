@@ -111,6 +111,20 @@ def content_changed(files: list[str], root_a: Path, root_b: Path) -> list[str]:
     return sorted(f for f in files if sha(root_a / f) != sha(root_b / f))
 
 
+def task_relpath(path: Path, code_root: Path) -> Path:
+    """The task file's path inside a checkout (same rule as rescore_end_state.task_relpath): a run
+    records the absolute path in whichever checkout ran it, so re-root it at its ``tasks/`` component."""
+    if not path.is_absolute():
+        return path
+    if REPO in path.parents:
+        return path.relative_to(REPO)
+    parts = path.parts
+    for i, part in enumerate(parts):
+        if part == "tasks" and (code_root / Path(*parts[i:])).is_file():
+            return Path(*parts[i:])
+    return path
+
+
 def load_yaml(path: Path) -> dict[str, Any]:
     import yaml  # noqa: PLC0415 - venv dependency
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
@@ -140,8 +154,7 @@ def classify(rec: Mapping[str, Any], notes: Mapping[str, Any], python: str) -> d
     args = read_json(Path(rec["task_dir"]) / "args.json") or {}
     snapshot = (args.get("task") or {}).get("snapshot") or {}
     task_path = Path((args.get("task") or {}).get("path") or "")
-    rel_task = task_path.relative_to(REPO) if REPO in task_path.parents else task_path
-    now = load_yaml(current_root / rel_task)
+    now = load_yaml(current_root / task_relpath(task_path, current_root))
 
     # 1. instruction -------------------------------------------------------------
     out["instruction_changed"] = snapshot.get("instruction") != now.get("instruction")

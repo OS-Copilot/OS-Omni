@@ -100,6 +100,24 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def task_relpath(path: Path, code_root: Path) -> Path:
+    """The task file's path inside a checkout.
+
+    A run records the absolute path in whichever checkout ran it (often another clone or worktree than
+    this one), so anything outside REPO is re-rooted at its ``tasks/`` component when that file exists
+    under ``code_root``.
+    """
+    if not path.is_absolute():
+        return path
+    if REPO in path.parents:
+        return path.relative_to(REPO)
+    parts = path.parts
+    for i, part in enumerate(parts):
+        if part == "tasks" and (code_root / Path(*parts[i:])).is_file():
+            return Path(*parts[i:])
+    return path
+
+
 def read_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -568,8 +586,7 @@ def worker(spec_path: Path) -> int:
         task = _parse_task_spec((args.get("task") or {}).get("snapshot") or {}, original_path)
     else:
         # The same task file, inside the code snapshot being scored.
-        rel = original_path.relative_to(REPO) if original_path.is_absolute() and REPO in original_path.parents else original_path
-        task = load_task_spec(code_root / rel)
+        task = load_task_spec(code_root / task_relpath(original_path, code_root))
     log_dir = Path(spec["log_dir"])
     controller = SandboxController(Path(spec["tree"]), log_dir, spec["python"])
     out: dict[str, Any] = {"task_source": spec["task_source"], "code_root": str(code_root),
