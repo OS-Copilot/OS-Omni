@@ -8,6 +8,11 @@ from typing import Any, Mapping
 from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 
 
+def _strip_eof_newlines(text: str) -> str:
+    """Drop the line breaks (LF / CRLF) that end ``text``; nothing else is touched."""
+    return text.rstrip("\r\n")
+
+
 class NotepadqqWorkspaceEvaluator(BaseEvaluator):
     """Validate Notepadqq task outcomes by checking workspace files on disk."""
 
@@ -77,7 +82,7 @@ PY"""
                     # for, so byte equality false-fails a faithful rewrite. Only
                     # that documented legacy note is optional; the instructed
                     # core must still match in order and every other `equals`
-                    # expectation stays byte-exact.
+                    # expectation stays exact apart from the newlines at EOF.
                     expected_text = expected_content.replace("\r\n", "\n").replace("\r", "\n")
                     expected_core, _, expected_tail = expected_text.partition("\n\n")
                     if expected_tail.strip().startswith("Keep this note"):
@@ -85,7 +90,14 @@ PY"""
                         actual_text = " ".join(actual_content.split())
                         assert required_core in actual_text, f"content mismatch for {rel_path}"
                     else:
-                        assert actual_content == expected_content, f"content mismatch for {rel_path}"
+                        # No brief fixes how many newlines end the file, and Gedit
+                        # (ensure-trailing-newline) adds one on save when the
+                        # buffer already ends in an empty line. Only line breaks
+                        # at EOF are ignored; every other character, including
+                        # spaces and blank lines inside the file, must match.
+                        assert _strip_eof_newlines(actual_content) == _strip_eof_newlines(expected_content), (
+                            f"content mismatch for {rel_path}"
+                        )
                 if "contains" in expected:
                     needle = str(expected.get("contains") or "")
                     assert needle in actual_content, f"expected {rel_path} to contain {needle!r}"

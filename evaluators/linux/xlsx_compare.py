@@ -68,6 +68,11 @@ class XlsxCompareEvaluator(BaseEvaluator):
                 message=f"failed to resolve XLSX paths for comparison: {exc}",
             )
 
+        # A pivot data-field caption ("Count - Civil Status") only names the field the author
+        # counted; tasks whose brief asks for the pivot's figures, not its caption, opt out of
+        # comparing it (values, row labels and layout are still compared).
+        ignore_pivot_data_captions = bool(params.get("ignore_pivot_data_captions", False))
+
         meta: dict[str, Any] = {
             "actual_path": str(actual_path),
             "expected_path": str(expected_path),
@@ -75,6 +80,7 @@ class XlsxCompareEvaluator(BaseEvaluator):
             "expected_temp": expected_tmp,
             "sheet": sheet,
             "numeric_tolerance": numeric_tolerance,
+            "ignore_pivot_data_captions": ignore_pivot_data_captions,
         }
         try:
             score, detail = compare_xlsx_sheet(
@@ -82,6 +88,7 @@ class XlsxCompareEvaluator(BaseEvaluator):
                 str(expected_path),
                 sheet=sheet,
                 numeric_tolerance=numeric_tolerance,
+                ignore_pivot_data_captions=ignore_pivot_data_captions,
             )
         except Exception as exc:
             meta["error"] = repr(exc)

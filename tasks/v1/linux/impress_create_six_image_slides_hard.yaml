@@ -75,9 +75,18 @@ evaluation:
       examine_number_of_slides: true
       examine_text: false
       examine_shape: true
-      examine_image_size: true
+      # The brief gives no target geometry ("the same placement and fitted size as the
+      # reference kiosk layout"; the seeded deck has no picture to copy), so the pictures are
+      # not sized against the hidden gold deck. picture_box_rules below requires all six to
+      # share slide 1's box instead, as the Windows peer (impress_slide_shape_bold) does.
+      examine_image_size: false
       examine_run_count: false
       examine_alignment: false
+    picture_box_rules:
+    - reference_slide: 1
+      slides: [2, 3, 4, 5, 6]
+      picture_index: 1
+      tolerance: 0.005
     image_count_rules:
     - slide_index: 1
       picture_count: 1

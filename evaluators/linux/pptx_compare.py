@@ -36,6 +36,9 @@ class PptxCompareEvaluator(BaseEvaluator):
         picture_alt_rules = params.get("picture_alt_rules") or []
         if picture_alt_rules and not isinstance(picture_alt_rules, list):
             return EvalResult(status=EvalStatus.ERROR, message="evaluation.params.picture_alt_rules must be a list")
+        picture_box_rules = params.get("picture_box_rules") or []
+        if picture_box_rules and not isinstance(picture_box_rules, list):
+            return EvalResult(status=EvalStatus.ERROR, message="evaluation.params.picture_box_rules must be a list")
 
         try:
             actual_path, expected_path, actual_tmp, expected_tmp = resolve_office_file_pair(
@@ -106,6 +109,20 @@ class PptxCompareEvaluator(BaseEvaluator):
                 unlink_if_temp(expected_path, expected_tmp)
                 return EvalResult(status=EvalStatus.ERROR, message=f"picture alt-text validation failed: {exc}", metadata=meta)
             meta["picture_alt_rules"] = alt_meta
+
+        if picture_box_rules:
+            try:
+                box_meta = self._validate_picture_boxes(actual_path, picture_box_rules)
+            except AssertionError as exc:
+                meta["picture_box_rules"] = getattr(exc, "metadata", None)
+                unlink_if_temp(actual_path, actual_tmp)
+                unlink_if_temp(expected_path, expected_tmp)
+                return EvalResult(status=EvalStatus.FAIL, message=str(exc), metadata=meta)
+            except Exception as exc:
+                unlink_if_temp(actual_path, actual_tmp)
+                unlink_if_temp(expected_path, expected_tmp)
+                return EvalResult(status=EvalStatus.ERROR, message=f"picture box validation failed: {exc}", metadata=meta)
+            meta["picture_box_rules"] = box_meta
 
         if text_artifacts:
             if controller is None or not hasattr(controller, "run_bash_script"):
@@ -200,6 +217,73 @@ class PptxCompareEvaluator(BaseEvaluator):
                     f"{expected_name!r}, got {actual['name']!r}"
                 )
         return {"pictures": observed}
+
+    @staticmethod
+    def _validate_picture_boxes(pptx_path: Any, rules: list[Any]) -> dict[str, Any]:
+        """Require pictures on several slides to share one box (left, top, width, height).
+
+        Each rule names a ``reference_slide`` and the ``slides`` whose picture number
+        ``picture_index`` (1-based, default 1) must sit in the reference picture's box, within
+        ``tolerance`` (a fraction of the slide width for left/width and of the slide height for
+        top/height, default 0.005). The reference picture must have a positive size. This grades
+        "the same placement and fitted size" across slides without a hidden target geometry.
+        """
+        from pptx import Presentation
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+        presentation = Presentation(str(pptx_path))
+        slide_width = int(presentation.slide_width or 0)
+        slide_height = int(presentation.slide_height or 0)
+        by_slide: dict[int, list[dict[str, int]]] = {}
+        for slide_index, slide in enumerate(presentation.slides, start=1):
+            by_slide[slide_index] = [
+                {
+                    "left": int(shape.left or 0),
+                    "top": int(shape.top or 0),
+                    "width": int(shape.width or 0),
+                    "height": int(shape.height or 0),
+                }
+                for shape in slide.shapes
+                if shape.shape_type == MSO_SHAPE_TYPE.PICTURE
+            ]
+        observed = {"slide_width": slide_width, "slide_height": slide_height, "pictures": by_slide}
+
+        def picture(slide_index: int, picture_index: int) -> dict[str, int]:
+            pictures = by_slide.get(slide_index) or []
+            if picture_index > len(pictures):
+                error = AssertionError(f"missing picture {picture_index} on slide {slide_index} for box validation")
+                error.metadata = observed  # type: ignore[attr-defined]
+                raise error
+            return pictures[picture_index - 1]
+
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                continue
+            reference_slide = int(rule.get("reference_slide") or 1)
+            picture_index = int(rule.get("picture_index") or 1)
+            tolerance = float(rule.get("tolerance", 0.005))
+            reference = picture(reference_slide, picture_index)
+            if reference["width"] <= 0 or reference["height"] <= 0:
+                error = AssertionError(f"slide {reference_slide} picture {picture_index} has no size")
+                error.metadata = observed  # type: ignore[attr-defined]
+                raise error
+            limits = {
+                "left": tolerance * slide_width,
+                "width": tolerance * slide_width,
+                "top": tolerance * slide_height,
+                "height": tolerance * slide_height,
+            }
+            for slide_index in rule.get("slides") or []:
+                box = picture(int(slide_index), picture_index)
+                off = [key for key, limit in limits.items() if abs(box[key] - reference[key]) > limit]
+                if off:
+                    error = AssertionError(
+                        f"slide {int(slide_index)} picture {picture_index} {'/'.join(off)} differs from "
+                        f"slide {reference_slide}: {box} vs {reference}"
+                    )
+                    error.metadata = observed  # type: ignore[attr-defined]
+                    raise error
+        return observed
 
     @staticmethod
     def _validate_text_artifacts(controller: Any, artifacts: list[Any]) -> dict[str, Any]:

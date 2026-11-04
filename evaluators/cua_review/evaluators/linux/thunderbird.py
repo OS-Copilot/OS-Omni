@@ -6,7 +6,11 @@ Two task shapes are covered here.
 
 * A mail task ends with message-filter rules stored in the profile's
   ``msgFilterRules.dat`` file.  The declared rule contract is compared against
-  the rules that file holds.
+  the rules that file holds, each rule read as a whole block (name, enabled,
+  type, every action/actionValue pair, condition).  Thunderbird keeps edited
+  filters in memory and writes the file when the Message Filters window closes,
+  so the contract's ``postconfig`` ``close_window`` steps are run first: the
+  window is closed through the window manager, the way a user closes it.
 * A folder/calendar task ends with a mail folder in ``Mail/Local Folders`` and
   an event title in ``calendar-data/local.sqlite``.  Both are read from the
   profile.
@@ -20,6 +24,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import time
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -72,7 +78,17 @@ import re
 from pathlib import Path
 
 paths = __PATHS__
-attribute = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"((?:[^"\\]|\\.)*)"')
+# msgFilterRules.dat holds one key="value" pair per line (quotes and backslashes
+# escaped with a backslash).  After the version=/logging= header every filter
+# starts at its name= line and owns the lines up to the next name= line:
+# enabled=, type=, one or more action= lines (each optionally followed by its
+# actionValue= or customId=), and condition=.
+attribute = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"((?:[^"\\]|\\.)*)"\s*$')
+
+
+def unescape(value):
+    return re.sub(r'\\(.)', r'\1', value)
+
 
 result = {"files": [], "rules": [], "errors": []}
 for raw in paths:
@@ -84,20 +100,102 @@ for raw in paths:
         except OSError as exc:
             entry["error"] = "%s: %s" % (type(exc).__name__, exc)
         else:
+            rule = None
             for line in text.splitlines():
-                if "name=" not in line:
+                match = attribute.match(line)
+                if not match:
                     continue
-                attributes = {match.group(1): match.group(2).replace('\\"', '"') for match in attribute.finditer(line)}
-                if "name" not in attributes:
+                key, value = match.group(1), unescape(match.group(2))
+                if key == "name":
+                    rule = {"name": value, "actions": [], "__source__": str(path)}
+                    result["rules"].append(rule)
+                    entry["rule_lines"] += 1
+                elif rule is None:
                     continue
-                entry["rule_lines"] += 1
-                attributes["__source__"] = str(path)
-                result["rules"].append(attributes)
+                elif key == "action":
+                    rule["actions"].append({"action": value})
+                elif key in ("actionValue", "customId") and rule["actions"]:
+                    rule["actions"][-1].setdefault(key, value)
+                else:
+                    rule.setdefault(key, value)
+            for parsed in result["rules"]:
+                if parsed.get("__source__") == str(path) and parsed["actions"]:
+                    # The first action stays readable under the flat keys.
+                    parsed.setdefault("action", parsed["actions"][0].get("action"))
+                    parsed.setdefault("actionValue", parsed["actions"][0].get("actionValue"))
     else:
         result["errors"].append("rule file is absent: " + str(path))
     result["files"].append(entry)
 print(json.dumps(result, ensure_ascii=False))
 '''
+
+# OSWorld's ``close_window`` postconfig (``wmctrl -c``/``-Fc``/``-xc``): close the
+# matching windows through the window manager, which runs the application's own
+# close path, then wait until they are gone.
+_CLOSE_WINDOW_PROGRAM = r'''
+import json
+import os
+import subprocess
+import time
+
+name = __NAME__
+strict = __STRICT__
+by_class = __BY_CLASS__
+wait_seconds = __WAIT__
+os.environ.setdefault("DISPLAY", ":0")
+xauthority = os.path.expanduser("~/.Xauthority")
+if "XAUTHORITY" not in os.environ and os.path.exists(xauthority):
+    os.environ["XAUTHORITY"] = xauthority
+result = {"window_name": name, "strict": strict, "by_class": by_class, "matched": [], "still_open": [], "error": None}
+
+
+def matching():
+    listing = subprocess.run(["wmctrl", "-lx" if by_class else "-l"], capture_output=True, text=True, timeout=10)
+    ids = []
+    for line in listing.stdout.splitlines():
+        parts = line.split(None, 4 if by_class else 3)
+        if len(parts) < 2:
+            continue
+        if by_class:
+            label = parts[2] if len(parts) > 2 else ""
+        else:
+            label = parts[3] if len(parts) > 3 else ""
+        if (label == name) if strict else (name.casefold() in label.casefold()):
+            ids.append(parts[0])
+    return ids
+
+
+try:
+    ids = matching()
+    result["matched"] = ids
+    for window_id in ids:
+        subprocess.run(["wmctrl", "-ic", window_id], capture_output=True, timeout=10)
+    remaining = list(ids)
+    deadline = time.time() + wait_seconds
+    while remaining and time.time() < deadline:
+        time.sleep(0.5)
+        current = set(matching())
+        remaining = [window_id for window_id in ids if window_id in current]
+    result["still_open"] = remaining
+except FileNotFoundError:
+    result["error"] = "wmctrl is not installed"
+except Exception as exc:
+    result["error"] = "%s: %s" % (type(exc).__name__, exc)
+print(json.dumps(result, ensure_ascii=False))
+'''
+
+# nsMsgFilterType bits of a filter's type= attribute (the "Apply filter when" triggers).
+FILTER_TYPE_FLAGS = {
+    "new_mail": 0x01,
+    "manual": 0x10,
+    "after_junk": 0x20,
+    "after_sending": 0x40,
+    "archive": 0x80,
+    "periodic": 0x100,
+}
+# One search term of a condition= value: "OR (subject,contains,invoice64)", a
+# quoted value may hold parentheses; "ALL" matches every message.
+_CONDITION_TERM = re.compile(r'(?:AND|OR)\s*\((?:[^()"]|"(?:[^"\\]|\\.)*")*\)|\bALL\b', re.IGNORECASE)
 
 
 def _run_program(controller: Any, program: str, timeout: int) -> dict[str, Any]:
@@ -266,10 +364,15 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
         if not expectations:
             return EvalResult(status=EvalStatus.FAIL, message="the task declares no expected filter rules")
 
+        controller = context.get("controller")
+        # Thunderbird writes msgFilterRules.dat when the Message Filters window
+        # closes; the contract's postconfig closes it before anything is read.
+        postconfig = self._run_postconfig(controller, contract.get("postconfig"), timeout)
+
         paths = self._rule_paths(declared_path, params)
         try:
             observed = _run_program(
-                context.get("controller"),
+                controller,
                 _RULES_PROGRAM.replace("__PATHS__", repr(paths)),
                 timeout,
             )
@@ -277,6 +380,7 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
             return EvalResult(
                 status=EvalStatus.FAIL,
                 message="Thunderbird filter rules could not be read: %s: %s" % (type(exc).__name__, exc),
+                metadata={"postconfig": postconfig},
             )
 
         rules = [dict(rule) for rule in (observed.get("rules") or []) if isinstance(rule, Mapping)]
@@ -295,8 +399,10 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
                         {
                             "name": rule.get("name"),
                             "enabled": rule.get("enabled"),
+                            "type": rule.get("type"),
                             "action": rule.get("action"),
                             "actionValue": rule.get("actionValue"),
+                            "actions": rule.get("actions"),
                             "condition": rule.get("condition"),
                             "source": rule.get("__source__"),
                         }
@@ -305,8 +411,32 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
                 }
             )
 
+        required_folders = [str(item).strip() for item in (params.get("required_folders") or []) if str(item).strip()]
+        folder_evidence: dict[str, Any] = {}
+        if required_folders:
+            profile_dir = self._profile_dir(declared_path, params)
+            try:
+                folder_evidence = _run_program(
+                    controller,
+                    _FOLDER_PROGRAM.replace("__PROFILE_DIR__", repr(profile_dir)),
+                    timeout,
+                )
+            except Exception as exc:
+                folder_evidence = {"errors": ["%s: %s" % (type(exc).__name__, exc)]}
+            observed_folders = [str(name) for name in folder_evidence.get("folders") or []]
+            for name in required_folders:
+                checks.append(
+                    {
+                        "check_id": "folder:%s" % name,
+                        "passed": name in observed_folders,
+                        "expected": {"folder": name, "present": True},
+                        "observed": {"folders": observed_folders},
+                    }
+                )
+
         failed = [check["check_id"] for check in checks if not check["passed"]]
         metadata = {
+            "postconfig": postconfig,
             "paths": paths,
             "files": observed.get("files"),
             "rules": rules,
@@ -314,6 +444,9 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
             "checks": checks,
             "failures": failed,
         }
+        if required_folders:
+            metadata["folders"] = folder_evidence.get("folders")
+            metadata["folder_errors"] = folder_evidence.get("errors")
         if not checks:
             return EvalResult(status=EvalStatus.FAIL, message="no filter rule was comparable", metadata=metadata)
         if failed:
@@ -325,17 +458,55 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
         return EvalResult(status=EvalStatus.PASS, message=self.PASS_MESSAGE, metadata=metadata)
 
     @staticmethod
-    def _rule_paths(declared_path: str, params: Mapping[str, Any]) -> list[str]:
-        paths: list[str] = []
-        if declared_path:
-            paths.append(declared_path)
+    def _run_postconfig(controller: Any, steps: Any, timeout: int) -> list[dict[str, Any]]:
+        """Run the contract's OSWorld postconfig steps (``close_window``, ``sleep``).
+
+        Each step is best effort: a failure is recorded and the evaluation goes on
+        with whatever reached the disk.
+        """
+        results: list[dict[str, Any]] = []
+        for step in steps if isinstance(steps, list) else []:
+            if not isinstance(step, Mapping):
+                continue
+            kind = str(step.get("type") or "")
+            parameters = step.get("parameters") if isinstance(step.get("parameters"), Mapping) else {}
+            if kind == "sleep":
+                seconds = max(0.0, min(float(parameters.get("seconds", 0) or 0), 30.0))
+                time.sleep(seconds)
+                results.append({"type": kind, "seconds": seconds})
+            elif kind == "close_window":
+                program = (
+                    _CLOSE_WINDOW_PROGRAM.replace("__NAME__", repr(str(parameters.get("window_name") or "")))
+                    .replace("__STRICT__", repr(bool(parameters.get("strict", False))))
+                    .replace("__BY_CLASS__", repr(bool(parameters.get("by_class", False))))
+                    .replace("__WAIT__", repr(10))
+                )
+                try:
+                    outcome = _run_program(controller, program, max(timeout, 30))
+                except Exception as exc:
+                    outcome = {"error": "%s: %s" % (type(exc).__name__, exc)}
+                if outcome.get("matched") and not outcome.get("still_open"):
+                    time.sleep(1.0)  # the window's unload handler has just written the file
+                results.append({"type": kind, **outcome})
+            else:
+                results.append({"type": kind, "skipped": "unsupported postconfig step"})
+        return results
+
+    @staticmethod
+    def _profile_dir(declared_path: str, params: Mapping[str, Any]) -> str:
         profile_dir = str(params.get("profile_dir") or "")
         if not profile_dir and declared_path:
             parents = Path(declared_path).parents
             if len(parents) >= 3:
                 profile_dir = str(parents[2])
-        if not profile_dir:
-            profile_dir = DEFAULT_PROFILE_DIR
+        return profile_dir or DEFAULT_PROFILE_DIR
+
+    @classmethod
+    def _rule_paths(cls, declared_path: str, params: Mapping[str, Any]) -> list[str]:
+        paths: list[str] = []
+        if declared_path:
+            paths.append(declared_path)
+        profile_dir = cls._profile_dir(declared_path, params)
         candidate = str(Path(profile_dir) / "Mail" / "Local Folders" / "msgFilterRules.dat")
         if candidate not in paths:
             paths.append(candidate)
@@ -347,8 +518,27 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
 
     @classmethod
     def _rule_matches(cls, rule: Mapping[str, Any], expectation: Mapping[str, Any]) -> bool:
+        """Whether one parsed filter block satisfies an expectation.
+
+        ``action``/``actionValue`` must match one action of the filter together;
+        ``condition`` compares the search terms as a set (the terms of a "Match
+        any"/"Match all" filter are order-free); ``type_flags`` lists trigger
+        bits (names of ``FILTER_TYPE_FLAGS`` or integers) that ``type`` must have
+        set.  Other keys compare the attribute; a list means "one of these".
+        """
         for key, wanted in expectation.items():
+            if key in ("action", "actionValue"):
+                continue
             seen = rule.get(key)
+            if key == "type_flags":
+                if not cls._has_type_flags(rule.get("type"), wanted):
+                    return False
+                continue
+            if key == "condition":
+                options = wanted if isinstance(wanted, (list, tuple)) else [wanted]
+                if seen is None or not any(cls._same_condition(seen, item) for item in options):
+                    return False
+                continue
             if isinstance(wanted, (list, tuple)):
                 if not any(cls._normalize(seen) == cls._normalize(item) for item in wanted):
                     return False
@@ -356,5 +546,50 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
             if seen is None:
                 return False
             if cls._normalize(seen) != cls._normalize(wanted):
+                return False
+        if "action" in expectation or "actionValue" in expectation:
+            actions = [item for item in (rule.get("actions") or []) if isinstance(item, Mapping)]
+            if not actions:
+                actions = [{"action": rule.get("action"), "actionValue": rule.get("actionValue")}]
+            if not any(cls._action_matches(action, expectation) for action in actions):
+                return False
+        return True
+
+    @classmethod
+    def _action_matches(cls, action: Mapping[str, Any], expectation: Mapping[str, Any]) -> bool:
+        for key in ("action", "actionValue"):
+            if key not in expectation:
+                continue
+            wanted = expectation[key]
+            seen = action.get(key)
+            options = wanted if isinstance(wanted, (list, tuple)) else [wanted]
+            if seen is None or not any(cls._normalize(seen) == cls._normalize(item) for item in options):
+                return False
+        return True
+
+    @classmethod
+    def _condition_terms(cls, value: Any) -> list[str]:
+        text = str(value if value is not None else "")
+        terms = [cls._normalize(term) for term in _CONDITION_TERM.findall(text)]
+        return sorted(terms) if terms else [cls._normalize(text)]
+
+    @classmethod
+    def _same_condition(cls, seen: Any, wanted: Any) -> bool:
+        return cls._condition_terms(seen) == cls._condition_terms(wanted)
+
+    @staticmethod
+    def _has_type_flags(seen: Any, wanted: Any) -> bool:
+        try:
+            value = int(str(seen).strip())
+        except (TypeError, ValueError):
+            return False
+        for flag in wanted if isinstance(wanted, (list, tuple)) else [wanted]:
+            bit = FILTER_TYPE_FLAGS.get(str(flag).strip().lower()) if not isinstance(flag, int) else flag
+            if bit is None:
+                try:
+                    bit = int(str(flag).strip(), 0)
+                except ValueError:
+                    return False
+            if value & bit != bit:
                 return False
         return True

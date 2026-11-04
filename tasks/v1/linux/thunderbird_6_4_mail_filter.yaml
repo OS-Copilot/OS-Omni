@@ -27,7 +27,15 @@ init:
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.thunderbird:ThunderbirdTaskEvaluator
   params:
+    # The brief asks for the two folders and for the filters in the Local Folders filter
+    # rules (not the IMAP account's), each named, enabled and triggered on Archiving and
+    # Periodically (nsMsgFilterType Archive 0x80 and Periodic 0x100 in type=).
+    required_folders:
+    - BillsDesk64
+    - TripsDesk64
     osworld_evaluator:
+      # Thunderbird writes msgFilterRules.dat when the Message Filters window closes; the
+      # evaluator runs these steps before reading the file.
       postconfig:
       - type: close_window
         parameters:
@@ -39,18 +47,26 @@ evaluation:
       func: check_thunderbird_filter
       result:
         type: vm_file
-        path: /home/user/.thunderbird/t5q2a5hp.default-release/ImapMail/outlook.office365.com/msgFilterRules.dat
+        path: /home/user/.thunderbird/t5q2a5hp.default-release/Mail/Local Folders/msgFilterRules.dat
         dest: msgFilterRules.dat
       expected:
         type: rule
         rules:
           expect:
-          - enabled: 'yes'
+          - name: Bill64Route
+            enabled: 'yes'
+            type_flags:
+            - archive
+            - periodic
             action: Move to folder
             actionValue: mailbox://nobody@Local%20Folders/BillsDesk64
             condition:
             - OR (subject,contains,invoice64) OR (subject,contains,receipt64)
-          - enabled: 'yes'
+          - name: Travel64Route
+            enabled: 'yes'
+            type_flags:
+            - archive
+            - periodic
             action: Move to folder
             actionValue: mailbox://nobody@Local%20Folders/TripsDesk64
             condition:
@@ -74,9 +90,11 @@ metadata:
   - goal6
   - 6-4
   verifier_rules:
-  - Final evidence is the Thunderbird profile filter rules file.
-  - The evaluator checks both Bill64Route and Travel64Route move-to-folder rules.
-  - The evaluator is read-only and does not click, type, reset, restore, or mutate app state.
+  - Final evidence is the Local Folders filter rules file and the Local Folders folder list.
+  - The evaluator checks both Bill64Route and Travel64Route move-to-folder rules (name, enabled, Archiving and Periodically
+    triggers, conditions, action) and the BillsDesk64 and TripsDesk64 folders.
+  - Before reading, the evaluator closes the Message Filters window through the window manager (the contract's postconfig),
+    which makes Thunderbird write the filter list; it does not click, type, reset or restore app state.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: thunderbird/Linux/linux.Thunderbird.6-4
