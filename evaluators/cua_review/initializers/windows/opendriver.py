@@ -11,12 +11,14 @@ launches it.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.initializers.windows.setup import (
     BaseWindowsInitializer,
     WindowsPreparationError,
     resolve_shortcuts,
+    run_python,
     stop_processes,
 )
 
@@ -26,6 +28,119 @@ DEFAULT_CANDIDATES = (
     r"C:\OpenDriver-win-unpacked-host\OpenDriver.exe",
     r"%USERPROFILE%\Desktop\OpenDriver.lnk",
 )
+
+DEFAULT_ASAR_PATHS = (r"C:\OS-Omni\Apps\OpenDriver\resources\app.asar",)
+
+# The Flutter web build loads CanvasKit from www.gstatic.com and its Roboto text font from
+# fonts.gstatic.com. The guest clock stays at the snapshot date (Jun 2026), before the
+# notBefore date of Google's current certificates, so both requests fail with
+# ERR_CERT_DATE_INVALID and the window stays blank. The build ships CanvasKit under
+# public/canvaskit/, so the loader is pointed at it and at a local font base URL that serves
+# a guest font under the file name the engine requests (Roboto when installed, else Segoe
+# UI, the Windows UI font). The app serves public/ from inside resources\app.asar, so the
+# patched bootstrap and the font are appended to the archive and its header is rewritten;
+# the build does not enable asar integrity validation. Nothing else in the app reaches Google.
+OFFLINE_ASSETS_PATCH = r'''
+import hashlib, json, os, shutil, struct, subprocess, sys, time
+
+ASAR_PATHS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else []
+BOOTSTRAP = ("public", "flutter_bootstrap.js")
+FONT = ("public", "osomni-fonts", "roboto", "v32", "KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2")
+CONFIG = 'config: { canvasKitBaseUrl: "canvaskit/", fontFallbackBaseUrl: "osomni-fonts/" },'
+LOADER_CALL = "_flutter.loader.load({"
+FONT_DIRS = [os.path.expandvars(r"%WINDIR%\Fonts"), os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Windows\Fonts")]
+FONT_NAMES = ["Roboto-Regular.ttf", "Roboto.ttf", "segoeui.ttf", "arial.ttf"]
+BLOCK = 4194304
+
+
+def integrity(data):
+    return {"algorithm": "SHA256", "hash": hashlib.sha256(data).hexdigest(), "blockSize": BLOCK,
+            "blocks": [hashlib.sha256(data[i:i + BLOCK]).hexdigest() for i in range(0, max(len(data), 1), BLOCK)]}
+
+
+def entry(header, parts, create=False):
+    current = header
+    for index, part in enumerate(parts):
+        files = current.setdefault("files", {}) if create else current["files"]
+        if part not in files:
+            if not create:
+                raise SystemExit("app.asar has no " + "/".join(parts))
+            files[part] = {} if index == len(parts) - 1 else {"files": {}}
+        current = files[part]
+    return current
+
+
+asar = next((os.path.expandvars(p) for p in ASAR_PATHS if os.path.isfile(os.path.expandvars(p))), "")
+if not asar:
+    raise SystemExit("OpenDriver app.asar not found: " + ", ".join(ASAR_PATHS))
+with open(asar, "rb") as handle:
+    prefix = handle.read(16)
+    header_size = struct.unpack_from("<I", prefix, 4)[0]
+    header = json.loads(handle.read(struct.unpack_from("<I", prefix, 12)[0]).decode("utf-8"))
+    base = 8 + header_size
+    bootstrap = entry(header, BOOTSTRAP)
+    if bootstrap.get("unpacked"):
+        raise SystemExit("flutter_bootstrap.js is unpacked; expected it inside app.asar")
+    handle.seek(base + int(bootstrap["offset"]))
+    source = handle.read(int(bootstrap["size"])).decode("utf-8")
+if CONFIG in source:
+    print(json.dumps({"status": "already patched", "asar": asar}))
+    raise SystemExit(0)
+if source.count(LOADER_CALL) != 1:
+    raise SystemExit("OpenDriver flutter_bootstrap.js loader call not found")
+font = next((os.path.join(d, n) for n in FONT_NAMES for d in FONT_DIRS if os.path.isfile(os.path.join(d, n))), "")
+if not font:
+    raise SystemExit("no Roboto, Segoe UI or Arial font in the guest")
+patched = source.replace(LOADER_CALL, LOADER_CALL + "\r\n  " + CONFIG, 1).encode("utf-8")
+with open(font, "rb") as handle:
+    font_data = handle.read()
+# A running client holds app.asar open; the launch stage starts it again.
+subprocess.run(["taskkill", "/F", "/T", "/IM", "opendriver.exe"], capture_output=True)
+# Unchanged files keep their offsets; the patched bootstrap and the font are appended.
+data_size = os.path.getsize(asar) - base
+bootstrap.update({"size": len(patched), "offset": str(data_size), "integrity": integrity(patched)})
+font_entry = entry(header, FONT, create=True)
+font_entry.clear()
+font_entry.update({"size": len(font_data), "offset": str(data_size + len(patched)), "integrity": integrity(font_data)})
+text = json.dumps(header, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+padded = text + b"\0" * (-len(text) % 4)
+pickle = struct.pack("<II", 4 + len(padded), len(text)) + padded
+temporary = asar + ".osomni-tmp"
+with open(asar, "rb") as src, open(temporary, "wb") as dst:
+    dst.write(struct.pack("<II", 4, len(pickle)))
+    dst.write(pickle)
+    src.seek(base)
+    shutil.copyfileobj(src, dst, 1 << 20)
+    dst.write(patched)
+    dst.write(font_data)
+for attempt in range(40):
+    try:
+        os.replace(temporary, asar)
+        break
+    except PermissionError:
+        if attempt == 39:
+            raise
+        time.sleep(0.25)
+# A service worker registered before the patch would keep serving the old bootstrap.
+shutil.rmtree(os.path.expandvars(r"%APPDATA%\opendriver\Service Worker"), ignore_errors=True)
+print(json.dumps({"status": "patched", "asar": asar, "font": font}))
+'''
+
+
+def serve_assets_locally(controller: Any, params: Mapping[str, Any]) -> str:
+    """Point OpenDriver's Flutter loader at its bundled CanvasKit and a local font."""
+    declared = params.get("app_asar_paths") or DEFAULT_ASAR_PATHS
+    paths = [str(x) for x in ([declared] if isinstance(declared, str) else declared)]
+    code = (
+        "import sys\n"
+        f"sys.argv = ['patch', {json.dumps(paths)!r}]\n"
+        f"exec(compile({OFFLINE_ASSETS_PATCH!r}, 'opendriver_offline_assets', 'exec'))\n"
+    )
+    try:
+        output = run_python(controller, code, timeout=180).strip()
+    except WindowsPreparationError as exc:
+        raise WindowsPreparationError(f"OpenDriver offline-assets patch failed: {exc}") from exc
+    return output.splitlines()[-1] if output else "OpenDriver offline-assets patch ran"
 
 
 class OpenDriverWindowsInitializer(BaseWindowsInitializer):
@@ -38,6 +153,10 @@ class OpenDriverWindowsInitializer(BaseWindowsInitializer):
     ENTRY_PATHS = DEFAULT_CANDIDATES
     WAIT_MS = 3500
     PASS_MESSAGE = "OpenDriver is open on its snapshot"
+
+    def _prepare(self, controller: Any, params: Mapping[str, Any]) -> str:
+        prepared = super()._prepare(controller, params)
+        return f"{prepared}; {serve_assets_locally(controller, params)}"
 
 
 class OpenDriverDesktopShortcutInitializer(OpenDriverWindowsInitializer):
@@ -70,4 +189,5 @@ class OpenDriverDesktopShortcutInitializer(OpenDriverWindowsInitializer):
         if not found:
             raise WindowsPreparationError(
                 "no OpenDriver shortcut was found on the desktop or the start menu")
-        return f"the client is stopped and its shortcut is at {found[0]}"
+        patched = serve_assets_locally(controller, params)
+        return f"the client is stopped and its shortcut is at {found[0]}; {patched}"

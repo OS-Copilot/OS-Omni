@@ -99,6 +99,8 @@ while time.time() < deadline:
         cart = request_json("/api/cart")
         orders_payload = request_json("/api/orders")
         orders = orders_payload.get("orders") if isinstance(orders_payload, dict) else orders_payload
+        # The OpenShop seed carries Lucas Lin's order history (TBH-LUCAS-*); only orders placed in the episode count.
+        orders = [o for o in orders if not str((o or {}).get("id") or "").startswith("TBH-")]
         assert session.get("loggedIn") is True and (session.get("user") or {}).get("phone") == "13800138000", f"session mismatch: {session!r}"
         assert len(cart.get("items") or []) == 0, f"expected empty cart, got {cart!r}"
         assert float(cart.get("total") or 0) == 0.0, f"expected cart total 0, got {cart!r}"

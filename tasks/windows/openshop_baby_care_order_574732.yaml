@@ -115,7 +115,7 @@ metadata:
   evaluator_path: evaluators/windows/openshop_review_orders.py
   human_steps: 79
   gui_instruction_path: workbench/openshop_win11_scan_20260825/deliverables/openshop_win11_baby_care_order/gui_instruction.txt
-  instruction_sha256: 4eab6d6f9561608e8583c2eea919fd7934c8a5c2d22e0cbc9b2409f1d970a9d0
+  instruction_sha256: ffbb1f37d20d058af60eddf42fe948806841372a98c01042e3d1f7b25a45c032
   source_state_mode: human_completed_eval_only
   verifier_rules:
     primary_source: OpenShop read-only local API durable order state and current benchmark events

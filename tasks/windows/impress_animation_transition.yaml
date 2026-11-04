@@ -20,15 +20,15 @@ init:
   params:
     steps:
     - type: run_powershell
-      script: "py -3 -W ignore -c \"\nimport os, struct, zlib\ndef mkpng(p, w=200, h=200, c=(30,80,160)):\n    def ch(t, d):\n\
+      script: "$code = @'\nimport os, struct, zlib\ndef mkpng(p, w=200, h=200, c=(30,80,160)):\n    def ch(t, d):\n\
         \        x = t + d\n        return struct.pack('>I', len(d)) + x + struct.pack('>I', zlib.crc32(x) & 0xffffffff)\n\
         \    raw = b''\n    for _ in range(h):\n        raw += b'\\x00' + bytes(c) * w\n    with open(p, 'wb') as f:\n   \
         \     f.write(b'\\x89PNG\\r\\n\\x1a\\n' + ch(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)) + ch(b'IDAT',\
         \ zlib.compress(raw)) + ch(b'IEND', b''))\noutput_path = os.path.join(os.environ['USERPROFILE'], 'Downloads', 'logo.png')\n\
-        mkpng(output_path)\nprint('IMAGE_OK')\n\"\n"
+        mkpng(output_path)\nprint('IMAGE_OK')\n'@\n$code | py -3 -W ignore -\nif ($LASTEXITCODE) { exit $LASTEXITCODE }\n"
       timeout: 15
     - type: run_powershell
-      script: "py -3 -W ignore -c \"\nimport os, subprocess, sys\ntry:\n    from pptx import Presentation\nexcept ImportError:\n\
+      script: "$code = @'\nimport os, subprocess, sys\ntry:\n    from pptx import Presentation\nexcept ImportError:\n\
         \    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-pptx', '-q'])\n    from pptx import Presentation\n\
         \nprs = Presentation()\n\ns1 = prs.slides.add_slide(prs.slide_layouts[0])\ns1.shapes.title.text = 'Tech Conference\
         \ 2025'\ns1.placeholders[1].text = 'Innovation Meets Execution'\n\ns2 = prs.slides.add_slide(prs.slide_layouts[1])\n\
@@ -38,7 +38,7 @@ init:
         s4.shapes.title.text = 'Speakers'\ns4.placeholders[1].text = 'Dr. Smith - AI Research\\nMs. Chen - Cloud Arch\\nMr.\
         \ Kumar - Security'\n\ns5 = prs.slides.add_slide(prs.slide_layouts[1])\ns5.shapes.title.text = 'Closing'\ns5.placeholders[1].text\
         \ = 'Thank you for attending. See you next year!'\n\noutput_path = os.path.join(os.environ['USERPROFILE'], 'Downloads',\
-        \ 'conference.pptx')\nprs.save(output_path)\nprint('INIT_OK: 5 slides')\n\"\n"
+        \ 'conference.pptx')\nprs.save(output_path)\nprint('INIT_OK: 5 slides')\n'@\n$code | py -3 -W ignore -\nif ($LASTEXITCODE) { exit $LASTEXITCODE }\n"
       timeout: 120
     - type: run_powershell
       script: "$pptPath = Join-Path $env:USERPROFILE \"Downloads\\conference.pptx\"\n$candidates = @(\n  \"C:\\Program Files\\\
