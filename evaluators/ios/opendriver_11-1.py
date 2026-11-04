@@ -184,6 +184,61 @@ def _text(value: Any) -> str:
     return str(value).strip()
 
 
+#: The vendored backend persists a ride in its storage schema, not this module's
+#: check-level schema: the tier is the tier *id* string stored under ``rideTier``
+#: (never ``tier``; see services/opendriver_backend/backend/src/database/seed.js
+#: :1408 and services/opendriver_backend/backend/src/server.js:3035 -- the seed's
+#: Green rides store ``rideTier: "green"``), waypoints are objects carrying the
+#: stop ``address`` next to ids and coordinates (server.js:1040-1046, 1060-1069),
+#: and an address may arrive as an object.  Normalize a read-only copy of the
+#: record before the exact ride match; every compared value stays exact.
+RIDE_TIER_FIELDS = ("tier", "rideTier")
+RIDE_TIER_ID_FIELDS = ("id", "name", "label", "title")
+RIDE_TEXT_FIELDS = ("name", "label", "address", "full_text", "flatten_text")
+
+
+def _text_value(value: Any) -> str:
+    """Return the text of a persisted place/tier value, resolving objects."""
+    if isinstance(value, Mapping):
+        for name in RIDE_TEXT_FIELDS:
+            text = _text(value.get(name))
+            if text:
+                return text
+        return ""
+    return _text(value)
+
+
+def _normalize_ride(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a read-only copy of *record* in this module's ride check schema."""
+    normalized = dict(record)
+    ride_tier = next(
+        (
+            normalized.get(name)
+            for name in RIDE_TIER_FIELDS
+            if _text(normalized.get(name))
+        ),
+        None,
+    )
+    if isinstance(ride_tier, Mapping):
+        ride_tier = next(
+            (
+                ride_tier.get(name)
+                for name in RIDE_TIER_ID_FIELDS
+                if _text(ride_tier.get(name))
+            ),
+            "",
+        )
+    if ride_tier is not None:
+        normalized["tier"] = _text(ride_tier)
+    for name in ("destination", "destinationAddress", "destination_address"):
+        if isinstance(normalized.get(name), Mapping):
+            normalized[name] = _text_value(normalized[name])
+    waypoints = normalized.get("waypoints")
+    if isinstance(waypoints, (list, tuple)):
+        normalized["waypoints"] = [_text_value(waypoint) for waypoint in waypoints]
+    return normalized
+
+
 def _record_matches(
     record: Mapping[str, Any],
     expected: Mapping[str, Any],
@@ -405,7 +460,15 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
         spec: Mapping[str, Any],
         label: str,
     ) -> Mapping[str, Any] | None:
-        matches = [ride for ride in rides if _record_matches(ride, spec)]
+        # The backend stores rideTier/waypoint objects (see _normalize_ride);
+        # match the exact spec against a normalized read-only copy, keeping the
+        # original records for the evidence fields below.
+        normalized_rides = [_normalize_ride(ride) for ride in rides]
+        matches = [
+            ride
+            for ride, normalized in zip(rides, normalized_rides)
+            if _record_matches(normalized, spec)
+        ]
         chosen = matches[0] if len(matches) == 1 else None
         expected = _expected_fields(spec, RIDE_FIELDS)
         actual = {
