@@ -14,9 +14,14 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.initializers.ios.opentrip_seed_state import _seeded_state
+from evaluators.cua_review.platforms.ios.webview_state import (
+    local_storage_history,
+    read_window_seed,
+)
 
 
 TASK_ID = "ios.opentrip.sc2306_grand_axis_booking_284952"
@@ -289,6 +294,8 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
                 self._read_state_snapshot_and_history(
                     db_path=db_path,
                     local_state_key=LOCAL_STATE_KEY,
+                    canonical_base=self._canonical_base_state(app_binding),
+                    is_baseline=None,
                 )
             )
         except Exception as exc:
@@ -360,6 +367,7 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
                 {
                     "state_sha256": baseline_hash,
                     "booking_ids": cls._booking_ids(base_state),
+                    "baseline_source": (database_evidence or {}).get("baseline_source", "main_database_file"),
                 },
                 baseline_reason,
             )
@@ -466,6 +474,7 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
             commit_states,
             window_start=window_start,
             window_end=window_end,
+            history_truncated=bool((database_evidence or {}).get("history_truncated_by_checkpoint")),
         )
         checks.append(transaction_check)
 
@@ -552,6 +561,11 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
             metadata=metadata,
         )
 
+    @staticmethod
+    def _is_clean_baseline(state: Mapping[str, Any]) -> bool:
+        """Logical-content test for the clean seed (canonical JSON, not file bytes)."""
+        return _canonical_json_sha256(state) == EXPECTED_BASE_STATE_SHA256
+
     @classmethod
     def _baseline_is_clean(cls, state: Mapping[str, Any]) -> tuple[bool, str]:
         reasons: list[str] = []
@@ -631,10 +645,16 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
         *,
         window_start: datetime,
         window_end: datetime,
+        history_truncated: bool = False,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         reasons: list[str] = []
         expected_flags = [(True, False), (True, True)]
+        expected_dynamic_counts = [1, 2]
+        # When a checkpoint folded the first commits into the main database file,
+        # the observable history starts at the main-file state; it must be one of
+        # the expected intermediate states and continue the exact progression.
+        offset = 0
         for index, state in enumerate(commit_states, start=1):
             dynamic = cls._dynamic_bookings(state)
             flight = cls._evaluate_dynamic_booking(
@@ -664,21 +684,32 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
                     "unexpected_dynamic_data": unexpected,
                 }
             )
-            if index <= len(expected_flags) and flags != expected_flags[index - 1]:
+            if index == 1 and history_truncated and flags in expected_flags:
+                offset = expected_flags.index(flags)
+            position = offset + index - 1
+            if position < len(expected_flags) and flags != expected_flags[position]:
                 reasons.append(
-                    f"commit {index} flags must be {expected_flags[index - 1]}, observed {flags}"
+                    f"commit {index} flags must be {expected_flags[position]}, observed {flags}"
                 )
             if unexpected:
                 reasons.append(f"commit {index} contains extra or inexact dynamic booking data")
 
-        if len(rows) != 2:
-            reasons.append(f"expected exactly two committed WAL states, observed {len(rows)}")
-        if len(rows) >= 2:
-            first_ids = rows[0]["dynamic_ids"]
-            second_ids = rows[1]["dynamic_ids"]
-            if len(first_ids) != 1 or len(second_ids) != 2:
-                reasons.append("WAL target cardinality is not exactly flight then flight+hotel")
+        expected_count = len(expected_flags) - offset
+        if len(rows) != expected_count:
+            reasons.append(
+                f"expected exactly two committed WAL states, observed {len(rows)}"
+                if not offset
+                else f"expected exactly {expected_count} committed state(s) after the "
+                f"{offset} checkpointed one(s), observed {len(rows)}"
+            )
+        if len(rows) >= expected_count and any(
+            len(rows[position - offset]["dynamic_ids"]) != expected_dynamic_counts[position]
+            for position in range(offset, len(expected_flags))
+        ):
+            reasons.append("WAL target cardinality is not exactly flight then flight+hotel")
         evidence = {
+            "history_truncated_by_checkpoint": bool(history_truncated),
+            "checkpointed_expected_states": offset,
             "commit_count": len(rows),
             "first_target_commits": {
                 "flight_booking_exact": 1 if rows and rows[0]["flags"] == [True, False] else None,
@@ -889,20 +920,35 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
         *,
         db_path: Path,
         local_state_key: str,
+        canonical_base: Mapping[str, Any] | None = None,
+        is_baseline: Callable[[Mapping[str, Any]], bool] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
         if not db_path.is_file():
             raise FileNotFoundError(f"localStorage database not found: {db_path}")
+        baseline_test = is_baseline or cls._is_clean_baseline
         with tempfile.TemporaryDirectory(prefix="opentrip-284952-verifier-") as temporary:
             snapshot = Path(temporary) / "localstorage.sqlite3"
             copied_sidecars, stable_stats = cls._copy_consistent_sqlite_set(db_path, snapshot)
+            # Current state: SQLite's own view (main file plus committed WAL frames).
             final_state = cls._read_local_state(snapshot, local_state_key, include_wal=True)
-            base_state = cls._read_local_state(snapshot, local_state_key, include_wal=False)
-            wal_path = Path(f"{snapshot}-wal")
-            commit_states = (
-                cls._replay_wal_commits(snapshot, wal_path, local_state_key)
-                if wal_path.is_file() and wal_path.stat().st_size > 32
-                else []
+            # History: the main file and each committed WAL state, compared by
+            # logical content.  A checkpoint during the episode may already have
+            # copied early commits into the main file, so it is not assumed to
+            # still hold the clean pre-episode state.
+            history = local_storage_history(
+                snapshot,
+                read_state=lambda path: cls._read_local_state(path, local_state_key, include_wal=False),
+                is_baseline=baseline_test,
             )
+            base_state = history["baseline"]
+            baseline_source = history["evidence"]["baseline_source"]
+            if base_state is None:
+                # The clean baseline was folded into later commits; judge against
+                # the canonical seed the initializer writes and verifies instead.
+                base_state = dict(canonical_base or {})
+                baseline_source = (
+                    "canonical_seed_from_app_bundle" if canonical_base else "unavailable"
+                )
             evidence = {
                 "quick_check": "ok",
                 "snapshot_read": True,
@@ -912,10 +958,21 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
                 "source_stats": stable_stats,
                 "local_state_key": local_state_key,
                 "source_database_sha256": cls._file_sha256(db_path),
-                "wal_commit_count": len(commit_states),
                 "host_temp_only": True,
+                **history["evidence"],
+                "baseline_source": baseline_source,
             }
-        return final_state, base_state, commit_states, evidence
+        return final_state, base_state, history["history"], evidence
+
+    @staticmethod
+    def _canonical_base_state(app_binding: Mapping[str, Any]) -> dict[str, Any] | None:
+        """The clean seed the initializer writes, rebuilt from the bound app bundle."""
+        try:
+            application = list(app_binding.get("applications") or [])[0]
+            seed_path = Path(str(application["app_container"])) / "public" / "seed-data.js"
+            return _seeded_state(read_window_seed(seed_path, "opentripSeed"))
+        except Exception:  # noqa: BLE001 - only needed after a checkpoint; reported then
+            return None
 
     @classmethod
     def _copy_consistent_sqlite_set(
@@ -969,88 +1026,6 @@ class OpenTripSc2306GrandAxisBooking284952Evaluator(BaseEvaluator):
         if len(rows) != 1:
             raise RuntimeError(f"expected one localStorage row for {key!r}, observed {len(rows)}")
         return cls._decode_state(rows[0][0])
-
-    @classmethod
-    def _replay_wal_commits(
-        cls,
-        base_db: Path,
-        wal_path: Path,
-        key: str,
-    ) -> list[dict[str, Any]]:
-        payload = wal_path.read_bytes()
-        if len(payload) < 32:
-            return []
-        magic, version, page_size, _sequence, salt1, salt2, header_c1, header_c2 = struct.unpack(
-            ">8I", payload[:32]
-        )
-        if magic not in {0x377F0682, 0x377F0683}:
-            raise RuntimeError(f"invalid WAL magic: {magic:#x}")
-        if version != 3007000:
-            raise RuntimeError(f"unsupported WAL version: {version}")
-        if page_size == 1:
-            page_size = 65536
-        if page_size < 512 or page_size > 65536 or page_size & (page_size - 1):
-            raise RuntimeError(f"invalid WAL page size: {page_size}")
-        checksum_byte_order = "little" if magic == 0x377F0682 else "big"
-        calculated_header = cls._wal_checksum(
-            payload[:24],
-            byte_order=checksum_byte_order,
-        )
-        if calculated_header != (header_c1, header_c2):
-            raise RuntimeError("WAL header checksum mismatch")
-        frame_size = 24 + page_size
-        if (len(payload) - 32) % frame_size:
-            raise RuntimeError("WAL contains a partial frame")
-
-        replay = base_db.parent / "wal-replay.sqlite3"
-        shutil.copy2(base_db, replay)
-        states: list[dict[str, Any]] = []
-        rolling_checksum = calculated_header
-        with replay.open("r+b") as handle:
-            for offset in range(32, len(payload), frame_size):
-                page_no, db_size, frame_salt1, frame_salt2, frame_c1, frame_c2 = struct.unpack(
-                    ">6I", payload[offset : offset + 24]
-                )
-                if page_no <= 0:
-                    raise RuntimeError(f"invalid WAL page number at offset {offset}")
-                if (frame_salt1, frame_salt2) != (salt1, salt2):
-                    raise RuntimeError(f"WAL salt mismatch at offset {offset}")
-                page = payload[offset + 24 : offset + frame_size]
-                rolling_checksum = cls._wal_checksum(
-                    payload[offset : offset + 8] + page,
-                    byte_order=checksum_byte_order,
-                    seed=rolling_checksum,
-                )
-                if rolling_checksum != (frame_c1, frame_c2):
-                    raise RuntimeError(f"WAL frame checksum mismatch at offset {offset}")
-                handle.seek((page_no - 1) * page_size)
-                handle.write(page)
-                if db_size:
-                    handle.truncate(db_size * page_size)
-                    handle.flush()
-                    states.append(cls._read_local_state(replay, key, include_wal=False))
-        return states
-
-    @staticmethod
-    def _wal_checksum(
-        payload: bytes,
-        *,
-        byte_order: str,
-        seed: tuple[int, int] = (0, 0),
-    ) -> tuple[int, int]:
-        """Return SQLite's rolling WAL checksum for an 8-byte-aligned payload."""
-
-        if len(payload) % 8:
-            raise RuntimeError("WAL checksum input is not aligned to eight bytes")
-        if byte_order not in {"little", "big"}:
-            raise ValueError(f"unsupported WAL checksum byte order: {byte_order}")
-        s0, s1 = seed
-        for offset in range(0, len(payload), 8):
-            word0 = int.from_bytes(payload[offset : offset + 4], byte_order)
-            word1 = int.from_bytes(payload[offset + 4 : offset + 8], byte_order)
-            s0 = (s0 + word0 + s1) & 0xFFFFFFFF
-            s1 = (s1 + word1 + s0) & 0xFFFFFFFF
-        return s0, s1
 
     @staticmethod
     def _decode_state(raw: Any) -> dict[str, Any]:

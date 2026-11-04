@@ -19,11 +19,12 @@ from __future__ import annotations
 import json
 import shutil
 import sqlite3
+import struct
 import tempfile
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator, Mapping, Sequence
 
 LOCAL_STORAGE_DB = "localstorage.sqlite3"
 ORIGIN_FILE = "origin"
@@ -208,3 +209,239 @@ def resolve_state_key(db_path: Path, key_prefix: str) -> str:
             f"expected exactly one {key_prefix!r} key in {db_path}, found {len(matches)}"
         )
     return matches[0]
+
+
+# ---------------------------------------------------------------------------
+# Write-ahead-log history
+#
+# WebKit keeps localstorage.sqlite3 in WAL mode, so each committed write is a
+# run of WAL frames ending in a commit frame, and the main file holds the state
+# as of the last checkpoint.  SQLite may checkpoint at any time (WAL size limit,
+# last connection closing, the app being suspended), which copies a committed
+# prefix of the WAL into the main file and later restarts the WAL with new
+# salts.  The helpers below recover the committed history the way SQLite reads
+# it, and do not assume that the main file still holds the pre-episode state.
+# ---------------------------------------------------------------------------
+_WAL_HEADER_BYTES = 32
+_WAL_FRAME_HEADER_BYTES = 24
+_WAL_BYTE_ORDER = {0x377F0682: "little", 0x377F0683: "big"}
+
+
+@dataclass(frozen=True)
+class WalFrame:
+    """One valid WAL frame; ``commit_size`` is non-zero only on commit frames."""
+
+    number: int
+    page_no: int
+    commit_size: int
+    page: bytes
+
+
+@dataclass(frozen=True)
+class WalLog:
+    """The committed frames SQLite would apply from one WAL file."""
+
+    page_size: int
+    frames: tuple[WalFrame, ...]
+    evidence: dict[str, Any] = field(default_factory=dict)
+
+
+def wal_checksum(
+    payload: bytes,
+    *,
+    byte_order: str,
+    seed: tuple[int, int] = (0, 0),
+) -> tuple[int, int]:
+    """Return SQLite's rolling WAL checksum for an 8-byte-aligned payload."""
+    if len(payload) % 8:
+        raise WebViewStateError("WAL checksum input is not aligned to eight bytes")
+    if byte_order not in {"little", "big"}:
+        raise ValueError(f"unsupported WAL checksum byte order: {byte_order}")
+    s0, s1 = seed
+    for offset in range(0, len(payload), 8):
+        word0 = int.from_bytes(payload[offset : offset + 4], byte_order)
+        word1 = int.from_bytes(payload[offset + 4 : offset + 8], byte_order)
+        s0 = (s0 + word0 + s1) & 0xFFFFFFFF
+        s1 = (s1 + word1 + s0) & 0xFFFFFFFF
+    return s0, s1
+
+
+def read_wal(wal_path: Path) -> WalLog:
+    """Return the committed frames of *wal_path* exactly as SQLite would use them.
+
+    SQLite only honours the frames of the current WAL generation: frames whose
+    salt matches the header and whose cumulative checksum is intact, up to the
+    last commit frame.  Frames left behind by an earlier generation (after a
+    checkpoint restarted the log), a torn trailing frame, and an uncommitted
+    tail are ignored rather than treated as corruption.  A WAL whose header is
+    invalid is ignored as a whole, as SQLite does.
+    """
+    payload = wal_path.read_bytes() if wal_path.is_file() else b""
+    evidence: dict[str, Any] = {
+        "wal_bytes": len(payload),
+        "wal_header_valid": False,
+        "wal_frames_in_file": 0,
+        "wal_frames_valid": 0,
+        "wal_frames_committed": 0,
+        "wal_stop_reason": None,
+    }
+    if len(payload) < _WAL_HEADER_BYTES:
+        evidence["wal_stop_reason"] = "no WAL header" if payload else "no WAL content"
+        return WalLog(0, (), evidence)
+    magic, version, page_size, _sequence, salt1, salt2, header_c1, header_c2 = struct.unpack(
+        ">8I", payload[:_WAL_HEADER_BYTES]
+    )
+    byte_order = _WAL_BYTE_ORDER.get(magic)
+    if page_size == 1:
+        page_size = 65536
+    header_problem = None
+    if byte_order is None:
+        header_problem = f"invalid WAL magic {magic:#x}"
+    elif version != 3007000:
+        header_problem = f"unsupported WAL version {version}"
+    elif page_size < 512 or page_size > 65536 or page_size & (page_size - 1):
+        header_problem = f"invalid WAL page size {page_size}"
+    elif wal_checksum(payload[:24], byte_order=byte_order) != (header_c1, header_c2):
+        header_problem = "WAL header checksum mismatch"
+    if header_problem:
+        evidence["wal_stop_reason"] = header_problem + "; SQLite ignores this WAL"
+        return WalLog(0, (), evidence)
+
+    evidence["wal_header_valid"] = True
+    frame_bytes = _WAL_FRAME_HEADER_BYTES + page_size
+    available = (len(payload) - _WAL_HEADER_BYTES) // frame_bytes
+    evidence["wal_frames_in_file"] = available
+    evidence["wal_trailing_partial_bytes"] = (len(payload) - _WAL_HEADER_BYTES) % frame_bytes
+    frames: list[WalFrame] = []
+    last_commit = 0
+    rolling = (header_c1, header_c2)
+    for index in range(available):
+        offset = _WAL_HEADER_BYTES + index * frame_bytes
+        page_no, commit_size, frame_salt1, frame_salt2, frame_c1, frame_c2 = struct.unpack(
+            ">6I", payload[offset : offset + _WAL_FRAME_HEADER_BYTES]
+        )
+        if (frame_salt1, frame_salt2) != (salt1, salt2):
+            evidence["wal_stop_reason"] = (
+                f"frame {index + 1} belongs to an earlier WAL generation (salt mismatch)"
+            )
+            break
+        if page_no <= 0:
+            evidence["wal_stop_reason"] = f"frame {index + 1} has an invalid page number"
+            break
+        page = payload[offset + _WAL_FRAME_HEADER_BYTES : offset + frame_bytes]
+        rolling = wal_checksum(payload[offset : offset + 8] + page, byte_order=byte_order, seed=rolling)
+        if rolling != (frame_c1, frame_c2):
+            evidence["wal_stop_reason"] = f"frame {index + 1} checksum mismatch"
+            break
+        frames.append(WalFrame(index + 1, page_no, commit_size, page))
+        if commit_size:
+            last_commit = len(frames)
+    evidence["wal_frames_valid"] = len(frames)
+    evidence["wal_frames_committed"] = last_commit
+    evidence["wal_uncommitted_tail_frames"] = len(frames) - last_commit
+    return WalLog(page_size, tuple(frames[:last_commit]), evidence)
+
+
+def checkpointed_frame_count(main_file: bytes, wal: WalLog) -> int:
+    """Number of leading frames of *wal* a checkpoint already copied into *main_file*.
+
+    A checkpoint writes, for every page, its newest frame up to some commit
+    boundary into the main file.  The largest commit boundary whose newest page
+    images all equal the main file's pages is that backfilled prefix; replaying
+    those frames again on top of the main file would mix page versions.
+    """
+    page_size = wal.page_size
+    newest: dict[int, bytes] = {}
+    count = 0
+    for frame in wal.frames:
+        newest[frame.page_no] = frame.page
+        if frame.commit_size and all(
+            main_file[(page_no - 1) * page_size : page_no * page_size] == image
+            for page_no, image in newest.items()
+        ):
+            count = frame.number
+    return count
+
+
+def replay_wal_commits(
+    db_path: Path,
+    wal: WalLog,
+    *,
+    start: int,
+    read_state: Callable[[Path], dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """State after each commit past frame *start*, replayed onto a copy of the main file."""
+    replay = Path(db_path).parent / "wal-replay.sqlite3"
+    shutil.copy2(db_path, replay)
+    states: list[dict[str, Any]] = []
+    with replay.open("r+b") as handle:
+        for frame in wal.frames[start:]:
+            handle.seek((frame.page_no - 1) * wal.page_size)
+            handle.write(frame.page)
+            if frame.commit_size:
+                handle.truncate(frame.commit_size * wal.page_size)
+                handle.flush()
+                states.append(read_state(replay))
+    return states
+
+
+def local_storage_history(
+    snapshot: Path,
+    *,
+    read_state: Callable[[Path], dict[str, Any]],
+    is_baseline: Callable[[Mapping[str, Any]], bool],
+) -> dict[str, Any]:
+    """Split a private localStorage snapshot into its clean baseline and later commits.
+
+    *read_state* reads one state from a SQLite file's main pages only (no WAL).
+    The observable states are the main file followed by every committed WAL
+    state that SQLite would apply.  The first of them that *is_baseline*
+    accepts is the pre-episode state and ``history`` is everything after it.
+    When none is a clean baseline, a checkpoint has folded the first episode
+    commits into the main file: ``baseline`` is ``None``, the main-file state
+    opens ``history``, and ``history_truncated_by_checkpoint`` is set so the
+    caller can judge the observable suffix instead of a missing prefix.
+    """
+    db_state = read_state(snapshot)
+    wal = read_wal(Path(f"{snapshot}-wal"))
+    start = 0
+    if not is_baseline(db_state) and wal.frames:
+        start = checkpointed_frame_count(Path(snapshot).read_bytes(), wal)
+    commits = replay_wal_commits(snapshot, wal, start=start, read_state=read_state)
+    sequence: Sequence[dict[str, Any]] = [db_state, *commits]
+    evidence: dict[str, Any] = {
+        **wal.evidence,
+        "wal_frames_already_checkpointed": start,
+        "wal_commit_count": len(commits),
+    }
+    for index, state in enumerate(sequence):
+        if is_baseline(state):
+            evidence.update(
+                {
+                    "baseline_source": "main_database_file" if index == 0 else f"wal_commit_{index}",
+                    "history_truncated_by_checkpoint": False,
+                }
+            )
+            return {
+                "db_state": db_state,
+                "baseline": state,
+                "history": list(sequence[index + 1 :]),
+                "evidence": evidence,
+            }
+    evidence.update({"baseline_source": None, "history_truncated_by_checkpoint": True})
+    return {"db_state": db_state, "baseline": None, "history": list(sequence), "evidence": evidence}
+
+
+def read_window_seed(path: Path, variable: str) -> dict[str, Any]:
+    """Parse a bundled ``window.<variable> = {...};`` seed script into an object."""
+    source = Path(path).read_bytes().decode("utf-8")
+    marker = f"window.{variable} ="
+    if marker not in source:
+        raise WebViewStateError(f"{path} does not assign window.{variable}")
+    payload = source.split(marker, 1)[1].strip()
+    if payload.endswith(";"):
+        payload = payload[:-1]
+    value = json.loads(payload)
+    if not isinstance(value, dict):
+        raise WebViewStateError(f"window.{variable} in {path} is not an object")
+    return value
