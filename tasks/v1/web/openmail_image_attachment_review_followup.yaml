@@ -101,21 +101,26 @@ metadata:
   - The webpage folder must already contain an OpenMail launcher that opens the app in Chrome.
   - The OpenMail page must start from the snapshot-provided account and inbox state with Anonym Tester
     and the message Desk setup image for expense notes already available.
-  - Chrome must expose the OpenMail page through the configured DevTools endpoint http://127.0.0.1:1337
-    during evaluation.
+  - OpenMail must run in Chrome's Default profile, whose Local Storage holds the mailbox document
+    openmail.localState.v1 that the evaluator reads.
   initializer_note: Initializer assumes VM snapshot 快照 2 is already loaded or will be restored by the
     Linux runner. It verifies the Desktop webpage folder and OpenMail launcher only; it does not restore
     snapshots, open Chrome, change settings, label mail, send replies, create drafts, send mail, mark
     unread, archive, or move messages.
-  evaluator_note: Evaluator checks final durable OpenMail browser state by reading the live Chrome page's
-    localStorage, sessionStorage, and IndexedDB through Chrome DevTools Protocol, plus current document
-    text for the final detail page. Search text, filter dropdown state, Drafts/Sent/Archive navigation,
-    and temporary compose state are flow-only actions unless reflected in final mail records.
+  evaluator_note: Evaluator checks final durable OpenMail state by reading the mailbox document
+    openmail.localState.v1 from Chrome's Local Storage LevelDB files on disk (Default profile, decoded
+    with the shared Local Storage reader); it does not connect to Chrome DevTools and does not read
+    sessionStorage, IndexedDB, or the live page. Settings, message subjects, labels, star and unread
+    flags, priority, folder, and body texts are compared with the declared values, and the final detail
+    page texts must appear in that stored document. Search text, filter dropdown state,
+    Drafts/Sent/Archive navigation, and temporary compose state are flow-only actions unless reflected in
+    final mail records.
   verifier_rules:
     evidence_source_priority:
-    - Chrome DevTools read-only Runtime.evaluate of OpenMail localStorage, sessionStorage, and IndexedDB.
-    - Current OpenMail document text is used only to confirm the final visible Follow up message detail
-      page.
+    - The OpenMail document openmail.localState.v1 read from Chrome's Local Storage files (read-only, no
+      DevTools connection).
+    - The final detail page texts (Image attachment review, Follow up, the message body) are matched
+      against that stored document, not against the live page.
     - Screenshots and trajectory are auxiliary and are not required for eval-only PASS.
     checks:
     - step_goal: Steps 3-13 update profile display name, email, and signature settings.
@@ -131,8 +136,8 @@ metadata:
     - step_goal: Move the sent message to Trash, restore it to Inbox, add Follow up, mark it unread, and
         finish on its detail page. OpenMail cannot archive sent mail or move archived mail to Inbox, so the
         source steps 47-67 (mark unread, Archive, Move to Inbox) were replaced by this path.
-      evidence: Browser storage contains Image attachment review with Inbox, Follow up, and unread evidence;
-        the current page text contains Image attachment review, Follow up, and the message body.
+      evidence: Browser storage contains Image attachment review with Inbox, Follow up, and unread evidence,
+        and the stored document contains Image attachment review, Follow up, and the message body.
     non_final_evidence:
     - Opening the Desktop folder, launching OpenMail, search text image, Has attachments filter, searches
       for Image attachment review, temporary Drafts/Sent/Archive navigation, and dropdown/menu interactions

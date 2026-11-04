@@ -272,6 +272,88 @@ class OpenMailBrowserStorageEvaluator(BaseEvaluator):
         return _finish(self, metadata)
 
 
+def _sender_email(message: Mapping[str, Any]) -> str:
+    sender = message.get("from")
+    return str(sender.get("email") or "").strip().casefold() if isinstance(sender, Mapping) else ""
+
+
+def _folder(message: Mapping[str, Any]) -> str:
+    return str(message.get("folder") or "inbox").strip().casefold()
+
+
+def _truthy(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().casefold() in {"1", "true", "yes", "on"}
+
+
+_REPLY_PREFIXES = ("re:",)
+_FORWARD_PREFIXES = ("fwd:", "fw:")
+
+
+def _prefixed_subject(subject: Any, prefixes: tuple[str, ...], original: str) -> bool:
+    """True for ``"Re: <original>"`` / ``"Fwd: <original>"`` (the subject OpenMail gives a reply/forward)."""
+    text = str(subject or "").strip().casefold()
+    wanted = original.strip().casefold()
+    for prefix in prefixes:
+        if text.startswith(prefix) and text[len(prefix):].strip() == wanted:
+            return True
+    return False
+
+
+def _message_groups(expectations: Mapping[str, Any], messages: list[Mapping[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Bind each ``<prefix>_subject`` expectation to the messages the workflow had to produce.
+
+    * ``<prefix>_reply_subject: S`` - the reply to the message titled S: a Sent message "Re: S" addressed
+      to that message's sender (OpenMail's Reply), not the received message S itself.
+    * ``<prefix>_subject: S`` with ``<prefix>_forward_*`` expectations - the forward of S: a Sent
+      message "Fwd: S".
+    * any other ``<prefix>_subject: S`` - the message titled S.
+
+    The other ``<prefix>_*`` expectations (recipients, body texts, label, folder, priority, star) are
+    then checked on those messages only, so the received original or an unrelated seeded message
+    cannot satisfy them.
+    """
+    groups: dict[str, dict[str, Any]] = {}
+    names = [str(key) for key in expectations]
+    for name in names:
+        if name.startswith("discarded_") or not name.endswith("_subject"):
+            continue
+        prefix = name[: -len("_subject")]
+        original = str(expectations.get(name))
+        if prefix.endswith("_reply"):
+            sources = [item for item in messages if str(item.get("subject") or "").strip().casefold() == original.strip().casefold()]
+            senders = {email for email in (_sender_email(item) for item in sources) if email}
+            matches = [
+                item
+                for item in messages
+                if _folder(item) == "sent"
+                and _prefixed_subject(item.get("subject"), _REPLY_PREFIXES, original)
+                and (not senders or senders & {address.strip().casefold() for address in _recipients(item, "to")})
+            ]
+            kind = "reply"
+            expected = {"subject": "Re: %s" % original, "folder": "sent", "to_any_of": sorted(senders)}
+        elif any(other.startswith(prefix + "_forward_") for other in names):
+            matches = [
+                item
+                for item in messages
+                if _folder(item) == "sent" and _prefixed_subject(item.get("subject"), _FORWARD_PREFIXES, original)
+            ]
+            kind = "forward"
+            expected = {"subject": "Fwd: %s" % original, "folder": "sent"}
+        else:
+            matches = [item for item in messages if str(item.get("subject") or "") == original]
+            kind = "message"
+            expected = original
+        groups[prefix] = {"kind": kind, "matches": matches, "expected": expected}
+    return groups
+
+
+def _group_of(name: str, groups: Mapping[str, Any]) -> str | None:
+    owners = [prefix for prefix in groups if name == prefix + "_subject" or name.startswith(prefix + "_")]
+    return max(owners, key=len) if owners else None
+
+
 class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
     """Verify the replies, forwards, labels and discarded drafts of a workflow."""
 
@@ -291,10 +373,38 @@ class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
         expectations = params.get("expectations") if isinstance(params.get("expectations"), Mapping) else {}
         checks: list[dict[str, Any]] = []
         notes: list[str] = []
+        groups = _message_groups(expectations, messages)
 
         for key, value in expectations.items():
             name = str(key)
             wanted = str(value)
+            group = None if name.startswith("discarded_") else _group_of(name, groups)
+            # Expectations that belong to a reply / forward / named message are checked on that
+            # message; ungrouped ones keep the mailbox-wide reading.
+            pool = groups[group]["matches"] if group is not None else messages
+            if group is not None and name == group + "_subject":
+                matches = groups[group]["matches"]
+                observed = [
+                    {"subject": item.get("subject"), "folder": item.get("folder"), "to": _recipients(item, "to")}
+                    for item in matches
+                ]
+                checks.append(_check("subject:%s" % name, groups[group]["expected"], observed, bool(matches)))
+                continue
+            if group is not None and name.endswith("_folder"):
+                folder = wanted.strip().casefold()
+                present = any(_folder(item) == folder for item in pool)
+                checks.append(_check("folder:%s" % name, wanted, [item.get("folder") for item in pool], present))
+                continue
+            if group is not None and name.endswith("_priority"):
+                priority = wanted.strip().casefold()
+                present = any(str(item.get("priority") or "").strip().casefold() == priority for item in pool)
+                checks.append(_check("priority:%s" % name, wanted, [item.get("priority") for item in pool], present))
+                continue
+            if group is not None and name.endswith("_starred"):
+                starred = _truthy(value)
+                present = any(bool(item.get("starred")) == starred for item in pool)
+                checks.append(_check("starred:%s" % name, starred, [item.get("starred") for item in pool], present))
+                continue
             if name.startswith("discarded_"):
                 # A discarded draft must not survive as a message anywhere but Trash: OpenMail's
                 # Discard removes the draft, and Delete moves it to Trash, both of which take it out
@@ -322,14 +432,14 @@ class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
                 wanted_folded = wanted.strip().casefold()
                 present = any(
                     wanted_folded in [address.strip().casefold() for address in _recipients(item, field)]
-                    for item in messages
+                    for item in pool
                 )
                 checks.append(_check("recipient:%s" % name, wanted, present, present))
             elif name.endswith("_append") or name.endswith("_body") or name.endswith("_reply"):
-                present = any(wanted in str(item.get("body") or "") for item in messages)
+                present = any(wanted in str(item.get("body") or "") for item in pool)
                 checks.append(_check("body:%s" % name, wanted, present, present))
             elif name.endswith("_label"):
-                present = any(wanted.casefold() in [label.casefold() for label in _labels_of(item)] for item in messages)
+                present = any(wanted.casefold() in [label.casefold() for label in _labels_of(item)] for item in pool)
                 checks.append(_check("label:%s" % name, wanted, present, present))
             else:
                 notes.append(name)
@@ -338,6 +448,10 @@ class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
             "directory": directory,
             "message_count": len(messages),
             "checks": checks,
+            "message_groups": {
+                prefix: {"kind": group["kind"], "match_ids": [item.get("id") for item in group["matches"]]}
+                for prefix, group in groups.items()
+            },
             "unmapped_expectations": notes,
             "ui_only_conditions": [
                 name

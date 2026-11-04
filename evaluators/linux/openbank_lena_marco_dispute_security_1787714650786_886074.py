@@ -63,13 +63,15 @@ DECLARED = (
             "status": "Completed",
         },
     ),
+    # The brief gives no date for the second transfer (and the source steps never touch the Date
+    # control), so whatever date the form submitted is accepted, for the transfer and for the posted
+    # transaction it records; the dispute still needs that transaction to be Posted.
     (
         "transfers",
         {
             "fromAccountId": "checking-2381",
             "recipientName": "Marco Li",
             "amount": 1.25,
-            "scheduledDate": "2026-06-01",
             "memo": "Studio rent",
             "status": "Completed",
         },
@@ -77,7 +79,6 @@ DECLARED = (
     (
         "transactions",
         {
-            "date": "2026-06-01",
             "status": "Posted",
             "tags": ["transfer", "external-account"],
             "note": "Studio rent",

@@ -291,21 +291,68 @@ def test_qa70_slide2_title_and_slide3_layout_are_checked():
     assert not _check(_qa70_judge(deck), "slide3.layout")["passed"]
 
 
-def test_qa70_notes_order_from_history_or_from_the_final_text():
+def test_qa70_notes_from_history_or_from_the_final_text():
     final = _qa70_deck()
-    # compacted store: only the last generation survives, the final notes hold both notes in order
-    assert _check(_qa70_judge(final), "slide4.notes_sequence")["passed"]
+    # compacted store: only the last generation survives, the final notes hold both notes
+    assert _check(_qa70_judge(final), "slide4.notes")["passed"]
 
     replaced = _qa70_deck()
     replaced["slides"][3]["notes"] = "Decision owners locked for Friday review"
-    assert not _check(_qa70_judge(replaced), "slide4.notes_sequence")["passed"]
+    assert not _check(_qa70_judge(replaced), "slide4.notes")["passed"]
     first = copy.deepcopy(replaced)
     first["slides"][3]["notes"] = "qa70 speaker note"
-    assert _check(_qa70_judge(first, replaced), "slide4.notes_sequence")["passed"]  # history shows both
+    assert _check(_qa70_judge(first, replaced), "slide4.notes")["passed"]  # history shows both
 
     only_first = _qa70_deck()
     only_first["slides"][3]["notes"] = "qa70 speaker note"
-    assert not _check(_qa70_judge(only_first), "slide4.notes_sequence")["passed"]
+    assert not _check(_qa70_judge(only_first), "slide4.notes")["passed"]
+
+
+def test_qa70_notes_and_comments_in_another_order_pass():
+    # The brief states no order between the two notes or the two comments.
+    reversed_text = _qa70_deck()
+    reversed_text["slides"][3]["notes"] = "Decision owners locked for Friday review\nqa70 speaker note"
+    assert _check(_qa70_judge(reversed_text), "slide4.notes")["passed"]
+    second_first = copy.deepcopy(reversed_text)
+    second_first["slides"][3]["notes"] = "Decision owners locked for Friday review"
+    last = copy.deepcopy(reversed_text)
+    last["slides"][3]["notes"] = "qa70 speaker note"
+    assert _check(_qa70_judge(second_first, last), "slide4.notes")["passed"]
+    cleared = copy.deepcopy(last)
+    cleared["slides"][3]["notes"] = ""
+    assert not _check(_qa70_judge(second_first, last, cleared), "slide4.notes")["passed"]  # final holds neither
+
+    deck = _qa70_deck()
+    deck["slides"][3]["comments"].reverse()  # "quarterly ..." written first
+    verdict = _qa70_judge(deck)
+    assert verdict["status"] == "PASS", verdict["failures"]
+
+
+def test_qa70_comments_still_need_each_comment_exactly_once():
+    duplicate = _qa70_deck()
+    duplicate["slides"][3]["comments"].append({"id": "c3", "text": "qa70 comment"})
+    assert not _check(_qa70_judge(duplicate), "slide4.comments")["passed"]
+    missing = _qa70_deck()
+    missing["slides"][3]["comments"].pop()
+    assert not _check(_qa70_judge(missing), "slide4.comments")["passed"]
+    wrong = _qa70_deck()
+    wrong["slides"][3]["comments"][0]["text"] = "quarterly decision matrix review"
+    assert not _check(_qa70_judge(wrong), "slide4.comments")["passed"]
+
+
+def test_qa71_two_lines_drawn_separately_pass_without_history():
+    # Compacted store (final generation only) and two hand-drawn lines of different sizes:
+    # the brief asks for two lines with the second lower, not for a copy/paste.
+    deck = _deck()
+    deck["slides"][2]["objects"][2].update(w=200, h=6)
+    check = _check(_judge(deck), "slide3.copy_paste_lines")
+    assert check["passed"] and check["actual"]["copy_evidence"] is False
+    one = _deck()
+    del one["slides"][2]["objects"][2]
+    assert not _check(_judge(one), "slide3.copy_paste_lines")["passed"]
+    level = _deck()
+    level["slides"][2]["objects"][2]["y"] = 400  # neither line is lower
+    assert not _check(_judge(level), "slide3.copy_paste_lines")["passed"]
 
 
 def test_qa70_guest_read_and_task_digest(tmp_path):

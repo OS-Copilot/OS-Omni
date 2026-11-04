@@ -53,11 +53,15 @@ RULESET_SPEC = {
             "slide": {"w": 960, "h": 540},
             "tolerance": 20,
         },
-        "note_sequence": ["qa70 speaker note", "Decision owners locked for Friday review"],
-        # Either recorded generations show the first note before the second, or the final notes still
-        # hold both in that order (LevelDB compaction may drop the intermediate generation).
-        "note_evidence": "history_or_final_text_order",
+        # The brief asks slide 4's notes field for "qa70 speaker note" and for "Decision owners locked
+        # for Friday review" and states no order between them: each must be in the notes, in a recorded
+        # generation or in the final notes (LevelDB compaction may drop an intermediate generation), and
+        # the final notes hold at least one of them.
+        "notes": ["qa70 speaker note", "Decision owners locked for Friday review"],
+        "note_evidence": "each_in_history_or_final_notes_any_order",
+        # Both comments, each exactly once; the brief states no order between them.
         "comments": ["qa70 comment", "quarterly decision matrix owner review"],
+        "comments_order": "any",
     },
     "automatic_process": {
         "chart_front": ["Front 将图表置于前方"],
@@ -86,7 +90,7 @@ RULESET_SPEC = {
 _COMPUTED_RULESET_SHA256 = hashlib.sha256(
     json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 ).hexdigest()
-RULESET_SHA256 = "d085dd2ab3cf55527c6fa0b73184760f7ca3560b541922633b2785eb24f312d3"
+RULESET_SHA256 = "8f32b17a0f4fb81ab5c207a7d378b9d314d42ddd2f64d473b48e711a08bfd6e1"
 if _COMPUTED_RULESET_SHA256 != RULESET_SHA256:
     raise RuntimeError("OpenSlide ruleset digest constant is stale")
 STEP_GROUPS = {
@@ -581,34 +585,33 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         )
 
         note_history = _slide4_values(versions, "notes")
-        expected_notes = RULESET_SPEC["slide4"]["note_sequence"]
-        first_note = next((index for index, value in enumerate(note_history) if str(value or "").strip() == expected_notes[0]), None)
-        second_note = next((index for index, value in enumerate(note_history) if expected_notes[1] in str(value or "")), None)
-        history_order = first_note is not None and second_note is not None and first_note < second_note
+        expected_notes = RULESET_SPEC["slide4"]["notes"]
         final_notes = str(slides[3].get("notes") or "")
-        final_first, final_second = final_notes.find(expected_notes[0]), final_notes.find(expected_notes[1])
-        final_order = 0 <= final_first and final_first + len(expected_notes[0]) <= final_second
+        evidenced = {
+            text: text in final_notes or any(text in str(value or "") for value in note_history)
+            for text in expected_notes
+        }
+        final_holds = [text for text in expected_notes if text in final_notes]
         add(
-            "slide4.notes_sequence",
+            "slide4.notes",
             "openslide.qa70.final_review",
-            {"sequence": expected_notes, "evidence": RULESET_SPEC["slide4"]["note_evidence"]},
-            {"history": note_history, "history_order": history_order, "final_text_order": final_order},
-            (history_order or final_order) and expected_notes[1] in final_notes,
+            {"notes": expected_notes, "evidence": RULESET_SPEC["slide4"]["note_evidence"]},
+            {"history": note_history, "evidenced": evidenced, "final_notes_hold": final_holds},
+            all(evidenced.values()) and bool(final_holds),
             [48, 49, 50, 71, 72],
-            "ORDERED_EXACT",
+            "SET_CONTAINS",
         )
 
         comments = [str(row.get("text") or "") for row in slides[3].get("comments", []) if isinstance(row, Mapping)]
-        chronological_comments = list(reversed(comments))
         expected_comments = RULESET_SPEC["slide4"]["comments"]
         add(
             "slide4.comments",
             "openslide.qa70.final_review",
             expected_comments,
-            {"stored_newest_first": comments, "chronological": chronological_comments},
-            chronological_comments == expected_comments,
+            {"stored_newest_first": comments},
+            sorted(comments) == sorted(expected_comments),
             [51, 52, 53, 67, 68, 69, 70],
-            "ORDERED_EXACT",
+            "SET_EXACT",
         )
 
     failures = [check["check_id"] for check in checks if not check["passed"]]

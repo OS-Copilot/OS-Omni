@@ -161,13 +161,18 @@ init:
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator
   params:
-    ordered: true
+    # "The first session ... The second session ..." are labels, not a required order; the brief
+    # states two orders: in the first (Stanford, Walk) session the voice icon is used "before the
+    # Overview is viewed", and "the eighth and final session" (Mountain View Transit Center,
+    # Transit) comes after the others.
+    ordered: false
     expected_sessions:
     - destination: Stanford University
       mode: walk
       origin: Current location
       overview: true
       voice: true
+      voice_before_overview: true
     - destination: Meta Headquarters
       mode: drive
       origin: Current location
@@ -203,6 +208,7 @@ evaluation:
       origin: Current location
       overview: true
       voice: false
+      final: true
     forbidden_terms:
     - Coffee
     - Hotel

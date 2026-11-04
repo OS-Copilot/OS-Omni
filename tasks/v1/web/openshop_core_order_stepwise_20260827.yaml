@@ -67,6 +67,15 @@ evaluation:
     - type: order_review_note_saved
       match:
         reviewNote: ReviewCoreA-Final
+    # The one order the brief states: "a saved note reading ReviewCoreA, which must subsequently
+    # be replaced with ReviewCoreA-Final and saved". Nothing else about the run's order is graded.
+    benchmark_event_sequence:
+    - type: order_review_note_saved
+      match:
+        reviewNote: ReviewCoreA
+    - type: order_review_note_saved
+      match:
+        reviewNote: ReviewCoreA-Final
 limits:
   max_steps: 300
   step_timeout_seconds: 180

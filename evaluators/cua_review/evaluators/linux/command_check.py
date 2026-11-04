@@ -19,8 +19,25 @@ from collections.abc import Mapping
 from typing import Any
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.linux.local_storage import LOCAL_STORAGE_SOURCE
 
 DEFAULT_TIMEOUT = 60
+
+# A guest script that reads Chrome's Local Storage puts this line (alone, unindented) where it
+# wants the LevelDB reader of platforms/linux/local_storage.py (read_records, replay_history,
+# read_state, ...): log records split across 32 KiB blocks and Snappy-compressed tables are only
+# readable through it. Unexpanded, the line is a Python comment.
+LOCAL_STORAGE_READER_LINE = "# @osomni:local_storage_reader"
+
+
+def expand_command(command: str) -> str:
+    """Put the Local Storage reader in place of each ``LOCAL_STORAGE_READER_LINE``."""
+    if LOCAL_STORAGE_READER_LINE not in command:
+        return command
+    return "\n".join(
+        LOCAL_STORAGE_SOURCE if line.strip() == LOCAL_STORAGE_READER_LINE else line
+        for line in command.split("\n")
+    )
 
 
 def _script_for(command: str, timeout: int) -> str:
@@ -136,7 +153,7 @@ class CommandCheckEvaluator(BaseEvaluator):
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
-        command = str(params.get("command") or "")
+        command = expand_command(str(params.get("command") or ""))
         timeout = int(params.get("timeout", DEFAULT_TIMEOUT) or DEFAULT_TIMEOUT)
         checks: list[dict[str, Any]] = []
         failures: list[str] = []
@@ -202,4 +219,4 @@ class CommandCheckEvaluator(BaseEvaluator):
         )
 
 
-__all__ = ["CommandCheckEvaluator", "run_command"]
+__all__ = ["CommandCheckEvaluator", "LOCAL_STORAGE_READER_LINE", "expand_command", "run_command"]

@@ -64,6 +64,9 @@ evaluation:
       rideshare_body: Can you confirm the ride receipt for the travel folder?
       rideshare_body_append: Please reply with the receipt number.
       rideshare_label: Travel
+      rideshare_folder: sent
+      rideshare_priority: low
+      rideshare_starred: true
       discarded_draft_subject: Northline contact note
       discarded_draft_body: Contact card compose route verified for receipts.
       final_search_query: RN-2041

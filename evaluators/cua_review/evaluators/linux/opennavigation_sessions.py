@@ -9,8 +9,16 @@ pressed during it.
 
 Parameters:
   expected_sessions: list of {destination, mode, overview: bool, voice: bool}
+           plus, where the instruction states an order:
+             final: true                  this session comes after every other
+                                          expected session ("a final seventh
+                                          session", "the eighth and final")
+             voice_before_overview: true  in this session the voice icon is used
+                                          before the Overview is viewed
   ordered: when true the expected sessions must occur in this order (other
-           sessions may come in between)
+           sessions may come in between); when false each expected session is
+           matched to its own recorded session in any order, and only the
+           orders above are judged
   forbidden_terms: terms that must not appear in any session destination
   min_trajectory_records: optional minimum number of trajectory records
 """
@@ -60,7 +68,61 @@ def _matches(expected: Mapping[str, Any], session: Mapping[str, Any]) -> bool:
         return False
     if expected.get("voice") and not (clicks & VOICE_LABELS):
         return False
+    if expected.get("voice_before_overview"):
+        ordered_clicks = list(session.get("clicks") or [])
+        voice = [i for i, label in enumerate(ordered_clicks) if label in VOICE_LABELS]
+        overview = [i for i, label in enumerate(ordered_clicks) if label == "Overview"]
+        if not voice or not overview or min(voice) > max(overview):
+            return False
     return True
+
+
+def _max_matching(candidates: list[list[int]]) -> list[int | None]:
+    """Maximum bipartite matching of expected sessions to recorded ones (Kuhn's algorithm)."""
+    owner: dict[int, int] = {}
+
+    def augment(k: int, seen: set[int]) -> bool:
+        for index in candidates[k]:
+            if index in seen:
+                continue
+            seen.add(index)
+            if index not in owner or augment(owner[index], seen):
+                owner[index] = k
+                return True
+        return False
+
+    for k in range(len(candidates)):
+        augment(k, set())
+    matched: list[int | None] = [None] * len(candidates)
+    for index, k in owner.items():
+        matched[k] = index
+    return matched
+
+
+def assign_sessions(expected: list[Mapping[str, Any]], sessions: list[Mapping[str, Any]],
+                    respect_final: bool = True) -> list[int | None]:
+    """Match each expected session to its own recorded session, in any order.
+
+    Returns the recorded index per expected session (``None`` where no match is
+    left), choosing an assignment that matches the most expected sessions.  With
+    ``respect_final`` an expected session marked ``final`` must be matched to a
+    session recorded after every matched expected session that is not final.
+    """
+    candidates = [[i for i, session in enumerate(sessions) if _matches(item, session)] for item in expected]
+    finals = {k for k, item in enumerate(expected) if item.get("final")} if respect_final else set()
+    if not finals:
+        return _max_matching(candidates)
+    best: list[int | None] = [None] * len(expected)
+    for boundary in range(len(sessions) + 1):
+        # Sessions before the boundary serve the other expected sessions, the rest the final one(s).
+        split = [
+            [i for i in options if (i >= boundary) == (k in finals)]
+            for k, options in enumerate(candidates)
+        ]
+        matched = _max_matching(split)
+        if sum(i is not None for i in matched) > sum(i is not None for i in best):
+            best = matched
+    return best
 
 
 def _trajectory_records(context: Mapping[str, Any]) -> int | None:
@@ -102,13 +164,21 @@ class OpenNavigationSessionEvaluator(BaseEvaluator):
                 if found is not None:
                     position = found + 1
         else:
-            used: set[int] = set()
-            for index, item in enumerate(expected, start=1):
-                found = next((i for i, s in enumerate(sessions) if i not in used and _matches(item, s)), None)
-                if found is not None:
-                    used.add(found)
+            # Session ordinals in the briefs ("the first session", "the second ...")
+            # are labels, not a required order; each expected session needs its
+            # own recorded session.  Only an order the brief states is judged.
+            matched = assign_sessions(expected, sessions, respect_final=False)
+            for index, (item, found) in enumerate(zip(expected, matched), start=1):
                 checks.append({"check_id": "session.%d" % index, "expected": item, "passed": found is not None,
                                "matched": found})
+            if any(item.get("final") for item in expected) and all(found is not None for found in matched):
+                ordered_match = assign_sessions(expected, sessions, respect_final=True)
+                checks.append({
+                    "check_id": "stated_order.final_session",
+                    "expected": [index for index, item in enumerate(expected, start=1) if item.get("final")],
+                    "passed": all(found is not None for found in ordered_match),
+                    "matched": ordered_match,
+                })
 
         for term in params.get("forbidden_terms") or []:
             hit = [s.get("destination") for s in sessions if str(term).lower() in str(s.get("destination") or "").lower()]

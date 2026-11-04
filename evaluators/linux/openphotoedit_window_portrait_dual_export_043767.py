@@ -656,29 +656,42 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         and ui_actual["brush_strength"] == final_spec["brush_strength"]
         and all(ui_actual["status_tokens"].values())
     )
-    add(
-        "detail.final_ui",
-        "openphoto.detail.source_and_recipe",
-        list(range(67, 75)),
-        final_spec,
-        ui_actual,
-        ui_ok,
-        "CURRENT_UI_EXACT",
-    )
+    # Recorded, not graded. The brief names the two outputs ("first output", "second output") and lists
+    # each one's brushes, but never says which image to leave open or which brush to use last; its only
+    # completion condition is that both files are exported, which the export checks grade. Requiring the
+    # detail image's sliders (Filter 51, Burn 18/28) on screen at the end graded an unstated order.
+    advisory = [
+        {
+            "check_id": "detail.final_ui",
+            "value_contract_id": "openphoto.detail.source_and_recipe",
+            "mapped_steps": list(range(67, 75)),
+            "match_mode": "CURRENT_UI_EXACT",
+            "basis": "ADVISORY_NOT_GRADED",
+            "expected": final_spec,
+            "actual": ui_actual,
+            "passed": bool(ui_ok),
+        }
+    ]
 
     failures = [check["check_id"] for check in checks if not check["passed"]]
-    source_errors = list(observed.get("errors") or [])
+    errors = [str(item) for item in observed.get("errors") or []]
+    # The UI read (DevTools) only feeds the advisory record above, so its failure is not fatal.
+    ui_errors = [item for item in errors if item.startswith("ui:")]
+    source_errors = [item for item in errors if not item.startswith("ui:")]
     return {
         "status": "PASS" if checks and not failures and not source_errors else "FAIL",
         "checks": checks,
         "failures": failures,
         "source_errors": source_errors,
+        "advisory_checks": advisory,
+        "ui_errors": ui_errors,
         "observed": observed,
     }
 
 
 class OpenPhotoEditWindowPortraitDualExport059248Evaluator(BaseEvaluator):
-    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    # Reads the live page over DevTools for the advisory final-UI record: keep the browser running
+    # (no flush). The graded evidence is the exported files on disk.
     REQUIRES_LIVE_BROWSER = True
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:

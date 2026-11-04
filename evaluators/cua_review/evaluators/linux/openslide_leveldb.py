@@ -205,7 +205,12 @@ def _file_rows(path):
 
 
 def read_records(directory):
-    """Return ``{user_key: value}`` for every live entry of a LevelDB store."""
+    """Return ``{user_key: value}`` for every live entry of a LevelDB store.
+
+    Each record carries the sequence number of its write, and the highest one
+    is a key's current version whichever file holds it; a deletion (type 0)
+    that is newest removes the key.
+    """
     latest = {}
     for path in _store_files(directory):
         for key, sequence, kind, value in _file_rows(path):
@@ -215,61 +220,64 @@ def read_records(directory):
     return {key: value for key, (_, kind, value) in latest.items() if kind == 1}
 
 
-def _entry_parts(user_key, raw):
+def _key_parts(user_key):
     text_key = user_key[1:] if user_key[:1] == b"_" else user_key
     split = text_key.find(b"\x00\x01")
     if split < 0:
         return None
     origin = text_key[:split].decode("utf-8", errors="replace")
     name = text_key[split + 2:].decode("utf-8", errors="replace")
-    return origin, name, decode_value(raw)
+    return origin, name
+
+
+def _entry_parts(user_key, raw):
+    parts = _key_parts(user_key)
+    if parts is None:
+        return None
+    return parts[0], parts[1], decode_value(raw)
 
 
 def replay_history(directory, key, origin_contains=None):
     """Replay the store and return the successive stored texts of ``key``.
 
     A store keeps several generations of a document: the sorted tables hold
-    compacted generations and the write-ahead log holds the mutations that
-    followed them.  Replaying the generations in order and taking a reading
-    after each one exposes how a document evolved, which is what a task whose
-    instruction describes a sequence of edits needs to be judged on.
+    flushed and compacted generations and the write-ahead log holds the
+    mutations that followed them.  Every record carries the sequence number of
+    its write, so the mutations of ``key`` are replayed in sequence order,
+    whichever file holds them: a table lists a key's versions newest first, and
+    a table from a later compaction can hold older versions than a table with a
+    lower file number.  A reading is taken after each mutation (``text`` is
+    ``None`` while no origin holds the key, e.g. after a deletion); repeated
+    readings are collapsed, and ``source`` names the file of the mutation.
+    The last version is the current document.
     """
-    live = {}
-    versions = []
     sources = []
     errors = []
+    mutations = []
     for path in _store_files(directory):
         sources.append(str(path))
         try:
-            if path.suffix == ".ldb":
-                for user_key, sequence, kind, value in _file_rows(path):
-                    live[user_key] = (sequence, kind, value)
-                readings = [live]
-            else:
-                readings = []
-                for user_key, sequence, kind, value in _file_rows(path):
-                    live[user_key] = (sequence, kind, value)
-                    readings.append(dict(live))
-            for reading in readings:
-                text = None
-                for user_key, (_, kind, raw) in reading.items():
-                    if kind != 1:
-                        continue
-                    parts = _entry_parts(user_key, raw)
-                    if parts is None:
-                        continue
-                    origin, name, value = parts
-                    if name != key:
-                        continue
-                    if origin_contains and origin_contains not in origin:
-                        continue
-                    if text is None or len(value) >= len(text):
-                        text = value
-                if versions and versions[-1]["text"] == text:
+            for user_key, sequence, kind, value in _file_rows(path):
+                parts = _key_parts(user_key)
+                if parts is None or parts[1] != key:
                     continue
-                versions.append({"source": str(path), "text": text})
+                if origin_contains and origin_contains not in parts[0]:
+                    continue
+                mutations.append((sequence, user_key, kind, value, str(path)))
         except Exception as exc:
             errors.append("%s: %s" % (path.name, exc))
+    mutations.sort(key=lambda row: row[0])
+    live = {}
+    versions = []
+    for _, user_key, kind, raw, source in mutations:
+        live[user_key] = decode_value(raw) if kind == 1 else None
+        text = None
+        for value in live.values():
+            if value is not None and (text is None or len(value) >= len(text)):
+                text = value
+        if versions and versions[-1]["text"] == text:
+            continue
+        versions.append({"source": source, "text": text})
     return {"versions": versions, "sources": sources, "errors": errors}
 
 

@@ -34,7 +34,8 @@ metadata:
   ruleset_sha256: 30d4770a2be547a46505473e94caa5c8bde1f5274d9a108a69b3ad74c1aedd47
   evaluation_standard: Exact source hashes, unique PNG exports, multidimensional source-bound image forensics
     (ranges calibrated by running the instructed recipes in the app on the published source photos), RGB-marker
-    mask preservation and square-interior colour fidelity, and exact final second-image UI controls.
+    mask preservation and square-interior colour fidelity. The final second-image UI controls are recorded
+    but not graded, since the brief does not say which image or brush to end on.
   task_version: '1.1'
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review
