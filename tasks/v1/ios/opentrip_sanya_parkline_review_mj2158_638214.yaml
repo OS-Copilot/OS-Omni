@@ -36,7 +36,7 @@ evaluation:
     expected_seed_data_sha256: 6b1836923d6ad21aa0e977c03e3f0ba77ce531582488b75b8acb0a2cf43ebcba
     expected_flight_data_sha256: 2c4fdf3a3d4b4644c7d9dbed8cd4bd14fe217b1bf8124d174fdb8c802c0716b5
     expected_base_state_sha256: f2e6ce37e0fa96ec73fba0be4a339bb3047e8552f688b50158e5f94924e9ff04
-    expected_ruleset_sha256: a5eef88a23a481f0c27b027b8cc4dc8cd7a1f6216b85b72e304048cb52529cf0
+    expected_ruleset_sha256: 37f55942322a393c18055d62458f741d2b17783293f6da903d18f8a4338e6773
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-0
 limits:
@@ -61,7 +61,7 @@ metadata:
   ios_device_profile: iphone17-0
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 9d1cbabdb318af595699ac8f59b455acd43c82a4782cdf1aaa9e89069394f813
-  evaluator_ruleset_sha256: a5eef88a23a481f0c27b027b8cc4dc8cd7a1f6216b85b72e304048cb52529cf0
+  evaluator_ruleset_sha256: 37f55942322a393c18055d62458f741d2b17783293f6da903d18f8a4338e6773
   recording: 2026-08-03_17-36-46.mp4
   description: Exact Parkline hotel, Riverlight review, and MJ2158/AP7947 flight verification under fresh
     task identity 638214.
@@ -74,15 +74,15 @@ metadata:
     evidence:
     - Only opentrip.localState.v1 from the exact capacitor://localhost WebKit origin is authoritative.
     - SQLite, WAL, and SHM are copied to a host temporary directory before read-only inspection.
-    - Committed WAL states must prove exact Parkline hotel, Riverlight review, and MJ2158/AP7947 flight
-      creation in that order.
+    - Committed WAL states must show the exact Parkline hotel, Riverlight review, and MJ2158/AP7947
+      flight each created once, in any order.
     - Manual eval-only and automatic full-run evaluation use this same evaluator, ruleset digest, and
       checkpoint map.
     strictness:
     - Complete booking objects are compared by canonical SHA-256 after removing only dynamic id and createdAt.
-    - Every persisted field, dynamic identifier, cardinality, causal window, and transaction order is
-      exact.
-    - Extra, duplicate, malformed, corrected-after-wrong, fuzzy, or out-of-order target data fails.
+    - Every persisted field, dynamic identifier, cardinality, and causal window is exact.
+    - Extra, duplicate, malformed, corrected-after-wrong, or fuzzy target data fails; the brief states
+      no order between the target records, so none is required.
     coverage:
     - All 26 persisted data steps map to exact fields; uncovered_data_steps must be empty.
     - Transient navigation, sorting, details, and search actions remain part of their compound chain without

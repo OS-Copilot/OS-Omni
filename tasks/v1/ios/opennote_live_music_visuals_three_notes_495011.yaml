@@ -39,7 +39,7 @@ evaluation:
     manual_window_start: '2026-08-04T16:55:28+08:00'
     manual_window_end: '2026-08-04T17:03:05.435+08:00'
     expected_instruction_sha256: c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac
-    expected_ruleset_sha256: 5af28bd7504a4e926188f6dd2149495c6d1415441937d5aa1ce75456d949c5df
+    expected_ruleset_sha256: 4553c2852e748008d7e8e3624e1f49ab27a72c3c8428df45763b95452dfb8fdf
     evaluation_session_id: opennote-human-495011
     requires_ui_observation: false
 limits:
@@ -67,9 +67,11 @@ metadata:
     recording_filename: 2026-08-04_16-55-27.mp4
   verifier_rules:
     instruction_sha256: c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac
-    ruleset_sha256: 5af28bd7504a4e926188f6dd2149495c6d1415441937d5aa1ce75456d949c5df
+    ruleset_sha256: 4553c2852e748008d7e8e3624e1f49ab27a72c3c8428df45763b95452dfb8fdf
     matching: case-sensitive exact values, ordered tags, LF body text, exact cover/build hashes, unique
-      objects, manual seq 34-52, and automatic baseline-relative causal suffix
+      objects, and each requested business event (three note_created, the drew_49 follow, the two likes,
+      the save, the profile update) exactly once in the manual or baseline-relative window with no other
+      business event; browsing is not counted and no order is required (the brief states none)
     manual_causal_window:
       start: '2026-08-04T16:55:28+08:00'
       end: '2026-08-04T17:03:05.435+08:00'

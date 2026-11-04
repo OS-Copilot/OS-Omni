@@ -11,7 +11,6 @@ from evaluators.cua_review.initializers.ios.openbank_open_app import (
     _baseline_max_event_seq,
 )
 from evaluators.ios.openbank_card_rebate_dispute_183183 import (
-    EXPECTED_EVENT_ORDER,
     MANUAL_WINDOW_END,
     MANUAL_WINDOW_START,
     OpenBankCardRebateDispute183183Evaluator,
@@ -45,7 +44,36 @@ def test_ios_evaluation_context_receives_initializer_metadata():
     assert context["initialization"] == initialization
 
 
-def _completed_reference_state():
+ACTIVITY_VIEW = {
+    "type": "transactions_viewed", "accountId": "all", "q": "", "category": "all",
+    "status": "all", "dateRange": "all", "from": "", "to": "", "page": 1,
+    "pageSize": 10, "total": 597,
+}
+ACE_SEARCH = {**ACTIVITY_VIEW, "q": "Ace Hardware", "total": 15}
+ACE_DETAILS = {
+    "type": "transaction_details_viewed",
+    "transactionId": "txn-daily-202605-08",
+    "accountId": "checking-2381",
+}
+# The recorded human demo order (browsing included).
+SOURCE_ORDER = [
+    ACTIVITY_VIEW,
+    ACE_SEARCH,
+    ACE_DETAILS,
+    "ace_dispute",
+    ACE_DETAILS,
+    "mira_recipient",
+    "dana_recipient",
+    "mira_transfer",
+    "rainy_paperless",
+    "dana_transfer",
+    "payment_due_text",
+    "upcoming_bill_read",
+    "low_balance_text",
+]
+
+
+def _completed_reference_state(event_items=SOURCE_ORDER):
     dispute = {
         "id": "dispute-ref",
         "caseNumber": "D20260601-001",
@@ -108,33 +136,14 @@ def _completed_reference_state():
         mira_transfer=mira_transfer,
         dana_transfer=dana_transfer,
     )
-    event_labels = [
-        "activity_initial_view",
-        "ace_search",
-        "ace_details",
-        "ace_dispute",
-        "ace_details",
-        "mira_recipient",
-        "dana_recipient",
-        "mira_transfer",
-        "rainy_paperless",
-        "dana_transfer",
-        "payment_due_text",
-        "upcoming_bill_read",
-        "low_balance_text",
-    ]
-    assert tuple(event_labels) == EXPECTED_EVENT_ORDER
     events = []
     rainy_timestamp = None
-    for seq, label in enumerate(event_labels, start=1):
+    for seq, item in enumerate(event_items, start=1):
         timestamp = f"2026-10-11T10:50:{seq:02d}.000Z"
-        if label == "rainy_paperless":
+        if item == "rainy_paperless":
             rainy_timestamp = timestamp
-        events.append({
-            **events_by_label[label],
-            "seq": seq,
-            "timestamp": timestamp,
-        })
+        payload = events_by_label[item] if isinstance(item, str) else item
+        events.append({**payload, "seq": seq, "timestamp": timestamp})
     return {
         "session": {
             "loggedIn": True,

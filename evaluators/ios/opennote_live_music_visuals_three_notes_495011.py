@@ -16,6 +16,7 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.opennote_store import DEFAULT_BUNDLE_ID, LOCAL_STATE_KEY, OpenNoteStore
+from evaluators.ios.brief_event_order import multiset_diff, order_violations
 
 
 TASK_ID = "ios.opennote.live_music_visuals_three_notes_495011"
@@ -42,7 +43,7 @@ STEP_GROUPS = {
     "live_music_note": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
     "rain_engagement": [48, 49, 50, 51, 52, 53, 54, 55],
     "curly_note": [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-    "timeline": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+    "durable_events": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
 }
 
 CHECKPOINT_SPECS = (
@@ -52,7 +53,7 @@ CHECKPOINT_SPECS = (
     {"name": "live_music_note_exact", "steps": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], "predicate": "live_music_note_exact_predicate"},
     {"name": "rain_engagement_exact", "steps": [48, 49, 50, 51, 52, 53, 54, 55], "predicate": "rain_engagement_exact_predicate"},
     {"name": "curly_note_exact", "steps": [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "curly_note_exact_predicate"},
-    {"name": "timeline_exact", "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "timeline_exact_predicate"},
+    {"name": "durable_events_and_required_order", "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "durable_events_and_required_order_predicate"},
 )
 CHECKPOINTS = tuple(spec["name"] for spec in CHECKPOINT_SPECS)
 
@@ -68,14 +69,23 @@ RULESET_SPEC = {
         {"name": "live_music_note_exact", "steps": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], "predicate": "live_music_note_exact_predicate"},
         {"name": "rain_engagement_exact", "steps": [48, 49, 50, 51, 52, 53, 54, 55], "predicate": "rain_engagement_exact_predicate"},
         {"name": "curly_note_exact", "steps": [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "curly_note_exact_predicate"},
-        {"name": "timeline_exact", "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "timeline_exact_predicate"},
+        {"name": "durable_events_and_required_order", "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], "predicate": "durable_events_and_required_order_predicate"},
     ],
     "matching": {
         "strings": "case-sensitive exact equality with LF preserved",
         "lists": "ordered exact equality",
         "cardinality": "exactly one authored note for each exact title",
         "covers": "decoded bytes exact SHA-256, MIME, and byte length",
-        "events": "exact consecutive ordered manual-window suffix with no extras",
+        "events": (
+            "task-window business events (note_created, note_like_toggled, note_save_toggled, "
+            "follow_toggled, profile_updated) equal the expected multiset; any other business "
+            "event fails; identical profile_updated re-saves count once; feed_view, "
+            "note_detail_opened and session events are browsing and are not counted"
+        ),
+        "required_event_order": (
+            "none: the brief enumerates the deliverables ('while engaging', 'Additionally'); "
+            "'The first note' is a label and the engaged notes and user are seeded"
+        ),
         "dynamic_ids": "each final note ID equals its note_created event noteId",
     },
     "application_build": {
@@ -85,7 +95,7 @@ RULESET_SPEC = {
     },
     "final_ui": "not_required_after_durable_publish",
 }
-RULESET_SHA256 = "5af28bd7504a4e926188f6dd2149495c6d1415441937d5aa1ce75456d949c5df"
+RULESET_SHA256 = "4553c2852e748008d7e8e3624e1f49ab27a72c3c8428df45763b95452dfb8fdf"
 
 _NOTE_EXPECTED = {
     "blue_green_note": {
@@ -258,60 +268,90 @@ def rain_engagement_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, 
     return actual == expected, expected, actual, _predicate_failure(actual, expected)
 
 
-def _expected_events(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
+# Browsing is not a business action and is never counted (so neither seed-derived
+# feed totals nor where a launch-time feed_view falls relative to the baseline matter).
+_BROWSING_EVENT_TYPES = frozenset({"feed_view", "note_detail_opened"})
+# Saving an unchanged profile again leaves the same state; it counts once.
+_REPEATABLE_LABELS = frozenset({"profile_updated"})
+# "Update the OpenNote profile and publish three specific notes while engaging
+# with two existing community posts ... Additionally, ..." states no order.
+REQUIRED_EVENT_ORDER: tuple[tuple[str, str], ...] = ()
+
+
+def _is_business_event(event_type: str) -> bool:
+    return event_type not in _BROWSING_EVENT_TYPES and not event_type.startswith("session_")
+
+
+def _expected_business_events(raw: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     groups = raw.get("groups") if isinstance(raw.get("groups"), Mapping) else {}
     ids = {}
     for name in ("blue_green_note", "live_music_note", "curly_note"):
         group = groups.get(name) if isinstance(groups.get(name), Mapping) else {}
         note = group.get("note") if isinstance(group.get("note"), Mapping) else {}
         ids[name] = note.get("id")
-    return [
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 31},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor Live music editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying."},
-        {"type": "note_created", "noteId": ids["blue_green_note"], "title": "Blue Green Guitar", "category": "Fashion", "tags": ["Guitar", "blue", "green"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 421},
-        {"type": "note_detail_opened", "noteId": "n-3001"},
-        {"type": "follow_toggled", "handle": "drew_49", "active": True},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 421},
-        {"type": "note_detail_opened", "noteId": "n-3001"},
-        {"type": "note_like_toggled", "noteId": "n-3001", "authorHandle": "drew_49", "active": True},
-        {"type": "note_created", "noteId": ids["live_music_note"], "title": "Live Music Visuals", "category": "Fashion", "tags": ["live", "music", "visuals"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 33},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 422},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Fashion", "tag": "", "handle": "", "total": 41},
-        {"type": "note_detail_opened", "noteId": "n-3045"},
-        {"type": "note_like_toggled", "noteId": "n-3045", "authorHandle": "rowan_31", "active": True},
-        {"type": "note_save_toggled", "noteId": "n-3045", "authorHandle": "rowan_31", "active": True},
-        {"type": "note_created", "noteId": ids["curly_note"], "title": "Curly Musician Photo", "category": "Fashion", "tags": ["musician", "curly", "stage"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 34},
-    ]
+    return {
+        "profile_updated": {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor Live music editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying."},
+        "blue_green_note_created": {"type": "note_created", "noteId": ids["blue_green_note"], "title": "Blue Green Guitar", "category": "Fashion", "tags": ["Guitar", "blue", "green"]},
+        "drew_follow": {"type": "follow_toggled", "handle": "drew_49", "active": True},
+        "secondhand_coat_like": {"type": "note_like_toggled", "noteId": "n-3001", "authorHandle": "drew_49", "active": True},
+        "live_music_note_created": {"type": "note_created", "noteId": ids["live_music_note"], "title": "Live Music Visuals", "category": "Fashion", "tags": ["live", "music", "visuals"]},
+        "rain_jacket_like": {"type": "note_like_toggled", "noteId": "n-3045", "authorHandle": "rowan_31", "active": True},
+        "rain_jacket_save": {"type": "note_save_toggled", "noteId": "n-3045", "authorHandle": "rowan_31", "active": True},
+        "curly_note_created": {"type": "note_created", "noteId": ids["curly_note"], "title": "Curly Musician Photo", "category": "Fashion", "tags": ["musician", "curly", "stage"]},
+    }
 
 
-def timeline_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
-    events = raw.get("event_suffix") if isinstance(raw.get("event_suffix"), list) else []
-    actual = [_event_payload(event) for event in events if isinstance(event, Mapping)]
-    expected = _expected_events(raw)
-    sequences = [event.get("seq") for event in events if isinstance(event, Mapping)]
-    timestamps = [event.get("timestamp") for event in events if isinstance(event, Mapping)]
-    boundary = raw.get("boundary") if isinstance(raw.get("boundary"), Mapping) else {}
-    expected_first = 34
-    if boundary.get("mode") == "automatic_baseline_seq":
-        expected_first = int(boundary.get("baseline_max_event_seq") or 0) + 1
-    expected_sequences = list(range(expected_first, expected_first + len(expected)))
-    consecutive = sequences == expected_sequences
-    monotonic = all(
-        _parse_datetime(left) < _parse_datetime(right)
-        for left, right in zip(timestamps, timestamps[1:])
-    ) if len(timestamps) == len(events) else False
-    passed = actual == expected and consecutive and monotonic
-    observed = {"events": actual, "sequences": sequences, "timestamps_monotonic": monotonic}
-    wanted = {"events": expected, "sequences": expected_sequences, "timestamps_monotonic": True}
-    return passed, wanted, observed, _predicate_failure(observed, wanted)
+def _business_projection(events: Any, expected: Mapping[str, Mapping[str, Any]]) -> list[dict[str, Any]]:
+    projection: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for event in events if isinstance(events, list) else []:
+        if not isinstance(event, Mapping):
+            continue
+        event_type = str(event.get("type") or "")
+        if not _is_business_event(event_type):
+            continue
+        payload = _event_payload(event)
+        label = next((name for name, wanted in expected.items() if payload == wanted), None)
+        if label is None:
+            label = f"unexpected:{event_type}:{event.get('seq')}"
+        elif label in _REPEATABLE_LABELS and label in seen:
+            continue
+        seen.add(label)
+        projection.append({"label": label, "seq": event.get("seq"), "payload": payload})
+    return projection
+
+
+def durable_events_and_required_order_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
+    """Each requested business event exactly once, nothing else; no order is stated."""
+    expected_events = _expected_business_events(raw)
+    projection = _business_projection(raw.get("event_suffix"), expected_events)
+    labels = [row["label"] for row in projection]
+    missing, extra = multiset_diff(list(expected_events), labels)
+    violations = order_violations(labels, REQUIRED_EVENT_ORDER)
+    expected = {
+        "business_events": expected_events,
+        "missing": [],
+        "extra": [],
+        "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+        "order_violations": [],
+    }
+    actual = {
+        "labels": labels,
+        "missing": missing,
+        "extra": extra,
+        "order_violations": violations,
+        "projection": projection,
+    }
+    passed = not missing and not extra and not violations
+    reason = None if passed else (
+        "a requested business event is missing, an unexpected or duplicate business "
+        "event was recorded, or a required order was broken"
+    )
+    return passed, expected, actual, reason
 
 
 class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
-    """Verify exact durable state and the complete manual causal suffix."""
+    """Verify exact durable state and the requested business events without GUI actions."""
 
     RULESET_SPEC = RULESET_SPEC
     RULESET_SHA256 = RULESET_SHA256
@@ -414,15 +454,14 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
     def _checkpoint(
         spec: Mapping[str, Any], outcome: tuple[bool, Any, Any, str | None],
         *, evidence_source: str, evidence_sha256: str, observed_at: str, session_id: str,
-        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
             "name": spec["name"], "steps": list(spec["steps"]), "predicate": spec["predicate"],
-            "diagnostic": bool(diagnostic),
+            "diagnostic": False,
             "passed": bool(passed), "expected": expected, "actual": actual,
             "ruleset_sha256": RULESET_SHA256,
-            "evidence": {"source": evidence_source, "path": "$.groups" if spec["name"] != "timeline_exact" else "$.event_suffix"},
+            "evidence": {"source": evidence_source, "path": "$.groups" if spec["name"] != "durable_events_and_required_order" else "$.event_suffix"},
             "execution": {"executed": True, "session_id": session_id, "observed_at": observed_at, "evidence_source_sha256": evidence_sha256},
             "failure_reason": None if passed else reason,
         }
@@ -430,7 +469,6 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
     @classmethod
     def evaluate_evidence(
         cls, raw: Mapping[str, Any], *, evidence_source: str = "memory://opennote-evidence", evidence_sha256: str | None = None,
-        require_timeline_exact: bool = False,
     ) -> EvalResult:
         digest = evidence_sha256 or hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         outcomes = (
@@ -440,27 +478,20 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
             live_music_note_exact_predicate(raw),
             rain_engagement_exact_predicate(raw),
             curly_note_exact_predicate(raw),
-            timeline_exact_predicate(raw),
+            durable_events_and_required_order_predicate(raw),
         )
         checks = [
             cls._checkpoint(
                 spec, outcome, evidence_source=evidence_source, evidence_sha256=digest,
                 observed_at=str(raw.get("observed_at") or ""),
                 session_id=str(raw.get("evaluation_session_id") or ""),
-                diagnostic=spec["name"] == "timeline_exact" and not require_timeline_exact,
             )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
-        # The fixed event-suffix order and monotonic timestamps are not stated in the
-        # English brief and every deliverable is already graded by the state/engagement
-        # checkpoints, so timeline_exact is diagnostic evidence unless the task opts in
-        # with params["require_timeline_exact"]; see
-        # scan_work/fix_briefs/ios-opennote-timeline-gate.md.
-        failures = [
-            check["name"]
-            for check in checks
-            if not check["passed"] and not check["diagnostic"]
-        ]
+        # The brief states no event count, order, navigation or timestamp spacing
+        # (scan row IOS-030): business events are graded as a multiset and browsing
+        # is not counted.
+        failures = [check["name"] for check in checks if not check["passed"]]
         metadata = {
             "task_id": TASK_ID, "evaluator_id": EVALUATOR_ID,
             "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256,
@@ -478,7 +509,7 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
         }
         if failures:
             return EvalResult(status=EvalStatus.FAIL, message="OpenNote exact verifier checks failed: " + ", ".join(failures), metadata=metadata)
-        return EvalResult(status=EvalStatus.PASS, message="All exact OpenNote state, cover, build, uniqueness, and causal-order checks passed", metadata=metadata)
+        return EvalResult(status=EvalStatus.PASS, message="All exact OpenNote state, cover, build, uniqueness, and business-event checks passed", metadata=metadata)
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -507,11 +538,8 @@ class OpenNoteLiveMusicVisualsThreeNotes495011Evaluator(BaseEvaluator):
         live_music_note_exact_predicate(raw)
         rain_engagement_exact_predicate(raw)
         curly_note_exact_predicate(raw)
-        timeline_exact_predicate(raw)
-        result = self.evaluate_evidence(
-            raw, evidence_source=str(evidence_path), evidence_sha256=evidence_sha,
-            require_timeline_exact=bool(params.get("require_timeline_exact", False)),
-        )
+        durable_events_and_required_order_predicate(raw)
+        result = self.evaluate_evidence(raw, evidence_source=str(evidence_path), evidence_sha256=evidence_sha)
         result.metadata["observed"] = {"udid": udid, "applications": applications, "bundle_id": DEFAULT_BUNDLE_ID, "local_state_key": LOCAL_STATE_KEY}
         result.metadata["evaluator_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
         return result

@@ -24,6 +24,11 @@ from evaluators.cua_review.platforms.ios.webview_state import (
     DEFAULT_SETTLE_TIMEOUT_SECONDS,
     read_until_settled,
 )
+from evaluators.ios.brief_event_order import (
+    align_by_key,
+    best_assignment,
+    time_order_violations,
+)
 
 
 TASK_ID = "ios.openshop.trip_gear_dual_checkout_review_263796"
@@ -161,6 +166,9 @@ SECOND_ORDER_ITEMS = (
     },
 )
 
+# (before, after) pairs of persisted timestamps the brief or causality requires.
+REQUIRED_ORDER = (("second_order_exact.placed", "blue_tin_review_exact.submitted"),)
+
 CHECKPOINT_SPECS = (
     {
         "name": "first_order_exact",
@@ -171,6 +179,7 @@ CHECKPOINT_SPECS = (
         "status": "Awaiting Shipment",
         "total": 342,
         "items": FIRST_ORDER_ITEMS,
+        "items_in_sequence": False,
     },
     {
         "name": "second_order_exact",
@@ -181,6 +190,7 @@ CHECKPOINT_SPECS = (
         "status": "Awaiting Shipment",
         "total": 229.54,
         "items": SECOND_ORDER_ITEMS,
+        "items_in_sequence": False,
     },
     {
         "name": "blue_tin_review_exact",
@@ -227,10 +237,15 @@ RULESET_SPEC = {
         "target_reviews_in_window": 1,
         "final_cart_items": 0,
     },
-    "strict_timeline": (
-        "first cart 1 < first cart 2 < first cart 3 < first order < "
-        "second cart 1 < second cart 2 < second cart 3 < second order < Blue Tin review"
-    ),
+    # The brief states no order ("Place two separate orders ... and submit a
+    # product review"; items are listed, not sequenced; "first/second order" are
+    # labels). Orders are matched to the brief by content and line items by
+    # product. Only what is logically necessary is ordered: an order's items are
+    # in the cart before it is placed (per-order check), and the reviewed order
+    # exists before its review.
+    "order_identity": "in-window orders matched to the first/second order by content, not placement time",
+    "item_order": "line items matched by product; their stored position is not graded",
+    "required_order": REQUIRED_ORDER,
     "storage_order": "second in-window order precedes first in-window order and both are the two newest orders",
     "dynamic_ids": {
         "order": "unique TB followed by exactly 13 decimal digits",
@@ -469,7 +484,6 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
         )
 
         target_orders = [pair[1] for pair in in_window_orders]
-        target_times = [pair[0] for pair in in_window_orders]
         target_ids = [str(order.get("id") or "") for order in target_orders]
         storage_ids = [str(order.get("id") or "") for order in orders[:2]]
         expected_storage = list(reversed(target_ids)) if len(target_ids) == 2 else []
@@ -484,12 +498,20 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
             )
         )
 
+        order_specs = CHECKPOINT_SPECS[:2]
+        assigned_orders = best_assignment(
+            target_orders,
+            order_specs,
+            lambda order, spec: cls._evaluate_order(
+                order, spec, window_start=window_start, window_end=window_end
+            )[0]["pass"],
+        )
         order_item_times: list[list[datetime | None]] = [[], []]
         item_ids: list[str] = []
-        for index, spec in enumerate(CHECKPOINT_SPECS[:2]):
-            if index < len(target_orders):
+        for index, spec in enumerate(order_specs):
+            if assigned_orders[index] is not None:
                 check, times, ids = cls._evaluate_order(
-                    target_orders[index],
+                    assigned_orders[index],
                     spec,
                     window_start=window_start,
                     window_end=window_end,
@@ -510,7 +532,7 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
             item_ids.extend(ids)
 
         review_check, reviewed_at, in_window_reviews = cls._evaluate_review(
-            target_orders,
+            assigned_orders,
             CHECKPOINT_SPECS[2],
             all_orders=orders,
             window_start=window_start,
@@ -547,29 +569,27 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
             )
         )
 
-        timeline: list[datetime | None] = []
-        if len(target_times) == 2:
-            timeline.extend(order_item_times[0])
-            timeline.append(target_times[0])
-            timeline.extend(order_item_times[1])
-            timeline.append(target_times[1])
-            timeline.append(reviewed_at)
-        timeline_pass = (
-            len(timeline) == 9
-            and all(value is not None for value in timeline)
-            and all(
-                timeline[index] < timeline[index + 1]  # type: ignore[operator]
-                for index in range(len(timeline) - 1)
+        persisted_times: dict[str, datetime | None] = {"blue_tin_review_exact.submitted": reviewed_at}
+        for spec, order in zip(order_specs, assigned_orders):
+            persisted_times[f"{spec['name']}.placed"] = (
+                cls._try_parse_datetime(order.get("createdAt")) if isinstance(order, Mapping) else None
             )
-        )
+        order_violations = time_order_violations(persisted_times, REQUIRED_ORDER)
         checks.append(
             cls._check(
-                "strict_persistence_timeline",
-                [7, 15, 23, 33, 41, 49, 56, 66, 72],
+                "durable_events_and_required_order",
+                [33, 66, 72],
                 ["source_or_process", "relationship"],
-                timeline_pass,
-                RULESET_SPEC["strict_timeline"],
-                [value.isoformat() if value is not None else None for value in timeline],
+                not order_violations,
+                {"required_order": [list(pair) for pair in REQUIRED_ORDER]},
+                {
+                    "times": {
+                        name: value.isoformat() if value is not None else None
+                        for name, value in persisted_times.items()
+                    },
+                    "order_violations": order_violations,
+                },
+                "the Blue Tin review is not after the order it reviews",
             )
         )
 
@@ -639,7 +659,7 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenShop4 exact orders, review, cardinality, and persistence order all match",
+            message="OpenShop4 exact orders, review, cardinality, and required order all match",
             metadata=metadata,
         )
 
@@ -678,13 +698,27 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
                 f"observed {len(items) if isinstance(items, list) else 'non-list'}"
             )
             items = items if isinstance(items, list) else []
+        aligned = (
+            list(items)
+            if spec.get("items_in_sequence")
+            else align_by_key(
+                items,
+                expected_items,
+                item_key=lambda row: (
+                    row.get("product", {}).get("id")
+                    if isinstance(row, Mapping) and isinstance(row.get("product"), Mapping)
+                    else None
+                ),
+                expected_key=lambda row: row["product_id"],
+            )
+        )
 
         for index, expected_item in enumerate(expected_items):
-            if index >= len(items) or not isinstance(items[index], Mapping):
+            if index >= len(aligned) or not isinstance(aligned[index], Mapping):
                 reasons.append(f"item {index + 1} is missing or invalid")
                 item_times.append(None)
                 continue
-            item = items[index]
+            item = aligned[index]
             product = item.get("product") if isinstance(item.get("product"), Mapping) else {}
             exact_fields = {
                 "product.id": (product.get("id"), expected_item["product_id"]),
@@ -804,6 +838,8 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
                 reasons.append("reviewedAt is missing or outside the causal window")
 
         for current_order_index, order in enumerate(target_orders):
+            if not isinstance(order, Mapping):
+                continue
             for item in order.get("items", []):
                 if not isinstance(item, Mapping):
                     continue
@@ -918,7 +954,7 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
                             else "not independently persisted"
                         ),
                         "source_or_process": (
-                            "strict cart/order/review persistence timeline where the app records timestamps"
+                            "persisted cart/order/review timestamps; only the logically required order"
                         ),
                         "final_ui": "not asserted by this strict read-only business-state evaluator",
                     },

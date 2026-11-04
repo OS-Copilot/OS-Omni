@@ -40,7 +40,7 @@ evaluation:
     manual_window_start: '2026-08-03T10:56:26+08:00'
     manual_window_end: '2026-08-03T11:05:30.500000+08:00'
     expected_instruction_sha256: 950514b6a1c4037eac9d92e19db7dc424c6c0c53cc41f66518b2ea96419312d1
-    expected_ruleset_sha256: 795006388e39dbfcc7038c8290a60cfb97e01c9221a74ec81061b48533591474
+    expected_ruleset_sha256: 0eaf2f52b1787136c5f2bf0a61a60109469d6064bc45611f2ce7d7b5e4da501b
     expected_app_js_sha256: 6b610b9585adb61e626c8e36461bd2aebd64870505de31e40edf5a9403791a9b
     expected_seed_data_sha256: 51ec46d3a918193fec4c5a74d06a2f32cc5a5dd6a4c6a2eca100f82186a58178
     expected_password_hash: fnv1a-900f7aee
@@ -66,7 +66,7 @@ metadata:
   ios_device_profile: iphone17-1
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 2ba58e7f32b7d977ffe09e6dbdd4129413270e8358ffc3e08863f6055db763bf
-  evaluator_ruleset_sha256: 795006388e39dbfcc7038c8290a60cfb97e01c9221a74ec81061b48533591474
+  evaluator_ruleset_sha256: 0eaf2f52b1787136c5f2bf0a61a60109469d6064bc45611f2ce7d7b5e4da501b
   recording: 2026-08-03_10-56-26.mp4
   description: OpenShop1 exact authentication, two orders, two reviews, and strict durable sequence verification
     under fresh task identity 958608.
@@ -84,13 +84,14 @@ metadata:
     - Manual eval and automatic full-run evaluation use the same task-bound evaluator, ruleset digest,
       and business checkpoints.
     strictness:
-    - The two in-window orders have exact item cardinality, order, ids, titles, categories, specifications,
-      quantities, prices, line totals, addresses, payments, notes, statuses, and totals.
-    - The two in-window reviews have exact product, rating, text, and timestamp order; the other five
-      target products have no review.
-    - All seven cart id epochs, both order id/createdAt epochs, and both review timestamps form one strict
-      causal sequence.
-    - Extra, duplicate, malformed, fuzzy, or out-of-order in-window data fails.
+    - The two in-window orders, matched to the brief's first/second order by content, have exact item
+      cardinality, item sequence (both carts are stated "in this exact sequence"), ids, titles, categories,
+      specifications, quantities, prices, line totals, addresses, payments, notes, statuses, and totals.
+    - The two in-window reviews have exact product, rating, and text; the other five target products have
+      no review.
+    - Only the stated orders are checked; each cart's id epochs follow its stated sequence and precede its
+      order, and both reviews follow the first order. The reviews and the second order are not ordered.
+    - Extra, duplicate, malformed, or fuzzy in-window data fails.
     coverage:
     - Every data-producing or compound-submission step is bound to exact durable evidence; uncovered_data_steps
       must be empty.

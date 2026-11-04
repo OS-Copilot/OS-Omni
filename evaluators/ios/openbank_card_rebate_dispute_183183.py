@@ -13,6 +13,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.openbank_store import OpenBankStore
+from evaluators.ios.brief_event_order import order_violations as _order_violations
 
 
 TASK_ID = "ios.openbank.card_rebate_dispute_183183"
@@ -41,21 +42,30 @@ STEP_GROUPS = {
     "low_balance_text": list(range(72, 75)),
 }
 
-EXPECTED_EVENT_ORDER = (
-    "activity_initial_view",
-    "ace_search",
-    "ace_details",
-    "ace_dispute",
-    "ace_details",
-    "mira_recipient",
-    "dana_recipient",
-    "mira_transfer",
-    "rainy_paperless",
-    "dana_transfer",
-    "payment_due_text",
-    "upcoming_bill_read",
-    "low_balance_text",
+# The brief fixes no sequence ("Submit a dispute ..., create two new transfer
+# recipients, execute two specific transfers, update ... and modify ..." is an
+# enumeration; "the first"/"the second" transfer are record labels). Only what
+# is logically required is ordered: a recipient exists before money goes to it.
+# Activity searches and transaction details are browsing and are not counted.
+REQUIRED_EVENT_ORDER = (
+    ("mira_recipient", "mira_transfer"),
+    ("dana_recipient", "dana_transfer"),
 )
+# group -> {label: (minimum count, maximum count or None)} in the task window.
+# Payload-identical alert-setting saves are idempotent and may repeat.
+EVENT_REQUIREMENTS = {
+    "activity_source": {},
+    "ace_dispute": {"ace_dispute": (1, 1)},
+    "mira_recipient": {"mira_recipient": (1, 1)},
+    "dana_recipient": {"dana_recipient": (1, 1)},
+    "mira_transfer": {"mira_transfer": (1, 1)},
+    "rainy_paperless": {"rainy_paperless": (1, 1)},
+    "dana_transfer": {"dana_transfer": (1, 1)},
+    "payment_due_text": {"payment_due_text": (1, None)},
+    "upcoming_bill_read": {"upcoming_bill_read": (1, 1)},
+    "low_balance_text": {"low_balance_text": (1, None)},
+}
+_VIEW_EVENT_TYPES = {"transactions_viewed", "transaction_details_viewed"}
 
 CHECKPOINT_SPECS = (
     {
@@ -63,8 +73,7 @@ CHECKPOINT_SPECS = (
         "steps": STEP_GROUPS["activity_source"],
         "expected": {
             "transactionId": "txn-daily-202605-08",
-            "query": "Ace Hardware",
-            "detailsOccurrencesAfterCollapse": 2,
+            "unchanged_source_transaction": True,
         },
     },
     {
@@ -151,9 +160,12 @@ CHECKPOINT_SPECS = (
         "expected": {"settingId": "pref-low-balance", "sms": True},
     },
     {
-        "name": "durable_event_order_exact",
+        "name": "durable_events_and_required_order",
         "steps": list(range(1, 75)),
-        "expected": list(EXPECTED_EVENT_ORDER),
+        "expected": {
+            "unexpected_business_events": [],
+            "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+        },
     },
 )
 
@@ -170,15 +182,18 @@ RULESET_SPEC = {
     "automatic_window": "initializer.metadata.baseline_max_event_seq",
     "step_groups": STEP_GROUPS,
     "checkpoint_specs": CHECKPOINT_SPECS,
+    "event_requirements": EVENT_REQUIREMENTS,
+    "required_event_order": REQUIRED_EVENT_ORDER,
     "matching": {
         "strings": "case-sensitive exact equality",
         "money": "Decimal cents exact equality",
         "cardinality": "exactly one target object",
         "dynamic_ids": "unique final object joined exactly to its causal event",
-        "event_order": "exact projected sequence",
+        "event_order": "only the logically required pairs in required_event_order",
         "duplicate_policy": (
-            "collapse only consecutive payload-identical transaction_details_viewed "
-            "or low-balance alert_setting_updated events"
+            "payload-identical alert-setting saves may repeat; every other business event "
+            "exactly once; unmatched business events fail; Activity views and transaction "
+            "details views are browsing and are not counted"
         ),
     },
     "final_ui": "not_required",
@@ -203,7 +218,6 @@ _RELEVANT_EVENT_TYPES = {
     "alert_setting_updated",
     "alert_marked_read",
 }
-_COLLAPSIBLE_LABELS = {"ace_details", "low_balance_text"}
 
 
 def _parse_datetime(value: Any) -> datetime:
@@ -286,7 +300,7 @@ def _check(
 
 
 class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
-    """Evaluate exact OpenBank business state and ordered causal events without mutation."""
+    """Evaluate exact OpenBank business state and the logically required event order."""
 
     RULESET_SPEC = RULESET_SPEC
     RULESET_SHA256 = RULESET_SHA256
@@ -298,7 +312,6 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         *,
         boundary: Mapping[str, Any],
         observed: Mapping[str, Any] | None = None,
-        require_durable_event_order: bool = False,
     ) -> EvalResult:
         recipients = _objects(state, "recipients")
         transfers = _objects(state, "transfers")
@@ -445,7 +458,6 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         )
         projection = cls._project_events(window_events, expected_event_payloads)
         observed_labels = [item["label"] for item in projection]
-        order_ok = observed_labels == list(EXPECTED_EVENT_ORDER)
         label_counts = Counter(observed_labels)
 
         rainy_event_rows = [
@@ -473,26 +485,16 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
             (upcoming, upcoming_rows, expected_upcoming),
             (low_balance, low_balance_rows, expected_low_balance),
         )
-        required_event_counts = (
-            {"activity_initial_view": 1, "ace_search": 1, "ace_details": 2},
-            {"ace_dispute": 1},
-            {"mira_recipient": 1},
-            {"dana_recipient": 1},
-            {"mira_transfer": 1},
-            {"rainy_paperless": 1},
-            {"dana_transfer": 1},
-            {"payment_due_text": 1},
-            {"upcoming_bill_read": 1},
-            {"low_balance_text": 1},
-        )
-
         checks: list[dict[str, Any]] = []
         for index, ((record, rows, expected), required_counts) in enumerate(
-            zip(object_rows, required_event_counts, strict=True)
+            zip(object_rows, EVENT_REQUIREMENTS.values(), strict=True)
         ):
             spec = CHECKPOINT_SPECS[index]
             object_ok = bool(record and _record_exact(record, expected))
-            event_ok = all(label_counts[label] == count for label, count in required_counts.items())
+            event_ok = all(
+                label_counts[label] >= low and (high is None or label_counts[label] <= high)
+                for label, (low, high) in required_counts.items()
+            )
             event_evidence = [
                 item
                 for item in projection
@@ -509,27 +511,26 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 )
             )
 
-        # The whole-window projection is a process diagnostic, not an outcome
-        # requirement: the English instruction names the durable deliverables
-        # (dispute, recipients, transfers, paperless setting, alert settings) but
-        # not an exact replay of the global UI event log, and normal navigation
-        # can repeat or reorder relevant events. It only gates when a caller
-        # explicitly opts in via params.require_durable_event_order; the ten
-        # object checks above keep every deliverable and its exact causal event
-        # count authoritative (see scan.CSV IOS-008).
-        order_spec = CHECKPOINT_SPECS[-1]
-        order_required = bool(require_durable_event_order)
-        if order_required:
-            checks.append(
-                _check(
-                    order_spec,
-                    order_ok,
-                    actual=observed_labels,
-                    evidence=projection,
-                    event_evidence=projection,
-                    failure_reason="causal event projection is not the exact expected sequence",
-                )
+        unexpected = [label for label in observed_labels if label.startswith("unexpected:")]
+        order_violations = _order_violations(observed_labels, REQUIRED_EVENT_ORDER)
+        order_ok = not unexpected and not order_violations
+        checks.append(
+            _check(
+                CHECKPOINT_SPECS[-1],
+                order_ok,
+                actual={
+                    "labels": observed_labels,
+                    "unexpected_business_events": unexpected,
+                    "order_violations": order_violations,
+                },
+                evidence=projection,
+                event_evidence=projection,
+                failure_reason=(
+                    "an unexpected business event was recorded or a recipient was paid "
+                    "before it was created"
+                ),
             )
+        )
 
         session_expected = {
             "loggedIn": True,
@@ -550,8 +551,10 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         coverage = [
             {
                 "step": step,
-                "checkpoint_names": [checks[index]["name"]]
-                + (["durable_event_order_exact"] if order_required else []),
+                "checkpoint_names": [
+                    checks[index]["name"],
+                    "durable_events_and_required_order",
+                ],
                 "dimensions": {
                     "final_object": "exact durable object or exact source transaction",
                     "content": "case-sensitive fields and Decimal-cent values",
@@ -560,15 +563,10 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 },
                 "mapping_basis": (
                     f"step belongs to STEP_GROUPS.{group}; its compound chain requires "
-                    "the exact object/event checkpoint"
-                    + (" and exact global event order" if order_required else "")
+                    "the exact object/event checkpoint and no unexpected business event"
                 ),
-                "pass": bool(
-                    checks[index]["passed"] and (order_ok or not order_required)
-                ),
-                "passed": bool(
-                    checks[index]["passed"] and (order_ok or not order_required)
-                ),
+                "pass": bool(checks[index]["passed"] and order_ok),
+                "passed": bool(checks[index]["passed"] and order_ok),
             }
             for index, (group, steps) in enumerate(STEP_GROUPS.items())
             for step in steps
@@ -577,11 +575,7 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         return EvalResult(
             status=status,
             message=(
-                (
-                    "All exact OpenBank2 state and ordered-event checkpoints passed"
-                    if order_required
-                    else "All exact OpenBank2 state and causal-event checkpoints passed"
-                )
+                "All exact OpenBank2 state and causal-event checkpoints passed"
                 if status is EvalStatus.PASS
                 else "OpenBank2 verification failed: " + ", ".join(failed)
             ),
@@ -594,22 +588,6 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 "boundary": dict(boundary),
                 "checks": checks,
                 "failed_checks": failed,
-                "event_order_diagnostic": {
-                    "check_id": "durable_event_order_exact",
-                    "required": order_required,
-                    "blocking": order_required,
-                    "matched": order_ok,
-                    "expected": list(EXPECTED_EVENT_ORDER),
-                    "observed": observed_labels,
-                    "projection": projection,
-                    "note": (
-                        "Whole-window event order is diagnostic only unless "
-                        "params.require_durable_event_order is true: the instruction "
-                        "does not require an exact UI event-log replay, and every "
-                        "deliverable plus its exact causal-event count is still graded "
-                        "by the ten object checks."
-                    ),
-                },
                 "session_exact": {
                     "passed": session_ok,
                     "expected": session_expected,
@@ -639,37 +617,8 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         dana_transfer: Mapping[str, Any] | None,
     ) -> dict[str, dict[str, Any]]:
         return {
-            "activity_initial_view": {
-                "type": "transactions_viewed",
-                "accountId": "all",
-                "q": "",
-                "category": "all",
-                "status": "all",
-                "dateRange": "all",
-                "from": "",
-                "to": "",
-                "page": 1,
-                "pageSize": 10,
-                "total": 597,
-            },
-            "ace_search": {
-                "type": "transactions_viewed",
-                "accountId": "all",
-                "q": "Ace Hardware",
-                "category": "all",
-                "status": "all",
-                "dateRange": "all",
-                "from": "",
-                "to": "",
-                "page": 1,
-                "pageSize": 10,
-                "total": 15,
-            },
-            "ace_details": {
-                "type": "transaction_details_viewed",
-                "transactionId": "txn-daily-202605-08",
-                "accountId": "checking-2381",
-            },
+            # Activity searches and transaction details views are browsing:
+            # the brief asks for the dispute, not for how the entry is found.
             "ace_dispute": {
                 "type": "transaction_dispute_submitted",
                 "disputeId": dispute.get("id") if dispute else None,
@@ -779,15 +728,12 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 for label, expected in expected_payloads.items()
                 if _record_exact(payload, expected)
             ]
-            label = labels[0] if len(labels) == 1 else f"unexpected:{event_type}:{event.get('seq')}"
-            if (
-                projected
-                and label in _COLLAPSIBLE_LABELS
-                and projected[-1]["label"] == label
-                and projected[-1]["payload"] == payload
-            ):
-                projected[-1]["events"].append(dict(event))
+            if len(labels) == 1:
+                label = labels[0]
+            elif event_type in _VIEW_EVENT_TYPES:
                 continue
+            else:
+                label = f"unexpected:{event_type}:{event.get('seq')}"
             projected.append(
                 {"label": label, "payload": payload, "events": [dict(event)]}
             )
@@ -870,14 +816,7 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 }
             )
             boundary = self._resolve_boundary(context, params)
-            return self.evaluate_state(
-                state,
-                boundary=boundary,
-                observed=observed,
-                require_durable_event_order=bool(
-                    params.get("require_durable_event_order", False)
-                ),
-            )
+            return self.evaluate_state(state, boundary=boundary, observed=observed)
         except Exception as exc:
             return EvalResult(
                 status=EvalStatus.ERROR,

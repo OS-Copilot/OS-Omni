@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.ios.brief_event_order import single_record_transitions as _single_record_transitions
 from evaluators.cua_review.initializers.ios.opentrip_seed_state import (
     EXPECTED_BASE_STATE_SHA256 as SEED_BASE_STATE_SHA256,
     _seeded_state,
@@ -223,12 +224,26 @@ RULESET_SPEC = {
     "data_steps": DATA_STEPS,
     "step_groups": STEP_GROUPS,
     "checkpoint_specs": CHECKPOINT_SPECS,
-    "strict_transition_order": [
-        "hotel_review_exact",
-        "flight_booking_exact",
-        "hotel_booking_exact",
-        "hotel_reschedule_exact",
-    ],
+    # The brief lists the review, the two bookings, and the reschedule as
+    # separate requirements and states no order between them.
+    "business_transitions": {
+        "records": [
+            "hotel_review_exact",
+            "flight_booking_exact",
+            "hotel_booking_exact",
+            "hotel_reschedule_exact",
+        ],
+        "rule": (
+            "each target effect first lands in its own committed WAL state, in any order; "
+            "no regression or extra, duplicate, or malformed target data; the last commit "
+            "holds all four"
+        ),
+        "required_order": [],
+        "timestamp_integrity": (
+            "an effect first committed later carries a later app timestamp "
+            "(createdAt / rescheduledAt)"
+        ),
+    },
     "dynamic_ids": {
         "order": "OT followed by exactly 13 decimal digits",
         "epoch_equals_created_at": True,
@@ -260,7 +275,7 @@ RULESET_SHA256 = _canonical_json_sha256(RULESET_SPEC)
 
 
 class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
-    """Verify exact OpenTrip durable state and committed transaction order."""
+    """Verify exact OpenTrip durable state; each target effect committed once, any order."""
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -443,33 +458,18 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
             )
         )
 
-        timeline_pass = bool(
-            final_facts["flight_time"]
-            and final_facts["hotel_time"]
-            and final_facts["reschedule_time"]
-            and final_facts["flight_time"] < final_facts["hotel_time"] < final_facts["reschedule_time"]
-        )
-        checks.append(
-            cls._check(
-                "dynamic_identifier_and_timestamp_order_exact",
-                [47, 68, 74],
-                ["source_or_process", "relationship"],
-                timeline_pass,
-                "flight id epoch == flight.createdAt < hotel id epoch == hotel.createdAt < rescheduledAt",
-                [
-                    cls._iso(final_facts["flight_time"]),
-                    cls._iso(final_facts["hotel_time"]),
-                    cls._iso(final_facts["reschedule_time"]),
-                ],
-            )
-        )
-
         transaction_check, transition_evidence = cls._evaluate_transaction_history(
             commit_states,
             window_start=window_start,
             window_end=window_end,
             allowed_review_dates=allowed_review_dates,
             history_truncated=bool((database_evidence or {}).get("history_truncated_by_checkpoint")),
+            record_times=(
+                None,
+                final_facts["flight_time"],
+                final_facts["hotel_time"],
+                final_facts["reschedule_time"],
+            ),
         )
         checks.append(transaction_check)
 
@@ -553,7 +553,7 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenTrip exact review, bookings, reschedule, and committed order all match",
+            message="OpenTrip exact review, bookings, and reschedule, each committed once, all match",
             metadata=metadata,
         )
 
@@ -783,10 +783,9 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
         window_end: datetime,
         allowed_review_dates: set[str],
         history_truncated: bool = False,
+        record_times: Sequence[datetime | None] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         rows: list[dict[str, Any]] = []
-        previous = (False, False, False, False)
-        first_commit: list[int | None] = [None, None, None, None]
         reasons: list[str] = []
         for index, state in enumerate(commit_states, start=1):
             facts = cls._target_facts(
@@ -796,11 +795,6 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
                 allowed_review_dates=allowed_review_dates,
             )
             flags = tuple(bool(value) for value in facts["flags"])
-            if any(old and not new for old, new in zip(previous, flags, strict=True)):
-                reasons.append(f"target state regressed at commit {index}")
-            for position, value in enumerate(flags):
-                if value and first_commit[position] is None:
-                    first_commit[position] = index
             if facts["anomalies"]:
                 reasons.append(f"commit {index} contains unexpected target data: {facts['anomalies']}")
             rows.append(
@@ -811,24 +805,18 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
                     "anomalies": facts["anomalies"],
                 }
             )
-            previous = flags
 
-        # After a checkpoint folded the first commits into the main database file,
-        # the effects already present in that first observable state share
-        # commit 1; they must still be a leading prefix of the required order.
-        exact_order = all(value is not None for value in first_commit) and all(
-            first_commit[index] < first_commit[index + 1]  # type: ignore[operator]
-            or (history_truncated and first_commit[index] == first_commit[index + 1] == 1)
-            for index in range(3)
+        # Each effect lands once, in its own commit, in any order (the brief
+        # states none). After a checkpoint folded the first commits into the
+        # main database file, the effects already present there share commit 1.
+        transition_reasons, transition_first = _single_record_transitions(
+            [row["flags"] for row in rows],
+            history_truncated=history_truncated,
+            allow_idle_commits=True,
+            record_times=record_times,
         )
-        if not exact_order:
-            reasons.append(
-                "first committed appearances are not strict review < flight < hotel < reschedule"
-            )
-        if not rows:
-            reasons.append("committed WAL history is missing")
-        elif tuple(rows[-1]["flags"]) != (True, True, True, True):
-            reasons.append("last committed WAL state does not contain all four exact target effects")
+        reasons.extend(transition_reasons)
+        first_commit: list[int | None] = transition_first or [None, None, None, None]
 
         evidence = {
             "history_truncated_by_checkpoint": bool(history_truncated),
@@ -844,11 +832,11 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
         }
         return (
             cls._check(
-                "wal_transaction_order_exact",
+                "durable_events_and_required_order",
                 [9, 47, 68, 74],
                 ["source_or_process", "relationship"],
                 not reasons,
-                RULESET_SPEC["strict_transition_order"],
+                RULESET_SPEC["business_transitions"],
                 evidence,
                 "; ".join(reasons),
             ),
@@ -901,8 +889,8 @@ class OpenTripReviewFlightHotelReschedule234497Evaluator(BaseEvaluator):
             names = list(direct[step])
             if primary not in names:
                 names.append(primary)
-            if "wal_transaction_order_exact" not in names:
-                names.append("wal_transaction_order_exact")
+            if "durable_events_and_required_order" not in names:
+                names.append("durable_events_and_required_order")
             relevant = [by_name[name] for name in names if name in by_name]
             data_step = step in DATA_STEPS
             coverage.append(

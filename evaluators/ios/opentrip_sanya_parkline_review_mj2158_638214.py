@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.ios.brief_event_order import single_record_transitions as _single_record_transitions
 from evaluators.cua_review.initializers.ios.opentrip_seed_state import _seeded_state
 from evaluators.cua_review.platforms.ios.webview_state import (
     local_storage_history,
@@ -249,11 +250,23 @@ RULESET_SPEC = {
     "data_step_fields": DATA_STEP_FIELDS,
     "step_groups": STEP_GROUPS,
     "checkpoint_specs": CHECKPOINT_SPECS,
-    "strict_transition_order": [
-        "hotel_booking_exact",
-        "hotel_review_exact",
-        "flight_booking_exact",
-    ],
+    # "Create a hotel booking, a review submission, and a flight booking" is an
+    # enumeration; the brief states no order between them.
+    "business_transitions": {
+        "records": [
+            "hotel_booking_exact",
+            "hotel_review_exact",
+            "flight_booking_exact",
+        ],
+        "rule": (
+            "each target record lands exactly once in its own committed WAL state, in any "
+            "order; no regression, extra, duplicate, or corrected target data; the last "
+            "commit holds all three"
+        ),
+        "required_order": [],
+        "timestamp_integrity": "a booking first committed later carries a later createdAt",
+    },
+    "list_storage": "new bookings newest-first by createdAt, ahead of the four seed bookings",
     "dynamic_ids": {
         "pattern": "OT followed by exactly 13 decimal digits",
         "epoch_equals_created_at": True,
@@ -270,7 +283,7 @@ RULESET_SPEC = {
         "comparison": "canonical SHA-256 of complete booking after removing only id and createdAt",
         "hotel_fingerprint": EXPECTED_HOTEL_FINGERPRINT,
         "flight_fingerprint": EXPECTED_FLIGHT_FINGERPRINT,
-        "extra_duplicate_corrected_or_out_of_order_data": "FAIL",
+        "extra_duplicate_or_corrected_data": "FAIL",
     },
     "final_ui": "not asserted because the instruction has no final-stay UI requirement",
     "non_persisted_steps": (
@@ -282,7 +295,7 @@ RULESET_SHA256 = _canonical_json_sha256(RULESET_SPEC)
 
 
 class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
-    """Verify the exact hotel, review, flight objects and committed order."""
+    """Verify the exact hotel, review, and flight objects, each committed once in any order."""
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -468,11 +481,17 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
 
         final_ids = cls._booking_ids(state)
-        expected_ids = [
-            final_facts["flight"].get("id"),
-            final_facts["hotel"].get("id"),
-            *SEED_BOOKING_IDS,
+        # The app prepends each new booking, so the two new ones lead the list
+        # newest-first; which of them was booked first is not graded.
+        newest_first = [
+            fact.get("id")
+            for fact in sorted(
+                (final_facts["flight"], final_facts["hotel"]),
+                key=lambda fact: fact.get("timestamp") or datetime.min.replace(tzinfo=timezone.utc),
+                reverse=True,
+            )
         ]
+        expected_ids = [*newest_first, *SEED_BOOKING_IDS]
         cardinality_pass = bool(
             len(final_facts["dynamic"]) == 2
             and final_facts["dynamic_type_counts"] == {"flight": 1, "hotel": 1}
@@ -488,7 +507,7 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 {
                     "dynamic_count": 2,
                     "dynamic_types": {"flight": 1, "hotel": 1},
-                    "booking_order": ["new_flight", "new_hotel", *SEED_BOOKING_IDS],
+                    "booking_order": ["newer_new_booking", "older_new_booking", *SEED_BOOKING_IDS],
                 },
                 {
                     "dynamic_count": len(final_facts["dynamic"]),
@@ -500,20 +519,6 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
         )
 
-        hotel_time = final_facts["hotel"].get("timestamp")
-        flight_time = final_facts["flight"].get("timestamp")
-        timeline_pass = bool(hotel_time and flight_time and hotel_time < flight_time)
-        checks.append(
-            cls._check(
-                "dynamic_identifier_and_timestamp_order_exact",
-                [30, 70],
-                ["source_or_process", "relationship"],
-                timeline_pass,
-                "hotel id epoch == hotel.createdAt < flight id epoch == flight.createdAt",
-                [cls._iso(hotel_time), cls._iso(flight_time)],
-            )
-        )
-
         transaction_check, transition_evidence = cls._evaluate_transaction_history(
             commit_states,
             base_state=base_state,
@@ -521,6 +526,11 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             window_end=window_end,
             allowed_review_dates=allowed_review_dates,
             history_truncated=bool((database_evidence or {}).get("history_truncated_by_checkpoint")),
+            record_times=(
+                final_facts["hotel"].get("timestamp"),
+                None,
+                final_facts["flight"].get("timestamp"),
+            ),
         )
         checks.append(transaction_check)
 
@@ -604,7 +614,7 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenTrip exact hotel, review, flight, and committed order all match",
+            message="OpenTrip exact hotel, review, and flight, each committed once, all match",
             metadata=metadata,
         )
 
@@ -776,15 +786,10 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         window_end: datetime,
         allowed_review_dates: set[str],
         history_truncated: bool = False,
+        record_times: Sequence[datetime | None] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         reasons: list[str] = []
-        expected_flags = (
-            (True, False, False),
-            (True, True, False),
-            (True, True, True),
-        )
-        first_commit: list[int | None] = [None, None, None]
         for index, state in enumerate(commit_states, start=1):
             facts = cls._target_facts(
                 state,
@@ -794,9 +799,6 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 allowed_review_dates=allowed_review_dates,
             )
             flags = tuple(bool(value) for value in facts["flags"])
-            for position, value in enumerate(flags):
-                if value and first_commit[position] is None:
-                    first_commit[position] = index
             rows.append(
                 {
                     "commit": index,
@@ -808,48 +810,35 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             if facts["anomalies"]:
                 reasons.append(f"commit {index} contains unexpected target data: {facts['anomalies']}")
 
-        # When a checkpoint folded the first commits into the main database file,
-        # the observable history starts at the main-file state; it must be one of
-        # the expected intermediate states and continue the exact progression.
-        offset = 0
-        if history_truncated and rows and tuple(rows[0]["flags"]) in expected_flags:
-            offset = expected_flags.index(tuple(rows[0]["flags"]))
-        expected_tail = expected_flags[offset:]
-        expected_first = [
-            next((number for number, flags in enumerate(expected_tail, start=1) if flags[position]), None)
-            for position in range(3)
-        ]
-        if len(rows) != len(expected_tail):
-            reasons.append(f"expected exactly {len(expected_tail)} committed WAL states, observed {len(rows)}")
-        if tuple(tuple(row["flags"]) for row in rows) != expected_tail:
-            reasons.append("WAL flags are not exact hotel -> review -> flight transitions")
-        if first_commit != expected_first:
-            reasons.append(
-                "first committed appearances are not hotel=1, review=2, flight=3"
-                if not offset
-                else f"first committed appearances after the checkpoint are not {expected_first}"
-            )
+        # Each record lands once, in its own commit, in any order (the brief
+        # states none); a checkpoint may fold the first commits together.
+        transition_reasons, transition_first = _single_record_transitions(
+            [row["flags"] for row in rows],
+            history_truncated=history_truncated,
+            allow_idle_commits=False,
+            record_times=record_times,
+        )
+        reasons.extend(transition_reasons)
+        first_commit: list[int | None] = transition_first or [None, None, None]
 
         evidence = {
             "history_truncated_by_checkpoint": bool(history_truncated),
-            "checkpointed_expected_states": offset,
             "commit_count": len(rows),
             "first_target_commits": {
                 "hotel_booking_exact": first_commit[0],
                 "hotel_review_exact": first_commit[1],
                 "flight_booking_exact": first_commit[2],
             },
-            "expected_flags": [list(row) for row in expected_flags],
             "commits": rows,
             "failure_reasons": reasons,
         }
         return (
             cls._check(
-                "wal_transaction_order_exact",
+                "durable_events_and_required_order",
                 [30, 36, 70],
                 ["source_or_process", "relationship"],
                 not reasons,
-                RULESET_SPEC["strict_transition_order"],
+                RULESET_SPEC["business_transitions"],
                 evidence,
                 "; ".join(reasons),
             ),
@@ -881,8 +870,8 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             names = list(direct[step])
             if primary not in names:
                 names.append(primary)
-            if "wal_transaction_order_exact" not in names:
-                names.append("wal_transaction_order_exact")
+            if "durable_events_and_required_order" not in names:
+                names.append("durable_events_and_required_order")
             relevant = [by_name[name] for name in names if name in by_name]
             data_step = step in DATA_STEPS
             coverage.append(

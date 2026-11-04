@@ -156,6 +156,11 @@ def _run(tmp_path, monkeypatch, steps):
 
 AFTER_FLIGHT = lambda base: _with_bookings(base, FLIGHT)  # noqa: E731
 AFTER_HOTEL = lambda base: _with_bookings(base, HOTEL, FLIGHT)  # noqa: E731
+# The brief states no order between the two bookings: hotel first is as valid.
+HOTEL_FIRST = dict(HOTEL, id=FLIGHT["id"], createdAt=FLIGHT["createdAt"])
+FLIGHT_SECOND = dict(FLIGHT, id=HOTEL["id"], createdAt=HOTEL["createdAt"])
+AFTER_HOTEL_FIRST = lambda base: _with_bookings(base, HOTEL_FIRST)  # noqa: E731
+AFTER_FLIGHT_SECOND = lambda base: _with_bookings(base, FLIGHT_SECOND, HOTEL_FIRST)  # noqa: E731
 
 
 def test_canonical_seed_matches_the_evaluators_baseline_hash() -> None:
@@ -172,6 +177,10 @@ def test_canonical_seed_matches_the_evaluators_baseline_hash() -> None:
                      id="checkpoint-after-last-commit-wal-not-restarted"),
         pytest.param([AFTER_FLIGHT, AFTER_HOTEL, "TRUNCATE"], "canonical_seed_from_app_bundle", True,
                      id="truncating-checkpoint-after-last-commit"),
+        pytest.param([AFTER_HOTEL_FIRST, AFTER_FLIGHT_SECOND], "main_database_file", False,
+                     id="hotel-first-no-checkpoint"),
+        pytest.param([AFTER_HOTEL_FIRST, AFTER_FLIGHT_SECOND, "TRUNCATE"], "canonical_seed_from_app_bundle", True,
+                     id="hotel-first-truncating-checkpoint"),
     ],
 )
 def test_correct_bookings_pass_with_or_without_checkpoint(tmp_path, monkeypatch, steps, expected_source, truncated):
@@ -198,7 +207,8 @@ def test_checkpointed_frames_are_not_replayed_onto_the_main_file(tmp_path, monke
     "steps",
     [
         pytest.param([AFTER_FLIGHT], id="hotel-missing"),
-        pytest.param([lambda base: _with_bookings(base, HOTEL), AFTER_HOTEL], id="hotel-before-flight-in-wal"),
+        # Hotel committed first but stamped later than the flight committed after it.
+        pytest.param([lambda base: _with_bookings(base, HOTEL), AFTER_HOTEL], id="timestamps-disagree-with-commits"),
         pytest.param(
             [lambda base: _with_bookings(base, dict(FLIGHT, note="wrong")), "PASSIVE", AFTER_FLIGHT, AFTER_HOTEL],
             id="corrected-flight-visible-after-checkpoint",
@@ -207,7 +217,7 @@ def test_checkpointed_frames_are_not_replayed_onto_the_main_file(tmp_path, monke
             [lambda base: _with_bookings(base, dict(HOTEL, createdAt=FLIGHT["createdAt"], id=FLIGHT["id"]),
                                          dict(FLIGHT, createdAt=HOTEL["createdAt"], id=HOTEL["id"])),
              "TRUNCATE"],
-            id="order-still-enforced-by-timestamps-when-history-checkpointed",
+            id="storage-disagrees-with-timestamps-when-history-checkpointed",
         ),
         pytest.param([lambda base: _with_bookings(base, dict(FLIGHT, id="OT1700000000000",
                                                              createdAt="2023-11-14T22:13:20.000Z")),
@@ -310,7 +320,7 @@ def test_local_storage_history_finds_baseline_committed_in_the_wal(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Transaction-order rules of the other two task shapes under truncation
+# Transition rules of the other two task shapes under truncation (any order)
 # ---------------------------------------------------------------------------
 WINDOW = (
     datetime(2026, 8, 3, 8, 0, tzinfo=timezone.utc),
@@ -334,7 +344,9 @@ def _flag_facts(flag_count: int):
         ([(1, 1, 0), (1, 1, 1)], False, False),  # without a checkpoint a missing commit fails
         ([(1, 1, 0), (1, 1, 1)], True, True),
         ([(1, 1, 1)], True, True),
-        ([(0, 1, 0), (1, 1, 1)], True, False),  # review before hotel
+        ([(0, 1, 0), (1, 1, 1)], True, False),  # hotel and flight land in one commit
+        ([(0, 1, 0), (1, 1, 0), (1, 1, 1)], False, True),  # review first: no order is required
+        ([(0, 0, 1), (1, 0, 1), (1, 1, 1)], False, True),  # flight, hotel, review
         ([(1, 1, 1), (1, 1, 1)], True, False),  # extra commit after completion
     ],
 )
@@ -359,7 +371,8 @@ def test_parkline_history_offset(monkeypatch, rows, truncated, passed):
         ([(1, 1, 0, 0), (1, 1, 1, 0), (1, 1, 1, 1)], False, False),
         ([(1, 1, 0, 0), (1, 1, 1, 0), (1, 1, 1, 1)], True, True),
         ([(1, 1, 1, 1)], True, True),
-        ([(0, 1, 0, 0), (1, 1, 1, 1)], True, False),  # flight absorbed before the review
+        ([(0, 1, 0, 0), (1, 1, 1, 1)], True, False),  # three effects land in one commit
+        ([(0, 0, 0, 1), (0, 0, 1, 1), (0, 1, 1, 1), (1, 1, 1, 1)], False, True),  # reverse order
         ([(1, 0, 1, 0), (1, 1, 1, 1)], True, False),  # hotel absorbed without the flight
     ],
 )

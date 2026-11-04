@@ -43,7 +43,7 @@ evaluation:
     manual_window_start: '2026-08-04T16:27:32+08:00'
     manual_window_end: '2026-08-04T16:44:06+08:00'
     expected_instruction_sha256: 491b7ad41194e49bedab7c726dba52e219dd6a752d9892216191d5a1e624f0a5
-    expected_ruleset_sha256: 249a6434f9178a8a770c168ca3e5c85d5d5ee9ef5b056ef72d9c18663b311e2c
+    expected_ruleset_sha256: a2852c3df7abd3c863e6d10fa48ff95b15b77655684313213dae509f8e114b9d
     evaluation_session_id: opennote-human-community-meal-618106
     requires_ui_observation: false
 limits:
@@ -72,9 +72,11 @@ metadata:
     instruction_audit_waiver_scope: instruction-quality gate only; exact value checks remain mandatory
   verifier_rules:
     instruction_sha256: 491b7ad41194e49bedab7c726dba52e219dd6a752d9892216191d5a1e624f0a5
-    ruleset_sha256: be18b3abcff0ba81e4929825b2a5cfcfad762631972b467e22b828362fb86153
+    ruleset_sha256: a2852c3df7abd3c863e6d10fa48ff95b15b77655684313213dae509f8e114b9d
     matching: case-sensitive exact values, ordered exact tags, LF-exact body text, exact cover and build
-      hashes, unique objects, and the exact 23-event causal suffix
+      hashes, unique objects, and each requested business event (three note_created, the save, the
+      like, the follow, the profile update) exactly once with no other business event; browsing
+      (feed views, note opens) is not counted and the brief states no order
     manual_causal_window:
       start: '2026-08-04T16:27:32+08:00'
       end: '2026-08-04T16:44:06+08:00'

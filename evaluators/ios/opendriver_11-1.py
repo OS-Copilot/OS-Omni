@@ -71,7 +71,25 @@ REFUND_TARGETS = (
 )
 REFUND_EXPECTATION = {"reason": "Fare review", "status": "requested"}
 TICKET_CREATE_EXPECTATION = {"message": "Blue umbrella", "status": "open"}
-TICKET_REPLY_MESSAGE = "Following up on this ticket.Rear seat"
+#: The brief asks for "a reply with the text Rear seat".  The rider reply
+#: dialog pre-fills its field with ``TICKET_REPLY_PREFILL`` (rider_screens.dart
+#: SupportReplyDialog) and the app sends ``message.trim()``, so a faithful reply
+#: is either exactly "Rear seat" (prefill replaced) or the prefill with
+#: "Rear seat" added after it (the recorded reference run's value, kept as
+#: ``TICKET_REPLY_MESSAGE``).  Any other reply text still fails.
+TICKET_REPLY_TEXT = "Rear seat"
+TICKET_REPLY_PREFILL = "Following up on this ticket."
+TICKET_REPLY_MESSAGE = TICKET_REPLY_PREFILL + TICKET_REPLY_TEXT
+
+
+def _is_rear_seat_reply(message: Any) -> bool:
+    text = _text(message)
+    if text == TICKET_REPLY_TEXT:
+        return True
+    return (
+        text.startswith(TICKET_REPLY_PREFILL)
+        and text[len(TICKET_REPLY_PREFILL):].strip() == TICKET_REPLY_TEXT
+    )
 
 #: Check-level field name -> storage field name in the document.
 RIDE_FIELDS = {
@@ -632,7 +650,7 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             replies = ticket.get("replies")
             reply_list = replies if isinstance(replies, list) else []
             if any(
-                isinstance(reply, Mapping) and _text(reply.get("message")) == TICKET_REPLY_MESSAGE
+                isinstance(reply, Mapping) and _is_rear_seat_reply(reply.get("message"))
                 for reply in reply_list
             ):
                 qualified.append(ticket)
@@ -642,7 +660,9 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             passed=passed,
             expected={
                 **TICKET_CREATE_EXPECTATION,
-                "reply_message": TICKET_REPLY_MESSAGE,
+                "reply_message": TICKET_REPLY_TEXT,
+                "accepted_reply_messages": [TICKET_REPLY_TEXT, TICKET_REPLY_MESSAGE],
+                "prefill_separator": "optional whitespace after the app's reply prefill",
             },
             actual={
                 "match_count": len(qualified),
@@ -754,4 +774,6 @@ __all__ = [
     "TASK_ID",
     "TICKET_CREATE_EXPECTATION",
     "TICKET_REPLY_MESSAGE",
+    "TICKET_REPLY_PREFILL",
+    "TICKET_REPLY_TEXT",
 ]

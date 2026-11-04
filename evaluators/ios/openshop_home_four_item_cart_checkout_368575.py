@@ -23,6 +23,11 @@ from evaluators.cua_review.platforms.ios.webview_state import (
     DEFAULT_SETTLE_TIMEOUT_SECONDS,
     read_until_settled,
 )
+from evaluators.ios.brief_event_order import (
+    align_by_key,
+    best_assignment,
+    time_order_violations,
+)
 
 
 TASK_ID = "ios.openshop.home_four_item_cart_checkout_368575"
@@ -146,6 +151,15 @@ HOME_ITEMS = (
     },
 )
 
+# (before, after) pairs of persisted timestamps the brief requires: "Place two
+# separate orders ... and then submit two product reviews". Nothing orders the
+# two orders, the two reviews, or the line items within an order.
+REQUIRED_ORDER = tuple(
+    (f"{order}.placed", f"{review}.submitted")
+    for order in ("office_order_exact", "home_order_exact")
+    for review in ("casapure_review_exact", "mukawa_review_exact")
+)
+
 CHECKPOINT_SPECS = (
     {
         "name": "office_order_exact",
@@ -156,6 +170,7 @@ CHECKPOINT_SPECS = (
         "status": "Awaiting Shipment",
         "total": 714.8,
         "items": OFFICE_ITEMS,
+        "items_in_sequence": False,
     },
     {
         "name": "home_order_exact",
@@ -167,6 +182,7 @@ CHECKPOINT_SPECS = (
         # Subtotal 265.70 is under OpenShop's 300 discount threshold: +12 shipping, no discount.
         "total": 277.7,
         "items": HOME_ITEMS,
+        "items_in_sequence": False,
     },
     {
         "name": "casapure_review_exact",
@@ -214,11 +230,13 @@ RULESET_SPEC = {
         "target_reviews_in_window": 2,
         "final_cart_items": 0,
     },
-    "strict_timeline": (
-        "office add 1 < office add 2 < office add 3 < office order < "
-        "home add 1 < home add 2 < home add 3 < home add 4 < home order < "
-        "CasaPure review < Mukawa review"
-    ),
+    # Orders are matched to the brief's first/second order by content and line
+    # items by product; the only order graded is the brief's "and then": both
+    # orders are placed before either review. An order's items are in the cart
+    # before it is placed (per-order check).
+    "order_identity": "in-window orders matched to the first/second order by content, not placement time",
+    "item_order": "line items matched by product; their stored position is not graded",
+    "required_order": REQUIRED_ORDER,
     "non_persisted_steps": (
         "Search, category, scroll, page-open, focus, and navigation actions are mapped to "
         "their durable business chain but are not represented as invented events."
@@ -426,13 +444,20 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
         )
 
         target_orders = [pair[1] for pair in in_window_orders]
-        target_times = [pair[0] for pair in in_window_orders]
+        order_specs = CHECKPOINT_SPECS[:2]
+        assigned_orders = best_assignment(
+            target_orders,
+            order_specs,
+            lambda order, spec: cls._evaluate_order(
+                order, spec, window_start=window_start, window_end=window_end
+            )[0]["pass"],
+        )
         order_item_times: list[list[datetime | None]] = [[], []]
 
-        for index, spec in enumerate(CHECKPOINT_SPECS[:2]):
-            if index < len(target_orders):
+        for index, spec in enumerate(order_specs):
+            if assigned_orders[index] is not None:
                 check, item_times = cls._evaluate_order(
-                    target_orders[index],
+                    assigned_orders[index],
                     spec,
                     window_start=window_start,
                     window_end=window_end,
@@ -451,10 +476,15 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
             checks.append(check)
             order_item_times[index] = item_times
 
-        review_times: list[datetime | None] = []
+        persisted_times: dict[str, datetime | None] = {
+            f"{spec['name']}.placed": (
+                cls._try_parse_datetime(order.get("createdAt")) if isinstance(order, Mapping) else None
+            )
+            for spec, order in zip(order_specs, assigned_orders)
+        }
         for spec in CHECKPOINT_SPECS[2:]:
             order_index = int(spec["order_index"])
-            order = target_orders[order_index] if order_index < len(target_orders) else None
+            order = assigned_orders[order_index] if order_index < len(assigned_orders) else None
             check, reviewed_at = cls._evaluate_review(
                 order,
                 spec,
@@ -462,7 +492,7 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
                 window_end=window_end,
             )
             checks.append(check)
-            review_times.append(reviewed_at)
+            persisted_times[f"{spec['name']}.submitted"] = reviewed_at
 
         all_in_window_reviews: list[dict[str, Any]] = []
         for order in orders:
@@ -495,27 +525,22 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
             )
         )
 
-        timeline_values: list[datetime | None] = []
-        if len(target_times) == 2:
-            timeline_values.extend(order_item_times[0])
-            timeline_values.append(target_times[0])
-            timeline_values.extend(order_item_times[1])
-            timeline_values.append(target_times[1])
-            timeline_values.extend(review_times)
-        timeline_pass = len(timeline_values) == 11 and all(
-            value is not None for value in timeline_values
-        ) and all(
-            timeline_values[index] < timeline_values[index + 1]  # type: ignore[operator]
-            for index in range(len(timeline_values) - 1)
-        )
+        order_violations = time_order_violations(persisted_times, REQUIRED_ORDER)
         checks.append(
             cls._check(
-                "strict_persistence_timeline",
-                [5, 12, 19, 29, 36, 41, 47, 52, 63, 70, 77],
+                "durable_events_and_required_order",
+                [29, 63, 70, 77],
                 ["source_or_process", "relationship"],
-                timeline_pass,
-                RULESET_SPEC["strict_timeline"],
-                [value.isoformat() if value is not None else None for value in timeline_values],
+                not order_violations,
+                {"required_order": [list(pair) for pair in REQUIRED_ORDER]},
+                {
+                    "times": {
+                        name: value.isoformat() if value is not None else None
+                        for name, value in persisted_times.items()
+                    },
+                    "order_violations": order_violations,
+                },
+                "a review was submitted before both orders were placed",
             )
         )
 
@@ -582,7 +607,7 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenShop2 exact orders, reviews, cardinality, and persistence order all match",
+            message="OpenShop2 exact orders, reviews, cardinality, and required order all match",
             metadata=metadata,
         )
 
@@ -620,12 +645,28 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
                 f"observed {len(items) if isinstance(items, list) else 'non-list'}"
             )
             items = items if isinstance(items, list) else []
+        # Position is graded only where the brief states "in this exact sequence";
+        # otherwise line items are matched to the brief by product.
+        aligned = (
+            list(items)
+            if spec.get("items_in_sequence")
+            else align_by_key(
+                items,
+                expected_items,
+                item_key=lambda row: (
+                    row.get("product", {}).get("id")
+                    if isinstance(row, Mapping) and isinstance(row.get("product"), Mapping)
+                    else None
+                ),
+                expected_key=lambda row: row["product_id"],
+            )
+        )
         for index, expected in enumerate(expected_items):
-            if index >= len(items) or not isinstance(items[index], Mapping):
+            if index >= len(aligned) or not isinstance(aligned[index], Mapping):
                 reasons.append(f"item {index + 1} is missing or invalid")
                 item_times.append(None)
                 continue
-            item = items[index]
+            item = aligned[index]
             product = item.get("product") if isinstance(item.get("product"), Mapping) else {}
             exact_fields = {
                 "product.id": (product.get("id"), expected["product_id"]),
@@ -816,7 +857,7 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
                     "dimensions": {
                         "final_object": primary,
                         "attribute": "exact persisted fields" if is_data_step else "not independently persisted",
-                        "relationship": "strict durable chain and timeline",
+                        "relationship": "durable chain; only the brief's stated order",
                         "source_or_process": "localStorage v3 snapshot inside causal window",
                     },
                     "mapping_basis": (

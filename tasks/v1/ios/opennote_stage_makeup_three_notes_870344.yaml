@@ -32,7 +32,7 @@ evaluation:
     manual_window_start: '2026-08-04T12:06:58+08:00'
     manual_window_end: '2026-08-04T12:20:41.600+08:00'
     expected_instruction_sha256: b50ebe571f457e78942da80b0129db1747d451b42a5187f6dfc344fc28e500d4
-    expected_ruleset_sha256: 1ea5eabde83cd572143ccb67b481326863e10b22e99db651246f9b323130848e
+    expected_ruleset_sha256: 2c63e793a2bca8dcb12e59f97ac256ef85b638249f626c4c1a6d2b8edcec0b09
     evaluation_session_id: opennote-human-870344
     requires_ui_observation: false
 limits:
@@ -58,9 +58,12 @@ metadata:
     recording_filename: 2026-08-04_12-06-57.mp4
   verifier_rules:
     instruction_sha256: b50ebe571f457e78942da80b0129db1747d451b42a5187f6dfc344fc28e500d4
-    ruleset_sha256: 1f2dabbb795a6da07e5c768db611be47a7e11523bfb191d5a13bd3b406a6a291
+    ruleset_sha256: 2c63e793a2bca8dcb12e59f97ac256ef85b638249f626c4c1a6d2b8edcec0b09
     matching: case-sensitive exact values, ordered tags, LF body text, exact cover/build hashes, unique
-      objects, and an exact 14-event causal suffix
+      objects, and each requested business event (three note_created, the profile update, the Like, the
+      Save) exactly once with no other business event; browsing (feed views, note opens) is not counted;
+      the only order checked is the brief's "and then" (all three notes are published before the profile
+      update and the Like/Save)
     manual_causal_window:
       start: '2026-08-04T12:06:58+08:00'
       end: '2026-08-04T12:20:41.600+08:00'

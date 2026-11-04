@@ -16,6 +16,7 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.opennote_store import DEFAULT_BUNDLE_ID, LOCAL_STATE_KEY, OpenNoteStore
+from evaluators.ios.brief_event_order import multiset_diff, order_violations
 
 
 TASK_ID = "ios.opennote.forum_outfit_three_notes_194503"
@@ -41,7 +42,7 @@ STEP_GROUPS = {
     "profile_bio": [30, 31, 32, 33, 34],
     "forum_plan_note": [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53],
     "group_session_note": [54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-    "timeline": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+    "durable_events": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
 }
 
 CHECKPOINTS = (
@@ -50,7 +51,7 @@ CHECKPOINTS = (
     "profile_bio_exact",
     "forum_plan_note_exact",
     "group_session_note_exact",
-    "timeline_exact",
+    "durable_events_and_required_order",
 )
 
 CHECKPOINT_SPECS = (
@@ -90,11 +91,11 @@ CHECKPOINT_SPECS = (
         "match_mode": "ORDERED_EXACT",
     },
     {
-        "name": "timeline_exact",
+        "name": "durable_events_and_required_order",
         "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-        "predicate": "timeline_exact_predicate",
-        "value_contract_id": "forum-outfit-causal-order-v1",
-        "match_mode": "ORDERED_EXACT",
+        "predicate": "durable_events_and_required_order_predicate",
+        "value_contract_id": "forum-outfit-business-events-v2",
+        "match_mode": "MULTISET_EXACT",
     },
 )
 
@@ -150,11 +151,11 @@ RULESET_SPEC = {
             "match_mode": "ORDERED_EXACT",
         },
         {
-            "name": "timeline_exact",
+            "name": "durable_events_and_required_order",
             "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-            "predicate": "timeline_exact_predicate",
-            "value_contract_id": "forum-outfit-causal-order-v1",
-            "match_mode": "ORDERED_EXACT",
+            "predicate": "durable_events_and_required_order_predicate",
+            "value_contract_id": "forum-outfit-business-events-v2",
+            "match_mode": "MULTISET_EXACT",
         },
     ],
     "matching": {
@@ -165,7 +166,15 @@ RULESET_SPEC = {
         "covers": "exact MIME, decoded-byte SHA-256, and decoded-byte length",
         "dynamic_note_ids": "unique final note id equals its note_created event noteId",
         "engagement": "exact target note identity with liked and saved true",
-        "event_sequence": "exactly 11 consecutive ordered events with no extras",
+        "event_sequence": (
+            "task-window business events (note_created, note_like_toggled, note_save_toggled, "
+            "profile_updated) equal the expected multiset; any other business event fails; "
+            "identical profile_updated re-saves count once; feed_view, note_detail_opened and "
+            "session events are browsing and are not counted"
+        ),
+        "required_event_order": (
+            "none: the brief enumerates the deliverables; 'lines in order' is body content"
+        ),
     },
     "application_build": {
         "binary_sha256": "2f85792b383f1646f1df7ef396929fcd2df9aa2b9f569dffb13d600ceb95d8ac",
@@ -175,7 +184,7 @@ RULESET_SPEC = {
     "final_ui": "not_required_after_durable_publish",
 }
 
-RULESET_SHA256 = "2e6f9ec072065faf5dd0de44cc9240bb4476c5a5769885f9b1377d9fa9b036e5"
+RULESET_SHA256 = "59653ff949c64939d39bff671996640395ed903550518492e9815abe2eac4c9b"
 
 _NOTE_EXPECTED = {
     "arrival_note": {
@@ -355,45 +364,89 @@ def profile_bio_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any,
     return actual == expected, expected, actual, _failure(actual, expected)
 
 
-def _expected_events(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
+# Browsing is not a business action and is never counted (this also makes the
+# launch-time home feed_view irrelevant to where the baseline falls).
+_BROWSING_EVENT_TYPES = frozenset({"feed_view", "note_detail_opened"})
+# Saving an unchanged profile again leaves the same state; it counts once.
+_REPEATABLE_LABELS = frozenset({"profile_updated"})
+# "Create and publish three new notes, interact with an existing post, and update
+# the user profile" states no order; the engaged note is seeded.
+REQUIRED_EVENT_ORDER: tuple[tuple[str, str], ...] = ()
+
+
+def _is_business_event(event_type: str) -> bool:
+    return event_type not in _BROWSING_EVENT_TYPES and not event_type.startswith("session_")
+
+
+def _expected_business_events(raw: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     groups = raw.get("groups") if isinstance(raw.get("groups"), Mapping) else {}
     ids = {
         name: ((groups.get(name) or {}).get("note") or {}).get("id")
         for name in ("arrival_note", "forum_plan_note", "group_session_note")
     }
-    return [
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 420},
-        {"type": "note_created", "noteId": ids["arrival_note"], "title": "Forum Arrival Outfit", "category": "Fashion", "tags": ["forum", "trip", "outfit"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "note_detail_opened", "noteId": "n-3057"},
-        {"type": "note_like_toggled", "noteId": "n-3057", "authorHandle": "lina", "active": True},
-        {"type": "note_save_toggled", "noteId": "n-3057", "authorHandle": "lina", "active": True},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Forum travel editor"},
-        {"type": "note_created", "noteId": ids["forum_plan_note"], "title": "Two Day Forum Plan", "category": "Fashion", "tags": ["forum", "plan", "attire"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 33},
-        {"type": "note_created", "noteId": ids["group_session_note"], "title": "Group Session Outfit", "category": "Fashion", "tags": ["forum", "session", "attire"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 34},
-    ]
+    return {
+        "arrival_note_created": {"type": "note_created", "noteId": ids["arrival_note"], "title": "Forum Arrival Outfit", "category": "Fashion", "tags": ["forum", "trip", "outfit"]},
+        "cold_brew_like": {"type": "note_like_toggled", "noteId": "n-3057", "authorHandle": "lina", "active": True},
+        "cold_brew_save": {"type": "note_save_toggled", "noteId": "n-3057", "authorHandle": "lina", "active": True},
+        "profile_updated": {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Forum travel editor"},
+        "forum_plan_note_created": {"type": "note_created", "noteId": ids["forum_plan_note"], "title": "Two Day Forum Plan", "category": "Fashion", "tags": ["forum", "plan", "attire"]},
+        "group_session_note_created": {"type": "note_created", "noteId": ids["group_session_note"], "title": "Group Session Outfit", "category": "Fashion", "tags": ["forum", "session", "attire"]},
+    }
 
 
-def timeline_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
-    events = raw.get("event_suffix") if isinstance(raw.get("event_suffix"), list) else []
-    expected_payloads = _expected_events(raw)
-    actual_payloads = [_event_payload(event) for event in events if isinstance(event, Mapping)]
-    seqs = [event.get("seq") for event in events if isinstance(event, Mapping)]
-    consecutive = (
-        len(seqs) == len(expected_payloads)
-        and all(isinstance(value, int) and not isinstance(value, bool) for value in seqs)
-        and seqs == list(range(seqs[0], seqs[0] + len(seqs)))
-    ) if seqs else False
-    actual = {"event_count": len(events), "payloads": actual_payloads, "seqs": seqs, "consecutive": consecutive}
-    expected = {"event_count": len(expected_payloads), "payloads": expected_payloads, "consecutive": True}
-    passed = len(events) == len(expected_payloads) and actual_payloads == expected_payloads and consecutive
-    return passed, expected, actual, _failure(actual, expected)
+def _business_projection(
+    events: Any, expected: Mapping[str, Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    projection: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for event in events if isinstance(events, list) else []:
+        if not isinstance(event, Mapping):
+            continue
+        event_type = str(event.get("type") or "")
+        if not _is_business_event(event_type):
+            continue
+        payload = _event_payload(event)
+        label = next((name for name, wanted in expected.items() if payload == wanted), None)
+        if label is None:
+            label = f"unexpected:{event_type}:{event.get('seq')}"
+        elif label in _REPEATABLE_LABELS and label in seen:
+            continue
+        seen.add(label)
+        projection.append({"label": label, "seq": event.get("seq"), "payload": payload})
+    return projection
+
+
+def durable_events_and_required_order_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
+    """Each requested business event exactly once, nothing else; no order is stated."""
+    expected_events = _expected_business_events(raw)
+    projection = _business_projection(raw.get("event_suffix"), expected_events)
+    labels = [row["label"] for row in projection]
+    missing, extra = multiset_diff(list(expected_events), labels)
+    violations = order_violations(labels, REQUIRED_EVENT_ORDER)
+    expected = {
+        "business_events": expected_events,
+        "missing": [],
+        "extra": [],
+        "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+        "order_violations": [],
+    }
+    actual = {
+        "labels": labels,
+        "missing": missing,
+        "extra": extra,
+        "order_violations": violations,
+        "projection": projection,
+    }
+    passed = not missing and not extra and not violations
+    reason = None if passed else (
+        "a requested business event is missing, an unexpected or duplicate business "
+        "event was recorded, or a required order was broken"
+    )
+    return passed, expected, actual, reason
 
 
 class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
-    """Verify exact durable state and the causal event suffix without GUI actions."""
+    """Verify exact durable state and the requested business events without GUI actions."""
 
     @staticmethod
     def _collect_raw(
@@ -499,7 +552,6 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
         evidence_sha256: str,
         observed_at: str,
         session_id: str,
-        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
@@ -508,14 +560,18 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
             "predicate": spec["predicate"],
             "value_contract_id": spec["value_contract_id"],
             "match_mode": spec["match_mode"],
-            "diagnostic": bool(diagnostic),
+            "diagnostic": False,
             "passed": bool(passed),
             "expected": expected,
             "actual": actual,
             "ruleset_sha256": RULESET_SHA256,
             "evidence": {
                 "source": evidence_source,
-                "path": "$.event_suffix" if spec["name"] == "timeline_exact" else "$.groups",
+                "path": (
+                    "$.event_suffix"
+                    if spec["name"] == "durable_events_and_required_order"
+                    else "$.groups"
+                ),
             },
             "execution": {
                 "executed": True,
@@ -533,7 +589,6 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
         *,
         evidence_source: str = "memory://opennote-evidence",
         evidence_sha256: str | None = None,
-        require_timeline_exact: bool = False,
     ) -> EvalResult:
         digest = evidence_sha256 or hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         outcomes = (
@@ -542,7 +597,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
             profile_bio_exact_predicate(raw),
             forum_plan_note_exact_predicate(raw),
             group_session_note_exact_predicate(raw),
-            timeline_exact_predicate(raw),
+            durable_events_and_required_order_predicate(raw),
         )
         checks = [
             cls._checkpoint(
@@ -552,20 +607,13 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
                 evidence_sha256=digest,
                 observed_at=str(raw.get("observed_at") or ""),
                 session_id=str(raw.get("evaluation_session_id") or ""),
-                diagnostic=spec["name"] == "timeline_exact" and not require_timeline_exact,
             )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
-        # The fixed event-suffix order is not stated in the English brief and every
-        # deliverable is already graded by the note/profile/engagement checkpoints,
-        # so timeline_exact is recorded as diagnostic evidence unless the task opts
-        # in with params["require_timeline_exact"]; see
-        # scan_work/fix_briefs/ios-opennote-timeline-gate.md.
-        failures = [
-            check["name"]
-            for check in checks
-            if not check["passed"] and not check["diagnostic"]
-        ]
+        # The recorded event suffix (navigation, feed totals, step order) is not part
+        # of the brief; durable_events_and_required_order grades only the requested
+        # business events as a multiset, and the brief states no order among them.
+        failures = [check["name"] for check in checks if not check["passed"]]
         metadata = {
             "task_id": TASK_ID,
             "evaluator_id": EVALUATOR_ID,
@@ -597,7 +645,7 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="All exact OpenNote durable-state, cover, build, and causal-order checks passed",
+            message="All exact OpenNote durable-state, cover, build, and business-event checks passed",
             metadata=metadata,
         )
 
@@ -655,12 +703,11 @@ class OpenNoteForumOutfitThreeNotes194503Evaluator(BaseEvaluator):
         profile_bio_exact_predicate(raw)
         forum_plan_note_exact_predicate(raw)
         group_session_note_exact_predicate(raw)
-        timeline_exact_predicate(raw)
+        durable_events_and_required_order_predicate(raw)
         result = self.evaluate_evidence(
             raw,
             evidence_source=str(evidence_path),
             evidence_sha256=evidence_sha256,
-            require_timeline_exact=bool(params.get("require_timeline_exact", False)),
         )
         result.metadata["observed"] = {
             "udid": udid,

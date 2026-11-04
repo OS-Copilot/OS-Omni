@@ -17,6 +17,13 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.ios.webview_state import (
+    DEFAULT_SETTLE_POLL_INTERVAL_SECONDS,
+    DEFAULT_SETTLE_STABLE_SECONDS,
+    DEFAULT_SETTLE_TIMEOUT_SECONDS,
+    read_until_settled,
+)
+from evaluators.ios.brief_event_order import best_assignment, time_order_violations
 
 
 TASK_ID = "ios.openshop.beauty_office_checkout_review_807073"
@@ -165,6 +172,24 @@ SECOND_ORDER_ITEMS = (
     },
 )
 
+# (before, after) pairs of persisted timestamps the brief states: each cart is
+# filled "in this exact sequence", and "Immediately following the placement of
+# this first order, a review must be submitted for it". "The second order" is a
+# label: the two orders may be placed in either order.
+REQUIRED_ORDER = (
+    *(
+        (f"first_order_exact.cart_add_{index}", f"first_order_exact.cart_add_{index + 1}")
+        for index in range(1, len(FIRST_ORDER_ITEMS))
+    ),
+    *(
+        (f"second_order_exact.cart_add_{index}", f"second_order_exact.cart_add_{index + 1}")
+        for index in range(1, len(SECOND_ORDER_ITEMS))
+    ),
+    ("first_order_exact.placed", "serum_review_exact.submitted"),
+)
+# "Immediately following": no other cart addition or order placement between.
+IMMEDIATELY_FOLLOWING = ("first_order_exact.placed", "serum_review_exact.submitted")
+
 CHECKPOINT_SPECS = (
     {
         "name": "authentication_exact",
@@ -184,6 +209,7 @@ CHECKPOINT_SPECS = (
         "status": "Awaiting Shipment",
         "total": 226.13,
         "items": FIRST_ORDER_ITEMS,
+        "items_in_sequence": True,
     },
     {
         "name": "serum_review_exact",
@@ -202,6 +228,7 @@ CHECKPOINT_SPECS = (
         "status": "Awaiting Shipment",
         "total": 80.7,
         "items": SECOND_ORDER_ITEMS,
+        "items_in_sequence": True,
     },
 )
 
@@ -238,11 +265,14 @@ RULESET_SPEC = {
         "unexpected_target_reviews": 0,
         "final_cart_items": 0,
     },
-    "strict_timeline": (
-        "first add serum < first add cleanser < first add moisturizer < first add lamp < "
-        "first add organizer < first order < serum review < second add lotion < "
-        "second add clipboard < second order"
-    ),
+    # Orders are matched to the brief's first/second order by content; line
+    # items are graded by position because both carts are stated "in this exact
+    # sequence". An order's items are in the cart before it is placed
+    # (per-order check).
+    "order_identity": "in-window orders matched to the first/second order by content, not placement time",
+    "item_order": "position graded: both carts are stated in this exact sequence",
+    "required_order": REQUIRED_ORDER,
+    "immediately_following": IMMEDIATELY_FOLLOWING,
     "non_persisted_steps": (
         "Search, category, scroll, page-open, focus, and navigation actions are mapped to "
         "their exact compound durable chain; no nonexistent event is asserted."
@@ -321,23 +351,46 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
                 udid=udid,
                 bundle_id=bundle_id,
             )
-            state, database_evidence = self._read_state_snapshot(
-                db_path=db_path,
-                local_state_key=local_state_key,
+
+            # WKWebView commits localStorage shortly after setItem, so the final
+            # order/review write may land just after the agent's last action.
+            def read_and_grade() -> tuple[dict[str, Any], EvalResult]:
+                state, database_evidence = self._read_state_snapshot(
+                    db_path=db_path,
+                    local_state_key=local_state_key,
+                )
+                return state, self._evaluate_state(
+                    state,
+                    window_start=window_start,
+                    window_end=window_end,
+                    window_source=window_source,
+                    app_binding=app_binding,
+                    database_evidence=database_evidence,
+                )
+
+            (_state, result), settle = read_until_settled(
+                read_and_grade,
+                accept=lambda item: item[1].status is EvalStatus.PASS,
+                fingerprint=lambda item: _canonical_json_sha256(item[0]),
+                timeout_seconds=float(
+                    params.get("settle_timeout_seconds", DEFAULT_SETTLE_TIMEOUT_SECONDS)
+                ),
+                poll_interval_seconds=float(
+                    params.get("settle_poll_interval_seconds", DEFAULT_SETTLE_POLL_INTERVAL_SECONDS)
+                ),
+                stable_seconds=float(
+                    params.get("settle_stable_seconds", DEFAULT_SETTLE_STABLE_SECONDS)
+                ),
             )
         except Exception as exc:
             return self._error_result(
                 f"Read-only OpenShop binding/query failed: {type(exc).__name__}: {exc}"
             )
 
-        return self._evaluate_state(
-            state,
-            window_start=window_start,
-            window_end=window_end,
-            window_source=window_source,
-            app_binding=app_binding,
-            database_evidence=database_evidence,
-        )
+        observed = result.metadata.get("observed")
+        if isinstance(observed, dict) and isinstance(observed.get("database"), dict):
+            observed["database"]["settle"] = settle
+        return result
 
     @classmethod
     def _evaluate_state(
@@ -451,7 +504,6 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
         )
 
         target_orders = [pair[1] for pair in in_window_orders]
-        target_times = [pair[0] for pair in in_window_orders]
         storage_window_ids = [
             order.get("id")
             for order in orders
@@ -465,16 +517,24 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
                 [45, 71],
                 ["relationship", "source_or_process"],
                 len(target_orders) == 2 and storage_window_ids == expected_storage_ids,
-                "newest second order stored before earlier first order",
+                "in-window orders stored newest first",
                 storage_window_ids,
             )
         )
 
+        order_specs = (CHECKPOINT_SPECS[1], CHECKPOINT_SPECS[3])
+        assigned_orders = best_assignment(
+            target_orders,
+            order_specs,
+            lambda order, spec: cls._evaluate_order(
+                order, spec, window_start=window_start, window_end=window_end
+            )[0]["pass"],
+        )
         order_item_times: list[list[datetime | None]] = [[], []]
-        for index, spec in enumerate((CHECKPOINT_SPECS[1], CHECKPOINT_SPECS[3])):
-            if index < len(target_orders):
+        for index, spec in enumerate(order_specs):
+            if assigned_orders[index] is not None:
                 check, item_times = cls._evaluate_order(
-                    target_orders[index],
+                    assigned_orders[index],
                     spec,
                     window_start=window_start,
                     window_end=window_end,
@@ -493,7 +553,7 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
             checks.append(check)
             order_item_times[index] = item_times
 
-        first_order = target_orders[0] if target_orders else None
+        first_order = assigned_orders[0]
         review_check, review_time = cls._evaluate_review(
             first_order,
             CHECKPOINT_SPECS[2],
@@ -503,9 +563,8 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
         checks.append(review_check)
 
         allowed_review_pair = (
-            (target_orders[0].get("id"), CHECKPOINT_SPECS[2]["product_id"])
-            if target_orders
-            else (None, CHECKPOINT_SPECS[2]["product_id"])
+            first_order.get("id") if isinstance(first_order, Mapping) else None,
+            CHECKPOINT_SPECS[2]["product_id"],
         )
         unexpected_target_reviews: list[dict[str, Any]] = []
         for order in target_orders:
@@ -563,27 +622,42 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
             )
         )
 
-        timeline_values: list[datetime | None] = []
-        if len(target_times) == 2:
-            timeline_values.extend(order_item_times[0])
-            timeline_values.append(target_times[0])
-            timeline_values.append(review_time)
-            timeline_values.extend(order_item_times[1])
-            timeline_values.append(target_times[1])
-        timeline_pass = len(timeline_values) == 10 and all(
-            value is not None for value in timeline_values
-        ) and all(
-            timeline_values[index] < timeline_values[index + 1]  # type: ignore[operator]
-            for index in range(len(timeline_values) - 1)
-        )
+        persisted_times: dict[str, datetime | None] = {"serum_review_exact.submitted": review_time}
+        for spec, order, item_times in zip(order_specs, assigned_orders, order_item_times):
+            persisted_times[f"{spec['name']}.placed"] = (
+                cls._try_parse_datetime(order.get("createdAt")) if isinstance(order, Mapping) else None
+            )
+            for index in range(len(spec["items"])):
+                persisted_times[f"{spec['name']}.cart_add_{index + 1}"] = (
+                    item_times[index] if index < len(item_times) else None
+                )
+        order_violations = time_order_violations(persisted_times, REQUIRED_ORDER)
+        placed, reviewed = (persisted_times[name] for name in IMMEDIATELY_FOLLOWING)
+        if placed is not None and reviewed is not None:
+            order_violations.extend(
+                [IMMEDIATELY_FOLLOWING[0], name, IMMEDIATELY_FOLLOWING[1]]
+                for name, value in persisted_times.items()
+                if value is not None and placed < value < reviewed
+            )
         checks.append(
             cls._check(
-                "strict_persistence_timeline",
+                "durable_events_and_required_order",
                 [10, 16, 23, 30, 36, 45, 50, 57, 64, 71],
                 ["source_or_process", "relationship"],
-                timeline_pass,
-                RULESET_SPEC["strict_timeline"],
-                [value.isoformat() if value is not None else None for value in timeline_values],
+                not order_violations,
+                {
+                    "required_order": [list(pair) for pair in REQUIRED_ORDER],
+                    "immediately_following": list(IMMEDIATELY_FOLLOWING),
+                },
+                {
+                    "times": {
+                        name: value.isoformat() if value is not None else None
+                        for name, value in persisted_times.items()
+                    },
+                    "order_violations": order_violations,
+                },
+                "a cart was not filled in the stated sequence or the review did not "
+                "immediately follow the first order",
             )
         )
 
@@ -639,7 +713,7 @@ class OpenShopBeautyOfficeCheckoutReview807073Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenShop3 exact authentication, orders, review, cardinality, and persistence order all match",
+            message="OpenShop3 exact authentication, orders, review, cardinality, and required order all match",
             metadata=metadata,
         )
 
