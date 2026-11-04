@@ -409,3 +409,25 @@ models:
     base_url_env: OPUS55_BASE_URL
     metadata:
       effort: high
+  openlux_qwen3_8_max_no_thinking:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENLUX_API_KEY
+    base_url: https://api.openlux.ai/v1
+    temperature: 0.7
+    top_p: 0.8
+    max_output_tokens: 4096
+    metadata:
+      reasoning_effort: none
+      computer_use_protocol: qwen
+  together_qwen_test2_no_thinking:
+    provider: together
+    model_name: red-lobster-7636/qwen-test2
+    api_key_env: TOGETHER_API_KEY
+    base_url: https://api.together.xyz/v1
+    temperature: 0.7
+    top_p: 0.8
+    max_output_tokens: 4096
+    metadata:
+      enable_thinking: false
+      computer_use_protocol: qwen
