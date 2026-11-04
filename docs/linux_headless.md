@@ -111,7 +111,13 @@ uses a pc105 keymap where `less` is the extra ISO key, so pyautogui would otherw
 * `--fix-webpage-launchers` is needed for the Web track. Nautilus on the image
   opens the extension-less `.desktop` entries in `~/Desktop/webpage` in a text
   editor instead of launching them. The option replaces each entry with an HTML
-  page that redirects to the app's URL, so double-clicking it opens Chrome.
+  page that redirects to the app's URL, so double-clicking it opens Chrome. It also
+  runs `initializers/linux/chrome_popups.py`: a managed Chrome policy turns off the
+  "Save password?" (and address/card) prompts, and the Chrome wrapper gets
+  `--simulate-outdated-no-au` and `--hide-crash-restore-bubble`, so the image's old
+  Chrome 120 stops showing "Can't update Chrome" and "Restore pages?" over the apps.
+  Both files are root-owned; the step uses sudo with `vm_guest_password` from
+  `configs/linux.yaml` and is idempotent.
 
 To check a task without a model, `scripts/linux_task_probe.py` restores the
 snapshot, runs the initializer, optional reference `--bash`/`--python` scripts

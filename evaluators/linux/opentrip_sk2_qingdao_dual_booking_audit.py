@@ -12,6 +12,8 @@ from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 
 class OpenTripDualBookingEvaluator(BaseEvaluator):
     """Read exact OpenTrip localStorage and final DOM through the existing Chrome CDP page."""
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         controller = context.get("controller")

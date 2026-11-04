@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional
@@ -98,6 +99,49 @@ def build_evaluator_context(
     }
 
 
+# Chrome commits localStorage to its leveldb files on a delay and rate-limits large values (OpenNote's ~4 MB state
+# reached the disk about every 19 minutes), while most Web evaluators read those files on disk. When the last page of
+# an origin disconnects, Chrome commits that origin's storage at once, so the renderer processes are killed, the
+# storage files are given time to settle, and then the browsers are closed (which also writes their other profile
+# files). A plain SIGTERM is not enough: the browser often exits before the storage commit finishes. The final
+# observation is captured before this runs. Evaluators that read the live page over DevTools set
+# REQUIRES_LIVE_BROWSER = True and keep the browser running.
+_BROWSER_FLUSH_SCRIPT = r"""
+browsers=$(pgrep -a -x 'chrome|chromium|chromium-browser' | grep -v -- '--type=' | cut -d' ' -f1 | tr '\n' ' ')
+if [ -z "$browsers" ]; then echo "no browser"; exit 0; fi
+pkill -KILL -f -- '--type=renderer'
+sleep 3
+for i in $(seq 1 20); do
+  newest=$(find /home/user/.config -path '*/Local Storage/leveldb/*' -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1)
+  [ -z "$newest" ] && break
+  awk -v t="$newest" -v now="$(date +%s.%N)" 'BEGIN { exit !(now - t >= 2) }' && break
+  sleep 1
+done
+kill -TERM $browsers 2>/dev/null
+for j in $(seq 1 30); do
+  alive=""
+  for p in $browsers; do kill -0 "$p" 2>/dev/null && alive="$alive $p"; done
+  [ -z "$alive" ] && break
+  sleep 1
+done
+echo "renderers killed, storage settled after $((i + 3))s; closed browser pids: $browsers; still alive:${alive:- none}"
+"""
+
+
+def flush_browser_storage(controller: Any, evaluator: Any, logger_obj: logging.Logger) -> None:
+    if getattr(evaluator, "REQUIRES_LIVE_BROWSER", False):
+        return
+    if os.environ.get("OS_OMNI_FLUSH_BROWSER_BEFORE_EVAL", "1").strip().lower() in {"0", "false", "no"}:
+        return
+    if controller is None or not hasattr(controller, "run_bash_script"):
+        return
+    try:
+        result = controller.run_bash_script(_BROWSER_FLUSH_SCRIPT, timeout=60)
+        logger_obj.info("Browser flush before evaluation: %s", str((result or {}).get("output") or "").strip())
+    except Exception as exc:  # the evaluation still runs, on whatever reached the disk
+        logger_obj.warning("Browser flush before evaluation failed: %s", exc)
+
+
 def evaluation_to_episode_outcome(
     result: EvalResult,
 ) -> tuple[str, Optional[str]]:
@@ -140,6 +184,7 @@ def run_task_evaluation(
     active_logger = logger_obj or logger
     try:
         evaluator = load_evaluator(evaluation.evaluator_id)
+        flush_browser_storage(controller, evaluator, active_logger)
         context = build_evaluator_context(
             params=evaluation.params,
             controller=controller,

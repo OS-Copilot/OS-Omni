@@ -75,6 +75,9 @@ def _trajectory_records(context: Mapping[str, Any]) -> int | None:
 
 
 class OpenNavigationSessionEvaluator(BaseEvaluator):
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
+
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
         expected = [dict(item) for item in params.get("expected_sessions") or []]
