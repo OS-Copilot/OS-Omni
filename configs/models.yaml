@@ -382,10 +382,6 @@ models:
     provider: openai
     model_name: glm-5.3
     api_key_env: OPENLUX_GLM_API_KEY
-  openlux_glm_5_3_no_thinking:
-    provider: openai
-    model_name: glm-5.3
-    api_key_env: GLM53_API_KEY
     base_url: https://api.openlux.ai/v1
     metadata:
       reasoning_effort: none
@@ -399,7 +395,6 @@ models:
       reasoning_effort: high
       system_prompt_as_user: true
   deepseek_flash_high_uncapped:
-  deepseek_flash_high:
     provider: openai
     model_name: deepseek-flash
     api_key_env: DEEPSEEK_API_KEY
@@ -436,6 +431,14 @@ models:
     metadata:
       enable_thinking: false
       computer_use_protocol: qwen
+  openlux_glm_5_3_no_thinking:
+    provider: openai
+    model_name: glm-5.3
+    api_key_env: GLM53_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
   openlux_kimi_k3_no_thinking:
     provider: openai
     model_name: kimi-k3
@@ -444,6 +447,11 @@ models:
     metadata:
       reasoning_effort: none
       system_prompt_as_user: true
+  deepseek_flash_high:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
     max_output_tokens: 4096
     metadata:
       api_mode: responses
