@@ -53,7 +53,7 @@ evaluation:
     - subject_contains: platform reference
       to: receipts@rideshare.example.test
       body_contains: Sharing the platform reference for comparison.
-      folder: trash
+      folder: sent
       labels: Travel
 limits:
   max_steps: 300
@@ -92,8 +92,8 @@ metadata:
     platform_forward: A sent or forwarded platform reference message must target receipts@rideshare.example.test
       and contain the exact requested body.
     sent_forward_final_state: The forwarded platform reference must target receipts@rideshare.example.test,
-      contain the requested body, retain Travel label evidence, and be in Trash because the current OpenMail
-      implementation does not support sent/trash to Archive moves from the requested controls.
+      contain the requested body, retain Travel label evidence, and stay in the Sent folder, as the instruction
+      states.
     platform_reference_final: Platform reference image for RN-2041 must end in Archive, have Travel label
       evidence, and be starred.
     non_assumptions: The evaluator does not require exact dropdown open history, drag-selection mechanics,

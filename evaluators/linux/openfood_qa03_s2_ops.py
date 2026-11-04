@@ -922,35 +922,70 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
                 add_check(checks, "minimum_created_orders_exist", len(orders) >= min_order_count, orders, f"at least {min_order_count} created orders")
 
                 min_total_qty = int(PARAMS.get("smokehouse_reorder_min_total_qty", 2))
+                # Optional restaurant/item ids tell the Smokehouse reorder apart from the later restaurant
+                # checkout, which may use the same coupon; without them any coupon order counts.
+                smokehouse_restaurant_id = str(PARAMS.get("smokehouse_restaurant_id") or "")
+                smokehouse_item_quantities = {
+                    str(key): int(value) for key, value in (PARAMS.get("smokehouse_item_quantities") or {}).items()
+                }
                 smokehouse_matches = []
                 for order in orders:
                     notes = str(order.get("notes") or "")
-                    if coupon_code in notes.upper() and total_qty(order) >= min_total_qty:
+                    if (
+                        coupon_code in notes.upper()
+                        and total_qty(order) >= min_total_qty
+                        and (not smokehouse_restaurant_id or str(order.get("restaurantId") or "") == smokehouse_restaurant_id)
+                        and (not smokehouse_item_quantities or quantity_map(order) == smokehouse_item_quantities)
+                    ):
                         smokehouse_matches.append(order)
+                smokehouse_expected = {
+                    "source_order": str(PARAMS.get("smokehouse_source_order_id") or "OF-2001"),
+                    "restaurant": str(PARAMS.get("smokehouse_restaurant_name") or "Smokehouse at Union 40 Arlington VA"),
+                    "couponCode": coupon_code,
+                    "min_total_qty": min_total_qty,
+                }
+                if smokehouse_restaurant_id:
+                    smokehouse_expected["restaurantId"] = smokehouse_restaurant_id
+                if smokehouse_item_quantities:
+                    smokehouse_expected["items"] = smokehouse_item_quantities
                 add_check(
                     checks,
                     "smokehouse_reorder_with_coupon_created",
                     bool(smokehouse_matches),
                     smokehouse_matches,
-                    {
-                        "source_order": str(PARAMS.get("smokehouse_source_order_id") or "OF-2001"),
-                        "restaurant": str(PARAMS.get("smokehouse_restaurant_name") or "Smokehouse at Union 40 Arlington VA"),
-                        "couponCode": coupon_code,
-                        "min_total_qty": min_total_qty,
-                    },
+                    smokehouse_expected,
                     "Static createdOrders may not preserve sourceOrderId, so durable evidence is a WELCOME12-created order with sufficient item quantity.",
                 )
 
-                non_smokehouse_order_evidence = [
-                    order for order in orders
-                    if order not in smokehouse_matches and total_qty(order) > 0
-                ]
+                second_restaurant_id = str(PARAMS.get("second_restaurant_id") or "")
+                second_item_ids = [str(value) for value in PARAMS.get("second_restaurant_item_ids") or []]
+                second_expected = "one additional created order from the later Golden/Dumpling restaurant checkout"
+                if second_restaurant_id:
+                    # The later checkout is identified by its restaurant and items and must carry a coupon.
+                    non_smokehouse_order_evidence = [
+                        order for order in orders
+                        if order not in smokehouse_matches
+                        and str(order.get("restaurantId") or "") == second_restaurant_id
+                        and all(quantity_map(order).get(item_id, 0) > 0 for item_id in second_item_ids)
+                        and str(order.get("notes") or "").startswith("Coupon ")
+                        and str(order.get("notes") or "").endswith(" applied")
+                    ]
+                    second_expected = {
+                        "restaurantId": second_restaurant_id,
+                        "items": second_item_ids,
+                        "notes": "Coupon <code> applied",
+                    }
+                else:
+                    non_smokehouse_order_evidence = [
+                        order for order in orders
+                        if order not in smokehouse_matches and total_qty(order) > 0
+                    ]
                 add_check(
                     checks,
                     "second_restaurant_order_created",
                     bool(non_smokehouse_order_evidence),
                     non_smokehouse_order_evidence,
-                    "one additional created order from the later Golden/Dumpling restaurant checkout",
+                    second_expected,
                 )
 
                 order_status = state.get("orderStatus") or {}

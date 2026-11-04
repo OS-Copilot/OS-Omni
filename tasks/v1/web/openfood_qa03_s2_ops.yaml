@@ -42,7 +42,15 @@ evaluation:
     support_message: qa03 route
     smokehouse_source_order_id: OF-2001
     smokehouse_restaurant_name: Smokehouse at Union 40 Arlington VA
+    smokehouse_restaurant_id: r89
+    smokehouse_item_quantities:
+      m881: 2
+      m882: 1
     smokehouse_reorder_min_total_qty: 2
+    second_restaurant_id: r4
+    second_restaurant_item_ids:
+    - m31
+    - m32
     min_created_order_count: 2
     expected_sold_out_menu_item_ids: null
     expected_closed_restaurant_ids: null
@@ -100,9 +108,10 @@ metadata:
     coupon: claimedCoupons must include WELCOME12.
     filters: Final persisted Restaurants search/cuisine/sort state should show golden, All, recommended;
       visible search text may be manually reviewed if filters.q lags after Ctrl+A typing.
-    orders: createdOrders must contain at least two orders, including a WELCOME12-created order with total
-      quantity at least 2 representing the OF-2001 Smokehouse reorder after the first cart row increment;
-      the later golden-result checkout must produce one additional durable created order.
+    orders: createdOrders must contain at least two orders, including a WELCOME12-created Smokehouse (r89)
+      order with Smoked Brisket Plate m881 x2 and Pulled Pork Sandwich m882 x1 representing the OF-2001 reorder
+      after the first cart row increment; the later golden-result checkout must produce one additional created
+      Golden Curry Garden (r4) order with Pad Thai m31 and Green Curry Chicken m32 and a coupon applied.
     support: A support ticket with subject qa03, order OF-2001, and body qa03 route must exist.
     admin: OF-2002, OF-2004, OF-2007, OF-2013, and OF-2015 status advancement must be verified from persisted
       orderStatus if available, otherwise from trajectory/UI evidence.

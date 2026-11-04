@@ -106,6 +106,70 @@ class OpenPhotoEditExportEvaluator(BaseEvaluator):
                 bottom = max(top + 1, min(h, bottom))
                 return (left, top, right, bottom)
 
+            # The calibration block is three adjacent pure red, green and blue squares. They are
+            # located in the source image (largest pure-primary blob of each colour inside
+            # rgb_marker_search_box) and compared there, a few pixels in from their edges. Global
+            # edits the instruction asks for apply to the whole photo and can shift a square's
+            # colour uniformly (HSL Green -10 turns 0,255,0 into about 21,255,27); a brush mark
+            # changes part of a square. So a square counts as untouched when its change is uniform
+            # (RMS of the per-pixel change around its median <= max_rgb_marker_local_rms) and that
+            # median shift stays within max_rgb_marker_shift levels per channel.
+            def locate_marker_squares(img, search, min_pixels=400):
+                region = img.crop(search)
+                w, h = region.size
+                data = list(region.getdata())
+                squares = []
+                for ci in range(3):
+                    o1, o2 = [j for j in range(3) if j != ci]
+                    mask = bytearray(1 if (p[ci] >= 200 and p[o1] <= 60 and p[o2] <= 60) else 0 for p in data)
+                    seen = bytearray(w * h)
+                    best = None
+                    for start in range(w * h):
+                        if not mask[start] or seen[start]:
+                            continue
+                        stack = [start]
+                        seen[start] = 1
+                        count, x0, y0, x1, y1 = 0, w, h, -1, -1
+                        while stack:
+                            i = stack.pop()
+                            count += 1
+                            y, x = divmod(i, w)
+                            x0, x1, y0, y1 = min(x0, x), max(x1, x), min(y0, y), max(y1, y)
+                            for j in ((i - 1) if x > 0 else -1, (i + 1) if x < w - 1 else -1, i - w, i + w):
+                                if 0 <= j < w * h and mask[j] and not seen[j]:
+                                    seen[j] = 1
+                                    stack.append(j)
+                        if best is None or count > best[0]:
+                            best = (count, x0, y0, x1 + 1, y1 + 1)
+                    if best is not None and best[0] >= min_pixels:
+                        count, x0, y0, x1, y1 = best
+                        squares.append({"color": "RGB"[ci], "pixels": count,
+                                        "box": [search[0] + x0, search[1] + y0, search[0] + x1, search[1] + y1]})
+                    else:
+                        squares.append({"color": "RGB"[ci], "pixels": 0, "box": None})
+                return squares
+
+            def marker_square_report(src, out, search_spec):
+                if out.size != src.size:
+                    out = out.resize(src.size)
+                squares = locate_marker_squares(src, crop_box(src, search_spec))
+                for square in squares:
+                    if not square["box"]:
+                        continue
+                    left, top, right, bottom = square["box"]
+                    dx = max(3, int(round((right - left) * 0.1)))
+                    dy = max(3, int(round((bottom - top) * 0.1)))
+                    box = (left + dx, top + dy, max(left + dx + 1, right - dx), max(top + dy + 1, bottom - dy))
+                    pairs = list(zip(src.crop(box).getdata(), out.crop(box).getdata()))
+                    n = len(pairs)
+                    diffs = [[q[c] - p[c] for p, q in pairs] for c in range(3)]
+                    shift = [sorted(values)[n // 2] for values in diffs]
+                    square["measured_box"] = list(box)
+                    square["rms"] = math.sqrt(sum(sum(v * v for v in diffs[c]) / n for c in range(3)) / 3)
+                    square["median_shift"] = shift
+                    square["local_rms"] = math.sqrt(sum(sum((v - shift[c]) ** 2 for v in diffs[c]) / n for c in range(3)) / 3)
+                return squares
+
             checks = []
             evidence = {
                 "downloads_dir": PARAMS.get("downloads_dir"),
@@ -115,17 +179,36 @@ class OpenPhotoEditExportEvaluator(BaseEvaluator):
             min_whole_rms = float(PARAMS.get("min_whole_image_rms_diff", 4.0))
             max_marker_rms = float(PARAMS.get("max_rgb_marker_rms_diff", 6.0))
             marker_box = PARAMS.get("rgb_marker_box") or {"left": 0.87, "top": 0.02, "right": 0.99, "bottom": 0.13}
+            marker_search = PARAMS.get("rgb_marker_search_box")
+            max_marker_local_rms = float(PARAMS.get("max_rgb_marker_local_rms", 6.0))
+            max_marker_shift = float(PARAMS.get("max_rgb_marker_shift", 48.0))
 
             artifacts = []
             for item in PARAMS.get("expected_exports") or []:
                 label = str(item.get("label") or "")
                 source_path = Path(str(item.get("source_path") or ""))
                 output_path = Path(str(item.get("output_path") or ""))
-                if not output_path.is_file():
-                    alternate = output_path.with_name(source_path.stem + "-edited.png")
-                    if alternate.is_file():
-                        output_path = alternate
-                artifact = {"label": label, "source_path": str(source_path), "output_path": str(output_path)}
+                # OpenPhoto Edit's Download button saves <source stem>-edited.png (PNG data) and
+                # Chrome names a repeat download "<stem>-edited (1).png", and so on. The newest of
+                # those, of the declared output_path, and of the older instructed
+                # <stem>_edited.jpg name (a renamed copy) is the final export.
+                directory = output_path.parent
+                stem = source_path.stem
+                candidates = []
+                for path in [output_path, directory / (stem + "-edited.png"), directory / (stem + "_edited.jpg")] + sorted(
+                    path for path in directory.glob(stem + "-edited (*).png")
+                    if path.name[len(stem) + len("-edited ("):-len(").png")].isdigit()
+                ):
+                    if path.is_file() and path not in candidates:
+                        candidates.append(path)
+                if candidates:
+                    output_path = max(candidates, key=lambda path: path.stat().st_mtime)
+                artifact = {
+                    "label": label,
+                    "source_path": str(source_path),
+                    "output_path": str(output_path),
+                    "output_candidates": [str(path) for path in candidates],
+                }
 
                 add_check(checks, f"{label}:source_exists", source_path.is_file(), str(source_path), "source attachment image exists")
                 add_check(checks, f"{label}:output_exists", output_path.is_file(), str(output_path), "downloaded edited image exists")
@@ -154,13 +237,31 @@ class OpenPhotoEditExportEvaluator(BaseEvaluator):
                 add_check(checks, f"{label}:same_dimensions_as_source", out.size == src.size, {"source": list(src.size), "output": list(out.size)}, "same width and height")
 
                 whole_rms = rmsdiff(src, out)
-                marker = crop_box(src, marker_box)
-                marker_rms = rmsdiff(src.crop(marker), out.crop(marker))
                 artifact["whole_image_rms_diff"] = whole_rms
-                artifact["rgb_marker_rms_diff"] = marker_rms
-                artifact["rgb_marker_box_px"] = marker
+                if not marker_search:
+                    marker = crop_box(src, marker_box)
+                    marker_rms = rmsdiff(src.crop(marker), out.crop(marker))
+                    artifact["rgb_marker_rms_diff"] = marker_rms
+                    artifact["rgb_marker_box_px"] = marker
                 add_check(checks, f"{label}:edited_not_identical_to_source", whole_rms >= min_whole_rms, whole_rms, f">= {min_whole_rms}")
-                add_check(checks, f"{label}:rgb_marker_preserved", marker_rms <= max_marker_rms, marker_rms, f"<= {max_marker_rms}")
+                if marker_search:
+                    squares = marker_square_report(src, out, marker_search)
+                    artifact["rgb_marker_squares"] = squares
+                    preserved = all(
+                        square["box"]
+                        and square["local_rms"] <= max_marker_local_rms
+                        and max(abs(v) for v in square["median_shift"]) <= max_marker_shift
+                        for square in squares
+                    )
+                    add_check(
+                        checks,
+                        f"{label}:rgb_marker_preserved",
+                        preserved,
+                        [{key: square.get(key) for key in ("color", "measured_box", "local_rms", "median_shift", "rms")} for square in squares],
+                        f"R, G and B squares found; local_rms <= {max_marker_local_rms}; |median_shift| <= {max_marker_shift}",
+                    )
+                else:
+                    add_check(checks, f"{label}:rgb_marker_preserved", marker_rms <= max_marker_rms, marker_rms, f"<= {max_marker_rms}")
                 artifacts.append(artifact)
 
             if len(artifacts) == 2 and all(Path(item.get("output_path", "")).is_file() for item in artifacts):

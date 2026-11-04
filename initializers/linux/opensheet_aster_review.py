@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import PurePosixPath
 from typing import Any, Mapping
 
 from core.init import BaseInitializer, InitResult, InitStatus
 from initializers.linux.cua_review import cleanup_paths, launch_guest, verify_paths
+from initializers.linux.opensheet import patch_edit_commit
 
 
 class LinuxOpenSheetAsterReviewInitializer(BaseInitializer):
@@ -15,6 +17,7 @@ class LinuxOpenSheetAsterReviewInitializer(BaseInitializer):
         app_path = str(params.get("app_path") or "/home/user/Applications/opensheet_web/public/index.html")
         try:
             verify_paths(controller, [app_path])
+            patch = patch_edit_commit(controller, str(PurePosixPath(app_path).with_name("app.js")))
             cleaned = cleanup_paths(controller, params.get("cleanup_paths", []))
             launch_guest(controller, f"file://{app_path}", wait_ms=int(params.get("wait_ms", 3000) or 0))
         except Exception as exc:
@@ -26,5 +29,6 @@ class LinuxOpenSheetAsterReviewInitializer(BaseInitializer):
                 "app_path": app_path,
                 "cleanup_paths": cleaned,
                 "snapshot_name": str(params.get("snapshot_name") or ""),
+                "edit_commit_patch": patch,
             },
         )

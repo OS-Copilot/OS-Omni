@@ -219,7 +219,11 @@ class OpenSheetPlantBudgetInventoryEvaluator(BaseEvaluator):
             record("export.file", bool(exports), [item.get("path") for item in exports])
             if exports:
                 document_export = exports[0].get("document")
-                books = document_export if isinstance(document_export, list) else []
+                # OpenSheet JSON export writes the current workbook object; a list of workbooks is also accepted.
+                if isinstance(document_export, Mapping):
+                    books = [document_export]
+                else:
+                    books = document_export if isinstance(document_export, list) else []
                 export_title = str(expected_export.get("expected_title") or "")
                 export_book = next(
                     (book for book in books if isinstance(book, Mapping) and str(book.get("title") or "") == export_title),

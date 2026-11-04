@@ -33,7 +33,17 @@ RULESET_SPEC = {
     "slide4": {
         "table_count": 1,
         "table_front": True,
-        "table_bounds": {"x": 0, "y": 140, "w": 954, "h": 281},
+        # "resized so the decision matrix fills the slide's content area": slide 4 keeps the
+        # template's Comparison layout, whose content area is the union of its two comparison
+        # boxes (80,136 360x270 and 520,136 360x270) below the title (bottom edge y=100) on the
+        # 960x540 slide. The table must cover that area and stay on the slide below the title,
+        # within a drag tolerance; the reference completion was {x:0, y:140, w:954, h:281}.
+        "table_fills_content_area": {
+            "content_area": {"x": 80, "y": 136, "w": 800, "h": 270},
+            "title_bottom": 100,
+            "slide": {"w": 960, "h": 540},
+            "tolerance": 20,
+        },
         "note_sequence": ["qa70 speaker note", "Decision owners locked for Friday review"],
         "comments": ["qa70 comment", "quarterly decision matrix owner review"],
     },
@@ -47,7 +57,7 @@ RULESET_SPEC = {
 _COMPUTED_RULESET_SHA256 = hashlib.sha256(
     json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 ).hexdigest()
-RULESET_SHA256 = "00c754b53b8cae31537b9975956ed5ce27832526180d4747ec413a6225fff261"
+RULESET_SHA256 = "c8e6b44c95f0831faa93b5f8c9957e4ec283a516e47af51e64c0e650f10bbd40"
 if _COMPUTED_RULESET_SHA256 != RULESET_SHA256:
     raise RuntimeError("OpenSlide ruleset digest constant is stale")
 STEP_GROUPS = {
@@ -70,6 +80,26 @@ def _objects(slide: Mapping[str, Any], kind: str | None = None) -> list[Mapping[
 
 def _texts(slide: Mapping[str, Any]) -> list[str]:
     return [str(obj.get("text") or "") for obj in _objects(slide, "text")]
+
+
+def _covers_content_area(bounds: Mapping[str, Any], spec: Mapping[str, Any]) -> bool:
+    try:
+        x, y, w, h = (float(bounds[key]) for key in ("x", "y", "w", "h"))
+    except (KeyError, TypeError, ValueError):
+        return False
+    area, slide, tolerance = spec["content_area"], spec["slide"], float(spec["tolerance"])
+    covers = (
+        x <= area["x"] + tolerance
+        and y <= area["y"] + tolerance
+        and x + w >= area["x"] + area["w"] - tolerance
+        and y + h >= area["y"] + area["h"] - tolerance
+    )
+    on_slide = (
+        y >= spec["title_bottom"] - tolerance
+        and x + w <= slide["w"] + tolerance
+        and y + h <= slide["h"] + tolerance
+    )
+    return covers and on_slide
 
 
 def _slide4_values(versions: list[Mapping[str, Any]], field: str) -> list[Any]:
@@ -245,8 +275,9 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         tables = _objects(slides[3], "table")
         add("slide4.table", "openslide.qa70.final_review", 1, len(tables), len(tables) == 1, list(range(60, 67)))
         table = tables[0] if len(tables) == 1 else {}
-        expected_bounds = RULESET_SPEC["slide4"]["table_bounds"]
+        expected_bounds = RULESET_SPEC["slide4"]["table_fills_content_area"]
         actual_bounds = {key: table.get(key) for key in ("x", "y", "w", "h")} if table else {}
+        fills_content_area = _covers_content_area(actual_bounds, expected_bounds)
         slide4_max_z = max((float(obj.get("z") or 0) for obj in _objects(slides[3])), default=0)
         table_front = bool(table) and float(table.get("z") or 0) == slide4_max_z
         add(
@@ -254,7 +285,7 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
             "openslide.qa70.final_review",
             {"front": True, "bounds": expected_bounds},
             {"front": table_front, "bounds": actual_bounds, "table_z": table.get("z"), "max_z": slide4_max_z},
-            len(tables) == 1 and table_front and actual_bounds == expected_bounds,
+            len(tables) == 1 and table_front and fills_content_area,
             list(range(60, 67)),
             "OBJECT_EXACT",
         )

@@ -18,11 +18,11 @@ instruction: 'Configure the OpenMail account profile with the display name Anony
   to the end of the existing body text before being sent.
 
 
-  The sent Image attachment review email must be marked as unread, archived, and then moved back to the
-  Inbox, where the Follow up label is applied to it. The task is complete when the detail page for the
-  Image attachment review email is visible, displaying the Follow up label and the full message body containing
-  both required sentences. OpenMail is a web app: open it from the OpenMail icon in the webpage folder
-  on the desktop, which opens it in Chrome.'
+  The sent Image attachment review email must then be moved to the Trash and restored from the Trash to
+  the Inbox, where the Follow up label is applied to it and it is marked as unread. The task is complete
+  when the detail page for the Image attachment review email is visible, showing it as unread with the
+  Follow up label and the full message body containing both required sentences. OpenMail is a web app:
+  open it from the OpenMail icon in the webpage folder on the desktop, which opens it in Chrome.'
 init:
   initializer_id: initializers.linux.openmail:OpenMailDesktopInitializer
   params:
@@ -61,6 +61,7 @@ evaluation:
       - Please review the saved image evidence before the expense note is closed.
       - The signature settings were checked first.
       required_labels:
+      - Images
       - Follow up
       required_folder_terms:
       - Inbox
@@ -126,9 +127,10 @@ metadata:
         evidence, plus the reply text The desk setup image is filed under Images.
     - step_goal: Steps 31-46 compose, save, reopen, complete, and send Image attachment review.
       evidence: Browser storage contains Image attachment review with recipient receipts@railne.example.test,
-        Low priority, and both required body sentences.
-    - step_goal: Steps 47-67 mark the sent message unread, archive it, move it back to Inbox, add Follow
-        up, and finish on the Follow up detail page.
+        Low priority, the Images label, and both required body sentences.
+    - step_goal: Move the sent message to Trash, restore it to Inbox, add Follow up, mark it unread, and
+        finish on its detail page. OpenMail cannot archive sent mail or move archived mail to Inbox, so the
+        source steps 47-67 (mark unread, Archive, Move to Inbox) were replaced by this path.
       evidence: Browser storage contains Image attachment review with Inbox, Follow up, and unread evidence;
         the current page text contains Image attachment review, Follow up, and the message body.
     non_final_evidence:
@@ -152,7 +154,7 @@ metadata:
       unread: true
   description: Open OpenMail from the snapshot-provided desktop webpage launcher, verify account settings
     and signature, label and reply to an attachment message, compose and send a low-priority image review
-    email, move it through Sent/Archive back to Inbox, mark it unread, add Follow up, then finish on that
+    email, move it from Sent through Trash back to Inbox, add Follow up, mark it unread, then finish on that
     Follow up message detail.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review

@@ -30,6 +30,7 @@ evaluation:
   params:
     task_number: 10-2
     verifier_rule: 10-1
+    peak_fitness_schedule: unposted
     min_steps: 60
     max_steps: 150
     require_success_action: true

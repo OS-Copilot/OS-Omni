@@ -19,7 +19,7 @@ evaluation:
     profile_dir: /home/user/.config/google-chrome/Default/Local Storage/leveldb
     source_state_mode: human_completed_eval_only
     timeout: 60
-    expected_ruleset_sha256: 7dc2729d0ac8ff886f2d5db23c4c38146a846acd83c97a390d26e195e217be0f
+    expected_ruleset_sha256: aea2618ce378102e61619b062543e89d8ba25b3c136878224d907a90e31bda09
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -32,7 +32,7 @@ metadata:
   snapshot_name: s1
   source_state_mode: human_completed_eval_only
   instruction_sha256: 6de49e4e9c9d332f7c052fd5e5e1ae0133267469092fdc1f40fd04459b43ac20
-  ruleset_sha256: 7dc2729d0ac8ff886f2d5db23c4c38146a846acd83c97a390d26e195e217be0f
+  ruleset_sha256: aea2618ce378102e61619b062543e89d8ba25b3c136878224d907a90e31bda09
   evaluation_standard: Exact collection hierarchy, original and duplicate identities, membership, status,
     tags, literal note newlines, and retained attachment identity.
   task_version: '1.1'

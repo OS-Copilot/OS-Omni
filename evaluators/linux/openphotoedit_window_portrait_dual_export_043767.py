@@ -197,7 +197,9 @@ RULESET_SPEC = {'checkpoints': {'before_source_and_recipe': {'checks': ['exact p
                  'rgb_marker_preservation': {'checks': ['red, green, and blue marker masks retain at least '
                                                         '8000 source pixels per primary',
                                                         'each primary mask has recall and precision of at '
-                                                        'least 0.97'],
+                                                        'least 0.97',
+                                                        'each square interior keeps an even colour within 12 '
+                                                        'levels of the colour the instructed recipe gives it'],
                                              'steps': [5, 6, 29, 40, 62, 73, 74]}},
  'evaluator_id': 'evaluators.linux.window_portrait_dual_export_043767:OpenPhotoEditWindowPortraitDualExport059248Evaluator',
  'evidence_mode': 'read_only_final_business_state',
@@ -208,7 +210,8 @@ RULESET_SPEC = {'checkpoints': {'before_source_and_recipe': {'checks': ['exact p
                                                 'lum_mean': [25.0, 40.0],
                                                 'lum_std': [-25.0, -10.0],
                                                 'r': [28.0, 45.0]},
-                        'path': '/home/user/Downloads/portrait_window_before-edited.png'},
+                        'path': '/home/user/Downloads/portrait_window_before-edited.png',
+                        'instructed_path': '/home/user/Downloads/portrait_window_before_edited.jpg'},
              'detail': {'correlation': [0.9, 0.99],
                         'human_reference_sha256': '3da51080d9901833f85818b95c72ec6c1edb8191afe87dbfee3e312ebfd8e1c7',
                         'metric_delta_ranges': {'b': [17.0, 32.0],
@@ -217,7 +220,8 @@ RULESET_SPEC = {'checkpoints': {'before_source_and_recipe': {'checks': ['exact p
                                                 'lum_mean': [9.0, 20.0],
                                                 'lum_std': [-10.0, -1.0],
                                                 'r': [10.0, 24.0]},
-                        'path': '/home/user/Downloads/portrait_window_detail-edited.png'}},
+                        'path': '/home/user/Downloads/portrait_window_detail-edited.png',
+                        'instructed_path': '/home/user/Downloads/portrait_window_detail_edited.jpg'}},
  'final_ui': {'brush_size': 18,
               'brush_strength': 28,
               'filter_strength': 51,
@@ -225,6 +229,7 @@ RULESET_SPEC = {'checkpoints': {'before_source_and_recipe': {'checks': ['exact p
               'status_tokens': ['9 exposure', '-7 contrast', 'local marks'],
               'title': 'OpenPhotoEdit'},
  'marker_contract': {'crop': [0, 0, 360, 240],
+                     'ignore_edge_px': 3,
                      'minimum_pixels_per_primary': 8000,
                      'minimum_precision': 0.97,
                      'minimum_recall': 0.97},
@@ -243,6 +248,48 @@ RULESET_SPEC = {'checkpoints': {'before_source_and_recipe': {'checks': ['exact p
  'task_version': '1.1'}
 RULESET_SHA256 = '0d7e8ecdd12c5a450dadda51a8904029d9486ed7fda6e211ee3e7c1dd836100b'
 # END OSOMNI_PORTABLE_BINDING
+
+# Calibration against the published (reconstructed) source photos, measured by running the
+# instructed recipes in the OpenPhotoEdit app on the Linux VM (sliders set with the app's own input
+# events, brush marks added on the canvas, PNG saved with its Download button) and applying the
+# metrics below to the downloads.
+#
+# before.correlation: the author's [0.62, 0.82] came from an unpublished original photo. With the
+# reconstructed source the exact before recipe gives 0.9988 with no brush marks (0.9987 with Heal
+# marks only), 0.9923-0.9925 with one Dodge, Burn and Heal mark, 0.980-0.982 with two, 0.961 with
+# three, 0.938 with four (the marks of the 2026-10-30 run, whose own export also measured 0.938) and
+# 0.877 with six. [0.80, 0.996] accepts any of those counts and rejects an export without the Dodge
+# and Burn work. before.lum_std: one mark per brush gives -9.1 to -9.4 and Dodge under the eyes
+# with Burn on the wall -7.3, so the upper bound moves from -10 to -5; the other before ranges and
+# the detail ranges already hold every reproduction (detail: 0.9999 without marks, 0.972 with one
+# mark per brush, 0.949 for the run's marks).
+RULESET_SPEC["exports"]["before"]["correlation"] = [0.80, 0.996]
+RULESET_SPEC["exports"]["before"]["metric_delta_ranges"]["lum_std"] = [-25.0, -5.0]
+# Marker colour fidelity. The recall/precision masks only ask whether a pixel still classifies as
+# red, green or blue, so a Burn or Dodge mark over a square goes unseen: the squares stay clearly
+# primary. Each square's interior (fidelity.erode_px inside the source square) must stay even
+# (at most max_far_fraction of its pixels more than far_delta levels from its median in any
+# channel) and its median must stay within max_median_delta levels of the colour the instructed
+# global recipe gives that square. Those colours were measured in the app as above for each
+# accepted source; the squares lie outside the app's face region, so only the global sliders
+# reach them. Measured: the recipes with brush marks away from the block keep the medians within
+# 4 levels and at most 1.1% uneven pixels; one Burn mark on the red square moves it 29 levels, one
+# Dodge mark on the green square 25-35 levels, a size-4 Burn dab inside the blue square leaves 11%
+# of it uneven, and a Mosaic dab 10%.
+RULESET_SPEC["marker_contract"]["fidelity"] = {
+    "erode_px": 6,
+    "far_delta": 12,
+    "max_far_fraction": 0.03,
+    "max_median_delta": 12,
+    "expected_rgb_by_source_sha256": {
+        # portrait_window_before.jpg (reconstructed) with the before recipe
+        "801ec18bc0fcc9f1b94e7df5ef003387b83deb853d12b6cdb25f78e68fd48e0c": {
+            "1": [255, 31, 47], "2": [29, 255, 38], "3": [47, 41, 255]},
+        # portrait_window_detail.jpg (reconstructed) with the detail recipe
+        "3183257979e8bce55a6a185622a538190f3a4c3ac5db3f8a249103226419382d": {
+            "1": [255, 17, 33], "2": [25, 255, 36], "3": [25, 21, 255]},
+    },
+}
 
 STEP_GROUPS = {
     "first_import_and_portrait": list(range(1, 15)),
@@ -317,20 +364,58 @@ def primary(pixel):
     return 0
 
 def marker_stats(source, output):
+    # Recall and precision leave out the pixels within ignore_edge_px of the edge of each source
+    # marker mask: the squares have an anti-aliased fringe of pale primary pixels just above
+    # the classification ratio, which any global edit moves across it.
     box = tuple(spec["marker_contract"]["crop"])
-    left = [primary(pixel) for pixel in source.crop(box).getdata()]
+    edge = int(spec["marker_contract"].get("ignore_edge_px") or 0)
+    source_crop = source.crop(box)
+    left = [primary(pixel) for pixel in source_crop.getdata()]
     right = [primary(pixel) for pixel in output.crop(box).getdata()]
     rows = {}
     for channel in (1, 2, 3):
+        keep = [True] * len(left)
+        if edge:
+            mask = Image.new("L", source_crop.size)
+            mask.putdata([255 if value == channel else 0 for value in left])
+            inner = mask.filter(ImageFilter.MinFilter(2 * edge + 1)).getdata()
+            outer = mask.filter(ImageFilter.MaxFilter(2 * edge + 1)).getdata()
+            keep = [not (o and not i) for i, o in zip(inner, outer)]
         source_count = left.count(channel)
-        output_count = right.count(channel)
-        shared = sum(1 for a, b in zip(left, right) if a == channel and b == channel)
+        core_count = sum(1 for value, kept in zip(left, keep) if kept and value == channel)
+        output_count = sum(1 for value, kept in zip(right, keep) if kept and value == channel)
+        shared = sum(1 for a, b, kept in zip(left, right, keep) if kept and a == channel and b == channel)
         rows[str(channel)] = {
             "source_count": source_count,
+            "core_count": core_count,
             "output_count": output_count,
-            "recall": shared/source_count if source_count else 0.0,
+            "recall": shared/core_count if core_count else 0.0,
             "precision": shared/output_count if output_count else 0.0,
         }
+    return rows
+
+def marker_interiors(source, output):
+    # Interior of each source calibration square, erode_px in from its edge: the median output
+    # colour and the share of pixels far from that median.
+    fidelity = spec["marker_contract"].get("fidelity") or {}
+    erode = int(fidelity.get("erode_px") or 6)
+    far_delta = int(fidelity.get("far_delta") or 12)
+    box = tuple(spec["marker_contract"]["crop"])
+    source_crop = source.crop(box)
+    labels = [primary(pixel) for pixel in source_crop.getdata()]
+    output_pixels = list(output.crop(box).getdata())
+    rows = {}
+    for channel in (1, 2, 3):
+        mask = Image.new("L", source_crop.size)
+        mask.putdata([255 if value == channel else 0 for value in labels])
+        inner = mask.filter(ImageFilter.MinFilter(2 * erode + 1)).getdata()
+        pixels = [output_pixels[index] for index, value in enumerate(inner) if value]
+        if not pixels:
+            rows[str(channel)] = {"count": 0}
+            continue
+        median = [sorted(pixel[c] for pixel in pixels)[len(pixels) // 2] for c in range(3)]
+        far = sum(1 for pixel in pixels if max(abs(pixel[c] - median[c]) for c in range(3)) > far_delta)
+        rows[str(channel)] = {"count": len(pixels), "median": median, "far_fraction": far / len(pixels)}
     return rows
 
 def cdp_evaluate(expression):
@@ -386,7 +471,12 @@ for key, source_spec in spec["sources"].items():
         export_path = Path(export_spec["path"])
         base = export_path.name.split("-edited", 1)[0]
         candidates = sorted(glob.glob(str(export_path.with_name(base + "[-_]edited*"))))
-        if len(candidates) == 1:
+        instructed = Path(export_spec.get("instructed_path") or "")
+        if export_spec.get("instructed_path") and instructed.is_file():
+            # The instruction names this file; other downloads (e.g. the app's automatic
+            # <stem>-edited.png) do not count against it.
+            export_path = instructed
+        elif len(candidates) == 1:
             export_path = Path(candidates[0])
         source_raw = source_path.read_bytes()
         output_raw = export_path.read_bytes()
@@ -406,6 +496,7 @@ for key, source_spec in spec["sources"].items():
             "source_metrics": source_metrics, "output_metrics": output_metrics,
             "metric_deltas": {name: output_metrics[name]-source_metrics[name] for name in source_metrics},
             "markers": marker_stats(source, output),
+            "marker_interiors": marker_interiors(source, output),
         }
     except Exception as exc:
         observed["errors"].append(f"{key}: {type(exc).__name__}: {exc}")
@@ -451,7 +542,7 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         export_spec = RULESET_SPEC["exports"][key]
         actual = dict(exports.get(key) or {})
         file_ok = (
-            actual.get("candidates") == [actual.get("path")]
+            (actual.get("path") == export_spec.get("instructed_path") or actual.get("candidates") == [actual.get("path")])
             and actual.get("format") in {"PNG", "JPEG"}
             and actual.get("size") == [1536, 1024]
         )
@@ -459,7 +550,7 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
             f"{key}.export_file",
             f"openphoto.{key}.source_and_recipe",
             [38] if key == "before" else [74],
-            {"path": export_spec["path"], "count": 1, "format": ["PNG", "JPEG"], "size": [1536, 1024]},
+            {"path": export_spec.get("instructed_path") or export_spec["path"], "or_single_candidate": True, "format": ["PNG", "JPEG"], "size": [1536, 1024]},
             actual,
             file_ok,
             "OBJECT_EXACT",
@@ -498,6 +589,40 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
             marker_ok,
             "PRIMARY_COLOR_MASK_RECALL_PRECISION",
         )
+        fidelity = dict(marker_spec.get("fidelity") or {})
+        interiors = dict(actual.get("marker_interiors") or {})
+        expected_rgb = dict(fidelity.get("expected_rgb_by_source_sha256") or {}).get(actual_source.get("sha256"))
+        fidelity_rows = {}
+        for channel in ("1", "2", "3"):
+            row = dict(interiors.get(channel) or {})
+            median = row.get("median")
+            expected = (expected_rgb or {}).get(channel)
+            delta = (
+                max(abs(int(a) - int(b)) for a, b in zip(median, expected))
+                if median and expected else None
+            )
+            fidelity_rows[channel] = {
+                "count": row.get("count"),
+                "median": median,
+                "expected": expected,
+                "max_median_delta": delta,
+                "far_fraction": row.get("far_fraction"),
+                "passed": bool(
+                    row.get("count")
+                    and float(row.get("far_fraction") or 0.0) <= float(fidelity.get("max_far_fraction", 0.03))
+                    # Sources without a measured recipe colour are checked for evenness only.
+                    and (delta is None if expected is None else delta <= int(fidelity.get("max_median_delta", 12)))
+                ),
+            }
+        add(
+            f"{key}.rgb_marker_fidelity",
+            "openphoto.rgb_markers",
+            [6, 29] if key == "before" else [62, 73, 74],
+            {key_: value for key_, value in fidelity.items() if key_ != "expected_rgb_by_source_sha256"} | {"expected_rgb": expected_rgb},
+            fidelity_rows,
+            bool(fidelity) and all(row["passed"] for row in fidelity_rows.values()),
+            "MARKER_INTERIOR_COLOUR_FIDELITY",
+        )
 
     ui = dict(observed.get("ui") or {})
     ranges = list(ui.get("ranges") or [])
@@ -512,12 +637,21 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         "brush_size": range_values.get((None, "brushSize")),
         "brush_strength": range_values.get((None, "brushStrength")),
         "status_tokens": {token: token in body for token in final_spec["status_tokens"]},
+        # The header ("Imported | 1536 x 1024 | Portrait") names the active preset on every tab.
+        "portrait_preset_in_header": "| Portrait" in body,
     }
+    # The Strength slider exists only while the Filters tab is open, and the instruction does not
+    # say which tab to end on: with another tab open, the header must still show the Portrait preset.
+    filter_ok = (
+        ui_actual["filter_strength"] == final_spec["filter_strength"]
+        if ui_actual["filter_strength"] is not None
+        else ui_actual["portrait_preset_in_header"]
+    )
     ui_ok = (
         ui.get("title") == final_spec["title"]
         and len(files) == 1
         and str(files[0]).endswith(final_spec["source_file"])
-        and ui_actual["filter_strength"] == final_spec["filter_strength"]
+        and filter_ok
         and ui_actual["brush_size"] == final_spec["brush_size"]
         and ui_actual["brush_strength"] == final_spec["brush_strength"]
         and all(ui_actual["status_tokens"].values())
@@ -544,6 +678,9 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
 
 
 class OpenPhotoEditWindowPortraitDualExport059248Evaluator(BaseEvaluator):
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
+
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         controller = context.get("controller")
         if controller is None or not hasattr(controller, "run_python_script"):

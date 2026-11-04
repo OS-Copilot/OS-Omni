@@ -14,7 +14,9 @@ instruction: Sign in to the OpenDriver application as the Rider Riley Rider usin
   must be the detail page for the most recent ride to Downtown Palo Alto, CA, accessed from the History
   tab, displaying the destination, Green ride tier, applied promo code, paid status, and final fare breakdown.
 init:
-  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  # CanvasKit and the Roboto font come from gstatic.com, whose certificates are not yet valid for
+  # the guest clock (Sep 2026): the window stays blank. This initializer serves both locally first.
+  initializer_id: initializers.linux.opendriver:OpenDriverInitializer
   params:
     steps:
     - type: run_bash

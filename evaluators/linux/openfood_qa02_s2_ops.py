@@ -693,7 +693,12 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
                 )
 
                 pita_min_total_qty = int(PARAMS.get("pita_reorder_min_total_qty", 2))
-                pita_reorder_matches = [order for order in save_orders if total_qty(order) >= pita_min_total_qty]
+                pita_restaurant_id = str(PARAMS.get("pita_restaurant_id") or "")
+                pita_reorder_matches = [
+                    order for order in save_orders
+                    if total_qty(order) >= pita_min_total_qty
+                    and (not pita_restaurant_id or order.get("restaurantId") == pita_restaurant_id)
+                ]
                 add_check(
                     checks,
                     "pita_save15_reorder_created",
@@ -701,19 +706,30 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
                     pita_reorder_matches,
                     {
                         "source_order": str(PARAMS.get("pita_source_order_id") or "OF-2009"),
+                        "restaurantId": pita_restaurant_id or "any",
                         "couponCode": save_code,
                         "min_total_qty": pita_min_total_qty,
                     },
-                    "Static createdOrders may not preserve sourceOrderId, so durable evidence is a SAVE15-created reorder with sufficient item quantity.",
+                    "Static createdOrders may not preserve sourceOrderId, so durable evidence is a SAVE15-created order from the source order's restaurant with sufficient item quantity.",
                 )
 
+                # New orders start as Preparing; each Advance status click stores the next status
+                # (Preparing -> Out for delivery -> Delivered) in orderStatus[order id], so two
+                # clicks on the reorder leave it Delivered.
                 order_status = state.get("orderStatus") or {}
+                expected_status = str(PARAMS.get("pita_reorder_expected_status") or "Delivered")
+                advanced_reorders = [
+                    {"id": order.get("id"), "status": order_status.get(str(order.get("id")))}
+                    for order in pita_reorder_matches
+                    if order_status.get(str(order.get("id"))) == expected_status
+                ]
                 add_check(
                     checks,
-                    "advance_status_manual_or_persisted",
-                    bool(order_status),
-                    order_status,
-                    "The latest SAVE15 reorder's Advance status button must be clicked twice; verify from trajectory/UI evidence if the static build does not persist click history.",
+                    "pita_reorder_status_advanced_twice",
+                    bool(advanced_reorders),
+                    {"orderStatus": order_status, "reorders": [order.get("id") for order in pita_reorder_matches]},
+                    {"reorder_status": expected_status},
+                    "The SAVE15 reorder's persisted status must be the one reached after two Advance status clicks.",
                 )
             elif workflow_variant == "qa03_courier_admin_reorder_support":
                 add_check(checks, "one_created_order_exists", len(orders) >= 1, orders, "at least 1 created order")

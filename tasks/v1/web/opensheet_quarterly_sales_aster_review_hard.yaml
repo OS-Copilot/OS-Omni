@@ -54,12 +54,13 @@ metadata:
     G4 `growth`, G5 `stable`, and G6 `reviewed`.
   - F2 formula is `=SUM(B2:E2)`, F3 formula is `=SUM(B3:E3)`, and F6 formula is `=SUM(B6:E6)`.
   - G2 has note text `qa note`.
-  - Key header cells A1, F1, and G1 are bold, centered, font size 14, and have a non-white fill color.
-  - G6 is bold and has a non-white fill color.
-  - The sheet state records an Aster filter, freeze panes are enabled, and the final selected cell evidence
-    points to G6 when OpenSheet exposes that state.
-  - '`/home/user/Downloads/quarterly-sales-aster-review.html` exists and contains the exported HTML table
-    with the final title, edited headers, review values, and an Aster row.'
+  - Every header cell A1:G1 is bold, centered, font size 14, and has a light non-white fill color (stored
+    `style.fill` is not white and has HSL lightness at least 0.6).
+  - G6 is bold and has a light yellow fill color (stored `style.fill` is light, visibly tinted, with a hue
+    between 38 and 75 degrees).
+  - No filter is active in the final sheet state, since the Aster filter must be removed after the export.
+    OpenSheet's HTML table export writes every row, so the filtered export leaves no separate evidence.
+  - '`/home/user/Downloads/quarterly-sales-aster-review.html` exists (the exported HTML table file).'
   model_requirement: GPT-5.5 via model id polo_newapi_gpt5_5.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review

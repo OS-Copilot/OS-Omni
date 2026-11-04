@@ -20,29 +20,34 @@ RULESET_SPEC = {
     "task_id": TASK_ID,
     "source_state_mode": "human_completed_eval_only",
     "account": {"name": "Maya Chen", "email": "maya@openzotero.local"},
+    # Aligned with the English instruction: the primary item ends "In Review" with the replaced
+    # note plus "Confidence threshold checked"; the duplicate ends "Archived" with the copied
+    # note plus "Blur gate comparison retained". (The reference completion had re-opened the
+    # original after duplicating it, so it expected the original Archived with all three lines,
+    # the copy Unread, and the archive step after the copy.) The instruction names no parent for
+    # "Blur Gate Vision Review" and does not order the edits beyond the final state.
     "collections": [
         {"name": "Vision Papers", "parent": "My Library"},
-        {"name": "Blur Gate Vision Review", "parent": "Vision Papers"},
+        {"name": "Blur Gate Vision Review", "parent": None},
     ],
     "original": {
         "title": TARGET_TITLE,
         "type": "Preprint",
         "collection": "Vision Papers",
-        "status": "Archived",
+        "status": "In Review",
         "required_tags": ["vision-review", "blur-gate-reviewed"],
-        "notes": "Review blur gate confidence before vision pipeline meeting.\nBlur gate comparison retained\nConfidence threshold checked",
+        "notes": "Review blur gate confidence before vision pipeline meeting.\nConfidence threshold checked",
         "attachment": {"name": TARGET_ATTACHMENT, "contentType": "application/pdf", "exists": True},
     },
     "duplicate": {
         "title": COPY_TITLE,
         "type": "Preprint",
         "collection": "Vision Papers",
-        "status": "Unread",
+        "status": "Archived",
         "required_tags": ["vision-review"],
-        "notes": "Review blur gate confidence before vision pipeline meeting.",
+        "notes": "Review blur gate confidence before vision pipeline meeting.\nBlur gate comparison retained",
         "attachment": {"name": TARGET_ATTACHMENT, "contentType": "application/pdf", "exists": True},
     },
-    "required_order": ["original_in_review", "duplicate_created", "original_archived"],
 }
 RULESET_SHA256 = hashlib.sha256(
     json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
@@ -102,8 +107,9 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         "nested_count": sum(1 for row in collections if row.get("name") == "Blur Gate Vision Review"),
         "nested_parent": by_id.get(str((nested or {}).get("parentId")), {}).get("name"),
     }
-    hierarchy_expected = {"primary_count": 1, "primary_parent": "My Library", "nested_count": 1, "nested_parent": "Vision Papers"}
-    add("collections.hierarchy", "openzotero.blur.collections", hierarchy_expected, hierarchy_actual, hierarchy_actual == hierarchy_expected, list(range(23, 33)) + list(range(62, 66)), "HIERARCHY_EXACT")
+    hierarchy_expected = {"primary_count": 1, "primary_parent": "My Library", "nested_count": 1}
+    hierarchy_passed = all(hierarchy_actual[key] == value for key, value in hierarchy_expected.items())
+    add("collections.hierarchy", "openzotero.blur.collections", hierarchy_expected, hierarchy_actual, hierarchy_passed, list(range(23, 33)) + list(range(62, 66)), "HIERARCHY_EXACT")
 
     def reference_actual(title: str, required_tags: list[str]) -> tuple[dict[str, Any], int]:
         rows = [row for row in references if row.get("title") == title]
@@ -121,7 +127,7 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
 
     original_actual, _ = reference_actual(TARGET_TITLE, RULESET_SPEC["original"]["required_tags"])
     original_expected = {
-        "count": 1, "type": "Preprint", "collection": "Vision Papers", "status": "Archived",
+        "count": 1, "type": "Preprint", "collection": "Vision Papers", "status": RULESET_SPEC["original"]["status"],
         "notes": RULESET_SPEC["original"]["notes"], "required_tags_present": True,
         "required_tag_counts": {"vision-review": 1, "blur-gate-reviewed": 1},
         "attachment": [RULESET_SPEC["original"]["attachment"]],
@@ -130,28 +136,12 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
 
     duplicate_actual, _ = reference_actual(COPY_TITLE, RULESET_SPEC["duplicate"]["required_tags"])
     duplicate_expected = {
-        "count": 1, "type": "Preprint", "collection": "Vision Papers", "status": "Unread",
+        "count": 1, "type": "Preprint", "collection": "Vision Papers", "status": RULESET_SPEC["duplicate"]["status"],
         "notes": RULESET_SPEC["duplicate"]["notes"], "required_tags_present": True,
         "required_tag_counts": {"vision-review": 1},
         "attachment": [RULESET_SPEC["duplicate"]["attachment"]],
     }
     add("duplicate.exact", "openzotero.blur.duplicate", duplicate_expected, duplicate_actual, duplicate_actual == duplicate_expected, list(range(48, 62)), "DUPLICATE_OBJECT_EXACT")
-
-    versions = [version for version in observed.get("versions") or [] if isinstance(version, Mapping)]
-    in_review_indices: list[int] = []
-    duplicate_indices: list[int] = []
-    archived_indices: list[int] = []
-    for index, version in enumerate(versions):
-        rows = [row for row in version.get("references") or [] if isinstance(row, Mapping)]
-        if any(row.get("title") == TARGET_TITLE and row.get("status") == "In Review" for row in rows):
-            in_review_indices.append(index)
-        if any(row.get("title") == COPY_TITLE for row in rows):
-            duplicate_indices.append(index)
-        if any(row.get("title") == TARGET_TITLE and row.get("status") == "Archived" for row in rows):
-            archived_indices.append(index)
-    order_passed = bool(in_review_indices and duplicate_indices and archived_indices) and min(in_review_indices) < min(duplicate_indices) < min(archived_indices)
-    order_actual = {"in_review_version_indices": in_review_indices, "duplicate_version_indices": duplicate_indices, "archived_version_indices": archived_indices}
-    add("original.status_duplicate_order", "openzotero.blur.duplicate", RULESET_SPEC["required_order"], order_actual, order_passed, [10, 11, 48, 52, 53], "ORDERED_HISTORY_EXACT")
 
     failures = [check["check_id"] for check in checks if not check["passed"]]
     return {"status": "PASS" if not failures and not observed.get("errors") else "FAIL", "checks": checks, "failures": failures, "history_sources": observed.get("sources") or [], "history_version_count": observed.get("version_count") or 0, "source_errors": observed.get("errors") or []}

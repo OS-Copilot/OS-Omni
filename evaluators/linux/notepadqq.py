@@ -90,7 +90,10 @@ PY"""
                     needle = str(expected.get("contains") or "")
                     assert needle in actual_content, f"expected {rel_path} to contain {needle!r}"
                 if "json" in expected:
-                    actual_json = json.loads(actual_content)
+                    try:
+                        actual_json = json.loads(actual_content)
+                    except json.JSONDecodeError:
+                        raise AssertionError(f"expected valid JSON in {rel_path}") from None
                     expected_json = expected.get("json")
                     assert actual_json == expected_json, f"JSON mismatch for {rel_path}"
         except AssertionError as exc:

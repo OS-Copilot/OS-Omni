@@ -111,7 +111,8 @@ DECLARED = (
             "enabled": True,
             "email": True,
             "sms": True,
-            "push": False,
+            # The brief asks for Push enabled and saved on this alert.
+            "push": True,
         },
     ),
     (

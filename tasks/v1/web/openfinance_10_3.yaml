@@ -31,6 +31,9 @@ evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.openfinance:OpenFinanceEvaluator
   params:
     task_number: 10-3
+    market_transaction_payees:
+    - QA Market
+    - Whole Basket Market
     min_steps: 65
     max_steps: 150
     require_success_action: true
@@ -39,7 +42,8 @@ evaluation:
     fail_on_max_steps: true
     verifier_rules:
     - Check QA Market transaction persisted with date 2026-06-30, amount 33.45, Travel Rewards Card account,
-      Groceries category, receipt fixed note, and cleared status.
+      Groceries category, receipt fixed note, and cleared status; saving applies the seeded market rule,
+      which renames the payee to Whole Basket Market, so either payee is accepted.
     - Check bill edits/payments, payee favorite/rename, qamarket rule, schedule actions, Groceries/Transportation
       budgets, and QA Reserve goal from OpenFinance localStorage.
 limits:

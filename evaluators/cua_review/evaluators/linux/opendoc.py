@@ -245,6 +245,110 @@ def _roots(params: Mapping[str, Any]) -> list[str]:
     return found
 
 
+_VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+_BOLD_TAGS = {"b", "strong", "th", "h1", "h2", "h3", "h4", "h5", "h6"}
+
+
+class _Element:
+    def __init__(self, tag: str, attrs: Mapping[str, str], parent: "_Element | None") -> None:
+        self.tag = tag
+        self.attrs = dict(attrs)
+        self.parent = parent
+        self.children: list[Any] = []
+
+    def style(self, prop: str) -> str:
+        for part in _text(self.attrs.get("style")).split(";"):
+            name, _, value = part.partition(":")
+            if name.strip().lower() == prop:
+                return value.strip().lower()
+        return ""
+
+    def texts(self) -> list[tuple[str, "_Element"]]:
+        found: list[tuple[str, _Element]] = []
+        for child in self.children:
+            if isinstance(child, _Element):
+                found.extend(child.texts())
+            elif child.strip():
+                found.append((child, self))
+        return found
+
+    def iter(self):
+        yield self
+        for child in self.children:
+            if isinstance(child, _Element):
+                yield from child.iter()
+
+
+def _parse_html(text: str) -> _Element:
+    from html.parser import HTMLParser
+
+    root = _Element("#root", {}, None)
+
+    class Builder(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__(convert_charrefs=True)
+            self.current = root
+
+        def handle_starttag(self, tag, attrs):
+            element = _Element(tag, {k: v or "" for k, v in attrs}, self.current)
+            self.current.children.append(element)
+            if tag not in _VOID_TAGS:
+                self.current = element
+
+        def handle_endtag(self, tag):
+            node: _Element | None = self.current
+            while node is not None and node.tag != tag:
+                node = node.parent
+            if node is not None and node.parent is not None:
+                self.current = node.parent
+
+        def handle_data(self, data):
+            if self.current.tag not in ("style", "script", "title"):
+                self.current.children.append(data)
+
+    Builder().feed(text)
+    return root
+
+
+def _is_bold(element: "_Element | None") -> bool:
+    # The nearest element that sets a weight decides, as in CSS inheritance: <b>, <strong>,
+    # <th> and h1-h6 are bold by default, and an inline font-weight overrides the tag
+    # (execCommand("bold") on a bold heading writes font-weight: normal).
+    while element is not None:
+        weight = element.style("font-weight")
+        if weight:
+            if weight in ("bold", "bolder"):
+                return True
+            return weight.isdigit() and int(weight) >= 600
+        if element.tag in _BOLD_TAGS:
+            return True
+        element = element.parent
+    return False
+
+
+def _font_size_14(element: "_Element | None") -> bool:
+    # OpenDoc's size list maps "14" to execCommand("fontSize", "4"), exported as <font size="4">.
+    while element is not None:
+        size = element.style("font-size")
+        if size:
+            return size.replace(" ", "") in ("14pt", "14px", "large", "18.6667px", "18.67px")
+        if element.tag == "font" and element.attrs.get("size"):
+            return element.attrs["size"].strip() == "4"
+        element = element.parent
+    return False
+
+
+def _heading_runs(text: str, wanted: str) -> list[tuple[str, _Element]]:
+    """Text runs of the first h1-h6 element whose text contains ``wanted``."""
+
+    for element in _parse_html(text).iter():
+        if element.tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
+            runs = element.texts()
+            if wanted.lower() in " ".join("".join(run for run, _ in runs).split()).lower():
+                return runs
+    return []
+
+
 def _comment_blob(documents: list[dict[str, Any]], title: str) -> str:
     parts: list[str] = []
     for document in documents:
@@ -334,23 +438,15 @@ class OpenDocClientPlanHtmlEvaluator(BaseEvaluator):
             structure,
         )
 
-        # The Client Plan HTML export may encode bold as HTML emphasis tags
-        # rather than CSS text; structure.emphasis above already accepts
-        # <strong>/<b>.  Scope the bold tokens to the first heading/paragraph
-        # block so an unrelated stylesheet's "font-weight" does not count
-        # (scan.CSV WEB-020).
-        styled = re.search(r"<h[1-6]\b[\s\S]*?</h[1-6]>", text, re.I) or re.search(
-            r"<p\b[\s\S]*?</p>", text, re.I
-        )
-        styled_low = styled.group(0).lower() if styled else low
-
+        # Size and bold are read from the text of the Client Plan heading itself: a substring
+        # search matched the export's CSS boilerplate ("margin-bottom: 14px") and took
+        # "font-weight: normal" for bold, while missing a heading that is bold by default.
+        heading_runs = _heading_runs(text, _text(params.get("heading_text") or (required[0] if required else "Client Plan")))
+        metadata["heading_text"] = "".join(run for run, _ in heading_runs)
         formatting = {
             "aptos": "aptos" in low,
-            "size14": ("14pt" in low) or ("14px" in low) or ("font-size: 14" in low) or ("font-size:14" in low),
-            "bold": any(
-                token in styled_low
-                for token in ("bold", "font-weight", "<b>", "<b ", "</b>", "<strong", "</strong>")
-            ),
+            "size14": bool(heading_runs) and all(_font_size_14(element) for _, element in heading_runs),
+            "bold": bool(heading_runs) and all(_is_bold(element) for _, element in heading_runs),
             "black": ("#000" in low) or ("black" in low) or ("rgb(0, 0, 0)" in low) or ("rgb(0,0,0)" in low),
             "highlight": ("background-color" in low) or ("<mark" in low) or ("hilitecolor" in low) or ("#fff2a8" in low),
         }
