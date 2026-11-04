@@ -177,170 +177,325 @@ evaluation:
         stdout_contains: EVAL_RESULT:PASS
     - evaluator_id: evaluators.cua_review.evaluators.linux.command_check:CommandCheckEvaluator
       params:
-        command: "USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'\nimport os, subprocess, sys\nfrom pathlib import\
-          \ Path\ntry:\n    from openpyxl import load_workbook\nexcept ImportError:\n    subprocess.check_call([sys.executable,\
-          \ '-m', 'pip', 'install', 'openpyxl', '-q'])\n    from openpyxl import load_workbook\npath = Path(os.environ['USERPROFILE'])\
-          \ / 'Documents' / 'budget_review.xlsx'\nwb = load_workbook(path, data_only=False)\n# openpyxl returns OOXML '!' sheet refs for LibreOffice-exported workbooks; expectations below use that exact graded form.\nexpected_sheets = ['RawBudget',\
-          \ 'VarianceReview', 'EscalationQueue', 'OwnerSummary', 'RegionalSummary', 'ControlPanel']\nif wb.sheetnames[:len(expected_sheets)]\
-          \ != expected_sheets:\n    print('SHEET_MISMATCH:' + repr(wb.sheetnames))\n    raise SystemExit(1)\nchecks = {'RawBudget':\
-          \ [['Category', 'Planned', 'Actual', 'Owner', 'Region', 'DueDate'], ['Travel', 1200, 980, 'Jordan Lee', 'West',\
-          \ '2026-07-01'], ['Lodging', 2100, 2240, 'Maya Chen', 'West', '2026-07-03'], ['Meals', 450, 390, 'Priya Nair', 'Central',\
-          \ '2026-07-04'], ['Supplies', 300, 340, 'Theo Martin', 'East', '2026-07-05'], ['Contingency', 600, 720, 'Maya Chen',\
-          \ 'Central', '2026-07-08'], ['Permits', 250, 410, 'Jordan Lee', 'East', '2026-07-09'], ['Training', 500, 455, 'Priya\
-          \ Nair', 'West', '2026-07-10'], ['Equipment', 850, 1025, 'Theo Martin', 'Central', '2026-07-11'], ['Insurance',\
-          \ 430, 610, 'Maya Chen', 'East', '2026-07-12'], ['Catering', 780, 695, 'Priya Nair', 'Central', '2026-07-13'], ['Venue',\
-          \ 3200, 3560, 'Jordan Lee', 'West', '2026-07-14'], ['Security', 950, 910, 'Theo Martin', 'East', '2026-07-15'],\
-          \ ['Interpretation', 640, 820, 'Maya Chen', 'Central', '2026-07-16'], ['Signage', 380, 260, 'Jordan Lee', 'East',\
-          \ '2026-07-17'], ['Transport', 1450, 1695, 'Theo Martin', 'West', '2026-07-18'], ['Accessibility', 520, 750, 'Priya\
-          \ Nair', 'Central', '2026-07-19']], 'VarianceReview': [['Category', 'Planned', 'Actual', 'Owner', 'Region', 'DueDate',\
-          \ 'Variance', 'Variance Abs', 'Status', 'Severity', 'Review Flag', 'Disposition', 'Recheck Owner', 'Review Slot',\
-          \ 'Audit ID', 'Cross-VM Trace', 'Evidence Link', 'Packet Type'], ['=RawBudget!A2', '=RawBudget!B2', '=RawBudget!C2',\
-          \ '=RawBudget!D2', '=RawBudget!E2', '=RawBudget!F2', '=C2-B2', '=ABS(G2)', '=IF(G2>0,\"Over\",\"Under\")', '=IF(H2>=300,\"\
-          Critical\",IF(H2>=150,\"High\",IF(H2>=75,\"Medium\",\"Low\")))', '=IF(H2>=100,\"Escalate\",\"Monitor\")', '=IF(K2=\"\
-          Escalate\",IF(G2>0,\"Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J2=\"Critical\",\"Controller\"\
-          ,IF(J2=\"High\",\"Finance Director\",D2))', '=IF(L2=\"Overrun packet\",\"Friday 10:00\",IF(L2=\"Savings packet\"\
-          ,\"Friday 14:00\",\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A2&\":\"&O2',\
-          \ '=\"Evidence/\"&E2&\"/\"&A2&\"/\"&O2', '=IF(AND(K2=\"Escalate\",J2=\"Critical\"),\"Director packet\",IF(K2=\"\
-          Escalate\",\"Owner packet\",\"Team note\"))'], ['=RawBudget!A3', '=RawBudget!B3', '=RawBudget!C3', '=RawBudget!D3',\
-          \ '=RawBudget!E3', '=RawBudget!F3', '=C3-B3', '=ABS(G3)', '=IF(G3>0,\"Over\",\"Under\")', '=IF(H3>=300,\"Critical\"\
-          ,IF(H3>=150,\"High\",IF(H3>=75,\"Medium\",\"Low\")))', '=IF(H3>=100,\"Escalate\",\"Monitor\")', '=IF(K3=\"Escalate\"\
-          ,IF(G3>0,\"Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J3=\"Critical\",\"Controller\",IF(J3=\"\
-          High\",\"Finance Director\",D3))', '=IF(L3=\"Overrun packet\",\"Friday 10:00\",IF(L3=\"Savings packet\",\"Friday\
-          \ 14:00\",\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A3&\":\"&O3', '=\"Evidence/\"\
-          &E3&\"/\"&A3&\"/\"&O3', '=IF(AND(K3=\"Escalate\",J3=\"Critical\"),\"Director packet\",IF(K3=\"Escalate\",\"Owner\
-          \ packet\",\"Team note\"))'], ['=RawBudget!A4', '=RawBudget!B4', '=RawBudget!C4', '=RawBudget!D4', '=RawBudget!E4',\
-          \ '=RawBudget!F4', '=C4-B4', '=ABS(G4)', '=IF(G4>0,\"Over\",\"Under\")', '=IF(H4>=300,\"Critical\",IF(H4>=150,\"\
-          High\",IF(H4>=75,\"Medium\",\"Low\")))', '=IF(H4>=100,\"Escalate\",\"Monitor\")', '=IF(K4=\"Escalate\",IF(G4>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J4=\"Critical\",\"Controller\",IF(J4=\"High\",\"\
-          Finance Director\",D4))', '=IF(L4=\"Overrun packet\",\"Friday 10:00\",IF(L4=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A4&\":\"&O4', '=\"Evidence/\"&E4&\"\
-          /\"&A4&\"/\"&O4', '=IF(AND(K4=\"Escalate\",J4=\"Critical\"),\"Director packet\",IF(K4=\"Escalate\",\"Owner packet\"\
-          ,\"Team note\"))'], ['=RawBudget!A5', '=RawBudget!B5', '=RawBudget!C5', '=RawBudget!D5', '=RawBudget!E5', '=RawBudget!F5',\
-          \ '=C5-B5', '=ABS(G5)', '=IF(G5>0,\"Over\",\"Under\")', '=IF(H5>=300,\"Critical\",IF(H5>=150,\"High\",IF(H5>=75,\"\
-          Medium\",\"Low\")))', '=IF(H5>=100,\"Escalate\",\"Monitor\")', '=IF(K5=\"Escalate\",IF(G5>0,\"Overrun packet\",\"\
-          Savings packet\"),\"Routine packet\")', '=IF(J5=\"Critical\",\"Controller\",IF(J5=\"High\",\"Finance Director\"\
-          ,D5))', '=IF(L5=\"Overrun packet\",\"Friday 10:00\",IF(L5=\"Savings packet\",\"Friday 14:00\",\"Monday 09:00\"))',\
-          \ '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A5&\":\"&O5', '=\"Evidence/\"&E5&\"/\"&A5&\"/\"&O5',\
-          \ '=IF(AND(K5=\"Escalate\",J5=\"Critical\"),\"Director packet\",IF(K5=\"Escalate\",\"Owner packet\",\"Team note\"\
-          ))'], ['=RawBudget!A6', '=RawBudget!B6', '=RawBudget!C6', '=RawBudget!D6', '=RawBudget!E6', '=RawBudget!F6', '=C6-B6',\
-          \ '=ABS(G6)', '=IF(G6>0,\"Over\",\"Under\")', '=IF(H6>=300,\"Critical\",IF(H6>=150,\"High\",IF(H6>=75,\"Medium\"\
-          ,\"Low\")))', '=IF(H6>=100,\"Escalate\",\"Monitor\")', '=IF(K6=\"Escalate\",IF(G6>0,\"Overrun packet\",\"Savings\
-          \ packet\"),\"Routine packet\")', '=IF(J6=\"Critical\",\"Controller\",IF(J6=\"High\",\"Finance Director\",D6))',\
-          \ '=IF(L6=\"Overrun packet\",\"Friday 10:00\",IF(L6=\"Savings packet\",\"Friday 14:00\",\"Monday 09:00\"))', '=\"\
-          AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A6&\":\"&O6', '=\"Evidence/\"&E6&\"/\"&A6&\"/\"&O6', '=IF(AND(K6=\"\
-          Escalate\",J6=\"Critical\"),\"Director packet\",IF(K6=\"Escalate\",\"Owner packet\",\"Team note\"))'], ['=RawBudget!A7',\
-          \ '=RawBudget!B7', '=RawBudget!C7', '=RawBudget!D7', '=RawBudget!E7', '=RawBudget!F7', '=C7-B7', '=ABS(G7)', '=IF(G7>0,\"\
-          Over\",\"Under\")', '=IF(H7>=300,\"Critical\",IF(H7>=150,\"High\",IF(H7>=75,\"Medium\",\"Low\")))', '=IF(H7>=100,\"\
-          Escalate\",\"Monitor\")', '=IF(K7=\"Escalate\",IF(G7>0,\"Overrun packet\",\"Savings packet\"),\"Routine packet\"\
-          )', '=IF(J7=\"Critical\",\"Controller\",IF(J7=\"High\",\"Finance Director\",D7))', '=IF(L7=\"Overrun packet\",\"\
-          Friday 10:00\",IF(L7=\"Savings packet\",\"Friday 14:00\",\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")',\
-          \ '=\"android->windows:\"&A7&\":\"&O7', '=\"Evidence/\"&E7&\"/\"&A7&\"/\"&O7', '=IF(AND(K7=\"Escalate\",J7=\"Critical\"\
-          ),\"Director packet\",IF(K7=\"Escalate\",\"Owner packet\",\"Team note\"))'], ['=RawBudget!A8', '=RawBudget!B8',\
-          \ '=RawBudget!C8', '=RawBudget!D8', '=RawBudget!E8', '=RawBudget!F8', '=C8-B8', '=ABS(G8)', '=IF(G8>0,\"Over\",\"\
-          Under\")', '=IF(H8>=300,\"Critical\",IF(H8>=150,\"High\",IF(H8>=75,\"Medium\",\"Low\")))', '=IF(H8>=100,\"Escalate\"\
-          ,\"Monitor\")', '=IF(K8=\"Escalate\",IF(G8>0,\"Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J8=\"\
-          Critical\",\"Controller\",IF(J8=\"High\",\"Finance Director\",D8))', '=IF(L8=\"Overrun packet\",\"Friday 10:00\"\
-          ,IF(L8=\"Savings packet\",\"Friday 14:00\",\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"\
-          &A8&\":\"&O8', '=\"Evidence/\"&E8&\"/\"&A8&\"/\"&O8', '=IF(AND(K8=\"Escalate\",J8=\"Critical\"),\"Director packet\"\
-          ,IF(K8=\"Escalate\",\"Owner packet\",\"Team note\"))'], ['=RawBudget!A9', '=RawBudget!B9', '=RawBudget!C9', '=RawBudget!D9',\
-          \ '=RawBudget!E9', '=RawBudget!F9', '=C9-B9', '=ABS(G9)', '=IF(G9>0,\"Over\",\"Under\")', '=IF(H9>=300,\"Critical\"\
-          ,IF(H9>=150,\"High\",IF(H9>=75,\"Medium\",\"Low\")))', '=IF(H9>=100,\"Escalate\",\"Monitor\")', '=IF(K9=\"Escalate\"\
-          ,IF(G9>0,\"Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J9=\"Critical\",\"Controller\",IF(J9=\"\
-          High\",\"Finance Director\",D9))', '=IF(L9=\"Overrun packet\",\"Friday 10:00\",IF(L9=\"Savings packet\",\"Friday\
-          \ 14:00\",\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A9&\":\"&O9', '=\"Evidence/\"\
-          &E9&\"/\"&A9&\"/\"&O9', '=IF(AND(K9=\"Escalate\",J9=\"Critical\"),\"Director packet\",IF(K9=\"Escalate\",\"Owner\
-          \ packet\",\"Team note\"))'], ['=RawBudget!A10', '=RawBudget!B10', '=RawBudget!C10', '=RawBudget!D10', '=RawBudget!E10',\
-          \ '=RawBudget!F10', '=C10-B10', '=ABS(G10)', '=IF(G10>0,\"Over\",\"Under\")', '=IF(H10>=300,\"Critical\",IF(H10>=150,\"\
-          High\",IF(H10>=75,\"Medium\",\"Low\")))', '=IF(H10>=100,\"Escalate\",\"Monitor\")', '=IF(K10=\"Escalate\",IF(G10>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J10=\"Critical\",\"Controller\",IF(J10=\"High\"\
-          ,\"Finance Director\",D10))', '=IF(L10=\"Overrun packet\",\"Friday 10:00\",IF(L10=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A10&\":\"&O10', '=\"Evidence/\"\
-          &E10&\"/\"&A10&\"/\"&O10', '=IF(AND(K10=\"Escalate\",J10=\"Critical\"),\"Director packet\",IF(K10=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A11', '=RawBudget!B11', '=RawBudget!C11', '=RawBudget!D11', '=RawBudget!E11',\
-          \ '=RawBudget!F11', '=C11-B11', '=ABS(G11)', '=IF(G11>0,\"Over\",\"Under\")', '=IF(H11>=300,\"Critical\",IF(H11>=150,\"\
-          High\",IF(H11>=75,\"Medium\",\"Low\")))', '=IF(H11>=100,\"Escalate\",\"Monitor\")', '=IF(K11=\"Escalate\",IF(G11>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J11=\"Critical\",\"Controller\",IF(J11=\"High\"\
-          ,\"Finance Director\",D11))', '=IF(L11=\"Overrun packet\",\"Friday 10:00\",IF(L11=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A11&\":\"&O11', '=\"Evidence/\"\
-          &E11&\"/\"&A11&\"/\"&O11', '=IF(AND(K11=\"Escalate\",J11=\"Critical\"),\"Director packet\",IF(K11=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A12', '=RawBudget!B12', '=RawBudget!C12', '=RawBudget!D12', '=RawBudget!E12',\
-          \ '=RawBudget!F12', '=C12-B12', '=ABS(G12)', '=IF(G12>0,\"Over\",\"Under\")', '=IF(H12>=300,\"Critical\",IF(H12>=150,\"\
-          High\",IF(H12>=75,\"Medium\",\"Low\")))', '=IF(H12>=100,\"Escalate\",\"Monitor\")', '=IF(K12=\"Escalate\",IF(G12>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J12=\"Critical\",\"Controller\",IF(J12=\"High\"\
-          ,\"Finance Director\",D12))', '=IF(L12=\"Overrun packet\",\"Friday 10:00\",IF(L12=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A12&\":\"&O12', '=\"Evidence/\"\
-          &E12&\"/\"&A12&\"/\"&O12', '=IF(AND(K12=\"Escalate\",J12=\"Critical\"),\"Director packet\",IF(K12=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A13', '=RawBudget!B13', '=RawBudget!C13', '=RawBudget!D13', '=RawBudget!E13',\
-          \ '=RawBudget!F13', '=C13-B13', '=ABS(G13)', '=IF(G13>0,\"Over\",\"Under\")', '=IF(H13>=300,\"Critical\",IF(H13>=150,\"\
-          High\",IF(H13>=75,\"Medium\",\"Low\")))', '=IF(H13>=100,\"Escalate\",\"Monitor\")', '=IF(K13=\"Escalate\",IF(G13>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J13=\"Critical\",\"Controller\",IF(J13=\"High\"\
-          ,\"Finance Director\",D13))', '=IF(L13=\"Overrun packet\",\"Friday 10:00\",IF(L13=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A13&\":\"&O13', '=\"Evidence/\"\
-          &E13&\"/\"&A13&\"/\"&O13', '=IF(AND(K13=\"Escalate\",J13=\"Critical\"),\"Director packet\",IF(K13=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A14', '=RawBudget!B14', '=RawBudget!C14', '=RawBudget!D14', '=RawBudget!E14',\
-          \ '=RawBudget!F14', '=C14-B14', '=ABS(G14)', '=IF(G14>0,\"Over\",\"Under\")', '=IF(H14>=300,\"Critical\",IF(H14>=150,\"\
-          High\",IF(H14>=75,\"Medium\",\"Low\")))', '=IF(H14>=100,\"Escalate\",\"Monitor\")', '=IF(K14=\"Escalate\",IF(G14>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J14=\"Critical\",\"Controller\",IF(J14=\"High\"\
-          ,\"Finance Director\",D14))', '=IF(L14=\"Overrun packet\",\"Friday 10:00\",IF(L14=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A14&\":\"&O14', '=\"Evidence/\"\
-          &E14&\"/\"&A14&\"/\"&O14', '=IF(AND(K14=\"Escalate\",J14=\"Critical\"),\"Director packet\",IF(K14=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A15', '=RawBudget!B15', '=RawBudget!C15', '=RawBudget!D15', '=RawBudget!E15',\
-          \ '=RawBudget!F15', '=C15-B15', '=ABS(G15)', '=IF(G15>0,\"Over\",\"Under\")', '=IF(H15>=300,\"Critical\",IF(H15>=150,\"\
-          High\",IF(H15>=75,\"Medium\",\"Low\")))', '=IF(H15>=100,\"Escalate\",\"Monitor\")', '=IF(K15=\"Escalate\",IF(G15>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J15=\"Critical\",\"Controller\",IF(J15=\"High\"\
-          ,\"Finance Director\",D15))', '=IF(L15=\"Overrun packet\",\"Friday 10:00\",IF(L15=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A15&\":\"&O15', '=\"Evidence/\"\
-          &E15&\"/\"&A15&\"/\"&O15', '=IF(AND(K15=\"Escalate\",J15=\"Critical\"),\"Director packet\",IF(K15=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A16', '=RawBudget!B16', '=RawBudget!C16', '=RawBudget!D16', '=RawBudget!E16',\
-          \ '=RawBudget!F16', '=C16-B16', '=ABS(G16)', '=IF(G16>0,\"Over\",\"Under\")', '=IF(H16>=300,\"Critical\",IF(H16>=150,\"\
-          High\",IF(H16>=75,\"Medium\",\"Low\")))', '=IF(H16>=100,\"Escalate\",\"Monitor\")', '=IF(K16=\"Escalate\",IF(G16>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J16=\"Critical\",\"Controller\",IF(J16=\"High\"\
-          ,\"Finance Director\",D16))', '=IF(L16=\"Overrun packet\",\"Friday 10:00\",IF(L16=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A16&\":\"&O16', '=\"Evidence/\"\
-          &E16&\"/\"&A16&\"/\"&O16', '=IF(AND(K16=\"Escalate\",J16=\"Critical\"),\"Director packet\",IF(K16=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))'], ['=RawBudget!A17', '=RawBudget!B17', '=RawBudget!C17', '=RawBudget!D17', '=RawBudget!E17',\
-          \ '=RawBudget!F17', '=C17-B17', '=ABS(G17)', '=IF(G17>0,\"Over\",\"Under\")', '=IF(H17>=300,\"Critical\",IF(H17>=150,\"\
-          High\",IF(H17>=75,\"Medium\",\"Low\")))', '=IF(H17>=100,\"Escalate\",\"Monitor\")', '=IF(K17=\"Escalate\",IF(G17>0,\"\
-          Overrun packet\",\"Savings packet\"),\"Routine packet\")', '=IF(J17=\"Critical\",\"Controller\",IF(J17=\"High\"\
-          ,\"Finance Director\",D17))', '=IF(L17=\"Overrun packet\",\"Friday 10:00\",IF(L17=\"Savings packet\",\"Friday 14:00\"\
-          ,\"Monday 09:00\"))', '=\"AUD-\"&TEXT(ROW()-1,\"000\")', '=\"android->windows:\"&A17&\":\"&O17', '=\"Evidence/\"\
-          &E17&\"/\"&A17&\"/\"&O17', '=IF(AND(K17=\"Escalate\",J17=\"Critical\"),\"Director packet\",IF(K17=\"Escalate\",\"\
-          Owner packet\",\"Team note\"))']], 'EscalationQueue': [['Category', 'Variance', 'Severity', 'Disposition', 'Recheck\
-          \ Owner', 'Review Slot'], ['=VarianceReview!A2', '=VarianceReview!G2', '=VarianceReview!J2', '=VarianceReview!L2',\
-          \ '=VarianceReview!M2', '=VarianceReview!N2'], ['=VarianceReview!A3', '=VarianceReview!G3', '=VarianceReview!J3',\
-          \ '=VarianceReview!L3', '=VarianceReview!M3', '=VarianceReview!N3'], ['=VarianceReview!A6', '=VarianceReview!G6',\
-          \ '=VarianceReview!J6', '=VarianceReview!L6', '=VarianceReview!M6', '=VarianceReview!N6'], ['=VarianceReview!A7',\
-          \ '=VarianceReview!G7', '=VarianceReview!J7', '=VarianceReview!L7', '=VarianceReview!M7', '=VarianceReview!N7'],\
-          \ ['=VarianceReview!A9', '=VarianceReview!G9', '=VarianceReview!J9', '=VarianceReview!L9', '=VarianceReview!M9',\
-          \ '=VarianceReview!N9'], ['=VarianceReview!A10', '=VarianceReview!G10', '=VarianceReview!J10', '=VarianceReview!L10',\
-          \ '=VarianceReview!M10', '=VarianceReview!N10'], ['=VarianceReview!A12', '=VarianceReview!G12', '=VarianceReview!J12',\
-          \ '=VarianceReview!L12', '=VarianceReview!M12', '=VarianceReview!N12'], ['=VarianceReview!A14', '=VarianceReview!G14',\
-          \ '=VarianceReview!J14', '=VarianceReview!L14', '=VarianceReview!M14', '=VarianceReview!N14'], ['=VarianceReview!A15',\
-          \ '=VarianceReview!G15', '=VarianceReview!J15', '=VarianceReview!L15', '=VarianceReview!M15', '=VarianceReview!N15'],\
-          \ ['=VarianceReview!A16', '=VarianceReview!G16', '=VarianceReview!J16', '=VarianceReview!L16', '=VarianceReview!M16',\
-          \ '=VarianceReview!N16'], ['=VarianceReview!A17', '=VarianceReview!G17', '=VarianceReview!J17', '=VarianceReview!L17',\
-          \ '=VarianceReview!M17', '=VarianceReview!N17']], 'OwnerSummary': [['Owner', 'Planned Total', 'Actual Total', 'Variance\
-          \ Total', 'Escalation Count', 'Critical Count'], ['Jordan Lee', '=SUMIF(RawBudget!D:D,A2,RawBudget!B:B)', '=SUMIF(RawBudget!D:D,A2,RawBudget!C:C)',\
-          \ '=C2-B2', '=COUNTIFS(VarianceReview!D:D,A2,VarianceReview!K:K,\"Escalate\")', '=COUNTIFS(VarianceReview!D:D,A2,VarianceReview!J:J,\"\
-          Critical\")'], ['Maya Chen', '=SUMIF(RawBudget!D:D,A3,RawBudget!B:B)', '=SUMIF(RawBudget!D:D,A3,RawBudget!C:C)',\
-          \ '=C3-B3', '=COUNTIFS(VarianceReview!D:D,A3,VarianceReview!K:K,\"Escalate\")', '=COUNTIFS(VarianceReview!D:D,A3,VarianceReview!J:J,\"\
-          Critical\")'], ['Priya Nair', '=SUMIF(RawBudget!D:D,A4,RawBudget!B:B)', '=SUMIF(RawBudget!D:D,A4,RawBudget!C:C)',\
-          \ '=C4-B4', '=COUNTIFS(VarianceReview!D:D,A4,VarianceReview!K:K,\"Escalate\")', '=COUNTIFS(VarianceReview!D:D,A4,VarianceReview!J:J,\"\
-          Critical\")'], ['Theo Martin', '=SUMIF(RawBudget!D:D,A5,RawBudget!B:B)', '=SUMIF(RawBudget!D:D,A5,RawBudget!C:C)',\
-          \ '=C5-B5', '=COUNTIFS(VarianceReview!D:D,A5,VarianceReview!K:K,\"Escalate\")', '=COUNTIFS(VarianceReview!D:D,A5,VarianceReview!J:J,\"\
-          Critical\")']], 'RegionalSummary': [['Region', 'Planned Total', 'Actual Total', 'Variance Total', 'Escalation Count'],\
-          \ ['West', '=SUMIF(RawBudget!E:E,A2,RawBudget!B:B)', '=SUMIF(RawBudget!E:E,A2,RawBudget!C:C)', '=C2-B2', '=COUNTIFS(VarianceReview!E:E,A2,VarianceReview!K:K,\"\
-          Escalate\")'], ['Central', '=SUMIF(RawBudget!E:E,A3,RawBudget!B:B)', '=SUMIF(RawBudget!E:E,A3,RawBudget!C:C)', '=C3-B3',\
-          \ '=COUNTIFS(VarianceReview!E:E,A3,VarianceReview!K:K,\"Escalate\")'], ['East', '=SUMIF(RawBudget!E:E,A4,RawBudget!B:B)',\
-          \ '=SUMIF(RawBudget!E:E,A4,RawBudget!C:C)', '=C4-B4', '=COUNTIFS(VarianceReview!E:E,A4,VarianceReview!K:K,\"Escalate\"\
-          )']], 'ControlPanel': [['Metric', 'Value'], ['Rows Imported', 16], ['Total Planned', '=SUM(RawBudget!B2:B17)'],\
-          \ ['Total Actual', '=SUM(RawBudget!C2:C17)'], ['Net Variance', '=SUM(VarianceReview!G2:G17)'], ['Absolute Variance',\
-          \ '=SUM(VarianceReview!H2:H17)'], ['Escalation Count', '=COUNTIF(VarianceReview!K2:K17,\"Escalate\")'], ['Critical\
-          \ Count', '=COUNTIF(VarianceReview!J2:J17,\"Critical\")'], ['Android Transfer Status', 'consumed in LibreOffice\
-          \ Calc']]}\nfor sheet, expected in checks.items():\n    ws = wb[sheet]\n    width = max(len(row) for row in expected)\n\
-          \    actual = [[ws.cell(r, c).value for c in range(1, width + 1)] for r in range(1, len(expected) + 1)]\n    padded\
-          \ = [row + [None] * (width - len(row)) for row in expected]\n    if actual != padded:\n        print(sheet + '_MISMATCH:'\
-          \ + repr(actual))\n        raise SystemExit(1)\nprint('EVAL_RESULT:PASS')\nOSOMNI_PY"
+        command: |-
+          USERPROFILE=/home/user python3 -W ignore - <<'OSOMNI_PY'
+          import os, re, subprocess, sys, datetime
+          from pathlib import Path
+          try:
+              from openpyxl import load_workbook
+          except ImportError:
+              subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'openpyxl', '-q'])
+              from openpyxl import load_workbook
+          from openpyxl.utils.cell import range_boundaries
+          from openpyxl.worksheet.formula import ArrayFormula
+
+          # Grade what the brief states, not one way of building it. The brief names the six sheets,
+          # the RawBudget columns and rows, the twelve VarianceReview columns (computed with formulas
+          # that reference RawBudget, one row per budget row), the EscalationQueue filter (Variance Abs
+          # at least 100, formulas that reference VarianceReview), SUMIF/COUNTIFS summaries by owner and
+          # by region, and the eight ControlPanel items. It does not give the Status/Severity/Disposition
+          # policy, the summary or queue columns, row orders, labels, or the transfer-status text, so
+          # those are free. Values are read from the results LibreOffice saves with each formula; a
+          # row is identified by its Category (owner/region for the summaries). Where a column or
+          # label names a quantity the brief defines (planned, actual, variance, escalations, ...), its
+          # value must be right.
+          path = Path(os.environ['USERPROFILE']) / 'Documents' / 'budget_review.xlsx'
+          wb = load_workbook(path, data_only=False)
+          saved = load_workbook(path, data_only=True)
+
+
+          def fail(code, detail=''):
+              print(code + (':' + str(detail) if detail != '' else ''))
+              raise SystemExit(1)
+
+
+          SHEETS = ['RawBudget', 'VarianceReview', 'EscalationQueue', 'OwnerSummary', 'RegionalSummary', 'ControlPanel']
+          if wb.sheetnames[:len(SHEETS)] != SHEETS:
+              fail('SHEET_MISMATCH', repr(wb.sheetnames))
+
+          HEADER = ['Category', 'Planned', 'Actual', 'Owner', 'Region', 'DueDate']
+          BUDGET = [
+              ('Travel', 1200, 980, 'Jordan Lee', 'West', '2026-07-01'),
+              ('Lodging', 2100, 2240, 'Maya Chen', 'West', '2026-07-03'),
+              ('Meals', 450, 390, 'Priya Nair', 'Central', '2026-07-04'),
+              ('Supplies', 300, 340, 'Theo Martin', 'East', '2026-07-05'),
+              ('Contingency', 600, 720, 'Maya Chen', 'Central', '2026-07-08'),
+              ('Permits', 250, 410, 'Jordan Lee', 'East', '2026-07-09'),
+              ('Training', 500, 455, 'Priya Nair', 'West', '2026-07-10'),
+              ('Equipment', 850, 1025, 'Theo Martin', 'Central', '2026-07-11'),
+              ('Insurance', 430, 610, 'Maya Chen', 'East', '2026-07-12'),
+              ('Catering', 780, 695, 'Priya Nair', 'Central', '2026-07-13'),
+              ('Venue', 3200, 3560, 'Jordan Lee', 'West', '2026-07-14'),
+              ('Security', 950, 910, 'Theo Martin', 'East', '2026-07-15'),
+              ('Interpretation', 640, 820, 'Maya Chen', 'Central', '2026-07-16'),
+              ('Signage', 380, 260, 'Jordan Lee', 'East', '2026-07-17'),
+              ('Transport', 1450, 1695, 'Theo Martin', 'West', '2026-07-18'),
+              ('Accessibility', 520, 750, 'Priya Nair', 'Central', '2026-07-19'),
+          ]
+          ROWS = [dict(zip(HEADER, row), Variance=row[2] - row[1]) for row in BUDGET]
+          ESCALATED = [row['Category'] for row in ROWS if abs(row['Variance']) >= 100]
+          COMPUTED = ['Variance', 'Variance Abs', 'Status', 'Severity', 'Review Flag', 'Disposition', 'Recheck Owner',
+                      'Review Slot', 'Audit ID', 'Cross-VM Trace', 'Evidence Link', 'Packet Type']
+          CONDITIONAL = re.compile(r'\b(?:SUMIFS?|COUNTIFS?)\s*\(')
+
+
+          def key(text):
+              return re.sub(r'[^0-9a-z]+', '', str(text).lower())
+
+
+          def words(text):
+              return ' '.join(re.sub(r'[^0-9a-z]+', ' ', str(text).lower()).split())
+
+
+          def number(value):
+              if isinstance(value, bool) or not isinstance(value, (int, float)):
+                  return None
+              return float(value)
+
+
+          def same_number(value, expected):
+              got = number(value)
+              return got is not None and abs(got - expected) < 1e-6
+
+
+          def read(name):
+              """Cells of a sheet: (row, col) -> (formula text or None, saved value)."""
+              ws, values = wb[name], saved[name]
+              spilled = {}
+              for row in ws.iter_rows():
+                  for cell in row:
+                      if isinstance(cell.value, ArrayFormula) and cell.value.ref:
+                          c1, r1, c2, r2 = range_boundaries(cell.value.ref)
+                          for r in range(r1, r2 + 1):
+                              for c in range(c1, c2 + 1):
+                                  spilled[(r, c)] = str(cell.value.text or '')
+              cells = {}
+              for row in ws.iter_rows():
+                  for cell in row:
+                      raw = cell.value
+                      if isinstance(raw, ArrayFormula):
+                          formula = str(raw.text or '')
+                      elif isinstance(raw, str) and raw.startswith('='):
+                          formula = raw
+                      else:
+                          formula = spilled.get((cell.row, cell.column))
+                      value = values.cell(cell.row, cell.column).value if formula is not None else raw
+                      if formula is None and (value is None or (isinstance(value, str) and not value.strip())):
+                          continue
+                      cells[(cell.row, cell.column)] = (formula, value)
+              return cells
+
+
+          def rows_of(cells):
+              rows = {}
+              for (r, c), cell in cells.items():
+                  rows.setdefault(r, {})[c] = cell
+              return dict(sorted(rows.items()))
+
+
+          def code(formula):
+              return re.sub(r'"[^"]*"', '""', (formula or '').upper())
+
+
+          def references(formula, sheet):
+              return re.search(r"(?<![A-Z0-9_])'?" + sheet.upper() + r"'?\s*[!.]", code(formula)) is not None
+
+
+          def identify(row, names):
+              """The one name of `names` that a cell of the row shows, or None."""
+              found = {key(v) for _, v in row.values() if isinstance(v, str)} & {key(n) for n in names}
+              matches = [n for n in names if key(n) in found]
+              return matches[0] if len(matches) == 1 else (None if not matches else '__AMBIGUOUS__')
+
+
+          def keyed_rows(sheet, cells, names, header_row):
+              by_name = {}
+              for r, row in rows_of(cells).items():
+                  if r <= header_row:
+                      continue
+                  name = identify(row, names)
+                  if name == '__AMBIGUOUS__':
+                      fail(sheet.upper() + '_ROW_NAMES_SEVERAL', r)
+                  if name is None:
+                      continue
+                  if name in by_name:
+                      fail(sheet.upper() + '_DUPLICATE_ROW', name)
+                  by_name[name] = (r, row)
+              return by_name
+
+
+          def same_value(value, expected):
+              if isinstance(expected, str):
+                  if isinstance(value, (datetime.datetime, datetime.date)) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', expected):
+                      return value.strftime('%Y-%m-%d') == expected and (
+                          not isinstance(value, datetime.datetime) or value.time() == datetime.time(0))
+                  return isinstance(value, str) and value.strip() == expected
+              return same_number(value, expected)
+
+
+          # --- Sheet 1: RawBudget holds the CSV header and its sixteen rows.
+          raw = read('RawBudget')
+          for r, expected in enumerate([HEADER] + [list(row) for row in BUDGET], start=1):
+              actual = [raw.get((r, c), (None, None))[1] for c in range(1, len(HEADER) + 1)]
+              if not all(same_value(a, e) for a, e in zip(actual, expected)):
+                  fail('RawBudget_MISMATCH', 'row %d: %r' % (r, actual))
+
+          # --- Sheet 2: VarianceReview, one formula row per budget row with the twelve named columns.
+          review = read('VarianceReview')
+          review_rows = rows_of(review)
+          header_row, columns = None, {}
+          for r, row in list(review_rows.items())[:5]:
+              names = {key(v): c for c, (_, v) in row.items() if isinstance(v, str)}
+              if all(key(name) in names for name in COMPUTED):
+                  header_row, columns = r, {name: names[key(name)] for name in COMPUTED}
+                  break
+          if header_row is None:
+              first = next(iter(review_rows.values()), {})
+              present = {key(v) for _, v in first.values() if isinstance(v, str)}
+              fail('VarianceReview_MISSING_COLUMNS', [name for name in COMPUTED if key(name) not in present])
+          table_columns = set(review_rows[header_row])
+          by_category = keyed_rows('VarianceReview', review, [row['Category'] for row in ROWS], header_row)
+          missing = [row['Category'] for row in ROWS if row['Category'] not in by_category]
+          if missing:
+              fail('VarianceReview_MISSING_ROWS', missing)
+          severity = {}
+          for budget in ROWS:
+              r, row = by_category[budget['Category']]
+              for c in sorted(table_columns):
+                  if c in row and row[c][0] is None:
+                      fail('VarianceReview_TYPED_VALUE', '%s row %d column %d: %r' % (budget['Category'], r, c, row[c][1]))
+              for name, c in columns.items():
+                  if c not in row or row[c][0] is None:
+                      fail('VarianceReview_FORMULA_MISSING', '%s: %s' % (budget['Category'], name))
+              if not any(references(formula, 'RawBudget') for formula, _ in row.values()):
+                  fail('VarianceReview_NO_RAWBUDGET_REFERENCE', budget['Category'])
+              for name, expected in (('Variance', budget['Variance']), ('Variance Abs', abs(budget['Variance']))):
+                  formula, value = row[columns[name]]
+                  if not same_number(value, expected):
+                      fail('VarianceReview_WRONG_' + name.upper().replace(' ', '_'),
+                           '%s: %s gives %r, expected %r' % (budget['Category'], formula, value, expected))
+              severity[budget['Category']] = words(row[columns['Severity']][1] or '')
+          critical = {category for category, text in severity.items() if text == 'critical'}
+
+          # --- Sheet 3: EscalationQueue lists exactly the rows with Variance Abs at least 100, by formula.
+          queue = read('EscalationQueue')
+          listed = keyed_rows('EscalationQueue', queue, [row['Category'] for row in ROWS], 0)
+          extra = [name for name in listed if name not in ESCALATED]
+          missing = [name for name in ESCALATED if name not in listed]
+          if extra or missing:
+              fail('EscalationQueue_ROWS', 'extra %r, missing %r' % (extra, missing))
+          for name, (r, row) in listed.items():
+              typed = [c for c, (formula, _) in row.items() if formula is None]
+              if typed:
+                  fail('EscalationQueue_TYPED_VALUE', '%s row %d columns %r' % (name, r, typed))
+              if not any(references(formula, 'VarianceReview') for formula, _ in row.values()):
+                  fail('EscalationQueue_NO_VARIANCEREVIEW_REFERENCE', name)
+
+
+          # --- Sheets 4 and 5: SUMIF/COUNTIFS summaries by owner and by region.
+          def measure(header):
+              """What a summary column or ControlPanel label names, when the brief defines it."""
+              text = words(header)
+              tokens = set(text.split())
+              if tokens & {'avg', 'average', 'mean', 'median', 'max', 'min', 'maximum', 'minimum', 'pct', 'percent',
+                           'percentage', 'rate', 'ratio', 'share'}:
+                  return None
+              if 'variance' in text and 'abs' in text:
+                  return 'abs_variance'
+              if 'variance' in text:
+                  return 'variance'
+              if 'escalat' in text:
+                  return 'escalations'
+              if 'critical' in text:
+                  return 'critical'
+              if 'planned' in text or 'plan' in tokens:
+                  return 'planned'
+              if 'actual' in text:
+                  return 'actual'
+              if tokens & {'row', 'rows', 'record', 'records', 'item', 'items', 'line', 'lines', 'entries'} or text == 'count':
+                  return 'rows'
+              if 'status' in tokens or 'android' in tokens or 'transfer' in tokens:
+                  return 'status'
+              return None
+
+
+          def totals(rows):
+              return {
+                  'planned': sum(row['Planned'] for row in rows),
+                  'actual': sum(row['Actual'] for row in rows),
+                  'variance': sum(row['Variance'] for row in rows),
+                  'abs_variance': sum(abs(row['Variance']) for row in rows),
+                  'escalations': sum(abs(row['Variance']) >= 100 for row in rows),
+                  'critical': sum(row['Category'] in critical for row in rows),
+                  'rows': len(rows),
+              }
+
+
+          for sheet, field in (('OwnerSummary', 'Owner'), ('RegionalSummary', 'Region')):
+              cells = read(sheet)
+              sheet_rows = rows_of(cells)
+              groups = list(dict.fromkeys(row[field] for row in ROWS))
+              found = keyed_rows(sheet, cells, groups, 0)
+              missing = [name for name in groups if name not in found]
+              if missing:
+                  fail(sheet + '_MISSING_ROWS', missing)
+              # The column titles are the text row just above the first summary row.
+              first = min(r for r, _ in found.values())
+              titled = [r for r, row in sheet_rows.items() if r < first and any(isinstance(v, str) for _, v in row.values())]
+              headers = {c: v for c, (_, v) in sheet_rows[titled[-1]].items() if isinstance(v, str)} if titled else {}
+              for name, (r, row) in found.items():
+                  if not any(CONDITIONAL.search(code(formula)) for formula, _ in row.values()):
+                      fail(sheet + '_NO_SUMIF_COUNTIFS', name)
+                  expected = totals([budget for budget in ROWS if budget[field] == name])
+                  for c, title in headers.items():
+                      what = measure(title)
+                      if what in (None, 'status') or c not in row:
+                          continue
+                      formula, value = row[c]
+                      if formula is None:
+                          fail(sheet + '_TYPED_VALUE', '%s %s: %r' % (name, title, value))
+                      if not same_number(value, expected[what]):
+                          fail(sheet + '_WRONG_VALUE', '%s %s: %r, expected %r' % (name, title, value, expected[what]))
+
+          # --- Sheet 6: ControlPanel shows the eight items the brief lists.
+          panel = read('ControlPanel')
+          overall = totals(ROWS)
+          allowed = {
+              'rows': [overall['rows']], 'planned': [overall['planned']], 'actual': [overall['actual']],
+              'variance': [overall['variance']],
+              # "absolute variance": the sum of Variance Abs, or the absolute value of the net variance.
+              'abs_variance': [overall['abs_variance'], abs(overall['variance'])],
+              'escalations': [overall['escalations']], 'critical': [overall['critical']],
+          }
+          items = {}
+          for (r, c) in sorted(panel):
+              formula, value = panel[(r, c)]
+              if formula is not None or not isinstance(value, str):
+                  continue
+              what = measure(value)
+              if what is None or what in items:
+                  continue
+              # The value sits to the right of its label (a list) or below it (a row of labels).
+              right = [panel[(r, cc)][1] for cc in range(c + 1, c + 4) if (r, cc) in panel]
+              below = panel.get((r + 1, c), (None, None))[1]
+              if what == 'status':
+                  beside = right[0] if right else None
+                  is_label = isinstance(beside, str) and measure(beside) not in (None, 'status')
+                  items[what] = (value, below if beside is None or is_label else beside)
+              else:
+                  numbers = [v for v in right[:1] + [below] if number(v) is not None]
+                  items[what] = (value, numbers[0] if numbers else (right[0] if right else below))
+          for what in ['rows', 'planned', 'actual', 'variance', 'abs_variance', 'escalations', 'critical', 'status']:
+              if what not in items:
+                  fail('ControlPanel_MISSING', what)
+              label, value = items[what]
+              if what == 'status':
+                  if value is None or not str(value).strip():
+                      fail('ControlPanel_EMPTY', label)
+              elif not any(same_number(value, expected) for expected in allowed[what]):
+                  fail('ControlPanel_WRONG_VALUE', '%s: %r, expected %r' % (label, value, allowed[what]))
+          print('EVAL_RESULT:PASS')
+          OSOMNI_PY
         timeout: 120
         stdout_contains: EVAL_RESULT:PASS
 limits:
