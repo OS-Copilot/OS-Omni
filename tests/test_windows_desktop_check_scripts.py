@@ -454,8 +454,26 @@ def test_windows_supplemental_files_are_named_in_the_brief(path):
         assert item["path"] in task["instruction"]
 
 
-@pytest.mark.parametrize("stem", ["drawio_ellipse_vertical_divider_styled",
-                                  "cross_app_openshop_calendar_checkout_coffee_followup_hard"])
-def test_no_handoff_files_where_the_apps_cannot_write_them(stem):
-    text = (ROOT / "tasks/v1/windows" / f"{stem}.yaml").read_text(encoding="utf-8")
-    assert "helloworld_hard_plus" not in text
+@pytest.mark.parametrize("path", sorted((ROOT / "tasks/v1/windows").glob("*.yaml")), ids=lambda p: p.stem)
+def test_supplemental_files_can_be_written_through_the_gui(path):
+    """The agent may only drive the GUI, so a brief that asks for extra text files must not forbid the
+    text editor (or demand a scripted 'file-writing method'), and the evaluator must not fail on Notepad."""
+    task = yaml.safe_load(path.read_text(encoding="utf-8"))
+    checks = ((task.get("evaluation") or {}).get("params") or {}).get("supplemental_checks") or {}
+    if not checks.get("files"):
+        return
+    instruction = task["instruction"].lower()
+    assert "file-writing method" not in instruction
+    assert "notepad or another text editor" not in instruction
+    assert "notepad" not in " ".join(str(x.get("label", "")) for x in checks.get("powershell") or [])
+
+
+def test_supplemental_exact_text_accepts_utf8_bom():
+    from platforms.windows.runners.evaluation import _run_supplemental_checks
+
+    class _Controller:
+        def get_file(self, path):
+            return "\ufeffa\tb\r\nc\r\n".encode("utf-8")
+
+    params = {"supplemental_checks": {"files": [{"path": r"C:\x.tsv", "exact_text": "a\tb\nc"}]}}
+    assert _run_supplemental_checks(controller=_Controller(), params=params).status.value == "PASS"

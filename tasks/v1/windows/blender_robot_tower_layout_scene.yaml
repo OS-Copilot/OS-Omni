@@ -108,8 +108,7 @@ instruction: 'In Blender, product_stage.blend is already open. Build the Linux-s
   this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
   Do not finish until all eleven .blend files, all dependency text artifacts, and all hard-plus verification files exist.
   This Windows task intentionally exceeds linux.blender.prepare_social_render while using the same explicit X/Y/Z coordinate
-  style. Use Blender for scene work and Blender/automation file-writing for dependency text artifacts; do not open Notepad
-  or another text editor to create any .txt, .tsv, or .csv artifact.'
+  style. Use Blender for the scene work.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:
@@ -162,16 +161,6 @@ evaluation:
           extra_artifacts,benchmark-ops,ready
 
           oracle_recheck,benchmark-ops,required'
-      powershell:
-      - label: no_notepad_process
-        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
-
-          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
-
-          Write-Output ''NO_NOTEPAD_PROCESS'''
-        stdout_contains: NO_NOTEPAD_PROCESS
-        expected_exit_code: 0
-        timeout: 10
 limits:
   max_steps: 300
   step_timeout_seconds: 180

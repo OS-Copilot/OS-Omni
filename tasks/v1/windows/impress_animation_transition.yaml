@@ -13,9 +13,7 @@ instruction: 'A 5-slide conference presentation is open in LibreOffice Impress. 
   this content: ''primary_task=windows.impress.animation_transition\nlinux_peer=linux.impress.add_dissolve_transition\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
   C:\Users\User\Documents\helloworld_hard_plus\windows_impress_animation_transition\hard_plus_review_matrix.csv with exactly
   this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
-  Use LibreOffice Impress for the presentation work, and write the .txt, .tsv, and .csv verification files from inside LibreOffice
-  as well (for example with a LibreOffice Basic macro created and run from Tools > Macros), not with Notepad or another text
-  editor.'
+  Use LibreOffice Impress for the presentation work and create the required .txt, .tsv, and .csv verification files at the specified paths.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:
@@ -69,15 +67,6 @@ evaluation:
           \ | py -3 -W ignore -"
         stdout_contains: EVAL_RESULT:PASS
         timeout: 90
-      - label: no_notepad_process
-        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
-
-          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
-
-          Write-Output ''NO_NOTEPAD_PROCESS'''
-        stdout_contains: NO_NOTEPAD_PROCESS
-        expected_exit_code: 0
-        timeout: 10
       files:
       - path: C:\Users\User\Documents\helloworld_hard_plus\windows_impress_animation_transition\hard_plus_handoff.tsv
         exact_text: "task_id\tlinux_peer\tstatus\nwindows.impress.animation_transition\tlinux.impress.add_dissolve_transition\t\

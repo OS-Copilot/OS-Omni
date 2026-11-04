@@ -111,7 +111,8 @@ def _run_supplemental_checks(
                 message=f"supplemental file missing or unreadable: {remote_path} ({type(exc).__name__}: {exc})",
                 metadata={"supplemental_checks": checked},
             )
-        text = raw.decode("utf-8", errors="replace")
+        # utf-8-sig: a file saved from Notepad as "UTF-8 with BOM" holds the same text.
+        text = raw.decode("utf-8-sig", errors="replace")
         checked.append({"path": remote_path, "bytes": len(raw)})
         if exact_text and _normalize_text_for_exact_check(text) != _normalize_text_for_exact_check(exact_text):
             return EvalResult(
