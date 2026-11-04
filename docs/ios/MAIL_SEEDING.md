@@ -13,10 +13,13 @@ intended wiring and the safety rules around it.
 ## 1. What is seeded (and what is never seeded)
 
 Only initial inbound messages: the mails the agent must find in the
-sender-visible store before step 1. Every seed is addressed to the sender
-mailbox `alex.rivera@example.test` and carries the original evaluator
-identity as its `Message-ID` plus a `Seed body for <Subject>.` text line
-(the quoted-body convention the 3_2/3_3 verifiers require).
+sender-visible store before step 1. Every seed is delivered to the sender
+mailbox `alex.rivera@example.test`; reply-source seeds carry their original
+sender (the reply checkpoint mailbox from `TARGET_SPECS`, e.g.
+`benchsender@example.test`) as `From`, so the app's Reply is addressed to the
+graded mailbox. Each seed carries the original evaluator identity as its
+`Message-ID` plus a `Seed body for <Subject>.` text line (the quoted-body
+convention the 3_2/3_3 verifiers require).
 
 | Task | Seeds (subject → Message-ID) |
 |---|---|
@@ -109,9 +112,10 @@ yaml `expected_ruleset_sha256` together — never weakening the hash checks.
    `source_reference` substrings); seed IDs are convention-minted. Any ID
    containing the reference satisfies the verifier, but byte-identity with
    the historical baseline is unverified.
-2. Original seed `From` addresses are not pinned by any evaluator; seeds are
-   self-addressed (`From == To ==` sender). If the historical baseline used a
-   distinct bench sender, agent-visible threading text could differ cosmetically.
+2. Reply-source seed `From` addresses are derived from the evaluators' reply
+   checkpoint mailboxes (`TARGET_SPECS` `kind: "reply"`), while delivery stays
+   in the agent mailbox; non-reply seeds remain self-addressed. No evaluator
+   pins the seed `From` header directly, only the target reply's recipient.
 3. The recovered-photo manifest and copies (`../records/…`, `../ios/…`) are
    root-provided and were not opened here; hash acceptance runs in
    `prepare_maily_assets.py` at extraction time.

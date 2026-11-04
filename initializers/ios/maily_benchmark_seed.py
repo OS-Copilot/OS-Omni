@@ -9,9 +9,12 @@ Task YAML wiring is left to root after review.
 What this module seeds: ONLY the initial inbound messages that must already
 sit in the sender-visible store before step 1. It NEVER seeds, fabricates, or
 replays the agents' final sent (target completion) messages; those remain the
-durable outputs the original evaluators verify. Every seed is addressed to the
-sender mailbox (``alex.rivera@example.test``); every target-only recipient
-mailbox starts empty after the reset.
+durable outputs the original evaluators verify. Every seed is delivered to the
+sender mailbox (``alex.rivera@example.test``); reply-source seeds additionally
+carry the original sender as ``From`` so the app's Reply is addressed to the
+mailbox the matching evaluator checkpoint reads (derived from
+``TARGET_SPECS``). Every target-only recipient mailbox starts empty after the
+reset.
 
 Grounding (read in full before any edit):
 - ``tasks/v1/ios/maily_instruction_3_[123].yaml`` (instruction text).
@@ -215,6 +218,27 @@ ALL_TARGET_RECIPIENTS: tuple[str, ...] = tuple(
     )
 )
 
+
+def reply_source_senders(task_id: str) -> dict[str, str]:
+    """Map each reply-source seed subject to the mailbox its reply must reach.
+
+    Maily's Reply action addresses the seed's ``From`` header, while every reply
+    checkpoint in the three evaluators reads a fixed mailbox declared on the
+    matching ``kind == "reply"`` target spec (``benchsender@example.test`` for
+    all three tasks). Deriving the seed sender from ``TARGET_SPECS`` keeps
+    3_1/3_2/3_3 consistent and keeps the evaluator as the single source of
+    truth; self-addressing the seeds made replies land in the agent's own
+    mailbox, so the graded mailboxes stayed empty (scan.CSV rows IOS-007 /
+    IOS-009 / IOS-010, issue_class ``seed_mismatch``).
+    """
+    if task_id not in TARGET_SPECS:
+        raise KeyError(f"unknown Maily benchmark task: {task_id!r} (expected one of {list(TARGET_SPECS)})")
+    return {
+        str(spec["source_subject"]): str(spec["mailbox"])
+        for spec in TARGET_SPECS[task_id]
+        if spec.get("kind") == "reply" and spec.get("source_subject")
+    }
+
 # ---------------------------------------------------------------------------
 # Asset hash tables (byte-exact contracts from the original evaluators).
 # FSNotes/photo BYTES are resolved by scripts/prepare_maily_assets.py; the
@@ -254,24 +278,40 @@ EXPECTED_PHOTO_HASHES: tuple[dict[str, str], ...] = (
 
 
 def seed_specs_for(task_id: str) -> tuple[dict[str, str], ...]:
-    """Return a defensive copy of the inbound seed specs for one task."""
+    """Return a defensive copy of the inbound seed specs for one task.
+
+    Reply-source seeds gain a ``sender`` field: the original mailbox whose
+    reply checkpoint must receive the agent's Reply. That field is injected at
+    read time from ``TARGET_SPECS``, so ``SEED_SPECS`` stays subject/Message-ID
+    only and 3_1/3_2/3_3 cannot drift from their evaluators.
+    """
     if task_id not in SEED_SPECS:
         raise KeyError(f"unknown Maily benchmark task: {task_id!r} (expected one of {list(SEED_SPECS)})")
-    return copy.deepcopy(SEED_SPECS[task_id])
+    specs = copy.deepcopy(SEED_SPECS[task_id])
+    senders = reply_source_senders(task_id)
+    for spec in specs:
+        sender = senders.get(spec["subject"])
+        if sender:
+            spec["sender"] = sender
+    return specs
 
 
 def build_seed_email(
     *,
     spec: Mapping[str, str],
     sender_email: str = SENDER_EMAIL,
+    from_email: str | None = None,
     recipient_email: str = SENDER_EMAIL,
     seed_index: int = 0,
 ) -> Message:
     """Build the exact MIME message for one inbound seed.
 
-    Seeds are self-addressed to the sender mailbox so they are visible to the
-    Maily account under test. ``Message-ID`` carries the original evaluator
-    identity and ``Date`` is a stable pre-run timestamp.
+    Seeds are delivered to the sender mailbox (``recipient_email``) so they are
+    visible to the Maily account under test. Reply-source seeds pass their
+    original mailbox as ``from_email`` (``spec["sender"]`` from
+    ``TARGET_SPECS``) so the app's Reply is addressed to the graded mailbox;
+    every other seed keeps ``From == sender_email``. ``Message-ID`` carries the
+    original evaluator identity and ``Date`` is a stable pre-run timestamp.
 
     NOTE: this deliberately uses the plain (compat32-style) ``Message`` class
     with verbatim string headers, NOT ``EmailMessage``. The original baseline
@@ -281,7 +321,7 @@ def build_seed_email(
     Bodies are ASCII by construction, so ``7bit`` transfer encoding applies.
     """
     message = Message()
-    message["From"] = sender_email
+    message["From"] = str(from_email or sender_email)
     message["To"] = recipient_email
     message["Subject"] = str(spec["subject"])
     message["Message-ID"] = str(spec["message_id"])
@@ -570,6 +610,7 @@ class MailyBenchmarkSeedInitializer(BaseInitializer):
                 message = build_seed_email(
                     spec=spec,
                     sender_email=sender_email,
+                    from_email=str(spec.get("sender") or sender_email),
                     recipient_email=sender_email,
                     seed_index=index,
                 )

@@ -355,11 +355,13 @@ def test_full_mocked_seed_run_passes_and_stays_inbound(monkeypatch, quiet_sleep)
     # The shared-host reset ran exactly once through the reused helpers.
     assert len(readiness_calls) == 1
     assert len(purge_calls) == 1
-    # All seeds authenticate as the sender and land in the sender mailbox.
+    # All seeds authenticate as the sender and land in the sender mailbox;
+    # reply-source seeds carry the original sender the app's Reply must reach.
     assert logins and all(user == SENDER for user, _secret in logins)
-    for message in sent:
-        assert message["To"] == SENDER
-        assert message["From"] == SENDER
+    expected_from = [spec.get("sender", SENDER) for spec in specs]
+    assert [message["From"] for message in sent] == expected_from
+    assert [message["To"] for message in sent] == [SENDER] * len(sent)
+    assert expected_from.count("benchsender@example.test") == 3
     assert "activate_app" in calls
     _assert_no_password_leak(result)
 
