@@ -435,3 +435,11 @@ models:
     metadata:
       enable_thinking: false
       computer_use_protocol: qwen
+  openlux_kimi_k3_no_thinking:
+    provider: openai
+    model_name: kimi-k3
+    api_key_env: KIMI_K3_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
