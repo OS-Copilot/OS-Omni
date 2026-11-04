@@ -213,7 +213,7 @@
       "artifact_path": "opendriver/Android/android.opendriver.rider_full_service_logout",
       "extraction_method": "reconstructed_artifacts",
       "initializer_id": "initializers.android.cua_review:SnapshotOpenAppInitializer",
-      "evaluator_id": "evaluators.android.cua_review_state:ForegroundTextEvaluator",
+      "evaluator_id": "evaluators.android.opendriver_rider_full_service_logout:OpenDriverRiderLogoutWorkflowEvaluator",
       "original_evaluator_id": "evaluators.android.cua_review_state:ForegroundTextEvaluator",
       "evaluator_source": null,
       "instruction_summary_source": "generated_english_natural_language",

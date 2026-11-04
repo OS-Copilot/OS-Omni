@@ -93,6 +93,15 @@ evaluation:
     - text: Search owner added
     owner_post_text: Release brief ready
     owner_reply_text: Brief link is live
+    stated_order:
+    - quote: 'Two new posts must be created on the Home screen in this order: “Release brief ready” followed by “Search owner added”. Once both are published, the “Release brief ready” post must be ... replied to ..., liked, saved, and reposted.'
+      chain:
+      - 'post:Release brief ready'
+      - 'post:Search owner added'
+      - - 'reply:Release brief ready'
+        - 'like:Release brief ready'
+        - 'bookmark:Release brief ready'
+        - 'repost:Release brief ready'
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -124,8 +133,8 @@ metadata:
   - Four outbound messages, two created posts, and two replies must be exact, unique, correctly attributed,
     and created after the snapshot time.
   - Release brief ready must be liked, bookmarked, reposted, and have the exact reply Brief link is live.
-  - Required business events must appear as an ordered subsequence, notifications must all be read, and
-    the final foreground view must be the Messages conversation list.
+  - Only the orders the English instruction states are graded (instruction_stated_order, from the created objects' times); the order of the other actions is free and browsing events are never required.
+  - Notifications must all be read, and the final foreground view must be the Messages conversation list.
   - Evaluator reads localStorage, DOM, and foreground state without modifying app or VM business state
     and returns EvalResult with per-check evidence and matched IDs.
   weak_or_unverifiable_steps:

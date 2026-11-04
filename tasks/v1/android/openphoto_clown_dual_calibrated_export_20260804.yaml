@@ -21,12 +21,18 @@ evaluation:
     export_dir: /sdcard/Pictures/OpenPhotoEdit
     min_file_size_bytes: 100000
     min_agent_steps: 65
-    # The v1 initializer never writes openphoto_calibrated_baseline.json (only local_eval/photo_baseline.py:55 did), so a full v1 run must not require it.
+    # The initializer writes openphoto_calibrated_baseline.json (exports that existed before the run are
+    # then not counted); evaluation of a run directory without it stays possible, so it is not required.
     require_baseline_for_run_dir: false
     expected_dimensions:
     - 960
     - 1280
     channel_tolerance: 12
+    # Both inputs carry identical calibration patches, so each profile is also bound to its input
+    # photo by a coarse luminance correlation outside the calibration area.
+    source_binding:
+      fixture_key: clown
+      min_correlation: 0.9
     sample_boxes:
       red:
       - 820
@@ -49,33 +55,33 @@ evaluation:
       source_file: portrait_17.jpg
       expected_median_rgb:
         red:
-        - 236
-        - 6
-        - 8
+        - 218
+        - 18
+        - 22
         green:
-        - 32
-        - 234
-        - 34
+        - 44
+        - 216
+        - 42
         blue:
-        - 0
         - 12
-        - 234
+        - 21
+        - 216
     - profile_id: clown_front_portrait_16
       role: 小丑妆正面人物
       source_file: portrait_16.jpg
       expected_median_rgb:
         red:
-        - 238
+        - 214
         - 0
-        - 0
+        - 2
         green:
-        - 8
-        - 234
-        - 10
+        - 20
+        - 212
+        - 19
         blue:
-        - 16
-        - 16
-        - 238
+        - 25
+        - 26
+        - 217
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -109,51 +115,68 @@ metadata:
   - Android Studio Quail 1 Android Emulator/AVD AndroidWorldAvd_20260611_1 has snapshot display name snap_2026-08-03_16-11-57
     available.
   - OpenPhotoEdit package com.killt.openphotoedit is installed in snapshot snap_2026-08-03_16-11-57.
-  - The snapshot contains /sdcard/Pictures/portrait_17.jpg as the calibrated clown side-face source photo.
-  - The snapshot contains /sdcard/Pictures/portrait_16.jpg as the calibrated clown front-face source photo.
-  - The snapshot starts without /sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_*.jpg export evidence.
-  initializer_message: OpenPhotoClownBaselineInitializer does not restore snapshots, launch OpenPhotoEdit,
-    delete exports, import photos, apply edits, or create target evidence. It verifies package/source/export
-    preconditions and records a clean baseline.
-  source_mapping_evidence:
-    human_confirmation: User-provided Photo Picker screenshot identifies the two clown portraits; MediaStore
-      text fields bind the side-face clown to portrait_17.jpg and the front-face clown to portrait_16.jpg.
-    side_face_source_file: /sdcard/Pictures/portrait_17.jpg
-    front_face_source_file: /sdcard/Pictures/portrait_16.jpg
+  - 'The snapshot photos carry no calibration area, so the initializer installs the calibrated inputs: /sdcard/Pictures/portrait_17.jpg
+    (clown-makeup side-face portrait); /sdcard/Pictures/portrait_16.jpg (clown-makeup front-face portrait), each
+    built from its bundled base photo with RGB 190/40/40, 40/190/40 and 40/40/190 patches over the sample boxes
+    padded by 8 px (JPEG quality 98, 4:4:4).'
+  - Exports already present in /sdcard/Pictures/OpenPhotoEdit are recorded in openphoto_calibrated_baseline.json
+    and are not counted.
+  initializer_message: OpenPhotoClownBaselineInitializer builds the calibrated inputs from the bundled base photos,
+    pushes them over the file names the brief cites, checks size/SHA-256 on the device, waits for MediaStore
+    to index them, records pre-existing exports in openphoto_calibrated_baseline.json, and launches OpenPhotoEdit.
+    It does not import photos, apply edits, or create exports.
+  calibrated_inputs:
+  - profile_id: clown_side_portrait_17
+    device_path: /sdcard/Pictures/portrait_17.jpg
+    shows: clown-makeup side-face portrait
+    base_photo: assets/android/openphoto/clown_side_face.jpg
+    base_photo_origin: snapshot photo portrait_30.jpg (no calibration area)
+    base_photo_sha256: b6237067e7ca26eb618ca8f8d4cb7b09bb931ac8c2e5cdf2928146bbd9c5ad91
+  - profile_id: clown_front_portrait_16
+    device_path: /sdcard/Pictures/portrait_16.jpg
+    shows: clown-makeup front-face portrait
+    base_photo: assets/android/openphoto/clown_front_face.jpg
+    base_photo_origin: snapshot photo portrait_28.jpg (no calibration area)
+    base_photo_sha256: c70ca0ab1b961103079b3ef5fcc520804d2ede1d0660a39d029d375ae0d9760a
   reference_probe:
-    snapshot_name: snap_2026-08-03_16-11-57
-    reference_source: User-provided final calibration medians for the completed OpenPhoto-2 clown side-face
-      and front-face exports.
-    side_face_reference_export:
+    calibration_input: RGB 190/40/40, 40/190/40, 40/40/190 patches over the sample boxes, padded by 8 px
+    reference_source: tools/openphoto_android_edit_model.py, a port of BitmapEditor.applyParams (the export path)
+      validated against the four benchmark-v2 device exports; each median is the midpoint of the per-channel
+      range over all slider values that display the requested labels (a label shows value.toInt()). No device
+      export exists for this task yet.
+    superseded: The earlier medians came from a lost snapshot whose inputs are not recoverable; with the snapshot
+      photos (no calibration area) or pure 255/0 stripes they are unreachable, and pure stripes stay saturated
+      so an unedited export would match.
+    clown_side_portrait_17_reference_export:
       source_file: portrait_17.jpg
       sample_median_rgb:
         red:
-        - 236
-        - 6
-        - 8
+        - 218
+        - 18
+        - 22
         green:
-        - 32
-        - 234
-        - 34
+        - 44
+        - 216
+        - 42
         blue:
-        - 0
         - 12
-        - 234
-    front_face_reference_export:
+        - 21
+        - 216
+    clown_front_portrait_16_reference_export:
       source_file: portrait_16.jpg
       sample_median_rgb:
         red:
-        - 238
+        - 214
         - 0
-        - 0
+        - 2
         green:
-        - 8
-        - 234
-        - 10
+        - 20
+        - 212
+        - 19
         blue:
-        - 16
-        - 16
-        - 238
+        - 25
+        - 26
+        - 217
   verifier_rules:
     primary_business_evidence:
     - Exactly this task's durable evidence is two OpenPhotoEdit JPG exports whose upper-right calibration
@@ -163,6 +186,9 @@ metadata:
     - The front-face clown profile must match a distinct JPG exported from portrait_16.jpg after the Clean/Edit/Portrait/HSL
       recipe.
     - For full automatic runs, counted exports must be new relative to the initializer baseline.
+    - Each matched export must also correlate best, and at least 0.9, with the input photo of its profile
+      (coarse luminance grid outside the calibration area), so the right recipe on the wrong photo does
+      not count.
     - The final foreground UI must still be OpenPhotoEdit editor with editor anchors such as Export/Edit/Filters/Portrait/HSL
       visible.
     instruction_mapping:

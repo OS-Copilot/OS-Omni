@@ -111,6 +111,15 @@ evaluation:
       like: true
       bookmark: true
     - text: New follows added.
+    stated_order:
+    - quote: 'The Home feed must display two new published posts in this order: "Changelog pass done" followed by "New follows added."'
+      chain:
+      - 'post:Changelog pass done'
+      - 'post:New follows added.'
+    - quote: '"Follow audit logged." sent to Priya Shah, followed by "Follow note shared." sent to Nora Fields'
+      chain:
+      - 'message:priya:Follow audit logged.'
+      - 'message:nora:Follow note shared.'
 limits:
   max_steps: 300
   step_timeout_seconds: 180

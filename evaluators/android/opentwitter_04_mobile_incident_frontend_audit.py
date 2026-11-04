@@ -16,6 +16,7 @@ from evaluators.cua_review.platforms.android.openshop_support import (
     _devtools_runtime_evaluate,
     _free_tcp_port,
 )
+from evaluators.cua_review.platforms.android.opentwitter_support import stated_order_check
 
 
 
@@ -146,6 +147,8 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
         posts = state.get("posts") if isinstance(state.get("posts"), list) else []
         comments = state.get("comments") if isinstance(state.get("comments"), Mapping) else {}
         matched_ids: dict[str, str] = {}
+        # Business objects the instruction orders, by label (see stated_order_check).
+        order_anchors: dict[str, dict[str, Any] | None] = {}
 
         for spec in target_posts:
             if not isinstance(spec, Mapping):
@@ -215,6 +218,9 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
                 {"count": len(matches), "ids": [item.get("id") for item in matches]},
                 matched_object_id=matches[0].get("id") if len(matches) == 1 else None,
             )
+            order_anchors[f"message:{handle}"] = (
+                {"at": matches[0].get("createdAt"), "id": matches[0].get("id")} if len(matches) == 1 else None
+            )
 
         created_objects: dict[str, Mapping[str, Any]] = {}
         for spec in expected_posts:
@@ -240,6 +246,9 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             if len(matches) == 1:
                 created_objects[text] = matches[0]
                 matched_ids[text] = str(matches[0].get("id") or "")
+            order_anchors[f"post:{text}"] = (
+                {"at": matches[0].get("createdAt"), "id": matches[0].get("id")} if len(matches) == 1 else None
+            )
 
         owner_text = str(params.get("owner_post_text") or "")
         owner_post = created_objects.get(owner_text)
@@ -279,14 +288,13 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             unread_ids=unread_ids,
         )
 
-        # The order in which the application recorded its actions is reported for
-        # a reader but is not required: two agents can reach the same durable
-        # state by different routes, and the state is what the task asks for.
-        observed_event_types = [
-            str(event.get("type") or "")
-            for event in events
-            if isinstance(event, Mapping)
-        ]
+        # Only the orders the English instruction states are judged: the three
+        # direct messages "in this order" and the two posts "in this order:
+        # first ... and then ...".  The rest of the run's order is free and
+        # browsing is not graded.
+        if params.get("stated_order"):
+            order_ok, order_expected, order_observed = stated_order_check(params.get("stated_order"), order_anchors)
+            add_check("instruction_stated_order", order_ok, order_expected, order_observed)
 
         final_observation = context.get("final_observation")
         foreground = str(getattr(final_observation, "foreground_bundle_id", "") or "")
@@ -359,7 +367,7 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenTwitter exact final state and ordered event evidence match the task",
+            message="OpenTwitter exact final state and the instruction's stated orders match the task",
             metadata=metadata,
         )
 
@@ -411,47 +419,6 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             return observed >= expected
         except (TypeError, ValueError):
             return False
-
-    @staticmethod
-    def _event_specs(params: Mapping[str, Any], owner_post_id: str) -> list[dict[str, Any]]:
-        raw_specs = params.get("event_sequence") if isinstance(params.get("event_sequence"), list) else []
-        specs: list[dict[str, Any]] = []
-        for raw in raw_specs:
-            if not isinstance(raw, Mapping):
-                continue
-            spec = dict(raw)
-            if spec.pop("owner_post", False):
-                spec["postId"] = owner_post_id
-            specs.append(spec)
-        return specs
-
-    @staticmethod
-    def _match_event_subsequence(events: list[Any], specs: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
-        matched: list[dict[str, Any]] = []
-        cursor = 0
-        for spec in specs:
-            found: Mapping[str, Any] | None = None
-            while cursor < len(events):
-                candidate = events[cursor]
-                cursor += 1
-                if isinstance(candidate, Mapping) and all(candidate.get(key) == value for key, value in spec.items()):
-                    found = candidate
-                    break
-            if found is None:
-                matched.append({"expected": spec, "matched": None})
-                return matched, False
-            matched.append(
-                {
-                    "expected": spec,
-                    "matched": {
-                        "seq": found.get("seq"),
-                        "type": found.get("type"),
-                        "timestamp": found.get("timestamp"),
-                        "object_id": found.get("postId") or found.get("commentId") or found.get("handle"),
-                    },
-                }
-            )
-        return matched, True
 
     @staticmethod
     def _read_dom_state(controller: Any, app_package: str) -> dict[str, Any]:

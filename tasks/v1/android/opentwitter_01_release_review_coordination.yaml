@@ -102,6 +102,16 @@ evaluation:
     - text: Owners aligned.
     owner_post_text: Owners aligned.
     owner_reply_text: Next steps assigned
+    stated_order:
+    - quote: 'direct messages must be sent in the following order: to Priya Shah ..., to Lina Torres ..., and to Hana Kim ...'
+      chain:
+      - 'message:priya'
+      - 'message:lina'
+      - 'message:hana'
+    - quote: 'two new posts must be created in sequence: first “Review notes ready.”, then “Owners aligned.”'
+      chain:
+      - 'post:Review notes ready.'
+      - 'post:Owners aligned.'
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -133,9 +143,7 @@ metadata:
     substring matches fail.
   - Each required reply, outbound message, and created post must match exact full text, exact author/recipient,
     a creation time on or after 2026-06-26T08:31:13Z, and exactly one object.
-  - Required API events must occur as an ordered subsequence, including trend-result loads, toggles to
-    active, reply-button events, creations, Mark all as read, and the final bookmark on the dynamic Owners
-    aligned. post ID.
+  - Only the orders the English instruction states are graded (instruction_stated_order, from the created objects' times); the order of the other actions is free and browsing events are never required.
   - Final state requires all notifications read, OpenTwitter foreground, Home as the current view, and
     Owners aligned. visible in the final DOM.
   - The evaluator uses WebView DevTools for read-only localStorage and DOM reads and returns EvalResult

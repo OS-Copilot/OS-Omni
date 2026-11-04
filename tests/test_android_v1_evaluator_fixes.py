@@ -292,9 +292,11 @@ TWITTER_TASK = "opentwitter_04_mobile_incident_frontend_audit"
 
 def _twitter_state(params: dict[str, Any], replies: dict[str, list[str]], messages: dict[str, str], posts: dict[str, str]):
     created = "2026-10-30T20:00:00Z"
+    # Messages and posts are sent one after another in the order the brief states.
+    at = lambda minute: f"2026-10-30T20:{minute:02d}:00Z"  # noqa: E731
     handle = params["expected_handle"]
     own_posts = [
-        {"id": f"p-new-{index}", "authorHandle": handle, "text": text, "createdAt": created}
+        {"id": f"p-new-{index}", "authorHandle": handle, "text": text, "createdAt": at(30 + index)}
         for index, text in enumerate(posts.values())
     ]
     owner_id = own_posts[0]["id"]
@@ -325,8 +327,8 @@ def _twitter_state(params: dict[str, Any], replies: dict[str, list[str]], messag
                 "repostedPostIds": reposts,
                 "bookmarkedPostIds": bookmarks,
                 "messages": [
-                    {"id": f"m-{peer}", "outbound": True, "handle": peer, "text": text, "createdAt": created}
-                    for peer, text in messages.items()
+                    {"id": f"m-{peer}", "outbound": True, "handle": peer, "text": text, "createdAt": at(10 + index)}
+                    for index, (peer, text) in enumerate(messages.items())
                 ],
                 "notifications": [{"id": "n-1", "read": True}],
             }

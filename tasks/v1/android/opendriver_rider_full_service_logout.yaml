@@ -30,9 +30,25 @@ init:
     package_candidates:
     - com.killt.opendriver
 evaluation:
-  evaluator_id: evaluators.android.cua_review_state:ForegroundTextEvaluator
+  # The final login page is also the starting page, so the screen check alone
+  # passed an untouched run.  The evaluator also requires the durable record of
+  # the workflow in the OpenDriver service: one "safety concern" ticket with the
+  # message "Need ride help" created during the episode, a reply from the rider,
+  # and no credential left in the app (logout deletes it).  The app is signed
+  # out by then, so the evaluator signs in to the service with the account the
+  # instruction names and only reads the rider's tickets.
+  evaluator_id: evaluators.android.opendriver_rider_full_service_logout:OpenDriverRiderLogoutWorkflowEvaluator
   params:
     app_package: com.killt.opendriver
+    api_base_url: http://10.0.2.2:4321
+    rider_account:
+      email: rider@example.com
+      password: password123
+      role: rider
+    support_ticket:
+      category: safety concern
+      message: Need ride help
+      min_rider_replies: 1
     required_any_text_tokens:
     - Login
     - Sign in
