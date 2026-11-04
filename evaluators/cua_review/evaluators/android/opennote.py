@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -148,6 +149,26 @@ def json_safe(value: Any) -> Any:
     if isinstance(value, (list, tuple, set)):
         return [json_safe(item) for item in value]
     return value
+
+
+def _installed_note_tags(values: Sequence[Any] | None) -> list[str]:
+    """Return tag tokens the way the installed APK parses tag text.
+
+    ``local-api.js`` in the installed APK splits the typed tag text on
+    ``/[,#\\s]+/`` and keeps the first five tokens, so a tag written as
+    ``"lunch route"`` is persisted as ``["lunch", "route"]``.  The same parser
+    is documented by the repository's compatibility wrapper at
+    ``local_eval/opennote_evaluator.py:10-11``.  Multiplicity and order are
+    preserved -- this is an ordered token list, not a set.
+    """
+    tags: list[str] = []
+    for value in values or []:
+        tags.extend(
+            token.strip()
+            for token in re.split(r"[,#\s]+", str(value))
+            if token.strip()
+        )
+    return tags[:5]
 
 
 def check(
@@ -379,20 +400,27 @@ class OpenNoteAndroidEvaluator(BaseEvaluator):
                 if note.get("title") == title and note.get("authorHandle") == handle
             ]
             note = matches[0] if len(matches) == 1 else {}
-            observed_tags = note.get("tags") if isinstance(note.get("tags"), list) else []
+            observed_tags = (
+                note.get("tags") if isinstance(note.get("tags"), list) else []
+            )
+            # Compare tags after the installed APK's parser: the app splits
+            # tag text on /[,#\s]+/ and stores at most five tokens, so
+            # "lunch route" is persisted as ["lunch", "route"].  Strings,
+            # order and multiplicity stay exact; only the token boundary is
+            # normalized.  See local_eval/opennote_evaluator.py:10-11.
             observed = {
                 "title": note.get("title"),
                 "text": note.get("text"),
                 "category": note.get("category"),
                 "location": note.get("location"),
-                "tags": list(observed_tags),
+                "tags": _installed_note_tags(observed_tags),
             }
             required = {
                 "title": title,
                 "text": str(spec.get("text") or ""),
                 "category": str(spec.get("category") or ""),
                 "location": str(spec.get("location") or ""),
-                "tags": list(spec.get("tags") or []),
+                "tags": _installed_note_tags(spec.get("tags") or []),
             }
             checks.append(
                 check(
@@ -431,6 +459,7 @@ __all__ = [
     "DEFAULT_APP_PACKAGE",
     "LOCAL_STATE_KEY",
     "OpenNoteAndroidEvaluator",
+    "_installed_note_tags",
     "account_record",
     "check",
     "comment_author",
