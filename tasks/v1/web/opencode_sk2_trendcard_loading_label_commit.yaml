@@ -214,10 +214,10 @@ evaluation:
       )
       add_check("skeleton_has_role_status", role_on_skeleton, observed_blocks=skeleton_blocks[:3])
       add_check("skeleton_has_trimmed_loading_label", aria_on_skeleton, observed_blocks=skeleton_blocks[:3])
+      # The brief names these three tabs; useForecast.js is open in the seed but not required.
       required_tabs = {
           "src/components/TrendCard.jsx",
           "src/views/RevenueDashboard.jsx",
-          "src/hooks/useForecast.js",
           "package.json",
       }
       add_check(
@@ -270,7 +270,7 @@ evaluation:
               "Durable final evidence is the OpenCode web app state saved in Chrome/Chromium Local Storage key opencode.workspace.v1.",
               "The evaluator requires aria-label Loading without a trailing space and rejects aria-label Loading with a trailing space.",
               "The evaluator requires role=\"status\" on the JSX element whose className is skeleton.",
-              "The evaluator requires the expected working tabs to have been opened: TrendCard.jsx, RevenueDashboard.jsx, useForecast.js, and package.json.",
+              "The evaluator requires the working tabs the brief names to be open: TrendCard.jsx, RevenueDashboard.jsx, and package.json.",
               "The evaluator requires TrendCard.jsx to be the active file at the end.",
               "The evaluator requires terminal history to show at least two npm run lint commands.",
               "The evaluator requires Copilot Chat history to include the user prompt tests for loading.",
@@ -312,8 +312,7 @@ metadata:
   - Durable final evidence is the OpenCode web app state saved in Chrome/Chromium Local Storage key opencode.workspace.v1.
   - Verify aria-label Loading has no trailing space and reject aria-label Loading with a trailing space.
   - Verify role="status" is on the JSX element whose className is skeleton.
-  - 'Verify the expected working tabs were opened: TrendCard.jsx, RevenueDashboard.jsx, useForecast.js,
-    and package.json.'
+  - 'Verify the working tabs the brief names are open: TrendCard.jsx, RevenueDashboard.jsx, and package.json.'
   - Verify TrendCard.jsx is the active file at the end.
   - Verify terminal history includes at least two npm run lint commands.
   - Verify Copilot Chat history includes the user prompt tests for loading.

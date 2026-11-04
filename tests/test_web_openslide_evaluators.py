@@ -337,3 +337,135 @@ def test_shared_helpers_follow_the_deck_id_and_skip_layout_placeholders():
     assert [obj["id"][-2:] for obj in reader.added_objects(slide, "shape")] == ["p1", "p2"]
     no_ids = {"objects": [dict(obj, id="") for obj in slide["objects"]]}
     assert len(reader.added_objects(no_ids, "shape")) == 2  # z > 1 fallback
+
+
+def test_qa70_duplicate_must_sit_in_the_right_comparison_box():
+    deck = _qa70_deck()
+    assert _check(_qa70_judge(deck), "slide3.copy_paste_move")["actual"]["right_copy_centre"] == [690.0, 225.0]
+    deck["slides"][2]["objects"][-1]["x"] = 250  # right of the original, but still in the left box
+    check = _check(_qa70_judge(deck), "slide3.copy_paste_move")
+    assert not check["passed"] and check["actual"]["x"] == [170.0, 250.0]
+    deck["slides"][2]["objects"][-1].update(x=700, y=300)  # centre 830,370: inside 520..880 x 136..406
+    assert _check(_qa70_judge(deck), "slide3.copy_paste_move")["passed"]
+    deck["slides"][2]["objects"][-1].update(y=420)  # below the comparison box
+    assert not _check(_qa70_judge(deck), "slide3.copy_paste_move")["passed"]
+
+
+# --- QA70 rehearsal: read from the presenter overlay in the screenshots --------------------------
+
+_BUTTONS = {"previous": (873, 948), "next": (1005, 1050), "close": (1064, 1117)}
+_SLIDE_COLOURS = {1: (7, 59, 76), 2: (90, 30, 30), 3: (30, 90, 30), 4: (30, 30, 90)}
+
+
+def _screenshot(path, presenter_slide=None):
+    from PIL import Image, ImageDraw
+
+    image = Image.new("RGB", (1920, 1080), (243, 244, 246))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, 69, 1079), fill=(40, 40, 40))  # dock
+    if presenter_slide:
+        draw.rectangle((70, 114, 1919, 1079), fill=(17, 24, 39))
+        draw.rectangle((355, 266, 1314, 805), fill=_SLIDE_COLOURS[presenter_slide])
+        draw.rectangle((70, 959, 1919, 1011), fill=(11, 16, 32))
+        for x0, x1 in _BUTTONS.values():
+            draw.rectangle((x0, 970, x1, 1001), fill=(255, 255, 255))
+        draw.text((962, 980), "%d / 4" % presenter_slide, fill=(255, 255, 255))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+
+
+def _click(name):
+    x0, x1 = _BUTTONS[name]
+    return "pyautogui.click(%d, 986)\ntime.sleep(1)\n" % ((x0 + x1) // 2)
+
+
+def _run(tmp_path, steps, final_slide=None):
+    """steps: (screen before the step: None for the editor or a presenter slide, reflection, code)."""
+    rows = []
+    for index, (screen, reflection, code) in enumerate(steps, start=1):
+        shot = "screenshots/step_%d.png" % index
+        _screenshot(tmp_path / shot, screen)
+        rows.append({"step_index": index, "observation": {"screenshot_path": shot}, "llm_response": reflection,
+                     "action_parse": {"action": {"code": code}}, "action_execution": {"status": "SUCCESS"}})
+    _screenshot(tmp_path / "screenshots/final.png", final_slide)
+    (tmp_path / "trajectory.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    check = qa70._collect_trajectory_process({"run_dir": str(tmp_path)}, 4)["checks"][0]
+    assert check["check_id"] == "slideshow.rehearse_navigation"
+    return check
+
+
+_OPEN = (None, "I'll click From Start to begin the slideshow from the first slide.", "pyautogui.click(410, 258)\n")
+_EDIT = (None, "Next I'll open Insert.", "pyautogui.click(526, 207)\n")
+
+
+def test_qa70_rehearsal_seen_in_the_presenter_passes(tmp_path):
+    check = _run(tmp_path, [
+        (None, "I'll click Rehearse on the Slide Show tab.", "pyautogui.click(488, 274)\n"), _OPEN,
+        (1, "The show is on slide 1 of 4. Next twice.", _click("next") * 2),
+        (3, "Now on slide 3 of 4; Close ends the rehearsal.", _click("close")),
+        _EDIT,
+    ])
+    assert check["passed"], check["actual"]
+    session = check["actual"]["sessions"][0]
+    assert (session["opened_by_step"], session["furthest_slide"], session["closed_by_step"]) == (2, 3, 4)
+    assert session["advance_seen_on_screen"] is True
+
+
+def test_qa70_words_about_rehearse_next_and_close_are_not_a_rehearsal(tmp_path):
+    # The saved Opus 5.5 run's steps 1, 2, 4 and 23 satisfied the old word match this way.
+    check = _run(tmp_path, [
+        (None, "The brief names Google Slides-style features (template, rehearse).", "pyautogui.click(34, 66)\n"),
+        (None, "Next I'll open Templates.", "pyautogui.click(1297, 148)\n"),
+        (None, "Next I'll rename the presentation.", "pyautogui.click(495, 140)\n"),
+        (None, "I'll close the picker and press Next.", "pyautogui.press('esc')\npyautogui.press('right')\n"),
+    ])
+    assert not check["passed"] and check["actual"]["sessions"] == []
+
+
+def test_qa70_rehearsal_must_advance_two_slides_and_close(tmp_path):
+    back = _run(tmp_path / "back", [_OPEN, (1, "Next, then Previous.", _click("next") + _click("previous")),
+                                    (1, "Close.", _click("close")), _EDIT])
+    assert not back["passed"] and back["actual"]["sessions"][0]["furthest_slide"] == 2
+    one = _run(tmp_path / "one", [_OPEN, (1, "Next.", _click("next")), (2, "Close.", _click("close")), _EDIT])
+    assert not one["passed"]
+    open_at_end = _run(tmp_path / "open", [_OPEN, (1, "Next twice.", _click("next") * 2)], final_slide=3)
+    assert not open_at_end["passed"] and open_at_end["actual"]["sessions"][0]["closed_by_step"] is None
+
+
+def test_qa70_rehearsal_from_start_keys_and_current_slide(tmp_path):
+    keys = _run(tmp_path / "keys", [
+        (None, "Start the show.", "pyautogui.press('f5')\n"),
+        (1, "Advance twice and leave.", "pyautogui.press('right')\npyautogui.press('right')\npyautogui.press('esc')\n"),
+        _EDIT,
+    ])
+    assert keys["passed"], keys["actual"]
+    assert keys["actual"]["sessions"][0]["advance_seen_on_screen"] is None  # no screenshot between the keys
+    current = _run(tmp_path / "current", [
+        (None, "I'll click Current to present from the current slide.", "pyautogui.click(470, 258)\n"),
+        (1, "Next twice.", _click("next") * 2), (3, "Close.", _click("close")), _EDIT,
+    ])
+    assert not current["passed"] and current["actual"]["sessions"][0]["from_start"] is False
+    shift = _run(tmp_path / "shift", [
+        (None, "Start the show.", "pyautogui.hotkey('shift', 'f5')\n"),
+        (1, "Next twice.", _click("next") * 2), (3, "Close.", _click("close")), _EDIT,
+    ])
+    assert not shift["passed"]
+
+
+def test_qa70_rehearsal_advances_must_show_on_screen(tmp_path):
+    # Next was clicked, but the next presenter screenshot still shows the first slide.
+    check = _run(tmp_path, [_OPEN, (1, "Next.", _click("next")), (1, "Next.", _click("next")),
+                            (1, "Close.", _click("close")), _EDIT])
+    assert not check["passed"] and check["actual"]["sessions"][0]["advance_seen_on_screen"] is False
+
+
+def test_qa70_pyautogui_inputs_are_read_in_order():
+    code = ("import pyautogui\nfor _ in range(2):\n    pyautogui.click(1026, 986)\n"
+            "pyautogui.moveTo(1089, 986)\npyautogui.click()\npyautogui.press(['right', 'pgdn'], presses=2)\n"
+            "pyautogui.typewrite(' a')\npyautogui.hotkey('shift', 'f5')\n")
+    assert qa70._inputs(code) == [
+        ("click", (1026.0, 986.0)), ("click", (1026.0, 986.0)), ("click", (1089.0, 986.0)),
+        ("key", "right"), ("key", "pagedown"), ("key", "right"), ("key", "pagedown"),
+        ("key", "space"), ("key", "a"), ("key", "shift+f5"),
+    ]
+    assert qa70._inputs("not python(") == []

@@ -620,16 +620,31 @@ class OpenDocLaunchReviewEvaluator(BaseEvaluator):
         ]
         comments = document.get("comments")
         resolved = 0
+        comment_rows: list[dict[str, Any]] = []
         if isinstance(comments, list):
             for comment in comments:
                 if isinstance(comment, Mapping):
                     blob_parts.append(_text(comment.get("text")))
+                    comment_rows.append({"text": _text(comment.get("text")), "resolved": bool(comment.get("resolved"))})
                     if comment.get("resolved"):
                         resolved += 1
         blob = " ".join(blob_parts)
         blob_low = blob.lower()
         for index, wanted in enumerate(expected_texts):
             record("text.%d" % index, wanted.lower() in blob_low, wanted)
+
+        # OpenDoc keeps a resolved comment in the document with resolved: true (the Resolve button
+        # toggles the flag), so "resolve this specific comment" is graded on that comment itself.
+        resolved_text = " ".join(_text(params.get("resolved_comment_text")).split()).lower()
+        if resolved_text:
+            record(
+                "comment.resolved_text",
+                any(
+                    row["resolved"] and " ".join(row["text"].split()).lower() == resolved_text
+                    for row in comment_rows
+                ),
+                comment_rows,
+            )
 
         inspected, files = _scan_files(
             controller,

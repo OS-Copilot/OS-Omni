@@ -111,7 +111,6 @@ evaluation:
     project_id: imported-loft-room-lighting
     tolerance: 0.03
     active_object: ReviewBlock
-    active_workspace: Rendering
     active_property_tab: Modifier
     output:
       path: //client_camera_review

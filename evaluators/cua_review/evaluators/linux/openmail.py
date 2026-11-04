@@ -288,7 +288,6 @@ class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
             )
 
         messages = _messages(state)
-        corpus = _state_text(state)
         expectations = params.get("expectations") if isinstance(params.get("expectations"), Mapping) else {}
         checks: list[dict[str, Any]] = []
         notes: list[str] = []
@@ -297,11 +296,24 @@ class OpenMailContactsReceiptReviewEvaluator(BaseEvaluator):
             name = str(key)
             wanted = str(value)
             if name.startswith("discarded_"):
+                # A discarded draft must not survive as a message anywhere but Trash: OpenMail's
+                # Discard removes the draft, and Delete moves it to Trash, both of which take it out
+                # of Drafts. A copy that was sent or is still a draft counts as present.
                 if name.endswith("_subject"):
-                    present = any(str(item.get("subject") or "") == wanted for item in messages)
+                    found = [item for item in messages if str(item.get("subject") or "") == wanted]
                 else:
-                    present = wanted in corpus
-                checks.append(_check("absent:%s" % name, {"text": wanted, "present": False}, {"present": present}, not present))
+                    found = [item for item in messages if wanted in str(item.get("body") or "")]
+                folders = [str(item.get("folder") or "inbox").strip().casefold() for item in found]
+                remaining = [folder for folder in folders if folder != "trash"]
+                present = bool(remaining)
+                checks.append(
+                    _check(
+                        "absent:%s" % name,
+                        {"text": wanted, "present": False},
+                        {"present": present, "folders": folders},
+                        not present,
+                    )
+                )
             elif name.endswith("_subject"):
                 present = any(str(item.get("subject") or "") == wanted for item in messages)
                 checks.append(_check("subject:%s" % name, wanted, present, present))
