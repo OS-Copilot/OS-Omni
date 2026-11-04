@@ -189,21 +189,21 @@ metadata:
       it does not restore a snapshot, sign in, add products, place orders, or submit reviews.
   verifier_rules:
   - Steps 1-3 require the final session to remain logged in as Lucas Lin 13800138000.
-  - Steps 4-35 require the first new Office/WeChat Pay order at recency index 1 with Navy headphones,
-    Family Pack trail mix, exact app-calculated total 331.16, note Client room setup, and both exact reviews.
-  - Steps 36-68 require the latest Office/Cash on Delivery order with 40-sachet coffee, the 15.6-inch
-    backpack, exact app-calculated total 308.40, note Hybrid work kit, and both exact reviews.
+  - Steps 4-35 require one of the two newest orders (placed in either order) to be the Office/WeChat Pay
+    order with Navy headphones, Family Pack trail mix, exact app-calculated total 331.16, note Client room
+    setup, and both exact reviews.
+  - Steps 36-68 require the other of the two newest orders to be the Office/Cash on Delivery order with
+    40-sachet coffee, the 15.6-inch backpack, exact app-calculated total 308.40, note Hybrid work kit,
+    and both exact reviews.
   - Steps 69-73 require order TBH-LUCAS-20260429-002 product p1005 to have rating 5 and review text Daily
     coffee pick.
   - Read /api/session, /api/cart, /api/orders, and /api/benchmark first; foreground accessibility observation
     is auxiliary evidence only.
   - Search results, product details, Cart, Checkout, and scrolling positions are flow-only pages; the
     final visible page is Orders.
-  - ? Require the ordered durable benchmark events for login, four searches, four product-detail visits,
-      four add-to-cart actions, both checkout submissions, four new-order reviews, and one historical
-      review. Final address/payment state is proven by the checkout_submitted events and the order payloads
-    : Office and WeChat Pay are the app's pre-selected defaults, so clicking the already-checked controls
-      emits no selection event; the non-default Cash on Delivery payment must emit checkout_payment_selected.
+  - The recorded benchmark ledger (login, searches, product views, cart additions, checkouts, reviews)
+    is a non-blocking diagnostic; the brief states no order between the two orders or the reviews, and
+    addresses, payments, notes and reviews are graded from the durable order payloads.
   - Every evaluator check reports expected state, observed state, pass status, and failure reason; the
     evaluator must not click, type, scroll, submit, launch the app, reset state, or run the initializer.
   cua_tasks_review:

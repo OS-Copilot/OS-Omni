@@ -118,6 +118,7 @@ evaluation:
       amount: 70.3
       scheduledDate: '2026-06-26'
       memo: Reserve restore
+    require_text_file_after_events: true
     guest_text_file: ~/Desktop/Reserve-Plan.txt
     expected_text_lines:
     - BILLS=164.35
@@ -179,8 +180,9 @@ metadata:
       specified in steps 7-31.
     - Exactly two Scheduled transfers have the exact source, recipient, amount, date, and memo specified
       in steps 33-56.
-    - Ordered events prove login, both bill-payment submissions, the Maya Patel transfer, and the Rainy
-      Day Savings transfer.
+    - Every bill-payment and transfer event is recorded after the Jordan Lee sign-in, and the brief's
+      order "followed by a summary text file" is kept, so Reserve-Plan.txt is last saved after all four records
+      were created. The order among the bills and transfers is a non-blocking diagnostic.
     - The macOS1 guest file ~/Desktop/Reserve-Plan.txt is UTF-8 plain text with exactly BILLS=164.35,
       SUPPLIES=55.25, and RESERVE=70.30, and TextEdit is foreground at the end.
     forbidden_assumptions:

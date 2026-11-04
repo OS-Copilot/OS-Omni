@@ -78,7 +78,15 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
             list(params.get("required_event_sequence") or []),
             required=bool(params.get("require_event_sequence", False)),
         )
+        events = list(api_state.get("events") or [])
+        sequence = list(params.get("required_event_sequence") or [])
+        self._check_login_precedes_business_events(metadata, events, sequence)
         self._check_reserve_text_file(metadata, file_state, params)
+        # The brief: "two scheduled bill payments and two scheduled transfers
+        # must be created, followed by a summary text file saved to the
+        # Desktop" -- the only order it states, so it is the only blocking one.
+        if bool(params.get("require_text_file_after_events", False)):
+            self._check_text_file_after_business_events(metadata, events, sequence, file_state)
         self._check_final_ui(context, metadata, params)
 
         if metadata["failure_reasons"]:
@@ -108,7 +116,10 @@ class OpenBankReservePlanTextEditEvaluator(OpenBankJuneHomeTextEditEvaluator):
         says bills come before transfers, and the exact record/count checks
         already grade every deliverable (scan.CSV MAC-015, step_gate).  The
         ledger is a non-blocking diagnostic unless a task opts in with
-        ``params["require_event_sequence"]``.
+        ``params["require_event_sequence"]``.  What the brief does order --
+        sign-in first (logically necessary) and the records *followed by* the
+        summary file -- is graded by ``events.login_before_business_actions`` and
+        ``guest_text_file.saved_after_business_records``.
         """
         cursor = 0
         matched: list[Mapping[str, Any]] = []

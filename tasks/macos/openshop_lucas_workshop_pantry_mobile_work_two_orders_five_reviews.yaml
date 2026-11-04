@@ -101,6 +101,23 @@ evaluation:
             rating: 4
             text: Dependable brew
     benchmark:
+      precedence:
+      - label: workshop_pantry_order_before_historical_review
+        before:
+          type: checkout_submitted
+          note: Workshop pantry
+        after:
+          type: order_item_reviewed
+          orderId: TBH-LUCAS-20260429-002
+          productId: p1005
+      - label: mobile_work_pair_order_before_historical_review
+        before:
+          type: checkout_submitted
+          note: Mobile work pair
+        after:
+          type: order_item_reviewed
+          orderId: TBH-LUCAS-20260429-002
+          productId: p1005
       ordered:
       - type: session_login_success
         phone: '13800138000'
@@ -201,10 +218,10 @@ metadata:
       a snapshot, sign in, add products, change quantities, place orders, or submit reviews.
   verifier_rules:
   - Steps 1-3 require the final session to remain logged in as Lucas Lin 13800138000.
-  - Steps 4-36 require the first new Office/WeChat Pay order at recency index 1 with 60-sachet coffee
+  - Steps 4-36 require one of the two newest orders (placed in either order) to be the Office/WeChat Pay order with 60-sachet coffee
     quantity 2, 2 Pack trail mix quantity 1, exact app-calculated total 434.76, note Workshop pantry,
     and both exact reviews.
-  - Steps 37-69 require the latest Office/Cash on Delivery order with White headphones, 13-inch backpack,
+  - Steps 37-69 require the other of the two newest orders to be the Office/Cash on Delivery order with White headphones, 13-inch backpack,
     exact app-calculated total 440.00, note Mobile work pair, and both exact reviews.
   - Steps 70-74 require order TBH-LUCAS-20260429-002 product p1005 to have rating 4 and review text Dependable
     brew; the final visible page is Orders and the session must remain signed in.
@@ -212,10 +229,9 @@ metadata:
     is auxiliary evidence only.
   - Search results, product details, Cart, Checkout, and intermediate Orders scroll positions are flow-only
     pages and are not final-page evidence.
-  - Require the ordered durable benchmark events for login, four searches, four product-detail visits,
-    four add-to-cart actions, the coffee quantity update, both checkout submissions, four new-order reviews,
-    and one historical review. Office and WeChat Pay are pre-selected defaults, so clicking those already-checked
-    controls may emit no selection event; Cash on Delivery must emit checkout_payment_selected.
+  - The brief states one order ("place two new orders followed by a review on a historical order"), so both
+    new-order checkout_submitted events must precede the TBH-LUCAS-20260429-002 review. The rest of the recorded
+    ledger (searches, product views, cart additions vs quantity steps, review order) is a non-blocking diagnostic.
   - Every evaluator check reports expected state, observed state, pass status, and failure reason; the
     evaluator must not click, type, scroll, submit, launch the app, reset state, or run the initializer.
   cua_tasks_review:

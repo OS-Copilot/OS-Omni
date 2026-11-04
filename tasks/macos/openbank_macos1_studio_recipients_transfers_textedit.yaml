@@ -163,7 +163,8 @@ metadata:
       nickname, bank, routing number, account number, and mask.
     - Exactly two Scheduled transfers exist with the exact recipient name, source account, amount, date,
       and memo specified in steps 18-52.
-    - Ordered events prove Jordan Lee login followed by the Sofia and Ethan transfer submissions.
+    - Both the Sofia and Ethan transfer events are recorded after the Jordan Lee sign-in; "first"/"second"
+      recipient are record labels, so the Sofia-before-Ethan order is a non-blocking diagnostic.
     - The macOS1 guest file ~/Desktop/Studio-Pay.txt is UTF-8 plain text with exactly RECIPIENTS=2, SOFIA=38.40,
       and ETHAN=46.90, and TextEdit is foreground at the end.
     forbidden_assumptions:

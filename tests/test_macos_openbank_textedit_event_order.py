@@ -5,12 +5,18 @@ payments and transfers but never the order they are created in (scan.CSV
 MAC-014 / MAC-015).  The durable record, count, session, file and foreground
 checks grade the deliverables; a correct final state reached in another order
 must pass, while missing or duplicated records still fail.
+
+Two orders stay blocking: the logically necessary sign-in before any account
+action, and -- for the reserve plan only -- the brief's "two scheduled bill
+payments and two scheduled transfers must be created, followed by a summary
+text file saved to the Desktop" (the file is last saved after the records).
 """
 
 from __future__ import annotations
 
 import importlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -46,6 +52,18 @@ class _Controller:
         return {"returncode": 0, "stdout": json.dumps(self.payload)}
 
 
+def _epoch(minute: int, second: int = 0) -> float:
+    return datetime(2026, 6, 1, 10, minute, second, tzinfo=timezone.utc).timestamp()
+
+
+def _stamp(events: list[dict]) -> list[dict]:
+    """Give the ledger app-style ISO timestamps, one second apart from 10:00:00Z."""
+    return [
+        dict(event, seq=index + 1, timestamp=f"2026-06-01T10:00:{index:02d}.000Z")
+        for index, event in enumerate(events)
+    ]
+
+
 def _final_state(params: dict, *, order: str) -> dict:
     session = params["session"]
     bills = [dict(item, id=f"bill-{index}") for index, item in enumerate(params["required_bill_payments"])]
@@ -61,6 +79,7 @@ def _final_state(params: dict, *, order: str) -> dict:
         events = [login, *bill_events, *transfer_events]
     else:  # transfers first, bills in reverse: same final state, different order
         events = [login, *transfer_events[::-1], *bill_events[::-1]]
+    events = _stamp(events)
     return {
         "api": {
             "session": {
@@ -80,6 +99,8 @@ def _final_state(params: dict, *, order: str) -> dict:
             "exists": True,
             "is_rtf": False,
             "lines": list(params["expected_text_lines"]),
+            # Saved after every business event (the guest-clock mtime).
+            "mtime": _epoch(5),
         },
     }
 
@@ -149,3 +170,55 @@ def test_shared_june_home_base_matches_the_task_copy() -> None:
 
     assert result.status == EvalStatus.PASS, result.message
     assert result.metadata["diagnostics"][0]["blocking"] is False
+
+
+@pytest.mark.parametrize("name", sorted(TASKS))
+def test_business_events_before_sign_in_fail(name: str) -> None:
+    # Sign-in before account actions is logically necessary and stays blocking.
+    task = _task(name)
+    params = task["evaluation"]["params"]
+    payload = _final_state(params, order="other")
+    events = payload["api"]["events"]
+    payload["api"]["events"] = _stamp([*events[1:], events[0]])
+    result = _run(_evaluator(task), params, payload)
+
+    assert result.status == EvalStatus.FAIL
+    failed = [check["check_id"] for check in result.metadata["checks"] if not check["passed"]]
+    assert failed == ["events.login_before_business_actions"]
+
+
+def test_reserve_plan_summary_file_saved_before_the_records_fails() -> None:
+    # The brief: "... must be created, followed by a summary text file saved to
+    # the Desktop".  A file whose last save precedes a record fails.
+    task = _task("reserve_plan")
+    params = task["evaluation"]["params"]
+    assert params["require_text_file_after_events"] is True
+    payload = _final_state(params, order="other")
+    payload["file"]["mtime"] = _epoch(0, 2)  # after two of the five events only
+    result = _run(_evaluator(task), params, payload)
+
+    assert result.status == EvalStatus.FAIL
+    failed = [check["check_id"] for check in result.metadata["checks"] if not check["passed"]]
+    assert failed == ["guest_text_file.saved_after_business_records"]
+
+
+def test_reserve_plan_file_resaved_after_the_records_passes() -> None:
+    task = _task("reserve_plan")
+    params = task["evaluation"]["params"]
+    payload = _final_state(params, order="brief")
+    payload["file"]["mtime"] = _epoch(0, 5)  # just after the last of events 0..4
+    result = _run(_evaluator(task), params, payload)
+
+    assert result.status == EvalStatus.PASS, result.message
+
+
+def test_june_home_brief_states_no_file_order() -> None:
+    # June-home's brief never says the file comes after the records.
+    task = _task("june_home")
+    params = task["evaluation"]["params"]
+    assert "require_text_file_after_events" not in params
+    payload = _final_state(params, order="other")
+    payload["file"]["mtime"] = _epoch(0, 0) - 60
+    result = _run(_evaluator(task), params, payload)
+
+    assert result.status == EvalStatus.PASS, result.message

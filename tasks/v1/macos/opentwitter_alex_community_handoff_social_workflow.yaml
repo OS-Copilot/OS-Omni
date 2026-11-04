@@ -109,6 +109,7 @@ evaluation:
       text: Badge note tracked
     - handle: rachel
       text: Copy list shared
+    require_search_queries: true
     expected_search_queries:
     - Community launch
     - API migration tip
@@ -227,6 +228,8 @@ metadata:
     read flag to be true.
   - Ordered evaluation events are retained only as non-blocking execution diagnostics; missing or out-of-order
     intermediate events cannot override correct durable final state and final-page evidence.
+  - Each search the brief names (expected_search_queries) must appear as a timeline_view query at least
+    once, at any position and any number of times; the order of searches and interactions is not graded.
   - Final-page auxiliary evidence comes only from the final accessibility observation and must show OpenTwitter
     foreground with Home and Replies assigned; Explore/search, reply composers, Messages, Profile editor,
     and Notifications are flow-only pages.

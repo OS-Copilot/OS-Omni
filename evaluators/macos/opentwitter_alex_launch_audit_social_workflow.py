@@ -236,6 +236,18 @@ class OpenTwitterAlexLaunchAuditEvaluator(BaseEvaluator):
             }
         )
 
+        # The ordered ledger above is diagnostic, but a search the brief itself
+        # asks for ("found via the query ...", "by searching for ...", "the
+        # Explore search area must yield ... result sets for the queries ...")
+        # is a deliverable: each named query must have run at least once, at any
+        # position and any number of times.
+        if bool(params.get("require_search_queries", False)):
+            self._check_required_searches(
+                metadata,
+                events,
+                [str(item) for item in params.get("expected_search_queries") or []],
+            )
+
         final_observation = context.get("final_observation")
         observed_ui = self._observation_summary(final_observation)
         expected_markers = [str(item) for item in params.get("expected_final_ui_markers", ["Home", "Launch trail closed"])]
@@ -391,6 +403,36 @@ raise SystemExit(2)
             }
         )
         return sequence
+
+    @staticmethod
+    def _normalize_query(value: Any) -> str:
+        text = str(value or "").strip().strip("\"'\u201c\u201d\u2018\u2019").strip()
+        return " ".join(text.split()).casefold()
+
+    @classmethod
+    def _check_required_searches(
+        cls,
+        metadata: dict[str, Any],
+        events: list[Any],
+        queries: list[str],
+    ) -> None:
+        observed = [
+            cls._normalize_query(event.get("query"))
+            for event in events
+            if isinstance(event, Mapping)
+            and event.get("type") == "timeline_view"
+            and str(event.get("query") or "").strip()
+        ]
+        for query in queries:
+            count = observed.count(cls._normalize_query(query))
+            cls._check(
+                metadata,
+                f"search_query_{query}",
+                {"type": "timeline_view", "query": query, "min_count": 1},
+                {"count": count},
+                count >= 1,
+                f"The brief's search for {query!r} was never run",
+            )
 
     @staticmethod
     def _event_matches(event: Mapping[str, Any], expected: Mapping[str, Any]) -> bool:

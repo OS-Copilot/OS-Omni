@@ -161,7 +161,8 @@ metadata:
       and memo specified in steps 7-44.
     - Exactly one Scheduled Avery Brooks transfer exists from Rainy Day Savings for 14.35 on 2026-06-18
       with memo Rent share.
-    - Ordered events prove login, the three bill-payment submissions, and the Avery Brooks transfer submission.
+    - The three bill-payment events and the Avery Brooks transfer event are recorded after the Jordan Lee
+      sign-in; their order among themselves is a non-blocking diagnostic.
     - The macOS1 guest file ~/Desktop/June-Home.txt is UTF-8 plain text with exactly PLAN=JUNE HOME, BILLS=284.35,
       and TRANSFER=14.35, and TextEdit is foreground at the end.
     forbidden_assumptions:

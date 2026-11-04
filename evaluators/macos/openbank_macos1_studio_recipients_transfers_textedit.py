@@ -27,6 +27,7 @@ class OpenBankStudioRecipientsTextEditEvaluator(OpenBankJuneHomeTextEditEvaluato
                 "final macOS accessibility observation",
             ],
             "state_modified": False,
+            "diagnostics": [],
         }
 
         try:
@@ -60,6 +61,12 @@ class OpenBankStudioRecipientsTextEditEvaluator(OpenBankJuneHomeTextEditEvaluato
             metadata,
             list(api_state.get("events") or []),
             list(params.get("required_event_sequence") or []),
+            required=bool(params.get("require_event_sequence", False)),
+        )
+        self._check_login_precedes_business_events(
+            metadata,
+            list(api_state.get("events") or []),
+            list(params.get("required_event_sequence") or []),
         )
         self._check_studio_text_file(metadata, file_state, params)
         self._check_final_ui(context, metadata, params)
@@ -72,7 +79,8 @@ class OpenBankStudioRecipientsTextEditEvaluator(OpenBankJuneHomeTextEditEvaluato
             )
         return EvalResult(
             EvalStatus.PASS,
-            "Two exact recipients, two exact transfers, ordered events, and Studio-Pay.txt match",
+            "Two exact recipients, two exact transfers after sign-in, and Studio-Pay.txt match "
+            "(Sofia/Ethan order is diagnostic unless required)",
             metadata,
         )
 
@@ -120,7 +128,18 @@ class OpenBankStudioRecipientsTextEditEvaluator(OpenBankJuneHomeTextEditEvaluato
         metadata: dict[str, Any],
         events: list[Any],
         expected_sequence: list[Any],
+        *,
+        required: bool = False,
     ) -> None:
+        """Ordered-subsequence match: login, then Sofia's, then Ethan's transfer.
+
+        The brief's "The first recipient record ... The second recipient
+        record ..." and "A transfer ... A second transfer ..." are record
+        labels, not chronology, so the Sofia-before-Ethan order is a
+        non-blocking diagnostic unless a task opts in with
+        ``params["require_event_sequence"]``.  Sign-in before the transfers is
+        kept as a blocking check (``events.login_before_business_actions``).
+        """
         cursor = 0
         matched: list[Mapping[str, Any]] = []
         for raw_expected in expected_sequence:
@@ -137,6 +156,22 @@ class OpenBankStudioRecipientsTextEditEvaluator(OpenBankJuneHomeTextEditEvaluato
             if found is None:
                 break
             matched.append(found)
+        if not required:
+            metadata.setdefault("diagnostics", []).append(
+                {
+                    "diagnostic_id": "events.ordered_business_sequence",
+                    "expected": expected_sequence,
+                    "observed": matched,
+                    "passed": len(matched) == len(expected_sequence),
+                    "blocking": False,
+                    "note": (
+                        "The brief labels the recipients/transfers first and second but "
+                        "states no order; PASS/FAIL comes from the durable records, "
+                        "sign-in precedence, session, file and final UI."
+                    ),
+                }
+            )
+            return
         self._record(
             metadata,
             "events.ordered_business_sequence",
