@@ -2,11 +2,79 @@
 task_id: windows.opennote.live_music_visuals_three_notes_1788411372670_327795
 platform: windows
 instruction: |-
-  Log in to the OpenNote application as the user Lina Park using the Code Login method with the phone number 13800000000 and verification code 2026, and ensure the profile Role field is updated by appending the text ` Live music editor` to the end of its existing content.
-
-  Publish three distinct notes, each configured with specific content, metadata, and cover images. The first note, titled `Blue Green Guitar`, must contain the body lines `Record the blue and green finish on the guitar body.`, `Note how the instrument colors read on stage.`, `Use those colors to guide the full stage styling.`, `Match the guitar strap with the dark denim layer.`, and `Keep the main spotlight cool during this song.` in that order, with the category set to Fashion, the location set to `Riverside backstage`, the tags set to `Guitar blue green`, and the cover image selected as the second image in the first row of the grid, which depicts a person in a grey jacket standing next to a wardrobe. The second note, titled `Live Music Visuals`, must contain the body lines `Link the guitar palette to every visual layout.`, `Plan two side portraits beside the stage curtain.`, `Use one consistent layout for all media cards.`, `Reserve one warm frame for the closing interview.`, and `List the approved camera angles for each interview.` in that order, with the category set to Fashion, the location set to `Media interview zone`, the tags set to `live music visuals`, and the cover image selected as the third image in the cover grid, which shows a collage of multiple person outfits and a wardrobe. The third note, titled `Curly Musician Photo`, must contain the body lines `Record the musician's curly silhouette from the side.`, `Match the portrait with the blue and green set.`, `Prepare the selected portrait for the media cover.`, `Keep one close portrait with a relaxed expression.`, and `Frame the lower stage lights behind the musician.` in that order, with the category set to Fashion, the location set to `Riverside side stage`, the tags set to `musician curly stage`, and the cover image selected as the fourth image in the first row of the grid, which shows a person in a black suit standing in front of a warm-lit wardrobe.
-
-  Ensure that the post titled `shoe pairings: small changes that keeps the whole closet simpler` is followed and liked, and that the note titled `A half-day version of seasonal jackets that keeps the whole closet simpler` is liked, with both interactions completed within the Explore section.
+  1. 单击左侧栏中的“Log In”按钮，打开“Log in to OpenNote”登录窗口。
+  2. 单击登录窗口顶部的“Code Login”标签，切换到验证码登录表单。
+  3. 保留默认手机号 `13800000000` 和验证码 `2026`，单击红色“Log In”按钮登录 Lina Park 账号。
+  4. 单击左侧 Lina Park 账号卡片下方的“My Profile”。
+  5. 单击个人页顶部的“Edit Profile”。
+  6. 单击“Role”输入框。
+  7. 在 Role 现有内容末尾输入 ` Live music editor`。
+  8. 单击“Save Profile”，保存现场音乐编辑角色。
+  9. 单击左侧导航栏中的“Post”，开始建立吉他造型记录。
+  10. 单击 New Note 表单的 Title 输入框。
+  11. 在 Title 中输入 `Blue Green Guitar`。
+  12. 单击 Body 多行编辑区。
+  13. 在 Body 中输入 `Record the blue and green finish on the guitar body.`，按 Enter 建立琴身配色条目。
+  14. 在 Body 中输入 `Note how the instrument colors read on stage.`，按 Enter 建立舞台色彩条目。
+  15. 在 Body 中输入 `Use those colors to guide the full stage styling.`，按 Enter 建立演出造型条目。
+  16. 在 Body 中输入 `Match the guitar strap with the dark denim layer.`，然后按 Enter 换行。
+  17. 在 Body 中输入 `Keep the main spotlight cool during this song.`。
+  18. 单击“Category”下拉框。
+  19. 在分类菜单中选择“Fashion”。
+  20. 单击 Location 输入框。
+  21. 在 Location 中输入 `Riverside backstage`。
+  22. 单击 Tags 输入框。
+  23. 在 Tags 中输入 `Guitar blue green`。
+  24. 在 Cover 网格第一行中单击第二张“灰色外套人物站在衣橱旁”的图片，使其红框选中并作为本帖唯一封面。
+  25. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交吉他造型记录。
+  26. 单击“Publish”，发布 `Blue Green Guitar`。
+  27. 单击左侧导航栏中的“Explore”，寻找可合作的造型作者。
+  28. 单击“shoe pairings: small changes that keeps the whole closet simpler”帖子。
+  29. 单击当前未激活的“Follow”，持续关注这位造型作者。
+  30. 单击“shoe pairings: small changes that keeps the whole closet simpler”帖子。
+  31. 单击当前未激活的“Like”，将这篇鞋履搭配笔记设为已点赞。
+  32. 单击详情右上角圆形关闭按钮，返回 Explore 信息流继续音乐视觉企划。
+  33. 单击左侧导航栏中的“Post”。
+  34. 单击 Title 输入框。
+  35. 在 Title 中输入 `Live Music Visuals`。
+  36. 单击 Body 多行编辑区。
+  37. 在 Body 中输入 `Link the guitar palette to every visual layout.`，按 Enter 建立吉他配色关联。
+  38. 在 Body 中输入 `Plan two side portraits beside the stage curtain.`，按 Enter 建立侧面肖像机位。
+  39. 在 Body 中输入 `Use one consistent layout for all media cards.`，按 Enter 建立媒体版式规则。
+  40. 在 Body 中输入 `Reserve one warm frame for the closing interview.`，然后按 Enter 换行。
+  41. 在 Body 中输入 `List the approved camera angles for each interview.`。
+  42. 单击“Category”下拉框。
+  43. 在分类菜单中选择“Fashion”。
+  44. 单击 Location 输入框。
+  45. 在 Location 中输入 `Media interview zone`。
+  46. 单击 Tags 输入框。
+  47. 在 Tags 中输入 `live music visuals`。
+  48. 在 Cover 网格中单击第三张“多套人物造型与衣橱的拼图”图片，使其红框选中并作为本帖唯一封面。
+  49. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交现场音乐视觉方案。
+  50. 单击“Publish”，发布 `Live Music Visuals`。
+  51. 单击左侧导航栏中的“Explore”。
+  52. 单击顶部分类栏中的“Fashion”。
+  53. 单击“A half-day version of seasonal jackets that keeps the whole closet simpler”笔记卡片。
+  54. 单击当前未激活的“Like”，将季节外套笔记设为已点赞。
+  55. 单击详情右上角圆形关闭按钮，返回 Fashion 列表继续完成肖像方案。
+  56. 单击左侧导航栏中的“Post”。
+  57. 单击 Title 输入框。
+  58. 在 Title 中输入 `Curly Musician Photo`。
+  59. 单击 Body 多行编辑区。
+  60. 在 Body 中输入 `Record the musician's curly silhouette from the side.`，按 Enter 建立卷发轮廓条目。
+  61. 在 Body 中输入 `Match the portrait with the blue and green set.`，按 Enter 建立蓝绿布景匹配条目。
+  62. 在 Body 中输入 `Prepare the selected portrait for the media cover.`，按 Enter 建立媒体封面用途条目。
+  63. 在 Body 中输入 `Keep one close portrait with a relaxed expression.`，然后按 Enter 换行。
+  64. 在 Body 中输入 `Frame the lower stage lights behind the musician.`。
+  65. 单击“Category”下拉框。
+  66. 在分类菜单中选择“Fashion”。
+  67. 单击 Location 输入框。
+  68. 在 Location 中输入 `Riverside side stage`。
+  69. 单击 Tags 输入框。
+  70. 在 Tags 中输入 `musician curly stage`。
+  71. 在 Cover 网格第一行中单击第四张“黑色西装人物站在暖光衣橱前”的图片，使其红框选中并作为本帖唯一封面。
+  72. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交音乐人肖像帖。
+  73. 单击“Publish”，提交并发布 `Curly Musician Photo`。
 init:
   initializer_id: evaluators.cua_review.initializers.windows.opennote_live_music_visuals:WindowsOpenNoteLiveMusicVisualsInitializer
   params:
@@ -42,8 +110,8 @@ metadata:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: opennote/Windows/windows.opennote.live_music_visuals_three_notes_1788411372670_327795
     extraction_method: task_snapshot
-    instruction_format: english_natural_language
-    instruction_summary_source: generated_english_natural_language
+    instruction_format: original_numbered_workflow
+    instruction_summary_source: preserved_source_instruction
     source_instruction_sha256: d7d31830d973611bafebd6bc8a3283a4b8bac5a247aa6d432acbc85a674b13d7
     source_instruction: |
       1. 单击左侧栏中的“Log In”按钮，打开“Log in to OpenNote”登录窗口。

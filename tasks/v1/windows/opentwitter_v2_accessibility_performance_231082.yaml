@@ -10,9 +10,10 @@ instruction: |-
 
   Mark all notifications as read in the Notifications section, and update the profile by setting the Display name to "Alex Access" and the Bio to "Focus metrics ready" before saving the changes.
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.opentwitter:OpenTwitterInitializer
   params:
-    app_name: C:\Apps\OpenTwitter\opentwitter.exe
+    app_name: OpenTwitter
+    port: 4350
     wait_ms: 1500
 evaluation:
   evaluator_id: evaluators.windows.opentwitter_v2_accessibility_performance_231082:OpenTwitterV2AccessibilityPerformance231082Evaluator

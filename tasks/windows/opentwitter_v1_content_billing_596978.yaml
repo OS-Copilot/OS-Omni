@@ -12,9 +12,10 @@ instruction: 'Publish four consecutive posts from the Home feed of the OpenTwitt
   name to "Alex Content" and the Bio to "Billing notes ready", with these changes saved. The OpenTwitter
   application must remain the foreground application upon completion.'
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.opentwitter:OpenTwitterInitializer
   params:
     app_name: OpenTwitter
+    port: 4350
     wait_ms: 1500
 evaluation:
   evaluator_id: evaluators.windows.opentwitter_v1_content_billing_596978:OpenTwitterV1ContentBilling596978Evaluator

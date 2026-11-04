@@ -180,11 +180,18 @@ class OpenDriverAccountEvaluator(BaseEvaluator):
     def support_messages(cls, store: Mapping[str, Any]) -> list[str]:
         """Text of every support message the store holds."""
         messages: list[str] = []
-        for _, node in cls.nodes(store):
+        for path, node in cls.nodes(store):
             body = cls.scalar(node, ("message", "body", "text", "content"))
             if body is None:
                 continue
-            if not any(key in node for key in ("ticketId", "ticket_id", "authorId", "author", "sender")):
+            initial_ticket = (
+                path.startswith("$.supportTickets[")
+                and path.count(".") == 1
+                and "id" in node and "userId" in node
+            )
+            if not initial_ticket and not any(
+                key in node for key in ("ticketId", "ticket_id", "authorId", "author", "sender")
+            ):
                 continue
             messages.append(str(body))
         return messages

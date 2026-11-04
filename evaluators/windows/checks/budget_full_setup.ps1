@@ -24,6 +24,30 @@ def tx_rows(cur):
         return qall(cur, "select t.*, a.name account_name, c.name category_name, vp.name payee_name from v_transactions t left join accounts a on a.id=t.account and a.tombstone=0 left join categories c on c.id=t.category and c.tombstone=0 left join v_payees vp on vp.id=t.payee")
     if not table(cur,'transactions'): return []
     return qall(cur, "select t.*, a.name account_name, c.name category_name, p.name payee_name from transactions t left join accounts a on a.id=t.acct and a.tombstone=0 left join categories c on c.id=t.category and c.tombstone=0 left join payees p on p.id=t.description and p.tombstone=0 where t.tombstone=0")
+def has_transfer(rows, source, destination, amount):
+    # Actual links each transaction to the counterpart transaction's ID;
+    # transfer_id is not a group ID shared by both rows.
+    by_id = {text(row.get('id')): row for row in rows if row.get('id')}
+    for outgoing in rows:
+        if lower(outgoing.get('account_name') or outgoing.get('account')) != lower(source):
+            continue
+        counterpart_id = text(outgoing.get('transfer_id') or outgoing.get('transferred_id'))
+        incoming = by_id.get(counterpart_id)
+        if not incoming:
+            continue
+        if text(incoming.get('transfer_id') or incoming.get('transferred_id')) != text(outgoing.get('id')):
+            continue
+        if lower(incoming.get('account_name') or incoming.get('account')) != lower(destination):
+            continue
+        if not money_matches(outgoing.get('amount'), amount) or not money_matches(incoming.get('amount'), amount):
+            continue
+        try:
+            if float(outgoing['amount']) < 0 < float(incoming['amount']):
+                return True
+        except (KeyError, TypeError, ValueError):
+            continue
+    return False
+
 def check(cur):
     failures=[]
     if not table(cur,'accounts') or not table(cur,'transactions'): return ['unsupported Actual schema']
@@ -44,20 +68,9 @@ def check(cur):
     rows=tx_rows(cur)
     for account,payee,cat,amount in EXPECTED['transactions']:
         if not any(lower(r.get('account_name') or r.get('account'))==lower(account) and lower(r.get('payee_name') or r.get('payee') or r.get('description'))==lower(payee) and lower(r.get('category_name') or r.get('category'))==lower(cat) and money_matches(r.get('amount'), amount) for r in rows): failures.append(f'missing transaction: {account} / {payee} / {cat} / {amount}')
-    by_transfer={}
-    for r in rows:
-        tid=text(r.get('transfer_id'))
-        if tid: by_transfer.setdefault(tid,[]).append(r)
     for src,dst,amount in EXPECTED['transfers']:
-        ok=False
-        for pair in by_transfer.values():
-            src_rows=[r for r in pair if lower(r.get('account_name') or r.get('account'))==lower(src) and money_matches(r.get('amount'), amount)]
-            dst_rows=[r for r in pair if lower(r.get('account_name') or r.get('account'))==lower(dst) and money_matches(r.get('amount'), amount)]
-            if src_rows and dst_rows:
-                try:
-                    if any(float(a.get('amount') or 0)*float(b.get('amount') or 0)<0 for a in src_rows for b in dst_rows): ok=True; break
-                except Exception: ok=True; break
-        if not ok: failures.append(f'missing transfer: {src} -> {dst} / {amount}')
+        if not has_transfer(rows, src, dst, amount):
+            failures.append(f'missing transfer: {src} -> {dst} / {amount}')
     return failures
 failures=[]
 for source in find_dbs():
