@@ -48,6 +48,17 @@ with open(r"C:\OS-Omni\Apps\OpenFood\resources\app.asar", "rb") as archive:
 for key in ("restaurants", "users", "courierTasks"):
     state[key] = seed.get(key, [])
 
+# The evaluators read the shipped courier routes from derived keys, not from
+# the mutable LevelDB document.  The shipped seed orders courierTasks
+# D-331..D-348, so the route a task asks for is not the first entry (D-346 is
+# 16th); the evaluators match the plural "courier_route_seeds" list by the
+# task's requested route id.  "courier_route_seed" is only the first shipped
+# entry for back-compat and does not select the requested route.  An empty seed
+# keeps both keys empty so the evaluators still fail the seed requirement.  See
+# docs/windows/final-score.json:274,298 for the recorded failures.
+courier_tasks = [row for row in (state.get("courierTasks") or []) if isinstance(row, dict)]
+courier_route_seed = dict(courier_tasks[0]) if courier_tasks else {}
+
 restaurant_id_by_name = {}
 menu_id_by_name = {}
 user_id_by_name = {}
@@ -80,7 +91,8 @@ print(json.dumps({
     "user_id_by_name": user_id_by_name,
     "document_count": len(documents),
     "storage_root": root,
-    "courier_route_seeds": seed.get("courierTasks", []),
+    "courier_route_seed": courier_route_seed,
+    "courier_route_seeds": courier_tasks,
 }))
 '@
 

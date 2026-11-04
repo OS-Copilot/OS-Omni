@@ -602,14 +602,27 @@ class OpenFoodMultiRoleWorkflowEvaluator(BaseEvaluator):
         if actual_filters != expected_filters:
             failures.append(f"final filters were {actual_filters!r}, expected {expected_filters!r}")
 
+        # The shipped seed orders courierTasks D-331..D-348, so the route a task
+        # asks for is not necessarily the first entry (D-346 is 16th).  Match the
+        # collector's full route list by the task's requested label instead of by
+        # array position; older collectors only emitted the singular dict.
+        # See docs/windows/final-score.json:274 for the recorded false failure.
         route_spec = dict(params.get("courier_route") or {})
         route_label = str(route_spec.get("label") or "D-346")
-        route_matches = [
-            row for row in payload.get("courier_route_seeds", [])
-            if isinstance(row, Mapping) and str(row.get("id") or "") == route_label
+        if "courier_route_seeds" in payload:
+            route_seeds = [
+                row
+                for row in list(payload.get("courier_route_seeds") or [])
+                if isinstance(row, dict)
+            ]
+        else:
+            legacy_seed = payload.get("courier_route_seed")
+            route_seeds = [dict(legacy_seed)] if isinstance(legacy_seed, dict) and legacy_seed else []
+        matching_routes = [
+            row for row in route_seeds if str(row.get("id") or "") == route_label
         ]
-        route_seed = dict(route_matches[0]) if len(route_matches) == 1 else {}
-        if not route_seed:
+        route_seed = dict(matching_routes[0]) if len(matching_routes) == 1 else {}
+        if len(matching_routes) != 1:
             failures.append(f"Snapshot 1 seed did not expose courier route {route_label}")
 
         if failures:
