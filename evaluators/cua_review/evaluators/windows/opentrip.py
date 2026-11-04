@@ -137,7 +137,14 @@ class OpenTripBookingEvaluator(BaseEvaluator):
 
     @classmethod
     def _value(cls, booking: Mapping[str, Any], key: str) -> Any:
-        """Read one field, trying the app's camelCase paths then legacy keys."""
+        """Read one field: a flat key as stored, else the app's camelCase paths (``_ALIASES``).
+
+        The flat key wins so legacy evidence that stores snake_case fields keeps its meaning (PR #19);
+        app bookings only carry the nested camelCase shape (PR #29). Never use booking.id for item_id,
+        nor item.name for traveler_name/room_name.
+        """
+        if key in booking:
+            return booking.get(key)
         for path in cls._ALIASES.get(key, ()):
             current: Any = booking
             for part in path:
@@ -147,34 +154,6 @@ class OpenTripBookingEvaluator(BaseEvaluator):
                 current = current.get(part)
             if current is not None:
                 return current
-        if key in booking:
-            return booking.get(key)
-        # The desktop API stores camelCase fields and nested objects; the task
-        # contract uses explicit snake_case names. Never use booking.id for
-        # item_id, nor item.name for traveler_name/room_name.
-        paths = {
-            "item_id": ("item", "id"),
-            "flight_no": ("item", "flightNo"),
-            "flight_from": ("item", "from"),
-            "flight_to": ("item", "to"),
-            "flight_date": ("item", "date"),
-            "hotel_name": ("item", "name"),
-            "room_id": ("room", "id"),
-            "room_name": ("room", "name"),
-            "traveler_id": ("traveler", "id"),
-            "traveler_name": ("traveler", "name"),
-            "traveler_document_type": ("traveler", "documentType"),
-            "check_in": ("checkIn",),
-            "check_out": ("checkOut",),
-            "contact_phone": ("contactPhone",),
-        }
-        if key in paths:
-            value: Any = booking
-            for part in paths[key]:
-                if not isinstance(value, Mapping):
-                    return None
-                value = value.get(part)
-            return value
         for section in ("item", "traveler", "room", "payment", "charges"):
             nested = booking.get(section)
             if isinstance(nested, Mapping) and key in nested:
