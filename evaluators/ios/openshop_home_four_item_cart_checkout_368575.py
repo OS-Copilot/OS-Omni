@@ -17,6 +17,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.ios.webview_state import (
+    DEFAULT_SETTLE_POLL_INTERVAL_SECONDS,
+    DEFAULT_SETTLE_STABLE_SECONDS,
+    DEFAULT_SETTLE_TIMEOUT_SECONDS,
+    read_until_settled,
+)
 
 
 TASK_ID = "ios.openshop.home_four_item_cart_checkout_368575"
@@ -100,14 +106,16 @@ OFFICE_ITEMS = (
 )
 
 HOME_ITEMS = (
+    # The brief asks for one "CasaPure Bamboo Storage Bin Set" (the source steps
+    # also pressed its quantity plus, which the brief does not ask for).
     {
         "product_id": "p2024",
         "title": "CasaPure Bamboo Storage Bin Set",
         "category": "Home",
         "selected_spec": "Matte Black",
-        "quantity": 2,
+        "quantity": 1,
         "unit_price": 52,
-        "line_total": 104,
+        "line_total": 52,
     },
     {
         "product_id": "p2025",
@@ -156,7 +164,8 @@ CHECKPOINT_SPECS = (
         "payment": ALIPAY_PAYMENT,
         "note": "Home shelf set",
         "status": "Awaiting Shipment",
-        "total": 299.7,
+        # Subtotal 265.70 is under OpenShop's 300 discount threshold: +12 shipping, no discount.
+        "total": 277.7,
         "items": HOME_ITEMS,
     },
     {
@@ -282,23 +291,46 @@ class OpenShopHomeFourItemCartCheckout368575Evaluator(BaseEvaluator):
                 udid=udid,
                 bundle_id=bundle_id,
             )
-            state, database_evidence = self._read_state_snapshot(
-                db_path=db_path,
-                local_state_key=local_state_key,
+
+            # WKWebView commits localStorage shortly after setItem, so the final
+            # review write may land just after the agent's last action.
+            def read_and_grade() -> tuple[dict[str, Any], EvalResult]:
+                state, database_evidence = self._read_state_snapshot(
+                    db_path=db_path,
+                    local_state_key=local_state_key,
+                )
+                return state, self._evaluate_state(
+                    state,
+                    window_start=window_start,
+                    window_end=window_end,
+                    window_source=window_source,
+                    app_binding=app_binding,
+                    database_evidence=database_evidence,
+                )
+
+            (_state, result), settle = read_until_settled(
+                read_and_grade,
+                accept=lambda item: item[1].status is EvalStatus.PASS,
+                fingerprint=lambda item: _canonical_json_sha256(item[0]),
+                timeout_seconds=float(
+                    params.get("settle_timeout_seconds", DEFAULT_SETTLE_TIMEOUT_SECONDS)
+                ),
+                poll_interval_seconds=float(
+                    params.get("settle_poll_interval_seconds", DEFAULT_SETTLE_POLL_INTERVAL_SECONDS)
+                ),
+                stable_seconds=float(
+                    params.get("settle_stable_seconds", DEFAULT_SETTLE_STABLE_SECONDS)
+                ),
             )
         except Exception as exc:
             return self._error_result(
                 f"Read-only OpenShop binding/query failed: {type(exc).__name__}: {exc}"
             )
 
-        return self._evaluate_state(
-            state,
-            window_start=window_start,
-            window_end=window_end,
-            window_source=window_source,
-            app_binding=app_binding,
-            database_evidence=database_evidence,
-        )
+        observed = result.metadata.get("observed")
+        if isinstance(observed, dict) and isinstance(observed.get("database"), dict):
+            observed["database"]["settle"] = settle
+        return result
 
     @classmethod
     def _evaluate_state(

@@ -55,7 +55,7 @@ evaluation:
     ios_device_profile: iphone17-3
     source_state_mode: human_completed_eval_only
     expected_instruction_sha256: 01e57d6d9643886379daadd40d2e29ccf607b31ba1c62011ed3f1383db9eeeba
-    expected_ruleset_sha256: 01d98c1c794bc5d669430c4317c55250ef1c0c7a9c8ba035eae78cf7f3f3ac53
+    expected_ruleset_sha256: 2200cf4f52e5653bd903907ab4bd6718546542a8b522215b386cb17f065b38c8
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -77,14 +77,15 @@ metadata:
   source_state_mode: human_completed_eval_only
   starts_logged_in_as: alex
   instruction_sha256: 2fb396397bb13fca0d07b535d0b5e9d0ea3a44ee397ff56aa0b0737896af9a75
-  evaluator_ruleset_sha256: 01d98c1c794bc5d669430c4317c55250ef1c0c7a9c8ba035eae78cf7f3f3ac53
+  evaluator_ruleset_sha256: 2200cf4f52e5653bd903907ab4bd6718546542a8b522215b386cb17f065b38c8
   verifier_rules:
   - Read only from current OpenTwitter WebKit localStorage; never initialize, launch, or create Appium
     sessions.
   - Steps 1-24 require exact seed-post identities, exact alex replies, and exact requested engagement
     state.
   - Steps 25-57 require exactly three unique alex posts, exact replies, exact engagement sets, and required
-    durable-event order.
+    durable events with no extra or duplicate one; the only order checked is the stated creation order
+    transit pulse, sensor trend, route update.
   - Steps 58-78 require exact Mobile release, Local newsrooms, and Felix Jones Civic Tech post identities
     and requested final engagement.
   - Final likedPostIds, bookmarkedPostIds, and repostedPostIds are exact sets; missing or extra active

@@ -18,6 +18,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.ios.webview_state import (
+    DEFAULT_SETTLE_POLL_INTERVAL_SECONDS,
+    DEFAULT_SETTLE_STABLE_SECONDS,
+    DEFAULT_SETTLE_TIMEOUT_SECONDS,
+    read_until_settled,
+)
 
 
 TASK_ID = "ios.openshop.trip_gear_dual_checkout_review_263796"
@@ -319,23 +325,46 @@ class OpenShopTripGearDualCheckoutReview263796Evaluator(BaseEvaluator):
                 udid=udid,
                 bundle_id=bundle_id,
             )
-            state, database_evidence = self._read_state_snapshot(
-                db_path=db_path,
-                local_state_key=local_state_key,
+
+            # WKWebView commits localStorage shortly after setItem, so the final
+            # order/review write may land just after the agent's last action.
+            def read_and_grade() -> tuple[dict[str, Any], EvalResult]:
+                state, database_evidence = self._read_state_snapshot(
+                    db_path=db_path,
+                    local_state_key=local_state_key,
+                )
+                return state, self._evaluate_state(
+                    state,
+                    window_start=window_start,
+                    window_end=window_end,
+                    window_source=window_source,
+                    app_binding=app_binding,
+                    database_evidence=database_evidence,
+                )
+
+            (_state, result), settle = read_until_settled(
+                read_and_grade,
+                accept=lambda item: item[1].status is EvalStatus.PASS,
+                fingerprint=lambda item: _canonical_json_sha256(item[0]),
+                timeout_seconds=float(
+                    params.get("settle_timeout_seconds", DEFAULT_SETTLE_TIMEOUT_SECONDS)
+                ),
+                poll_interval_seconds=float(
+                    params.get("settle_poll_interval_seconds", DEFAULT_SETTLE_POLL_INTERVAL_SECONDS)
+                ),
+                stable_seconds=float(
+                    params.get("settle_stable_seconds", DEFAULT_SETTLE_STABLE_SECONDS)
+                ),
             )
         except Exception as exc:
             return self._error_result(
                 f"Read-only OpenShop binding/query failed: {type(exc).__name__}: {exc}"
             )
 
-        return self._evaluate_state(
-            state,
-            window_start=window_start,
-            window_end=window_end,
-            window_source=window_source,
-            app_binding=app_binding,
-            database_evidence=database_evidence,
-        )
+        observed = result.metadata.get("observed")
+        if isinstance(observed, dict) and isinstance(observed.get("database"), dict):
+            observed["database"]["settle"] = settle
+        return result
 
     @classmethod
     def _evaluate_state(

@@ -35,7 +35,7 @@ evaluation:
     manual_window_start: '2026-08-03T15:33:56+08:00'
     manual_window_end: '2026-08-03T15:57:23+08:00'
     expected_instruction_sha256: d96397d19e83d70fbbd1bf09759ba3b1cc25d9b2bc93b8815b5984ea298c08a6
-    expected_ruleset_sha256: 5fa25c644d168cd9ab02ca253a2916bfb33496c0dc1fd32e899dd6ec58f182c4
+    expected_ruleset_sha256: ac8a37a2428617610d30f38c79983567738ba672bd618fc19263ddc3835563c1
     requires_ui_observation: false
 limits:
   max_steps: 300
@@ -59,22 +59,25 @@ metadata:
     complete_event_window_end: '2026-08-03T15:57:23+08:00'
   verifier_rules:
     instruction_sha256: d96397d19e83d70fbbd1bf09759ba3b1cc25d9b2bc93b8815b5984ea298c08a6
-    ruleset_sha256: 5fa25c644d168cd9ab02ca253a2916bfb33496c0dc1fd32e899dd6ec58f182c4
+    ruleset_sha256: ac8a37a2428617610d30f38c79983567738ba672bd618fc19263ddc3835563c1
     final_business_evidence:
     - Exact unique Lena Wu and Marco Li recipients joined to recipient-created events.
     - Exact completed transfers and Posted transactions joined to recipients and transfer events.
-    - Exact Activity query/category/status/date/Search/source-result event chain.
+    - An Activity search for "Studio rent" with Category Transfer, Status Posted and Time Last 30
+      days before the dispute; other Activity and details views are browsing and not counted.
     - Exact Marco Li source transaction, dispute fields, and source-bound dispute event.
     - Exact Large purchase, Low balance, and Payment due objects and save events.
     - Exact Upcoming bill read object/event and final OpenBank Rewards Card lock object/event.
-    - Exact ordered projection of every in-window data-producing and source-selection event.
+    - No unexpected business event and only the logically required order (recipient before its
+      transfer, Marco transfer and the stated search before the dispute); the brief fixes no other
+      order.
     data_source_priority:
     - OpenBank WebKit localStorage key openbank.localState.v7 is authoritative.
     - Final UI is not required because step 71 itself creates durable card-lock state.
     matching:
     - Strings use case-sensitive exact equality; money uses exact Decimal cents.
     - Every target has cardinality exactly one and runtime IDs join across objects and events.
-    - Only documented consecutive duplicate details/settings emissions are collapsed.
+    - Identical alert-setting re-saves count once; every other business event exactly once.
     manual_causal_window:
       start: '2026-08-03T15:33:56+08:00'
       end: '2026-08-03T15:57:23+08:00'

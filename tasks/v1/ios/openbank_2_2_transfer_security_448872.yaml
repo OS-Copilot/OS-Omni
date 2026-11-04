@@ -33,7 +33,7 @@ evaluation:
     manual_window_start: '2026-08-03T13:33:39+08:00'
     manual_window_end: '2026-08-03T13:41:20+08:00'
     expected_instruction_sha256: f9caa48d4a2b18b91210eb1fed6fc11ba099c82c55f6345388065fa802f45f75
-    expected_ruleset_sha256: e5babced4619451b19f878ccbb512a84ee21049778e77d1d0545c63446cfbcc3
+    expected_ruleset_sha256: 46e55049e4ecba9c172d33309f539c053f2a527c1456d5ad6a74302179bd8f24
     requires_ui_observation: false
 limits:
   max_steps: 300
@@ -57,14 +57,16 @@ metadata:
     recording_path: /Users/a123/Downloads/任务包大全/ios/客户审核通过/openbank1/2026-08-03_13-33-39.mp4
   verifier_rules:
     instruction_sha256: f9caa48d4a2b18b91210eb1fed6fc11ba099c82c55f6345388065fa802f45f75
-    ruleset_sha256: e5babced4619451b19f878ccbb512a84ee21049778e77d1d0545c63446cfbcc3
+    ruleset_sha256: 46e55049e4ecba9c172d33309f539c053f2a527c1456d5ad6a74302179bd8f24
     final_business_evidence:
     - Exact unique Owen Reed and Nora Vale recipient records joined to recipient-added events.
     - Exact Owen Reed and Rainy Day Savings transfers, generated transactions, and account balances.
     - Exact City Utilities bill payment and biller state.
     - Exact Payment due and Large purchase preference states.
     - Exact alert-read and card-lock states.
-    - Exact ordered projection of all ten durable event groups.
+    - Each of the ten durable event groups recorded once (identical preference re-saves count once),
+      no unexpected business event, and Owen Reed's recipient before his transfer; the brief fixes
+      no other order.
     data_source_priority:
     - OpenBank WebKit localStorage key openbank.localState.v7 is authoritative.
     - Final UI is not asserted because the instruction ends with a durable submission.

@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections import Counter
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -38,7 +39,11 @@ STEP_GROUPS = {
 CHECKPOINT_SPECS = tuple(
     {"name": f"{name}_exact", "steps": steps}
     for name, steps in STEP_GROUPS.items()
-) + ({"name": "durable_event_order_exact", "steps": list(range(1, 79))},)
+) + ({"name": "durable_events_and_required_order", "steps": list(range(1, 79))},)
+
+# The only order the brief states: "Three new posts must be created in the Home
+# feed in the specific order of "transit pulse", "sensor trend", and "route update"."
+REQUIRED_CREATION_ORDER = ("transit pulse", "sensor trend", "route update")
 
 CREATED_POSTS = {
     "transit pulse": "map delay",
@@ -124,7 +129,8 @@ RULESET_SPEC = {
         },
         "dynamic_created_posts_in_all_engagement_sets": True,
     },
-    "event_projection": "exact_order_for_instruction_required_business_events",
+    "event_projection": "multiset_of_instruction_required_business_events",
+    "required_event_order": {"post_created": list(REQUIRED_CREATION_ORDER)},
     "task_window_business_events": "reject_every_unrequested_or_duplicate_durable_event",
     "created_object_inventory": "exact_for_non_seed_alex_posts_and_comments",
     "engagement_collection_semantics": "exact_unique_ids",
@@ -280,24 +286,19 @@ def _task_window_business_events(
     events: Sequence[Mapping[str, Any]],
     dynamic_ids: Mapping[str, str],
 ) -> tuple[list[tuple[Any, ...]], list[dict[str, Any]]]:
-    """Return every durable business event between the first and last required events."""
-    expected = _expected_events()
-    first_index = next(
-        (
-            index
-            for index, event in enumerate(events)
-            if _project_event(event, dynamic_ids) == expected[0]
-        ),
-        None,
-    )
-    last_index = next(
-        (
-            index
-            for index in range(len(events) - 1, -1, -1)
-            if _project_event(events[index], dynamic_ids) == expected[-1]
-        ),
-        None,
-    )
+    """Return every durable business event between the first and last required events.
+
+    The brief fixes no per-post order, so the window is bounded by whichever
+    required events come first and last, not by fixed first/last events.
+    """
+    expected = set(_expected_events())
+    required_indices = [
+        index
+        for index, event in enumerate(events)
+        if _project_event(event, dynamic_ids) in expected
+    ]
+    first_index = required_indices[0] if required_indices else None
+    last_index = required_indices[-1] if required_indices else None
     if first_index is None or last_index is None or last_index < first_index:
         return [], []
 
@@ -475,14 +476,24 @@ class OpenTwitterTransitSignalEngagement483271Evaluator(BaseEvaluator):
         events = _rows(state.get("evaluationEvents"))
         projected, unexpected_events = _task_window_business_events(events, dynamic_ids)
         expected_projection = _expected_events()
+        creation_order = [item[1] for item in projected if item[0] == "post_created"]
+        creation_order_ok = creation_order == list(REQUIRED_CREATION_ORDER)
         checks.append(_check(
-            name="durable_event_order_exact",
-            value_contract_id="events.required_durable_order",
+            name="durable_events_and_required_order",
+            value_contract_id="events.required_durable_set_and_creation_order",
             steps=list(range(1, 79)),
-            expected=[list(item) for item in expected_projection],
-            actual=[list(item) for item in projected],
+            expected={
+                "events": [list(item) for item in expected_projection],
+                "post_created_order": list(REQUIRED_CREATION_ORDER),
+            },
+            actual={
+                "events": [list(item) for item in projected],
+                "missing": [list(item) for item in (Counter(expected_projection) - Counter(projected)).elements()],
+                "extra": [list(item) for item in (Counter(projected) - Counter(expected_projection)).elements()],
+                "post_created_order": creation_order,
+            },
             evidence={"events": events, "unexpected_business_events": unexpected_events},
-            passed=projected == expected_projection,
+            passed=Counter(projected) == Counter(expected_projection) and creation_order_ok,
         ))
 
         task_comment_events = {

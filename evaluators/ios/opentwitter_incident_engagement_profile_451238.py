@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -46,7 +47,7 @@ CHECKPOINT_SPECS = (
     {"name": "customer_thread_exact", "steps": STEP_GROUPS["customer_thread"]},
     {"name": "security_reminder_exact", "steps": STEP_GROUPS["security_reminder"]},
     {"name": "profile_exact", "steps": STEP_GROUPS["profile"]},
-    {"name": "durable_event_order_exact", "steps": list(range(1, 79))},
+    {"name": "durable_events_and_required_order", "steps": list(range(1, 79))},
 )
 
 SEED_POSTS = {
@@ -99,8 +100,22 @@ CREATED_POSTS = {
 }
 
 EXPECTED_LIKED_STATIC = {"p-1005", "p-1002", "p-1014", "p-1009", "p-alex-2006", "p-1010"}
-EXPECTED_BOOKMARKED_STATIC = {"p-1001", "p-1002", "p-1009", "p-alex-2006", "p-1010"}
-EXPECTED_REPOSTED_STATIC = {"p-1002", "p-1009", "p-alex-2006"}
+# The brief says "Save, like, and repost the post titled "Runbooks age quietly"",
+# so p-1014 is saved and reposted too (the source steps only liked it).
+EXPECTED_BOOKMARKED_STATIC = {"p-1001", "p-1002", "p-1014", "p-1009", "p-alex-2006", "p-1010"}
+EXPECTED_REPOSTED_STATIC = {"p-1002", "p-1014", "p-1009", "p-alex-2006"}
+# Orders the brief states: Devon's post is saved, reposted and liked, "then"
+# replied to. Each (before..., after) means every "before" event precedes "after".
+REQUIRED_EVENT_ORDER = (
+    (
+        (
+            ("post_bookmark_toggled", "p-1002", True),
+            ("post_repost_toggled", "p-1002", True),
+            ("post_like_toggled", "p-1002", True),
+        ),
+        ("comment_created", "p-1002", "incident owner"),
+    ),
+)
 
 RULESET_SPEC = {
     "schema_version": "1.0",
@@ -118,7 +133,14 @@ RULESET_SPEC = {
         "collections": "exact set equality",
         "cardinality": "exactly one authored target post and one authored target reply",
         "dynamic_ids": "created post IDs joined exactly to comments and toggle events",
-        "event_order": "exact relevant-event projection after the latest mark-all-read event",
+        "event_order": (
+            "the task-window projection equals the expected events as a multiset "
+            "(mark-all-read counts once); only the brief's stated order is required"
+        ),
+        "required_event_order": [
+            [[list(event) for event in before], list(after)]
+            for before, after in REQUIRED_EVENT_ORDER
+        ],
     },
     "final_ui": "not_required_after_durable_profile_save",
 }
@@ -216,7 +238,9 @@ def _expected_events() -> list[tuple[Any, ...]]:
         ("comment_created", "p-1002", "incident owner"),
         ("post_repost_toggled", "p-1002", True),
         ("post_like_toggled", "p-1002", True),
+        ("post_bookmark_toggled", "p-1014", True),
         ("post_like_toggled", "p-1014", True),
+        ("post_repost_toggled", "p-1014", True),
         ("comment_created", "p-1014", "runbook owner set"),
         ("post_created", "incident brief"),
         ("post_bookmark_toggled", "incident brief", True),
@@ -245,6 +269,54 @@ def _expected_events() -> list[tuple[Any, ...]]:
         ("post_like_toggled", "p-1010", True),
         ("profile_updated", "Alex Incident", "incident owner", ""),
     ]
+
+
+_MARK_ALL_READ = ("notifications_marked_read",)
+
+
+def _task_window_projection(
+    events: Sequence[Mapping[str, Any]],
+    dynamic_ids: Mapping[str, str],
+    expected_projection: Sequence[tuple[Any, ...]],
+) -> tuple[list[tuple[Any, ...]], list[dict[str, Any]]]:
+    """Project the task window; mark-all-read is idempotent and counts once.
+
+    The window opens at the latest mark-all-read or at the first required
+    engagement, whichever comes first, so marking notifications read last is
+    as valid as marking them read first.
+    """
+    expected = set(expected_projection)
+    mark_indices = [index for index, event in enumerate(events) if event.get("type") == _MARK_ALL_READ[0]]
+    first_required = next(
+        (
+            index
+            for index, event in enumerate(events)
+            if event.get("type") != _MARK_ALL_READ[0]
+            and _project_event(event, dynamic_ids) in expected
+        ),
+        None,
+    )
+    starts = [index for index in (mark_indices[-1] if mark_indices else None, first_required) if index is not None]
+    relevant_events = [dict(event) for event in events[min(starts):]] if starts else []
+    projected: list[tuple[Any, ...]] = []
+    for event in relevant_events:
+        item = _project_event(event, dynamic_ids)
+        if item is None or (item == _MARK_ALL_READ and _MARK_ALL_READ in projected):
+            continue
+        projected.append(item)
+    return projected, relevant_events
+
+
+def _order_violations(projected: Sequence[tuple[Any, ...]]) -> list[list[list[Any]]]:
+    violations: list[list[list[Any]]] = []
+    for before_events, after in REQUIRED_EVENT_ORDER:
+        if after not in projected:
+            continue
+        after_index = projected.index(after)
+        for before in before_events:
+            if before in projected and projected.index(before) > after_index:
+                violations.append([list(before), list(after)])
+    return violations
 
 
 class OpenTwitterIncidentEngagementProfile451238Evaluator(BaseEvaluator):
@@ -408,23 +480,27 @@ class OpenTwitterIncidentEngagementProfile451238Evaluator(BaseEvaluator):
         )
 
         events = _rows(state.get("evaluationEvents"))
-        mark_indices = [index for index, event in enumerate(events) if event.get("type") == "notifications_marked_read"]
-        relevant_events = events[mark_indices[-1]:] if mark_indices else events
-        projected = [
-            projected_event
-            for event in relevant_events
-            if (projected_event := _project_event(event, dynamic_ids)) is not None
-        ]
         expected_projection = _expected_events()
+        projected, relevant_events = _task_window_projection(events, dynamic_ids, expected_projection)
+        events_match = Counter(projected) == Counter(expected_projection)
+        order_violations = _order_violations(projected)
         checks.append(
             _check(
-                name="durable_event_order_exact",
-                value_contract_id="events.durable_order",
+                name="durable_events_and_required_order",
+                value_contract_id="events.durable_set_and_stated_order",
                 steps=list(range(1, 79)),
-                expected=[list(item) for item in expected_projection],
-                actual=[list(item) for item in projected],
+                expected={
+                    "events": [list(item) for item in expected_projection],
+                    "required_order": RULESET_SPEC["matching"]["required_event_order"],
+                },
+                actual={
+                    "events": [list(item) for item in projected],
+                    "missing": [list(item) for item in (Counter(expected_projection) - Counter(projected)).elements()],
+                    "extra": [list(item) for item in (Counter(projected) - Counter(expected_projection)).elements()],
+                    "order_violations": order_violations,
+                },
                 evidence={"events": relevant_events},
-                passed=projected == expected_projection,
+                passed=events_match and not order_violations,
             )
         )
 

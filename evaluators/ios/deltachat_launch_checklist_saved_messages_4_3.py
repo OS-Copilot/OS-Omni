@@ -31,6 +31,10 @@ TITLE = "Launch Gate 0728"
 NOTE_NAMES = (
     "Launch Gate 0728 Launch gate.markdown",
 )
+# Delta Chat core: Param::Forwarded is stored as ``a=<non-zero>`` in msgs.param;
+# ContactId::SELF is 1.
+FORWARDED_PARAM_KEY = "a"
+DC_CONTACT_ID_SELF = 1
 
 SOURCE_SPECS: tuple[dict[str, Any], ...] = (
     {
@@ -513,9 +517,7 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             row for row in new_saved_rows
             if int(row["type"]) == 10
             and any(
-                str(row["txt"]) == str(source["txt"])
-                and int(row["from_id"]) == int(source["from_id"])
-                and int(row["timestamp_sent"] or 0) == int(source["timestamp_sent"] or 0)
+                cls._is_forward_of(row, source)
                 for source in bob_forward_sources
             )
         ]
@@ -530,9 +532,13 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             forward_ok,
             steps=list(range(74, 80)),
             dimension="source_process",
-            expected="exactly one post-baseline Saved Messages row preserves Bob sender, full text, and original sent timestamp",
+            expected=(
+                "exactly one post-baseline Saved Messages text row with Bob's full text that is a forward: "
+                "either the source-preserving copy (Bob sender and original sent timestamp) or an "
+                "outgoing message carrying Delta Chat's Forwarded param"
+            ),
             observed=[cls._message_summary(row) for row in forwarded_rows],
-            failure_reason="the required Bob Ops forward is missing, ambiguous, or not source-preserving",
+            failure_reason="the required Bob Ops forward is missing, ambiguous, or not a forward of the source",
         ))
 
         ordered_rows = [
@@ -751,6 +757,29 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
         elif normalized.startswith(TITLE + "\n# Launch gate"):
             normalized = normalized[len(TITLE) + 1:]
         return normalized.split("\n") if normalized else []
+
+    @classmethod
+    def _is_forward_of(cls, row: Mapping[str, Any], source: Mapping[str, Any]) -> bool:
+        """True when ``row`` is Delta Chat's forward of ``source`` into Saved Messages.
+
+        The benchmark build turns Forward -> Saved Messages into a source-preserving
+        copy (original sender and sent timestamp; seen in the reviewed run). Builds
+        without that path write a new outgoing message from SELF (contact id 1) with
+        the Forwarded param (``a``) set. A retyped message has neither, so it fails.
+        """
+        if str(row["txt"]) != str(source["txt"]):
+            return False
+        if (
+            int(row["from_id"]) == int(source["from_id"])
+            and int(row["timestamp_sent"] or 0) == int(source["timestamp_sent"] or 0)
+        ):
+            return True
+        forwarded_flag = cls._param_value(row["param"], FORWARDED_PARAM_KEY).strip()
+        return (
+            int(row["from_id"]) == DC_CONTACT_ID_SELF
+            and forwarded_flag.lstrip("-").isdigit()
+            and int(forwarded_flag) != 0
+        )
 
     @staticmethod
     def _row_by_id(rows: Sequence[sqlite3.Row], message_id: int) -> sqlite3.Row | None:

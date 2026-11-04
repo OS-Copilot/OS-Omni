@@ -32,7 +32,7 @@ evaluation:
     manual_window_start: '2026-08-03T10:15:43+08:00'
     manual_window_end: '2026-08-03T10:25:22.900000+08:00'
     expected_instruction_sha256: 21cf0c825c9cc6d94b41337db26d92ee33665108baf9a5da54a353fec0646e3a
-    expected_ruleset_sha256: 8fd6d26f1459489da8dcf4e3d1a3b08b92524a8c2f11ee3b5841967c78c6edba
+    expected_ruleset_sha256: 6127b434e31e2e7ab40341d172905621b2aabd35c054a0b1eef3d34471edd9f5
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-3
 limits:
@@ -56,7 +56,7 @@ metadata:
   ios_device_profile: iphone17-3
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 02b8a004a6bc0e80b9aa4e3a2ab981c8decb64eb1a306a591e75b2153b09b0e1
-  evaluator_ruleset_sha256: 8fd6d26f1459489da8dcf4e3d1a3b08b92524a8c2f11ee3b5841967c78c6edba
+  evaluator_ruleset_sha256: 6127b434e31e2e7ab40341d172905621b2aabd35c054a0b1eef3d34471edd9f5
   recording: 2026-08-03_10-15-43.mp4
   description: OpenShop2 two exact orders and two exact reviews with strict durable sequence verification.
   prerequisites:

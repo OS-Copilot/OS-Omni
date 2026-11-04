@@ -21,6 +21,7 @@ import shutil
 import sqlite3
 import struct
 import tempfile
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -445,3 +446,84 @@ def read_window_seed(path: Path, variable: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise WebViewStateError(f"window.{variable} in {path} is not an object")
     return value
+
+
+# ---------------------------------------------------------------------------
+# Settling
+#
+# WKWebView hands localStorage writes to its storage process, which commits them
+# to localstorage.sqlite3 shortly afterwards rather than inside setItem.  The
+# last write of an episode (a final order or review) can therefore reach disk a
+# moment after the agent's last action.  Evaluators that read the file once can
+# use read_until_settled to re-read for a bounded time instead.
+# ---------------------------------------------------------------------------
+DEFAULT_SETTLE_TIMEOUT_SECONDS = 8.0
+DEFAULT_SETTLE_POLL_INTERVAL_SECONDS = 0.5
+DEFAULT_SETTLE_STABLE_SECONDS = 2.0
+
+
+def read_until_settled(
+    read: Callable[[], Any],
+    *,
+    accept: Callable[[Any], bool],
+    fingerprint: Callable[[Any], Any],
+    timeout_seconds: float = DEFAULT_SETTLE_TIMEOUT_SECONDS,
+    poll_interval_seconds: float = DEFAULT_SETTLE_POLL_INTERVAL_SECONDS,
+    stable_seconds: float = DEFAULT_SETTLE_STABLE_SECONDS,
+    clock: Callable[[], float] | None = None,
+    sleep: Callable[[float], None] | None = None,
+) -> tuple[Any, dict[str, Any]]:
+    """Call *read* until *accept* holds, the value stops changing, or time runs out.
+
+    Returns the last successfully read value and the settle evidence. A value is
+    final once ``accept(value)`` is true, or once ``fingerprint(value)`` has not
+    changed for *stable_seconds*; reading stops at *timeout_seconds* regardless.
+    Read errors are retried; if no read ever succeeds the last error is raised.
+    """
+    clock = clock or time.monotonic
+    sleep = sleep or time.sleep
+    start = clock()
+    attempts = 0
+    have_value = False
+    value: Any = None
+    last_error: BaseException | None = None
+    previous: Any = None
+    changed_at = start
+    changes = 0
+    reason = "timeout"
+    while True:
+        attempts += 1
+        try:
+            current = read()
+        except Exception as exc:  # retried: a copy can catch a write in progress
+            last_error = exc
+        else:
+            current_print = fingerprint(current)
+            if not have_value or current_print != previous:
+                if have_value:
+                    changes += 1
+                previous = current_print
+                changed_at = clock()
+            have_value = True
+            value = current
+            if accept(current):
+                reason = "accepted"
+                break
+            if attempts > 1 and clock() - changed_at >= stable_seconds:
+                reason = "stable"
+                break
+        if clock() - start >= max(timeout_seconds, 0.0):
+            break
+        sleep(max(poll_interval_seconds, 0.0))
+    if not have_value:
+        assert last_error is not None
+        raise last_error
+    return value, {
+        "attempts": attempts,
+        "stop_reason": reason,
+        "changes_observed": changes,
+        "elapsed_seconds": round(clock() - start, 3),
+        "timeout_seconds": timeout_seconds,
+        "poll_interval_seconds": poll_interval_seconds,
+        "stable_seconds": stable_seconds,
+    }
