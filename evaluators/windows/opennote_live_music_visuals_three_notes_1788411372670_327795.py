@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 TASK_ID = "windows.opennote.live_music_visuals_three_notes_1788411372670_327795"
 EVALUATOR_ID = "evaluators.windows.windows_opennote_live_music_visuals_three_notes_1788411372670_327795_evaluator:WindowsOpenNoteLiveMusicVisualsThreeNotesStrictEvaluator"
@@ -71,7 +72,19 @@ RULESET_SPEC = {
              "selection": "any one of same_title_notes: its author followed and the note liked, one activating event each"},
     "seasonal": {"id": "n-3419", "authorHandle": "lina", "title": "A half-day version of seasonal jackets that keeps the whole closet simpler", "category": "Fashion", "liked": True},
     "notes": EXPECTED_NOTES,
-    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes and content type", "events": "exact durable sequence with exact source identities"},
+    # The instruction is numbered steps with no "then"/"after"/"before"/"in this order": a
+    # demonstration, not an order.  Only the sign-in must precede the account's actions; each
+    # action happening exactly once is checked by its own checkpoint.  The Explore navigation
+    # (detail opens and the Fashion feed between given actions) was a hard gate citing an English
+    # brief line the task no longer has; navigation is not a deliverable.
+    "order_policy": {
+        "rule": "only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order",
+        "stated": [],
+        "necessary": [["session_login_success", action] for action in ("profile_role", "blue_green_note", "drew_follow", "drew_like", "live_music_note", "seasonal_like", "curly_note")],
+        "necessary_basis": "sign-in before account actions",
+        "not_required": "the demonstrated step order; Explore, feed, category and note-detail views",
+    },
+    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes and content type", "events": "exact source identities; sign-in before each business action; no other order"},
     "checkpoint_specs": list(CHECKPOINT_SPECS),
 }
 RULESET_SHA256 = hashlib.sha256(json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -79,23 +92,6 @@ RULESET_SHA256 = hashlib.sha256(json.dumps(RULESET_SPEC, ensure_ascii=False, sor
 def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in row.items() if k not in {"seq", "timestamp"}}
 
-
-def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Collapse retried durable events that repeat the same payload back to back."""
-    collapsed: list[dict[str, Any]] = []
-    for row in rows:
-        if not collapsed or collapsed[-1] != row:
-            collapsed.append(row)
-    return collapsed
-
-
-def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
-    """Match every expected durable event in order, skipping app retries/extras."""
-    matched = 0
-    for row in actual:
-        if matched < len(expected) and row == expected[matched]:
-            matched += 1
-    return matched == len(expected)
 
 def _note(row: Mapping[str, Any] | None) -> dict[str, Any]:
     item = row or {}
@@ -131,7 +127,7 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         create = [r for r in events if _payload(r) == {"type": "note_created", "noteId": row.get("id"), "title": expected["title"], "category": "Fashion", "tags": expected["tags"]}]
         actual = {"candidate_count": len(candidates), "exact_count": len(exact), "id": row.get("id"), "note": _note(row), "cover_content": assets.get(expected["cover"]), "create_event_count": len(create)}
         passed = len(candidates) == len(exact) == len(create) == 1 and assets.get(expected["cover"]) == expected["cover_content"]
-        checks.append(_check(group + "_exact", expected | {"cardinality": 1}, actual, passed)); matched[group] = row; created[group] = create[0] if len(create) == 1 else {}
+        checks.append(_check(group + "_exact", expected | {"cardinality": 1}, actual, passed)); matched[group] = row; created[group] = create[0] if create else {}
 
     def engagement_state(expected: Mapping[str, Any], followed: bool) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], list[Mapping[str, Any]], dict[str, Any], dict[str, Any]]:
         candidates = [r for r in notes if r.get("id") == expected["id"] and r.get("title") == expected["title"] and r.get("authorHandle") == expected["authorHandle"] and r.get("category") == expected["category"]]
@@ -149,7 +145,7 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         checks.append(_check(check_id, expected | wanted, actual, actual == wanted)); return (source, likes, follows)
 
     # Any one same-titled note counts (RULESET_SPEC drew), each under the exact contract the single
-    # note had.  The timeline and navigation below follow the note that was engaged.
+    # note had.  The timeline below follows the note that was engaged.
     drew_options = []
     for option in RULESET_SPEC["drew"]["same_title_notes"]:
         expected = {**RULESET_SPEC["drew"], **option}
@@ -161,61 +157,25 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     checks.append(_check("drew_engagement_exact", RULESET_SPEC["drew"] | {"wanted": drew_wanted}, {"options": {row[0]["id"]: row[3] for row in drew_options}, "engaged_note_id": drew_choice[0]["id"] if drew_done else None}, bool(drew_done)))
     seasonal, seasonal_likes, _ = engagement("seasonal", "seasonal_engagement_exact", False)
     durable = [_payload(r) for r in events if r.get("type") not in {"feed_view", "note_detail_opened"}]
-    projection = _collapse_consecutive_duplicates(durable)
-
-    def timeline_for(option: Mapping[str, Any]) -> list[dict[str, Any]]:
-        return [
-            {"type": "session_login_success", "handle": "lina"},
-            {"type": "profile_updated", "displayName": "Lina Park", "title": RULESET_SPEC["profile"]["title"], "bio": RULESET_SPEC["profile"]["bio"]},
-            {"type": "note_created", "noteId": matched["blue_green_note"].get("id"), "title": "Blue Green Guitar", "category": "Fashion", "tags": ["Guitar", "blue", "green"]},
-            {"type": "follow_toggled", "handle": option["authorHandle"], "active": True},
-            {"type": "note_like_toggled", "noteId": option["id"], "authorHandle": option["authorHandle"], "active": True},
-            {"type": "note_created", "noteId": matched["live_music_note"].get("id"), "title": "Live Music Visuals", "category": "Fashion", "tags": ["live", "music", "visuals"]},
-            {"type": "note_like_toggled", "noteId": "n-3419", "authorHandle": "lina", "active": True},
-            {"type": "note_created", "noteId": matched["curly_note"].get("id"), "title": "Curly Musician Photo", "category": "Fashion", "tags": ["musician", "curly", "stage"]},
-        ]
-
-    for row in drew_done:
-        if _is_ordered_projection(projection, timeline_for(row[0])):
-            drew_choice = row
-            break
-    drew_note_id = drew_choice[0]["id"]
+    # Only the sign-in precedes the business actions (RULESET_SPEC["order_policy"]).  The
+    # demonstrated order was a hard ordered projection (scan.CSV WIN-057, PR #46 tolerance) and a
+    # separate "workflow_navigation_hard" check required detail opens and a Fashion feed view
+    # between given actions; both are gone, so a different order of the same actions passes.
     drew_likes, follows = drew_choice[1], drew_choice[2]
-    expected_durable = timeline_for(drew_choice[0])
-    seqs = [int(r.get("seq", -1)) for r in [login[0] if len(login)==1 else {}, profile_events[0] if len(profile_events)==1 else {}, created["blue_green_note"], follows[0] if len(follows)==1 else {}, drew_likes[0] if len(drew_likes)==1 else {}, created["live_music_note"], seasonal_likes[0] if len(seasonal_likes)==1 else {}, created["curly_note"]]]
-    details = [r for r in events if r.get("type") == "note_detail_opened"]
-    feeds = [r for r in events if r.get("type") == "feed_view"]
-    nav_events = {
-        "drew_detail_before_follow": [r for r in details if r.get("noteId") == drew_note_id and seqs[2] < int(r.get("seq", -1)) < seqs[3]],
-        "drew_detail_between_follow_like": [r for r in details if r.get("noteId") == drew_note_id and seqs[3] < int(r.get("seq", -1)) < seqs[4]],
-        "fashion_feed_before_seasonal": [r for r in feeds if r.get("view") == "home" and r.get("query") == "" and r.get("category") == "Fashion" and seqs[5] < int(r.get("seq", -1)) < seqs[6]],
-        "seasonal_detail_before_like": [r for r in details if r.get("noteId") == "n-3419" and seqs[5] < int(r.get("seq", -1)) < seqs[6]],
+    business = {
+        "session_login_success": login[0] if len(login) == 1 else None,
+        "profile_role": profile_events[0] if profile_events else None,
+        "blue_green_note": created["blue_green_note"] or None,
+        "drew_follow": follows[0] if follows else None,
+        "drew_like": drew_likes[0] if drew_likes else None,
+        "live_music_note": created["live_music_note"] or None,
+        "seasonal_like": seasonal_likes[0] if seasonal_likes else None,
+        "curly_note": created["curly_note"] or None,
     }
-    navigation_contract = {key: bool(rows) for key, rows in nav_events.items()}
-    navigation_evidence = {key: [{"seq": row.get("seq"), "payload": _payload(row)} for row in rows] for key, rows in nav_events.items()}
-    timeline_actual = {"sequence": seqs, "durable_events": durable, "deduplicated_durable_events": projection}
-    # Hard deduplicated ordered projection: every expected durable event must be
-    # present in order, while retried/duplicated app events are tolerated. The old
-    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
-    # Evidence: scan.CSV WIN-057 and
-    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
-    timeline_ok = _is_ordered_projection(projection, expected_durable)
-    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok))
-    # The English brief separately requires both Explore interactions ("with both
-    # interactions completed within the Explore section", task YAML:9), so the
-    # navigation evidence stays a hard checkpoint of its own; it is not part of the
-    # durable-event timeline predicate.
-    navigation_expected = {key: True for key in navigation_contract}
-    navigation_passed = all(navigation_contract.values())
-    checks.append({
-        "check_id": "workflow_navigation_hard",
-        "steps": STEP_GROUPS["workflow_timeline"],
-        "predicate": "workflow_navigation_hard",
-        "expected": {"navigation_contract": navigation_expected},
-        "actual": {"navigation_contract": navigation_contract, "navigation_evidence": navigation_evidence},
-        "passed": navigation_passed,
-        "failure_reason": None if navigation_passed else "Explore-section navigation evidence is missing or out of order",
-    })
+    order_pairs = RULESET_SPEC["order_policy"]["necessary"]
+    timeline_ok, order_rows = check_precedence(business, order_pairs)
+    timeline_actual = {"pairs": order_rows, "engaged_drew_note_id": drew_choice[0]["id"] if drew_done else None, "durable_events": durable}
+    checks.append(_check("workflow_timeline_exact", {"pairs": order_pairs}, timeline_actual, timeline_ok))
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}
     checks.append(_check("task_evaluator_build_binding_exact", binding_expected, binding_actual, binding_actual == binding_expected))

@@ -25,8 +25,8 @@ CHECKPOINTS = {'login': {'steps': [1, 4], 'checks': ['session']},
                                   'items',
                                   'specs',
                                   'quantities',
-                                  'ordered events']},
- 'five_reviews': {'steps': [51, 79], 'checks': ['review ratings', 'review text', 'ordered events']}}
+                                  'business events']},
+ 'five_reviews': {'steps': [51, 79], 'checks': ['review ratings', 'review text', 'business events']}}
 RULESET_SPEC = {'task_id': 'windows.openshop.baby_care_order_574732',
  'source': 'OpenShop local read-only APIs /api/session, /api/cart, /api/orders, /api/benchmark',
  'source_state_modes': ['human_completed_eval_only', 'fresh_clone_verified'],
@@ -43,11 +43,12 @@ RULESET_SPEC = {'task_id': 'windows.openshop.baby_care_order_574732',
                   'quantities',
                   'review ratings',
                   'review text',
-                  'ordered events'],
- 'event_coverage': 'all raw events must be required events; no extra events allowed'}
-RULESET_SHA256 = '1782a1d658e79dcb3d2c922452b77c8caebd61450526caa20f53aff1fa217e40'
+                  'business events'],
+ 'event_coverage': 'business actions only: sign-in before the checkout; each item added with its spec before the checkout; exactly one checkout bound to the order; exactly one review per reviewed item after the checkout. Browsing, checkout clicks and cart-stepper events are never required or counted; the brief states no order between items'}
+RULESET_SHA256 = '0fcf1259d2ca048e4e52c41a917ae04aa0a449dc24fd0b7fb1174ef3ab42d13b'
 # END OSOMNI_PORTABLE_BINDING
 from evaluators.cua_review.evaluators.windows.openshop import OpenShopApiEvaluator
+from evaluators.windows.openshop_business_events import check_business_events
 
 
 def _digest(value: Mapping[str, Any]) -> str:
@@ -74,118 +75,16 @@ BABY_ITEMS = {
 }
 
 
-def _event(event_type: str, **match: Any) -> dict[str, Any]:
-    return {"type": event_type, "match": match}
-
-
-CORE_EVENTS = [
-    _event("session_login_success", phone="13800138000"),
-    _event("product_view", productId="p1001"),
-    _event("cart_item_added", productId="p1001", selectedSpec="Rose Gold"),
-    _event("product_view", productId="p1005"),
-    _event("cart_item_added", productId="p1005", selectedSpec="40 sachets"),
-    _event("product_view", productId="p1003"),
-    _event("cart_item_added", productId="p1003", selectedSpec="Full"),
-    _event("product_view", productId="p1004"),
-    _event("cart_item_added", productId="p1004", selectedSpec="16-inch"),
-    _event("catalog_view", category="Beauty"),
-    _event("product_view", productId="p2071"),
-    _event("cart_item_added", productId="p2071", selectedSpec="Value Set"),
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2640"),
-    _event("cart_item_added", productId="p2640", selectedSpec="Gift Set"),
-    _event("cart_quantity_updated", productId="p1001", quantity=2),
-    _event("cart_quantity_updated", productId="p1005", quantity=2),
-    _event("cart_quantity_updated", productId="p1004", quantity=2),
-    _event("checkout_address_selected", addressId="addr-home"),
-    _event("checkout_payment_selected", paymentMethodId="cod"),
-    _event("checkout_submitted", addressLabel="Home", paymentLabel="Cash on Delivery", note="CoreBundleA", itemCount=6),
-    _event("order_item_reviewed", productId="p1001", rating=4),
-    _event("order_item_reviewed", productId="p1005", rating=3),
-    _event("order_item_reviewed", productId="p1003", rating=4),
-    _event("order_item_reviewed", productId="p1004", rating=3),
-    _event("order_item_reviewed", productId="p2071", rating=4),
-    _event("order_item_reviewed", productId="p2640", rating=4),
-]
-
-BABY_EVENTS = [_event("session_login_success", phone="13800138000")]
-for product_id in ("p2220", "p2221", "p2222", "p2223", "p2626", "p2627"):
-    BABY_EVENTS.extend(
-        [
-            _event("catalog_view", category="Baby"),
-            _event("product_view", productId=product_id),
-            _event("cart_item_added", productId=product_id, selectedSpec="Toddler"),
-        ]
-    )
-BABY_EVENTS.extend(
-    [
-        _event("cart_quantity_updated", productId="p2220", quantity=2),
-        _event("cart_quantity_updated", productId="p2221", quantity=2),
-        _event("cart_quantity_updated", productId="p2626", quantity=2),
-        _event("checkout_address_selected", addressId="addr-home"),
-        _event("checkout_payment_selected", paymentMethodId="alipay"),
-        _event("checkout_submitted", addressLabel="Home", paymentLabel="Alipay", note="BabyCareBox", itemCount=6),
-        _event("order_item_reviewed", productId="p2220", rating=4),
-        _event("order_item_reviewed", productId="p2221", rating=3),
-        _event("order_item_reviewed", productId="p2222", rating=4),
-        _event("order_item_reviewed", productId="p2223", rating=3),
-        _event("order_item_reviewed", productId="p2626", rating=4),
-    ]
-)
-
-
 class _ExactOpenShopOrderEvaluator(BaseEvaluator):
     TASK_ID = ""
     EXPECTED: Mapping[str, Any] = {}
     RULESET_SPEC: Mapping[str, Any] = {}
     RULESET_SHA256 = ""
     CHECKPOINT_SPECS: list[Mapping[str, Any]] = []
-    EXPECTED_NAVIGATION_EVENTS: list[Mapping[str, Any]] = []
-    OPTIONAL_NAVIGATION_EVENTS: list[Mapping[str, Any]] = []
-
-    @staticmethod
-    def _find_event_sequence(
-        events: list[Mapping[str, Any]], expectations: list[Mapping[str, Any]]
-    ) -> tuple[list[Mapping[str, Any]], list[int]]:
-        cursor = 0
-        found: list[Mapping[str, Any]] = []
-        found_indices: list[int] = []
-        for expected in expectations:
-            found_event = None
-            for index in range(cursor, len(events)):
-                event = dict(events[index] or {})
-                if str(event.get("type") or "") != str(expected.get("type") or ""):
-                    continue
-                matcher = dict(expected.get("match") or {})
-                if all(event.get(key) == value for key, value in matcher.items()):
-                    found_event = event
-                    cursor = index + 1
-                    found_indices.append(index)
-                    break
-            if found_event is None:
-                raise AssertionError(f"missing ordered event: {expected}")
-            found.append(found_event)
-        return found, found_indices
-
-    @staticmethod
-    def _find_optional_event_sequence(
-        events: list[Mapping[str, Any]], expectations: list[Mapping[str, Any]]
-    ) -> tuple[list[Mapping[str, Any]], list[int]]:
-        cursor = 0
-        found: list[Mapping[str, Any]] = []
-        found_indices: list[int] = []
-        for expected in expectations:
-            for index in range(cursor, len(events)):
-                event = dict(events[index] or {})
-                if str(event.get("type") or "") != str(expected.get("type") or ""):
-                    continue
-                matcher = dict(expected.get("match") or {})
-                if all(event.get(key) == value for key, value in matcher.items()):
-                    found.append(event)
-                    found_indices.append(index)
-                    cursor = index + 1
-                    break
-        return found, found_indices
+    #: First additions the brief states as a sequence ("added in that exact sequence").
+    ITEM_SEQUENCES: list[list[str]] = []
+    #: The brief says "sign in ..., then" build the order.
+    LOGIN_BEFORE_FIRST_ADD = False
 
     @staticmethod
     def _order_projection(order: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -217,9 +116,6 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
             return EvalResult(status=EvalStatus.ERROR, message="controller.run_python_script is required")
         params = dict(context.get("params") or {})
         port = int(params.get("port", 4310) or 4310)
-        require_complete_event_coverage = bool(
-            params.get("require_complete_event_coverage", False)
-        )
         checks: list[dict[str, Any]] = []
         metadata: dict[str, Any] = {
             "task_id": self.TASK_ID,
@@ -275,86 +171,28 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
                 exact(f"latest_order.{field}", f"order_{field}", expected_order[field], latest[field])
             exact("latest_order.items", "order_items_exact", expected_order["items"], latest["items"])
 
-            matched_events, matched_indices = self._find_event_sequence(
-                events, list(self.EXPECTED["events"])
+            # Grade the business actions the brief asks for, not the recorded click
+            # path: browsing, checkout clicks and cart-stepper events are never
+            # required or counted (evaluators/windows/openshop_business_events.py).
+            business = check_business_events(
+                events,
+                [("order", latest, expected_order)],
+                item_sequences=self.ITEM_SEQUENCES,
+                login_before_first_add=self.LOGIN_BEFORE_FIRST_ADD,
             )
-            remaining_events = [
-                event for index, event in enumerate(events) if index not in set(matched_indices)
-            ]
-            navigation_events, navigation_indices = self._find_event_sequence(
-                remaining_events, list(self.EXPECTED_NAVIGATION_EVENTS)
-            )
-            after_required_navigation = [
-                event
-                for index, event in enumerate(remaining_events)
-                if index not in set(navigation_indices)
-            ]
-            optional_navigation_events, optional_navigation_indices = self._find_optional_event_sequence(
-                after_required_navigation, list(self.OPTIONAL_NAVIGATION_EVENTS)
-            )
-            unexpected_events = [
-                event
-                for index, event in enumerate(after_required_navigation)
-                if index not in set(optional_navigation_indices)
-            ]
-            exact(
-                "benchmark.ordered_event_count",
-                "ordered_business_events",
-                len(self.EXPECTED["events"]),
-                len(matched_events),
-            )
-            # The English brief requires the scripted business events in order and
-            # the exact final state, not the absence of harmless extra UI events.
-            # Keep the raw coverage counts as diagnostics unless a task opts in.
-            # See scan_work/parts/windows_02.csv WIN-002 (step_gate).
-            exact(
-                "benchmark.navigation_event_count",
-                "allowed_navigation_events",
-                len(self.EXPECTED_NAVIGATION_EVENTS),
-                len(navigation_events),
-                diagnostic=not require_complete_event_coverage,
-            )
-            exact(
-                "benchmark.raw_event_count",
-                "complete_event_coverage",
-                len(self.EXPECTED["events"])
-                + len(self.EXPECTED_NAVIGATION_EVENTS)
-                + len(optional_navigation_events),
-                len(events),
-                diagnostic=not require_complete_event_coverage,
-            )
-            exact(
-                "benchmark.unexpected_events",
-                "complete_event_coverage",
-                [],
-                unexpected_events,
-                diagnostic=not require_complete_event_coverage,
-            )
-            order_id = latest["id"]
-            submitted = next(event for event in matched_events if event.get("type") == "checkout_submitted")
-            exact("benchmark.checkout_order_id", "checkout_order_binding", order_id, str(submitted.get("orderId") or ""))
-            review_order_ids = [
-                str(event.get("orderId") or "")
-                for event in matched_events
-                if event.get("type") == "order_item_reviewed"
-            ]
-            exact(
-                "benchmark.review_order_ids",
-                "review_order_binding",
-                [order_id] * len(review_order_ids),
-                review_order_ids,
-            )
+            checks.extend(business)
             metadata["current_state_evidence"] = {
                 "session": session,
                 "cart_item_count": len(cart_payload.get("items") or []),
                 "latest_order": latest,
-                "matched_events": matched_events,
-                "navigation_events": navigation_events,
-                "optional_navigation_events": optional_navigation_events,
-                "unexpected_events": unexpected_events,
                 "raw_events": events,
                 "benchmark_event_count": len(events),
             }
+            failed = [row for row in business if not row["passed"]]
+            if failed:
+                raise AssertionError("; ".join(
+                    f"{row['check_id']}: expected {row['expected']!r}, got {row['actual']!r}" for row in failed
+                ))
         except AssertionError as exc:
             metadata["failure_reason"] = str(exc)
             return EvalResult(status=EvalStatus.FAIL, message=str(exc), metadata=metadata)
@@ -364,7 +202,7 @@ class _ExactOpenShopOrderEvaluator(BaseEvaluator):
 
         return EvalResult(
             status=EvalStatus.PASS,
-            message=f"{self.TASK_ID} exact OpenShop state and ordered events passed",
+            message=f"{self.TASK_ID} exact OpenShop state and business events passed",
             metadata=metadata,
         )
 
@@ -387,11 +225,8 @@ CORE_RULESET = {
     "source": "OpenShop local read-only APIs /api/session, /api/cart, /api/orders, /api/benchmark",
     "source_state_modes": ["human_completed_eval_only", "fresh_clone_verified"],
     "step_groups": {"login": [1, 4], "six_product_order": [5, 41], "six_reviews": [42, 76]},
-    "exact_fields": ["session", "cart", "address", "payment", "note", "status", "total", "items", "specs", "quantities", "review ratings", "review text", "ordered events"],
-    "event_coverage": (
-        "all raw events must be required events, four exact shortcut-search catalog views, "
-        "or the user-authorized harmless correction detour through product p2304 and a repeated Music catalog view"
-    ),
+    "exact_fields": ["session", "cart", "address", "payment", "note", "status", "total", "items", "specs", "quantities", "review ratings", "review text", "business events"],
+    "event_coverage": "business actions only: sign-in before the first addition (brief: then); first additions of the six items in the stated sequence; each item added with its spec before the checkout; exactly one checkout bound to the order; exactly one review per item after the checkout. Browsing, checkout clicks and cart-stepper events are never required or counted",
 }
 
 BABY_RULESET = {
@@ -399,8 +234,8 @@ BABY_RULESET = {
     "source": "OpenShop local read-only APIs /api/session, /api/cart, /api/orders, /api/benchmark",
     "source_state_modes": ["human_completed_eval_only", "fresh_clone_verified"],
     "step_groups": {"login": [1, 4], "six_product_order": [5, 50], "five_reviews": [51, 79]},
-    "exact_fields": ["session", "cart", "address", "payment", "note", "status", "total", "items", "specs", "quantities", "review ratings", "review text", "ordered events"],
-    "event_coverage": "all raw events must be required events; no extra events allowed",
+    "exact_fields": ["session", "cart", "address", "payment", "note", "status", "total", "items", "specs", "quantities", "review ratings", "review text", "business events"],
+    "event_coverage": "business actions only: sign-in before the checkout; each item added with its spec before the checkout; exactly one checkout bound to the order; exactly one review per reviewed item after the checkout. Browsing, checkout clicks and cart-stepper events are never required or counted; the brief states no order between items",
 }
 
 
@@ -413,16 +248,10 @@ class OpenShopCoreBundleReviewsEvaluator(_ExactOpenShopOrderEvaluator):
         {"id": "core_order", "steps": [5, 41], "value_contract_id": "order_items_exact"},
         {"id": "core_reviews", "steps": [42, 76], "value_contract_id": "review_order_binding"},
     ]
-    EXPECTED_NAVIGATION_EVENTS = [
-        _event("catalog_view", query="Verdant Pro Noise-Canceling Headphones", category="All"),
-        _event("catalog_view", query="Mountain Isle Pour-Over Coffee 20 Pack", category="All"),
-        _event("catalog_view", query="Garden White Cotton Bedding Set 1.8m", category="All"),
-        _event("catalog_view", query="Polar Day Slim Business Backpack", category="All"),
-    ]
-    OPTIONAL_NAVIGATION_EVENTS = [
-        _event("product_view", productId="p2304"),
-        _event("catalog_view", query="", category="Music"),
-    ]
+    # Brief: "Sign in ..., then place an order ..." and the six items "added in
+    # that exact sequence".
+    ITEM_SEQUENCES = [["p1001", "p1005", "p1003", "p1004", "p2071", "p2640"]]
+    LOGIN_BEFORE_FIRST_ADD = True
     EXPECTED = {
         "order": {
             "address": "Home",
@@ -432,7 +261,6 @@ class OpenShopCoreBundleReviewsEvaluator(_ExactOpenShopOrderEvaluator):
             "total": 1621.08,
             "items": _project_items(CORE_ITEMS),
         },
-        "events": CORE_EVENTS,
     }
 
 
@@ -454,7 +282,6 @@ class OpenShopBabyCareOrderEvaluator(_ExactOpenShopOrderEvaluator):
             "total": 398.88,
             "items": _project_items(BABY_ITEMS),
         },
-        "events": BABY_EVENTS,
     }
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:

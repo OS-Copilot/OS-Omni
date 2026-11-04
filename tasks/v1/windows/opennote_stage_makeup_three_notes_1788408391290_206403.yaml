@@ -91,7 +91,7 @@ evaluation:
   evaluator_id: evaluators.windows.opennote_stage_makeup_three_notes_1788408391290_206403:WindowsOpenNoteStageMakeupThreeNotesStrictEvaluator
   params:
     expected_instruction_sha256: e7f60a80a1d04829a603ca3f5f09fdc8a3207a52148f974a03378c940b80c432
-    expected_ruleset_sha256: 9b9bbb5aba4550610db860bb4902b3825a10451bc372f8d6a62ae7329ba88bb8
+    expected_ruleset_sha256: 08a4eafeddfa5577c7ac25e6a7157bd788e57593c9e649115cd9636c88049aa5
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:

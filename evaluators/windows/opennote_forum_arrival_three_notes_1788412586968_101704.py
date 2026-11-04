@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 TASK_ID = "windows.opennote.forum_arrival_three_notes_1788412586968_101704"
 EVALUATOR_ID = "evaluators.windows.windows_opennote_forum_arrival_three_notes_1788412586968_101704_evaluator:WindowsOpenNoteForumArrivalThreeNotesStrictEvaluator"
@@ -87,33 +88,25 @@ RULESET_SPEC = {
     "profile": {"handle": "lina", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Forum travel editor"},
     "old_street": {"id": "n-3207", "authorHandle": "lina", "title": "I tried this old-street photo walks 17 times until it finally worked", "category": "Travel", "liked": True, "saved": True},
     "notes": EXPECTED_NOTES,
-    "final_feed": {"type": "feed_view", "view": "profile", "query": "", "category": "Recommended", "tag": "", "handle": "lina", "total": 34},
-    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes and content type", "events": "exact durable sequence and exact final profile feed"},
+    # The instruction is numbered steps with no "then"/"after"/"before"/"in this order": a
+    # demonstration, not an order.  Only the sign-in must precede the account's actions; each
+    # action happening exactly once is checked by its own checkpoint.  The profile feed the app
+    # shows after the last Publish (formerly required as the last event, total 34) is navigation.
+    "order_policy": {
+        "rule": "only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order",
+        "stated": [],
+        "necessary": [["session_login_success", action] for action in ("forum_arrival_note", "old_street_like", "old_street_save", "profile_bio", "two_day_note", "group_session_note")],
+        "necessary_basis": "sign-in before account actions",
+        "not_required": "the demonstrated step order; feed, profile-feed and note-detail views, including which page is open at the end",
+    },
+    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes and content type", "events": "sign-in before each business action; no other order"},
     "checkpoint_specs": list(CHECKPOINT_SPECS),
 }
-RULESET_SHA256 = "54a3c33e3d845199e41076a3d3976ab64e2d418c35bd2971caeec4c3cac349c2"
+RULESET_SHA256 = "58e6064122dd712cffe509a1de6e5a82c4684de38e0266fbe8eb639eab1a62fc"
 
 
 def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in row.items() if key not in {"seq", "timestamp"}}
-
-
-def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Collapse retried durable events that repeat the same payload back to back."""
-    collapsed: list[dict[str, Any]] = []
-    for row in rows:
-        if not collapsed or collapsed[-1] != row:
-            collapsed.append(row)
-    return collapsed
-
-
-def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
-    """Match every expected durable event in order, skipping app retries/extras."""
-    matched = 0
-    for row in actual:
-        if matched < len(expected) and row == expected[matched]:
-            matched += 1
-    return matched == len(expected)
 
 
 def _note(row: Mapping[str, Any] | None) -> dict[str, Any]:
@@ -159,13 +152,10 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         actual = {"candidate_count": len(candidates), "exact_count": len(exact), "id": note.get("id"), "note": _note(note), "cover_content": assets.get(expected["cover"]), "create_event_count": len(create_events)}
         passed = len(candidates) == len(exact) == len(create_events) == 1 and assets.get(expected["cover"]) == expected["cover_content"]
         if group == "group_session_note_and_final_ui":
-            final_feed_rows = [row for row in events if _payload(row) == RULESET_SPEC["final_feed"]]
-            actual["final_feed"] = _payload(events[-1]) if events else None
-            actual["final_feed_count"] = len(final_feed_rows)
-            passed = passed and len(final_feed_rows) == 1 and bool(events) and _payload(events[-1]) == RULESET_SPEC["final_feed"]
+            actual["last_event"] = _payload(events[-1]) if events else None  # diagnostic only
         checks.append(_check(group + "_exact", expected | {"cardinality": 1}, actual, passed))
         matched[group] = note
-        created[group] = create_events[0] if len(create_events) == 1 else {}
+        created[group] = create_events[0] if create_events else {}
 
     old_expected = RULESET_SPEC["old_street"]
     old_candidates = [row for row in notes if row.get("id") == old_expected["id"] and row.get("authorHandle") == old_expected["authorHandle"] and row.get("title") == old_expected["title"] and row.get("category") == old_expected["category"]]
@@ -176,26 +166,22 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     checks.append(_check("old_street_engagement_exact", old_expected | old_wanted, old_actual, old_actual == old_wanted))
 
     durable = [_payload(row) for row in events if row.get("type") not in {"feed_view", "note_detail_opened"}]
-    expected_durable = [
-        {"type": "session_login_success", "handle": "lina"},
-        {"type": "note_created", "noteId": matched["forum_arrival_note"].get("id"), "title": "Forum Arrival Outfit", "category": "Fashion", "tags": ["forum", "trip", "outfit"]},
-        {"type": "note_like_toggled", "noteId": "n-3207", "authorHandle": "lina", "active": True},
-        {"type": "note_save_toggled", "noteId": "n-3207", "authorHandle": "lina", "active": True},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": RULESET_SPEC["profile"]["bio"]},
-        {"type": "note_created", "noteId": matched["two_day_note"].get("id"), "title": "Two Day Forum Plan", "category": "Fashion", "tags": ["forum", "plan", "attire"]},
-        {"type": "note_created", "noteId": matched["group_session_note_and_final_ui"].get("id"), "title": "Group Session Outfit", "category": "Fashion", "tags": ["forum", "session", "attire"]},
-    ]
-    ordered_rows = [login_events[0] if len(login_events) == 1 else {}, created["forum_arrival_note"], likes[0] if len(likes) == 1 else {}, saves[0] if len(saves) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["two_day_note"], created["group_session_note_and_final_ui"]]
-    sequence = [int(row.get("seq", -1)) for row in ordered_rows]
-    projection = _collapse_consecutive_duplicates(durable)
-    timeline_actual = {"sequence": sequence, "durable_events": durable, "deduplicated_durable_events": projection}
-    # Hard deduplicated ordered projection: every expected durable event must be
-    # present in order, while retried/duplicated app events are tolerated. The old
-    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
-    # The forum task has no scan.CSV row; the same defect is documented in
-    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
-    timeline_ok = _is_ordered_projection(projection, expected_durable)
-    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok))
+    # Only the sign-in precedes the business actions (RULESET_SPEC["order_policy"]); feed and
+    # detail views are navigation and neither required nor counted.  The demonstrated order was a
+    # hard ordered projection before (PR #46 tolerance); a different order now passes.
+    business = {
+        "session_login_success": login_events[0] if len(login_events) == 1 else None,
+        "forum_arrival_note": created["forum_arrival_note"] or None,
+        "old_street_like": likes[0] if likes else None,
+        "old_street_save": saves[0] if saves else None,
+        "profile_bio": profile_events[0] if profile_events else None,
+        "two_day_note": created["two_day_note"] or None,
+        "group_session_note": created["group_session_note_and_final_ui"] or None,
+    }
+    order_pairs = RULESET_SPEC["order_policy"]["necessary"]
+    timeline_ok, order_rows = check_precedence(business, order_pairs)
+    timeline_actual = {"pairs": order_rows, "durable_events": durable}
+    checks.append(_check("workflow_timeline_exact", {"pairs": order_pairs}, timeline_actual, timeline_ok))
 
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}

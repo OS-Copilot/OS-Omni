@@ -9,7 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
-from evaluators.windows.openbank_events import find_dispute_route
+from evaluators.windows.openbank_events import check_precedence, find_dispute_route
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -109,7 +109,7 @@ CHECKPOINTS = {'openbank.task03.dispute_elm': {'steps': [1, 2, 3, 4, 5, 6, 7, 8,
                                               74,
                                               75,
                                               76],
-                                    'checks': ['ORDERED_EXACT']}}
+                                    'checks': ['PAIRWISE_PRECEDENCE']}}
 RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
  'source_state_mode': 'human_completed_eval_only',
  'disputes': [{'query': 'Elm Street',
@@ -254,10 +254,11 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
                                                               74,
                                                               75,
                                                               76],
-                                                    'checks': ['ORDERED_EXACT']}}}
+                                                    'checks': ['PAIRWISE_PRECEDENCE']}}}
 RULESET_SPEC["event_route_policy"] = "search < detail < submit; subsequent inspection does not erase a completed route"
 RULESET_SPEC["transfer_identity_policy"] = "unique exact business object; bind generated ID to its submission event"
-RULESET_SHA256 = '7c884214acf632a5cde8b9be4b806c4542b212d8287b720f5f661b005bf92575'
+RULESET_SPEC["order_policy"] = {'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order', 'stated': [], 'necessary': [['recipient_caleb', 'transfer_caleb']], 'necessary_reason': 'a transfer needs its recipient saved first'}
+RULESET_SHA256 = '2d1fca66dc86a026f8eb36f22783ed69e60917085f693d0becc38cdac209e1af'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task03_702660:OpenBankTask03702660Evaluator"
 
@@ -272,6 +273,9 @@ STEP_GROUPS = {
     "recipient_caleb": list(range(62, 69)),
     "transfer_caleb": list(range(69, 77)),
 }
+#: Business actions in the order this evaluator collects their events.
+ORDER_NAMES = list(STEP_GROUPS)
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task03.dispute_elm", "steps": STEP_GROUPS["dispute_elm"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["disputes"][0]},
     {"value_contract_id": "openbank.task03.dispute_rei", "steps": STEP_GROUPS["dispute_rei"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["disputes"][1]},
@@ -282,7 +286,7 @@ CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task03.bill_northstar_7", "steps": STEP_GROUPS["bill_northstar_7"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["bill_payments"][2]},
     {"value_contract_id": "openbank.task03.recipient_caleb", "steps": STEP_GROUPS["recipient_caleb"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["recipient"]},
     {"value_contract_id": "openbank.task03.transfer_caleb", "steps": STEP_GROUPS["transfer_caleb"], "match_mode": "EXACT_ID_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["transfer"]},
-    {"value_contract_id": "openbank.task03.business_order", "steps": list(range(1, 77)), "match_mode": "ORDERED_EXACT", "expected": ["dispute_elm", "dispute_rei", "dispute_parking", "dispute_cloudbox", "bill_northstar_65", "bill_rewards_350", "bill_northstar_7", "recipient_caleb", "transfer_caleb"]},
+    {"value_contract_id": "openbank.task03.business_order", "steps": list(range(1, 77)), "match_mode": "PAIRWISE_PRECEDENCE", "expected": ORDER_PAIRS},
 ]
 
 
@@ -371,9 +375,9 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
         checks.append(cls._check(CHECKPOINT_SPECS[8], transfer is not None and transfer_event is not None, {"object_count": len(transfer_matches), "object": transfer or transfer_matches, "event": _summary(transfer_event or {})}))
         ordered_events.append(transfer_event)
 
-        order_actual = [_summary(row or {}) for row in ordered_events]
-        order_passed = all(ordered_events) and all(int(left.get("seq", -1)) < int(right.get("seq", -1)) for left, right in zip(ordered_events, ordered_events[1:]))
-        checks.append(cls._check(CHECKPOINT_SPECS[9], bool(order_passed), order_actual))
+        # Only the stated and logically necessary orders (RULESET_SPEC["order_policy"]).
+        order_passed, order_actual = check_precedence(dict(zip(ORDER_NAMES, ordered_events)), ORDER_PAIRS)
+        checks.append(cls._check(CHECKPOINT_SPECS[9], order_passed, order_actual))
         foreground_passed = foreground_app.casefold() in {"openbank", "openbank.exe"} and "openbank" in foreground_window.casefold()
         checks.append({"name": "foreground_openbank", "value_contract_id": "openbank.task03.foreground", "instruction_steps": list(range(1, 77)), "match_mode": "FINAL_UI_APP_EXACT", "expected": {"app": "openbank.exe", "window": "OpenBank"}, "actual": {"app": foreground_app, "window": foreground_window}, "passed": foreground_passed})
 

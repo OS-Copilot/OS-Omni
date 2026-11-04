@@ -13,6 +13,11 @@ the author of every post the account owns, and the evaluation state only holds t
 Repost/like/save buttons toggle (``togglePostSet``), so an action that was already active when the
 stream was opened is already done: clicking it again would undo it.  Such an action needs no new
 event, only to be active in the final state.
+
+No brief states an order between repost, like and save ("repost, like, and save the first post"
+enumerates them), so they may happen in any order after the stream was opened.  Where a brief does
+not ask for the stream to be opened, the stream as it stood at sign-in also identifies the first
+post, so no view of it is required (``require_view=False``).
 """
 
 from __future__ import annotations
@@ -106,6 +111,8 @@ def stream_at(
     for row in events:
         if row.get("type") != "post_deleted" or _seq(row) <= seq:
             continue
+        if str(row.get("postId")) in created_after:
+            continue  # published after ``seq`` too: it was not on screen then
         haystack = " ".join(_js_text(value) for value in (row.get("text"), row.get("topic"), account_name, account_handle))
         if needle and needle in haystack.lower():
             deleted.append(str(row.get("postId")))
@@ -155,7 +162,7 @@ def _engage(
     session_events: list[Mapping[str, Any]],
     final_sets: Mapping[str, set[str]],
 ) -> dict[str, Any]:
-    """Every action not yet active on ``target`` at ``view``, activated after it in ACTIONS order."""
+    """Every action not yet active on ``target`` at ``view``, activated after it in any order."""
     view_seq = _seq(view)
     target_id = str(target.get("id"))
     final_active = {action: target_id in final_sets.get(action, set()) for action in ACTIONS}
@@ -163,34 +170,33 @@ def _engage(
         action: active_at(all_events, target_id, action, view_seq, final_active=final_active[action])
         for action in ACTIONS
     }
-    cursor = view_seq
     chosen: list[Mapping[str, Any]] = []
-    complete = True
+    missing: list[str] = []
     for action in ACTIONS:
         if already[action]:
             continue
         event = next((
             row for row in session_events
-            if _seq(row) > cursor
+            if _seq(row) > view_seq
             and row.get("type") == action
             and str(row.get("postId")) == target_id
             and row.get("active") is True
         ), None)
         if event is None:
-            complete = False
-            break
-        chosen.append(event)
-        cursor = _seq(event)
+            missing.append(action)
+        else:
+            chosen.append(event)
+    chosen.sort(key=_seq)
     return {
-        "passed": complete and all(final_active.values()),
+        "passed": not missing and all(final_active.values()),
         "target_id": target_id,
         "first_post": _summary(target),
         "view": _summary(view),
         "already_active_at_view": already,
-        "ordered_actions": [_summary(row) for row in chosen],
+        "actions": [_summary(row) for row in chosen],
+        "missing_actions": missing,
         "active_final": all(final_active.values()),
         "active_final_by_action": final_active,
-        "terminal_seq": cursor,
     }
 
 
@@ -201,30 +207,33 @@ def first_post_engagement(
     session_events: list[Mapping[str, Any]],
     query: str,
     final_sets: Mapping[str, set[str]],
-    after_seq: int = -1,
+    require_view: bool = True,
     account_handle: str = "alex",
 ) -> dict[str, Any]:
-    """Repost, like and save of the first post of the ``query`` stream, opened after ``after_seq``.
+    """Repost, like and save of the first post of the ``query`` stream.
 
     For each Explore view of ``query`` (in order) the first post is the one the stream listed at
     that view.  When a post the agent itself published in the episode matches the query it is
     listed on top (newest first); "the first post in the topic stream" then also reads as the
-    first post the stream held before the agent posted, so that post is accepted as well.
+    first post the stream held before the agent posted, so that post is accepted as well.  With
+    ``require_view=False`` the stream as it stood at the first session event (the sign-in) is a
+    reference too, so a brief that does not ask for the stream to be opened needs no view of it.
 
-    A view counts when every action not yet active on the post then is activated after it in the
-    order repost, like, save, and the post ends reposted, liked and saved.  ``terminal_seq`` is the
-    last of those activations, or the view itself when none was needed.
+    A reference counts when every action not yet active on the post then is activated after it,
+    in any order, and the post ends reposted, liked and saved.
     """
     views = [
         row for row in session_events
         if row.get("type") == "timeline_view"
         and str(row.get("view") or "").casefold() == "explore"
         and str(row.get("query") or "").strip().casefold() == str(query).strip().casefold()
-        and _seq(row) > after_seq
     ]
+    references = list(views)
+    if not require_view and session_events:
+        references.append({"seq": _seq(session_events[0]), "type": "session_start"})
     created_ids = {str(row.get("postId")) for row in all_events if row.get("type") == "post_created"}
     attempts: list[dict[str, Any]] = []
-    for view in views:
+    for view in references:
         stream, deleted = stream_at(posts, all_events, query, _seq(view), account_handle=account_handle)
         if not stream or deleted:
             attempts.append({"view": _summary(view), "stream_total": len(stream), "deleted_matching_post_ids": deleted})
@@ -246,9 +255,36 @@ def first_post_engagement(
         "target_id": first.get("target_id"),
         "first_post": first.get("first_post") or {},
         "view": {},
-        "ordered_actions": [],
+        "actions": [],
+        "missing_actions": first.get("missing_actions", list(ACTIONS)),
         "active_final": bool(first.get("active_final")),
-        "terminal_seq": -1,
         "matching_view_count": len(views),
         "attempts": attempts[:6],
     }
+
+
+def stream_views_in_order(
+    session_events: list[Mapping[str, Any]],
+    queries: Iterable[str],
+) -> list[Mapping[str, Any] | None]:
+    """The earliest chain of Explore views that opens ``queries`` one after another.
+
+    For a brief that says to open the streams "in that specific order".  Opening a stream early by
+    mistake or reopening one does not matter: entry ``i`` is the first view of query ``i`` after
+    the chosen view of the previous query (``None`` when there is none), so the views are in the
+    stated order exactly when some view of each query follows a view of the one before.
+    """
+    chain: list[Mapping[str, Any] | None] = []
+    cursor = -1
+    for query in queries:
+        view = next((
+            row for row in session_events
+            if row.get("type") == "timeline_view"
+            and str(row.get("view") or "").casefold() == "explore"
+            and str(row.get("query") or "").strip().casefold() == str(query).strip().casefold()
+            and _seq(row) > cursor
+        ), None)
+        chain.append(view)
+        if view is not None:
+            cursor = _seq(view)
+    return chain

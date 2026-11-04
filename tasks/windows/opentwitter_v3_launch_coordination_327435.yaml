@@ -22,7 +22,7 @@ evaluation:
   evaluator_id: evaluators.windows.opentwitter_v3_launch_coordination_327435:OpenTwitterV3LaunchCoordination327435Evaluator
   params:
     port: 4350
-    expected_ruleset_sha256: 80c299a3eeb889211cd8a1baf49ea833f77bd075f5ad60666d0cc44b3bc190a6
+    expected_ruleset_sha256: b47d18f8c02dad3cc8fadc2916fb527a57f43f254106e4a79c54ce64023ead26
 limits:
   max_steps: 240
   step_timeout_seconds: 180
@@ -39,13 +39,12 @@ metadata:
   human_steps: 76
   gui_instruction_path: workbench/opentwitter_win11_scan_20260825/deliverables/opentwitter_01_launch_coordination/gui_instruction.txt
   instruction_sha256: 8ed4428fc630e50b9c681baa221789c3a7fd595f382662e1456dedcbaa54904b
-  evaluator_ruleset_sha256: 80c299a3eeb889211cd8a1baf49ea833f77bd075f5ad60666d0cc44b3bc190a6
+  evaluator_ruleset_sha256: b47d18f8c02dad3cc8fadc2916fb527a57f43f254106e4a79c54ce64023ead26
   source_state_mode: human_completed_eval_only
   verifier_rules:
     primary_source: OpenTwitter read-only /api/evaluation durable state and current-session events
     exact_step_coverage: 1-76
-    required_order: login, four posts, four named trend engagement chains, four messages, notifications
-      read, profile update
+    required_order: four posts in the stated order; the four streams opened in the stated order; sign-in first; no other order; repost/like/save in any order; no profile view required
     final_ui: OpenTwitter remains the foreground application
     exact_values: true
   task_version: '1.1'

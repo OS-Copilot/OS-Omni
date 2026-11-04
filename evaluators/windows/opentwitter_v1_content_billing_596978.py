@@ -10,6 +10,7 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.windows import opentwitter_explore as explore
+from evaluators.windows.openbank_events import check_precedence
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -26,13 +27,13 @@ CHECKPOINTS = {'opentwitter.content_billing.login': {'steps': [1, 2, 3, 4, 5],
  'opentwitter.content_billing.post_content': {'steps': [15, 16, 17],
                                               'checks': ['UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT']},
  'opentwitter.content_billing.trend_help_center': {'steps': [18, 19, 20, 21, 22, 23],
-                                                   'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                   'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.content_billing.trend_incident_drills': {'steps': [24, 25, 26, 27, 28, 29],
-                                                       'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                       'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.content_billing.trend_feature_naming': {'steps': [30, 31, 32, 33, 34, 35],
-                                                      'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                      'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.content_billing.trend_changelog_builder': {'steps': [36, 37, 38, 39, 40, 41],
-                                                         'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                         'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.content_billing.message_samir': {'steps': [42, 43, 44, 45, 46, 47, 48],
                                                'checks': ['UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT']},
  'opentwitter.content_billing.message_vivian': {'steps': [49, 50, 51, 52, 53, 54],
@@ -44,7 +45,7 @@ CHECKPOINTS = {'opentwitter.content_billing.login': {'steps': [1, 2, 3, 4, 5],
  'opentwitter.content_billing.notifications': {'steps': [67, 68],
                                                'checks': ['ALL_CURRENT_NOTIFICATIONS_READ_AND_EVENT']},
  'opentwitter.content_billing.profile': {'steps': [69, 70, 71, 72, 73, 74, 75, 76],
-                                         'checks': ['CURRENT_PROFILE_AND_PROFILE_VIEW_EXACT']}}
+                                         'checks': ['CURRENT_PROFILE_FIELDS_EXACT']}}
 RULESET_SPEC = {'task_id': 'windows.opentwitter.v1_content_billing_596978',
  'source_state_mode': 'human_completed_eval_only',
  'account': {'handle': 'alex', 'email': 'alex@opentwitter.local'},
@@ -69,7 +70,15 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v1_content_billing_596978',
               {'handle': 'sofia', 'text': 'Baseline note ready'}],
  'profile': {'handle': 'alex', 'displayName': 'Alex Content', 'bio': 'Billing notes ready'},
  'notifications_all_read': True}
-RULESET_SHA256 = 'cbd5257523bfd4f87ef8ebdc736072140a5d21a6ea87ad70979bacea6fe7267b'
+RULESET_SPEC["order_policy"] = {
+    'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order',
+    'stated': [['post_1', 'post_2'], ['post_2', 'post_3'], ['post_3', 'post_4']],
+    'stated_basis': 'the four posts are published "in the exact order"',
+    'necessary': [],
+    'necessary_basis': 'sign-in before account actions: only events after the sign-in count',
+    'not_required': 'any order of the streams, of repost/like/save within a stream, of the messages, notifications and profile; no stream or profile view',
+}
+RULESET_SHA256 = '0b822214affe9aad5dd902dbfa57a2b09be9f59ddf7fbb256ed9ddfe8c12e7c2'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = (
     "evaluators.windows.opentwitter_v1_content_billing_596978:"
@@ -93,6 +102,8 @@ STEP_GROUPS = {
     "notifications": list(range(67, 69)),
     "profile": list(range(69, 77)),
 }
+#: The business-action orders that gate a run (RULESET_SPEC["order_policy"]).
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 
 
 def _spec(name: str, expected: Any, mode: str) -> dict[str, Any]:
@@ -110,16 +121,16 @@ CHECKPOINT_SPECS = [
     _spec("post_changelog", RULESET_SPEC["posts"][1], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
     _spec("post_billing", RULESET_SPEC["posts"][2], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
     _spec("post_content", RULESET_SPEC["posts"][3], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
-    _spec("trend_help_center", RULESET_SPEC["trend_queries"][0], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_incident_drills", RULESET_SPEC["trend_queries"][1], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_feature_naming", RULESET_SPEC["trend_queries"][2], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_changelog_builder", RULESET_SPEC["trend_queries"][3], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
+    _spec("trend_help_center", RULESET_SPEC["trend_queries"][0], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_incident_drills", RULESET_SPEC["trend_queries"][1], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_feature_naming", RULESET_SPEC["trend_queries"][2], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_changelog_builder", RULESET_SPEC["trend_queries"][3], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
     _spec("message_samir", RULESET_SPEC["messages"][0], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("message_vivian", RULESET_SPEC["messages"][1], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("message_jamal", RULESET_SPEC["messages"][2], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("message_sofia", RULESET_SPEC["messages"][3], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("notifications", True, "ALL_CURRENT_NOTIFICATIONS_READ_AND_EVENT"),
-    _spec("profile", RULESET_SPEC["profile"], "CURRENT_PROFILE_AND_PROFILE_VIEW_EXACT"),
+    _spec("profile", RULESET_SPEC["profile"], "CURRENT_PROFILE_FIELDS_EXACT"),
 ]
 
 
@@ -188,7 +199,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
         login = login_events[-1] if login_events else None
         start_seq = _seq(login)
         events = [row for row in all_events if _seq(row) >= start_seq] if login else []
-        event_order: list[tuple[str, int]] = []
+        business_events: dict[str, Mapping[str, Any] | None] = {}
 
         session = state.get("session") if isinstance(state.get("session"), Mapping) else {}
         session_user = session.get("user") if isinstance(session.get("user"), Mapping) else {}
@@ -201,7 +212,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
         checks.append(cls._check(CHECKPOINT_SPECS[0], login_passed, {
             "event": _summary(login), "session": {"loggedIn": session.get("loggedIn"), "user": dict(session_user)}
         }))
-        event_order.append(("login", _seq(login)))
+        business_events["login"] = login
 
         posts = _items(state, "posts")
         for index, expected_text in enumerate(RULESET_SPEC["posts"], start=1):
@@ -220,7 +231,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
                 "object_count": len(matches), "object": _summary(target),
                 "event_count": len(matching_events), "event": _summary(event),
             }))
-            event_order.append((f"post_{index}", _seq(event)))
+            business_events[f"post_{index}"] = event
 
         # "The first post" of a stream is the post the app listed first when the stream was opened,
         # or the first one it held before the agent's own posts (the "Content" stream lists the
@@ -229,7 +240,10 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
         # buttons toggle, so an action already active when the stream was opened needs no new
         # event: the seed has p-1001, the first "Design" post, saved (server.js
         # createSeedUserState), and the restored evaluator demanded a save event that would have
-        # unsaved it.  trend_action_active is True for every action, i.e. the final state.
+        # unsaved it.  trend_action_active is True for every action, i.e. the final state.  The
+        # brief only asks for the posts to be engaged ("must each be reposted, liked, and saved"),
+        # not for the streams to be opened, so no view is required and the three actions may come
+        # in any order.
         final_sets = explore.active_sets(state)
         for offset, query in enumerate(RULESET_SPEC["trend_queries"], start=5):
             runtime_query = RULESET_SPEC["trend_runtime_queries"][query]
@@ -239,6 +253,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
                 session_events=events,
                 query=runtime_query,
                 final_sets=final_sets,
+                require_view=False,
                 account_handle=RULESET_SPEC["account"]["handle"],
             )
             checks.append(cls._check(CHECKPOINT_SPECS[offset], engagement["passed"], {
@@ -249,10 +264,10 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
                 "target_kind": engagement.get("target_kind"),
                 "matching_view_count": engagement["matching_view_count"], "view": engagement["view"],
                 "already_active_at_view": engagement.get("already_active_at_view", {}),
-                "ordered_actions": engagement["ordered_actions"], "active_final": engagement["active_final"],
+                "actions": engagement["actions"], "missing_actions": engagement["missing_actions"],
+                "active_final": engagement["active_final"],
                 **({"attempts": engagement["attempts"]} if "attempts" in engagement else {}),
             }))
-            event_order.append((f"trend_{offset - 4}", engagement["terminal_seq"]))
 
         messages = _items(state, "messages")
         for offset, expected in enumerate(RULESET_SPEC["messages"], start=9):
@@ -269,7 +284,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
                 "object_count": len(objects), "object": _summary(objects[0] if len(objects) == 1 else None),
                 "event_count": len(matching_events), "event": _summary(event),
             }))
-            event_order.append((f"message_{offset - 8}", _seq(event)))
+            business_events[f"message_{offset - 8}"] = event
 
         notifications = _items(state, "notifications")
         mark_events = [row for row in events if row.get("type") == "notifications_marked_read"]
@@ -280,7 +295,7 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
             "unread_count": sum(1 for row in notifications if row.get("read") is not True),
             "event_count": len(mark_events), "event": _summary(mark_event),
         }))
-        event_order.append(("notifications", _seq(mark_event)))
+        business_events["notifications"] = mark_event
 
         current_user = state.get("currentUser") if isinstance(state.get("currentUser"), Mapping) else {}
         profile_expected = RULESET_SPEC["profile"]
@@ -289,29 +304,23 @@ class OpenTwitterV1ContentBilling596978Evaluator(BaseEvaluator):
             if row.get("type") == "profile_updated"
             and row.get("displayName") == profile_expected["displayName"] and row.get("bio") == profile_expected["bio"]
         ]
-        update_event = update_events[0] if len(update_events) == 1 else None
-        profile_views = [
-            row for row in events
-            if row.get("type") == "timeline_view" and row.get("view") == "profile" and row.get("handle") == "alex"
-        ]
-        profile_view = profile_views[-1] if profile_views else None
-        profile_passed = all(current_user.get(key) == value for key, value in profile_expected.items()) and profile_view is not None
+        update_event = update_events[-1] if update_events else None
+        # The saved fields decide; visiting the Profile page is navigation, not a deliverable.
+        profile_passed = all(current_user.get(key) == value for key, value in profile_expected.items())
         checks.append(cls._check(CHECKPOINT_SPECS[14], profile_passed, {
             "current_user": {key: current_user.get(key) for key in profile_expected},
             "update_event_count": len(update_events), "update_event": _summary(update_event),
-            "profile_view": _summary(profile_view),
         }))
-        event_order.append(("profile", _seq(update_event or profile_view)))
+        business_events["profile"] = update_event
 
-        order_passed = all(seq >= 0 for _, seq in event_order) and all(
-            left[1] < right[1] for left, right in zip(event_order, event_order[1:])
-        )
+        # Only the stated orders (RULESET_SPEC["order_policy"]); the sign-in precedes every
+        # business event counted above because only events after it count.
+        order_passed, order_actual = check_precedence(business_events, ORDER_PAIRS)
         checks.append({
             "name": "opentwitter.content_billing.business_order",
             "value_contract_id": "opentwitter.content_billing.business_order",
-            "instruction_steps": list(range(1, 77)), "match_mode": "ORDERED_EXACT",
-            "expected": [name for name, _ in event_order],
-            "actual": [{"name": name, "seq": seq} for name, seq in event_order], "passed": order_passed,
+            "instruction_steps": list(range(1, 77)), "match_mode": "PAIRWISE_PRECEDENCE",
+            "expected": ORDER_PAIRS, "actual": order_actual, "passed": order_passed,
         })
 
         foreground_passed = foreground_app.casefold() in {"opentwitter", "opentwitter.exe"} and "opentwitter" in foreground_window.casefold()

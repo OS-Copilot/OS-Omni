@@ -87,7 +87,7 @@ evaluation:
   evaluator_id: evaluators.windows.windows_opennote_live_music_visuals_three_notes_1788411372670_327795_evaluator:WindowsOpenNoteLiveMusicVisualsThreeNotesStrictEvaluator
   params:
     expected_instruction_sha256: b04e922c07854e39691fa57dbaf18095eb9657a92d0b438821a9a1d042891067
-    expected_ruleset_sha256: 31e21076365d8cccdf472b0506997c7d631dd17d15d802d5a4298c667844b2e1
+    expected_ruleset_sha256: 1036c4ab21f60965b48e56210acc28ea91012a1ff3e3828a5bd0b1da83050f7b
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:

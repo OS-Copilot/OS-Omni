@@ -10,6 +10,11 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.evaluators.windows.openshop import OpenShopApiEvaluator
+from evaluators.windows.openshop_business_events import (
+    bind_orders_by_note,
+    check_business_events,
+    has_task_checkouts,
+)
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -19,15 +24,15 @@ CHECKPOINTS = {'login': {'steps': [1, 4], 'checks': ['session_login_exact']},
  'first_order_and_review': {'steps': [5, 27],
                             'checks': ['first_order_exact',
                                        'first_review_exact',
-                                       'ordered_business_events_exact']},
+                                       'business_events']},
  'second_order_and_review': {'steps': [28, 51],
                              'checks': ['second_order_exact',
                                         'second_review_exact',
-                                        'ordered_business_events_exact']},
+                                        'business_events']},
  'third_order_and_review': {'steps': [52, 78],
                             'checks': ['third_order_exact',
                                        'third_review_exact',
-                                       'ordered_business_events_exact']}}
+                                       'business_events']}}
 RULESET_SPEC = {'schema_version': '1.0',
  'task_id': 'windows.openshop.music_category_order_100114',
  'instruction_sha256': '462a0ce1fc3f0c190b770f04530bc8b947c20a38e0c9f34ecd0370818dc53d70',
@@ -182,7 +187,7 @@ RULESET_SPEC = {'schema_version': '1.0',
                                  76,
                                  77,
                                  78],
-                       'value_contract_id': 'ordered_business_events_exact'}],
+                       'value_contract_id': 'business_events'}],
  'orders': [{'address': 'Office',
              'payment': 'WeChat Pay',
              'note': 'StudioWaveOne',
@@ -225,52 +230,19 @@ RULESET_SPEC = {'schema_version': '1.0',
                                  'selected_spec': 'Gift Set',
                                  'rating': None,
                                  'review': None}}}],
- 'event_sequence': [{'type': 'session_login_success', 'match': {'phone': '13800138000'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2300'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2300', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2301'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2301', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2300', 'quantity': 2}},
-                    {'type': 'checkout_submitted',
-                     'match': {'addressLabel': 'Office',
-                               'paymentLabel': 'WeChat Pay',
-                               'note': 'StudioWaveOne',
-                               'itemCount': 2}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2300', 'rating': 4}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2302'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2302', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2303'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2303', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2302', 'quantity': 2}},
-                    {'type': 'checkout_submitted',
-                     'match': {'addressLabel': 'Office',
-                               'paymentLabel': 'WeChat Pay',
-                               'note': 'StudioWaveTwo',
-                               'itemCount': 2}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2302', 'rating': 3}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2304'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2304', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Music'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2305'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2305', 'selectedSpec': 'Gift Set'}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2304', 'quantity': 2}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2305', 'quantity': 2}},
-                    {'type': 'checkout_address_selected', 'match': {'addressId': 'addr-home'}},
-                    {'type': 'checkout_payment_selected', 'match': {'paymentMethodId': 'cod'}},
-                    {'type': 'checkout_submitted',
-                     'match': {'addressLabel': 'Home',
-                               'paymentLabel': 'Cash on Delivery',
-                               'note': 'StudioWaveThree',
-                               'itemCount': 2}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2304', 'rating': 4}}],
- 'cardinality': {'target_orders': 'the three newest orders', 'final_cart_items': 0, 'raw_events': 31},
- 'order_binding': 'third order is newest; every checkout and review event must bind to its exact order id'}
-RULESET_SHA256 = 'c8e0e98d54d9a8c07828d09f6d4e70ac3d1f53eb403eaa3fa3e2e76b5a1fc04b'
+ 'business_events': {'required': ['session_login_success before the first checkout',
+                                  'cart_item_added (Gift Set) for every order item before that order checkout',
+                                  'exactly one checkout_submitted per order, bound to its order id, note and item count; '
+                                  'no other checkout',
+                                  'exactly one order_item_reviewed per review, bound to its order id and rating, after '
+                                  'its own order checkout (brief: each followed by a product review; After this order is '
+                                  'placed); no other review'],
+                     'never_required_or_counted': ['catalog_view', 'product_view', 'checkout_address_selected',
+                                                   'checkout_payment_selected', 'cart_quantity_updated'],
+                     'not_stated': 'which order is placed first; first/second/third are labels'},
+ 'cardinality': {'target_orders': 'one order per expected note', 'final_cart_items': 0, 'checkouts': 3, 'reviews': 3},
+ 'order_binding': 'each order is bound by its note; every checkout and review event must bind to its exact order id'}
+RULESET_SHA256 = '5830517c3837528462014989193718c52d708ed23f1de027534bfb6352ded1d0'
 # END OSOMNI_PORTABLE_BINDING
 INSTRUCTION_SHA256 = "462a0ce1fc3f0c190b770f04530bc8b947c20a38e0c9f34ecd0370818dc53d70"
 
@@ -278,10 +250,6 @@ INSTRUCTION_SHA256 = "462a0ce1fc3f0c190b770f04530bc8b947c20a38e0c9f34ecd0370818d
 def _digest(value: Mapping[str, Any]) -> str:
     encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def _event(event_type: str, **match: Any) -> dict[str, Any]:
-    return {"type": event_type, "match": match}
 
 
 FIRST_ITEMS = {
@@ -335,69 +303,9 @@ THIRD_ITEMS = {
     },
 }
 
-FIRST_EVENTS = [
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2300"),
-    _event("cart_item_added", productId="p2300", selectedSpec="Gift Set"),
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2301"),
-    _event("cart_item_added", productId="p2301", selectedSpec="Gift Set"),
-    _event("cart_quantity_updated", productId="p2300", quantity=2),
-    _event(
-        "checkout_submitted",
-        addressLabel="Office",
-        paymentLabel="WeChat Pay",
-        note="StudioWaveOne",
-        itemCount=2,
-    ),
-    _event("order_item_reviewed", productId="p2300", rating=4),
-]
-
-SECOND_EVENTS = [
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2302"),
-    _event("cart_item_added", productId="p2302", selectedSpec="Gift Set"),
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2303"),
-    _event("cart_item_added", productId="p2303", selectedSpec="Gift Set"),
-    _event("cart_quantity_updated", productId="p2302", quantity=2),
-    _event(
-        "checkout_submitted",
-        addressLabel="Office",
-        paymentLabel="WeChat Pay",
-        note="StudioWaveTwo",
-        itemCount=2,
-    ),
-    _event("order_item_reviewed", productId="p2302", rating=3),
-]
-
-THIRD_EVENTS = [
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2304"),
-    _event("cart_item_added", productId="p2304", selectedSpec="Gift Set"),
-    _event("catalog_view", category="Music"),
-    _event("product_view", productId="p2305"),
-    _event("cart_item_added", productId="p2305", selectedSpec="Gift Set"),
-    _event("cart_quantity_updated", productId="p2304", quantity=2),
-    _event("cart_quantity_updated", productId="p2305", quantity=2),
-    _event("checkout_address_selected", addressId="addr-home"),
-    _event("checkout_payment_selected", paymentMethodId="cod"),
-    _event(
-        "checkout_submitted",
-        addressLabel="Home",
-        paymentLabel="Cash on Delivery",
-        note="StudioWaveThree",
-        itemCount=2,
-    ),
-    _event("order_item_reviewed", productId="p2304", rating=4),
-]
-
-EXPECTED_EVENTS = [
-    _event("session_login_success", phone="13800138000"),
-    *FIRST_EVENTS,
-    *SECOND_EVENTS,
-    *THIRD_EVENTS,
-]
+#: The brief's three orders, bound by their notes ("first"/"second"/"third" are
+#: labels, not the order in which they must be placed).
+ORDER_NOTES = [order["note"] for order in RULESET_SPEC["orders"]]
 
 STEP_GROUPS = {
     "login": list(range(1, 5)),
@@ -417,14 +325,14 @@ CHECKPOINT_SPECS = [
     {"id": "second_review_exact", "steps": list(range(47, 52)), "value_contract_id": "second_review_exact"},
     {"id": "third_order_exact", "steps": list(range(52, 74)), "value_contract_id": "third_order_exact"},
     {"id": "third_review_exact", "steps": list(range(74, 79)), "value_contract_id": "third_review_exact"},
-    {"id": "event_sequence_exact", "steps": list(range(1, 79)), "value_contract_id": "ordered_business_events_exact"},
+    {"id": "event_sequence_exact", "steps": list(range(1, 79)), "value_contract_id": "business_events"},
 ]
 
 
 
 
 class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
-    """Verify the exact durable state and event order of all three music orders."""
+    """Verify the three music orders, their reviews and the business events behind them."""
 
     @classmethod
     def _resolve_api_port(cls, controller: Any, preferred_port: int) -> tuple[int, dict[int, Any]]:
@@ -432,8 +340,8 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
 
         Electron can leave an older OpenShop instance listening on 4310 and start
         the visible instance on the next free port.  Probing localhost ports is
-        read-only; prefer the unique instance whose session and exact benchmark
-        trace match this task, then fall back to the unique logged-in instance so
+        read-only; prefer the unique instance whose session holds a checkout for
+        each of this task's order notes, then fall back to the unique logged-in instance so
         an incomplete run still produces a useful evaluator failure.
         """
         ports = [preferred_port, *[port for port in range(4310, 4320) if port != preferred_port]]
@@ -453,13 +361,7 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
                 logged_in = bool(session.get("loggedIn")) and str(
                     (session.get("user") or {}).get("phone") or ""
                 ) == "13800138000"
-                exact_trace = False
-                if logged_in and len(events) == len(EXPECTED_EVENTS):
-                    try:
-                        _, indices = cls._find_sequence(events, EXPECTED_EVENTS)
-                        exact_trace = len(indices) == len(events)
-                    except AssertionError:
-                        pass
+                exact_trace = logged_in and has_task_checkouts(events, ORDER_NOTES)
                 probes[candidate] = {
                     "reachable": True,
                     "logged_in": logged_in,
@@ -479,7 +381,7 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
         if len(exact_candidates) == 1:
             return exact_candidates[0], probes
         if len(exact_candidates) > 1:
-            raise RuntimeError(f"multiple OpenShop instances have the exact task trace: {exact_candidates}")
+            raise RuntimeError(f"multiple OpenShop instances hold this task's checkouts: {exact_candidates}")
         if len(logged_in_candidates) == 1:
             return logged_in_candidates[0], probes
         if preferred_port in logged_in_candidates:
@@ -511,30 +413,6 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
             "items": items,
         }
 
-    @staticmethod
-    def _find_sequence(
-        events: list[Mapping[str, Any]], expected: list[Mapping[str, Any]]
-    ) -> tuple[list[Mapping[str, Any]], list[int]]:
-        cursor = 0
-        matched: list[Mapping[str, Any]] = []
-        indices: list[int] = []
-        for wanted in expected:
-            found = None
-            for index in range(cursor, len(events)):
-                event = dict(events[index] or {})
-                if str(event.get("type") or "") != str(wanted.get("type") or ""):
-                    continue
-                matcher = dict(wanted.get("match") or {})
-                if all(event.get(key) == value for key, value in matcher.items()):
-                    found = event
-                    indices.append(index)
-                    cursor = index + 1
-                    break
-            if found is None:
-                raise AssertionError(f"missing ordered event: {wanted}")
-            matched.append(found)
-        return matched, indices
-
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         controller = context.get("controller")
         if controller is None or not hasattr(controller, "run_python_script"):
@@ -548,9 +426,6 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
                 metadata={"task_id": TASK_ID, "ruleset_sha256": RULESET_SHA256, "read_only": True},
             )
         preferred_port = int(params.get("port", 4310) or 4310)
-        require_complete_event_coverage = bool(
-            params.get("require_complete_event_coverage", False)
-        )
         checks: list[dict[str, Any]] = []
         metadata: dict[str, Any] = {
             "task_id": TASK_ID,
@@ -602,60 +477,41 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
             benchmark_payload = OpenShopApiEvaluator._fetch_json(controller, "/api/benchmark", port=port)
             orders = [self._project_order(dict(row or {})) for row in orders_payload.get("orders") or []]
             events = [dict(row or {}) for row in benchmark_payload.get("events") or []]
+            metadata["raw_events"] = events
 
             exact("cart.empty", "final_cart_empty", 0, len(cart_payload.get("items") or []))
             exact("orders.at_least_three", "three_newest_orders_exact", True, len(orders) >= 3)
 
-            bound_orders = [orders[2], orders[1], orders[0]]
             names = ["first", "second", "third"]
-            for name, order, expected in zip(names, bound_orders, RULESET_SPEC["orders"]):
-                projected = {key: order[key] for key in ("address", "payment", "note", "status", "items")}
+            bound = bind_orders_by_note(orders, RULESET_SPEC["orders"])
+            for name, (order, candidates), expected in zip(names, bound, RULESET_SPEC["orders"]):
+                projected = (
+                    {key: order[key] for key in expected}
+                    if order is not None
+                    else {"orders_with_note": [row["id"] for row in candidates]}
+                )
                 exact(f"{name}_order", f"{name}_order_exact", expected, projected)
 
-            matched, indices = self._find_sequence(events, EXPECTED_EVENTS)
-            # The English brief requires the three Music orders/reviews and the
-            # scripted business events in order, not the absence of harmless extra
-            # UI events. Keep the raw coverage counts as diagnostics unless a task
-            # opts in. See scan_work/parts/windows_01.csv WIN-015 (step_gate).
-            exact(
-                "events.count",
-                "ordered_business_events_exact",
-                len(EXPECTED_EVENTS),
-                len(events),
-                diagnostic=not require_complete_event_coverage,
+            # Grade the business actions the brief asks for, not the recorded click
+            # path (evaluators/windows/openshop_business_events.py).  Each review
+            # follows its own order ("each followed by a product review"); the
+            # brief states no order between the three orders.
+            business = check_business_events(
+                events,
+                [(name, order, expected) for name, (order, _), expected in zip(names, bound, RULESET_SPEC["orders"])],
             )
-            unexpected = [event for i, event in enumerate(events) if i not in set(indices)]
-            exact(
-                "events.unexpected",
-                "ordered_business_events_exact",
-                [],
-                unexpected,
-                diagnostic=not require_complete_event_coverage,
-            )
-
-            event_groups = (
-                ("first", bound_orders[0], matched[8], matched[9:10]),
-                ("second", bound_orders[1], matched[17], matched[18:19]),
-                ("third", bound_orders[2], matched[29], matched[30:31]),
-            )
-            for name, order, checkout, reviews in event_groups:
-                order_id = order["id"]
-                exact(f"{name}.checkout_order_id", f"{name}_order_event_binding", order_id, str(checkout.get("orderId") or ""))
-                exact(
-                    f"{name}.review_order_ids",
-                    f"{name}_review_exact",
-                    [order_id] * len(reviews),
-                    [str(event.get("orderId") or "") for event in reviews],
-                )
-
+            checks.extend(business)
             metadata["current_state_evidence"] = {
                 "session": session,
                 "cart_item_count": len(cart_payload.get("items") or []),
                 "orders_newest_first": orders,
-                "matched_events": matched,
                 "raw_events": events,
-                "unexpected_events": unexpected,
             }
+            failed = [row for row in business if not row["passed"]]
+            if failed:
+                raise AssertionError("; ".join(
+                    f"{row['check_id']}: expected {row['expected']!r}, got {row['actual']!r}" for row in failed
+                ))
         except AssertionError as exc:
             metadata["failure_reason"] = str(exc)
             return EvalResult(status=EvalStatus.FAIL, message=str(exc), metadata=metadata)
@@ -665,6 +521,6 @@ class OpenShopMusicCategoryOrder100114Evaluator(BaseEvaluator):
 
         return EvalResult(
             status=EvalStatus.PASS,
-            message="All exact three-stage OpenShop music-order checks passed",
+            message="All three OpenShop music orders, reviews and business events passed",
             metadata=metadata,
         )

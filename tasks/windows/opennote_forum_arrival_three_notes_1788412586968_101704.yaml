@@ -90,7 +90,7 @@ evaluation:
   evaluator_id: evaluators.windows.windows_opennote_forum_arrival_three_notes_1788412586968_101704_evaluator:WindowsOpenNoteForumArrivalThreeNotesStrictEvaluator
   params:
     expected_instruction_sha256: 167dab24c2e56ef966bf065637fb2719b8850fe5bbd921996b55845f3ad84128
-    expected_ruleset_sha256: 54a3c33e3d845199e41076a3d3976ab64e2d418c35bd2971caeec4c3cac349c2
+    expected_ruleset_sha256: 58e6064122dd712cffe509a1de6e5a82c4684de38e0266fbe8eb639eab1a62fc
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:

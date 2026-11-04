@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 
 TASK_ID = "windows.opennote.community_meal_three_notes_1788409691786_981937"
@@ -40,7 +41,7 @@ CHECKPOINT_SPECS = (
     {"check_id": "profile_bio_exact", "steps": STEP_GROUPS["profile_bio"], "predicate": "profile_bio_exact", "value_contract_id": "profile-bio-v1", "match_mode": "TEXT_EXACT"},
     {"check_id": "blue_note_exact", "steps": STEP_GROUPS["blue_note"], "predicate": "note_exact", "value_contract_id": "blue-note-v1", "match_mode": "ORDERED_EXACT"},
     {"check_id": "meal_plan_exact", "steps": STEP_GROUPS["meal_plan"], "predicate": "note_exact", "value_contract_id": "meal-plan-v1", "match_mode": "ORDERED_EXACT"},
-    {"check_id": "workflow_timeline_exact", "steps": STEP_GROUPS["workflow_timeline"], "predicate": "workflow_timeline_exact", "value_contract_id": "community-meal-order-v1", "match_mode": "ORDERED_EXACT"},
+    {"check_id": "workflow_timeline_exact", "steps": STEP_GROUPS["workflow_timeline"], "predicate": "workflow_timeline_exact", "value_contract_id": "community-meal-order-v2", "match_mode": "PAIRWISE_PRECEDENCE"},
     {"check_id": "task_evaluator_build_binding_exact", "steps": STEP_GROUPS["task_evaluator_build_binding"], "predicate": "build_binding_exact", "value_contract_id": "task-build-binding-v1", "match_mode": "SCALAR_EXACT"},
 )
 
@@ -91,7 +92,17 @@ RULESET_SPEC = {
                     "same_title_notes": [{"note_id": "n-3024", "authorHandle": "freya_60"}, {"note_id": "n-3046", "authorHandle": "lina"}, {"note_id": "n-3420", "authorHandle": "noah_16"}],
                     "selection": "any one of same_title_notes, saved by exactly one save event"},
     "notes": EXPECTED_NOTES,
-    "matching": {"strings": "case-sensitive exact", "body": "LF-preserving exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes, content type", "business_order": "strict increasing sequence; exact durable task events"},
+    # The instruction is numbered steps with no "then"/"after"/"before"/"in this order": a
+    # demonstration, not an order.  Only the sign-in must precede the account's actions; each
+    # action happening exactly once is checked by its own checkpoint.
+    "order_policy": {
+        "rule": "only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order",
+        "stated": [],
+        "necessary": [["session_login_success", action] for action in ("bakery_save", "orange_note", "picnic_like", "picnic_save", "profile_bio", "blue_note", "meal_plan")],
+        "necessary_basis": "sign-in before account actions",
+        "not_required": "the demonstrated step order; feed, category and note-detail views",
+    },
+    "matching": {"strings": "case-sensitive exact", "body": "LF-preserving exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, bytes, content type", "business_order": "sign-in before each business action; no other order"},
     "checkpoint_specs": list(CHECKPOINT_SPECS),
 }
 
@@ -100,7 +111,7 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
-RULESET_SHA256 = "9833739df5967c793766728609af01de45ae094ea5bbb0286c4816817dc2bb36"
+RULESET_SHA256 = "71721d5a00578f728f149a818bbef91ecd0d72d428adc416bf9603b9eabb4f6b"
 assert RULESET_SHA256 == _canonical_sha256(RULESET_SPEC)
 
 
@@ -110,24 +121,6 @@ def _source_sha256() -> str:
 
 def _event_payload(event: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in event.items() if key not in {"seq", "timestamp"}}
-
-
-def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Collapse retried durable events that repeat the same payload back to back."""
-    collapsed: list[dict[str, Any]] = []
-    for row in rows:
-        if not collapsed or collapsed[-1] != row:
-            collapsed.append(row)
-    return collapsed
-
-
-def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
-    """Match every expected durable event in order, skipping app retries/extras."""
-    matched = 0
-    for row in actual:
-        if matched < len(expected) and row == expected[matched]:
-            matched += 1
-    return matched == len(expected)
 
 
 def _project_note(note: Mapping[str, Any] | None) -> dict[str, Any]:
@@ -206,32 +199,24 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
 
     durable_types = {"session_login_success", "note_save_toggled", "note_like_toggled", "profile_updated", "note_created"}
     durable_actual = [_event_payload(row) for row in events if row.get("type") in durable_types]
-    projection = _collapse_consecutive_duplicates(durable_actual)
-
-    def expected_timeline(save_events: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
-        return [_event_payload(row) for row in [login_events[0] if len(login_events) == 1 else {}, bakery_events[0] if len(bakery_events) == 1 else {}, created["orange_note"][0] if len(created["orange_note"]) == 1 else {}, like_events[0] if len(like_events) == 1 else {}, save_events[0] if len(save_events) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["blue_note"][0] if len(created["blue_note"]) == 1 else {}, created["meal_plan"][0] if len(created["meal_plan"]) == 1 else {}]]
-
-    # The timeline follows whichever same-titled note was saved.
-    for note_id, option_events, _, _ in saved_options:
-        if _is_ordered_projection(projection, expected_timeline(option_events)):
-            picnic_save_id, picnic_save_events = note_id, option_events
-            break
-    durable_expected = expected_timeline(picnic_save_events)
-    detail_ids = ["n-3343", "n-3211", picnic_save_id]
-    detail_events = [[row for row in events if _event_payload(row) == {"type": "note_detail_opened", "noteId": note_id}] for note_id in detail_ids]
-    food_views = [row for row in events if row.get("type") == "feed_view" and row.get("view") == "home" and row.get("category") == "Food" and row.get("query") == "" and row.get("tag") == "" and row.get("handle") == ""]
-    ordered = [login_events, food_views[:1], detail_events[0], bakery_events, created["orange_note"], food_views[1:2], detail_events[1], like_events, detail_events[2], picnic_save_events, profile_events, created["blue_note"], created["meal_plan"]]
-    selected = [group[0] if len(group) == 1 else {} for group in ordered]
-    seqs = [int(row.get("seq", -1)) for row in selected]
-    timeline_actual = {"sequence": seqs, "required_group_counts": [len(group) for group in ordered], "durable_events": durable_actual, "deduplicated_durable_events": projection}
-    timeline_expected = {"sequence": "strictly increasing", "required_group_counts": [1] * len(ordered), "durable_events": durable_expected}
-    # Hard deduplicated ordered projection: every expected durable event must be
-    # present in order, while retried/duplicated app events are tolerated. The old
-    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
-    # Evidence: scan.CSV WIN-055 and
-    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
-    timeline_ok = _is_ordered_projection(projection, durable_expected)
-    checks.append(_check("workflow_timeline_exact", timeline_expected, timeline_actual, timeline_ok))
+    # Only the sign-in precedes the business actions (RULESET_SPEC["order_policy"]); feed and
+    # detail views are navigation and neither required nor counted.  The demonstrated order was a
+    # hard ordered projection before (scan.CSV WIN-055, PR #46 tolerance); a different order of
+    # the same actions now passes.
+    business = {
+        "session_login_success": login_events[0] if len(login_events) == 1 else None,
+        "bakery_save": bakery_events[0] if bakery_events else None,
+        "orange_note": created["orange_note"][0] if created["orange_note"] else None,
+        "picnic_like": like_events[0] if like_events else None,
+        "picnic_save": picnic_save_events[0] if picnic_save_events else None,
+        "profile_bio": profile_events[0] if profile_events else None,
+        "blue_note": created["blue_note"][0] if created["blue_note"] else None,
+        "meal_plan": created["meal_plan"][0] if created["meal_plan"] else None,
+    }
+    order_pairs = RULESET_SPEC["order_policy"]["necessary"]
+    timeline_ok, order_rows = check_precedence(business, order_pairs)
+    timeline_actual = {"pairs": order_rows, "picnic_save_note_id": picnic_save_id if saved_options else None, "durable_events": durable_actual}
+    checks.append(_check("workflow_timeline_exact", {"pairs": order_pairs}, timeline_actual, timeline_ok))
 
     build_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     build_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": EXPECTED_BUILD}

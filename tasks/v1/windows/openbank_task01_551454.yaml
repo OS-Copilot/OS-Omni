@@ -30,7 +30,7 @@ evaluation:
   evaluator_id: evaluators.windows.openbank_task01_551454:OpenBankTask01551454Evaluator
   params:
     port: 4340
-    expected_ruleset_sha256: 0b19fdb8397d7093a45328f63761b9d6bb63053dfec75d3680d94205879a6114
+    expected_ruleset_sha256: ba5dc2b1f5d37f60790bada82c15daf64cd8a6017a0d0302bb8164dc6cf02f90
 limits:
   max_steps: 300
   step_timeout_seconds: 180
@@ -53,7 +53,7 @@ metadata:
     primary_source: OpenBank /api/evaluation durable state and current-session events
     source_state_mode: human_completed_eval_only
     exact_step_coverage: 1-78
-    required_order: three recipient creations, three transfer submissions, two bill payments, two disputes
+    required_order: no stated order; each recipient before its transfer
     final_ui: OpenBank remains the foreground application
   task_version: '1.1'
   snapshot_name: s1

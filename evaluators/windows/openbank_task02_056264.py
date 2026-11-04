@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -114,7 +115,7 @@ CHECKPOINTS = {'openbank.task02.alert_setting.low_final': {'steps': [1], 'checks
                                               68,
                                               69,
                                               70],
-                                    'checks': ['ORDERED_EXACT']}}
+                                    'checks': ['PAIRWISE_PRECEDENCE']}}
 RULESET_SPEC = {'task_id': 'windows.openbank.task02_056264',
  'source_state_mode': 'human_completed_eval_only',
  'alerts': [{'id': 'alert-1', 'title': 'New sign-in from macOS', 'read': True},
@@ -319,8 +320,9 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task02_056264',
                                                               68,
                                                               69,
                                                               70],
-                                                    'checks': ['ORDERED_EXACT']}}}
-RULESET_SHA256 = '21b66f65a6398ff0fdb199e9f033ed283ad61a7833e8f977a9a07a6277747100'
+                                                    'checks': ['PAIRWISE_PRECEDENCE']}}}
+RULESET_SPEC["order_policy"] = {'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order', 'stated': [], 'necessary': [['recipient_mateo', 'transfer_mateo']], 'necessary_reason': 'a transfer needs its recipient saved first'}
+RULESET_SHA256 = 'ab779ef7081001c1238df78cccb8ca349416588f05ae15239ff55cbd320637cd'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task02_056264:OpenBankTask02056264Evaluator"
 
@@ -338,6 +340,9 @@ def _spec(value_contract_id: str, group: str, match_mode: str, expected: Any) ->
     return {"value_contract_id": value_contract_id, "steps": STEP_GROUPS[group], "match_mode": match_mode, "expected": expected}
 
 
+#: Business actions in the order this evaluator collects their events.
+ORDER_NAMES = [name for name in STEP_GROUPS if name != "setting_low_final"]
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 CHECKPOINT_SPECS = [
     _spec("openbank.task02.alert_setting.low_final", "setting_low_final", "DIRECT_FINAL_STATE_EXACT", RULESET_SPEC["alert_settings"][0]),
     *[_spec(f"openbank.task02.alert.{i}", group, "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", expected) for i, (group, expected) in enumerate(zip(["alert_signin", "alert_bill"], RULESET_SPEC["alerts"]), 1)],
@@ -348,7 +353,7 @@ CHECKPOINT_SPECS = [
     *[_spec(f"openbank.task02.recipient.{i}", group, "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", expected) for i, (group, expected) in enumerate(zip(["recipient_mateo", "recipient_grace", "recipient_owen", "recipient_sofia"], RULESET_SPEC["recipients"]), 1)],
     _spec("openbank.task02.transfer", "transfer_mateo", "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", RULESET_SPEC["transfer"]),
     _spec("openbank.task02.bill_payment", "bill_rewards", "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", RULESET_SPEC["bill_payment"]),
-    {"value_contract_id": "openbank.task02.business_order", "steps": list(range(1, 71)), "match_mode": "ORDERED_EXACT", "expected": [name for name in STEP_GROUPS if name != "setting_low_final"]},
+    {"value_contract_id": "openbank.task02.business_order", "steps": list(range(1, 71)), "match_mode": "PAIRWISE_PRECEDENCE", "expected": ORDER_PAIRS},
 ]
 
 
@@ -460,9 +465,9 @@ class OpenBankTask02056264Evaluator(BaseEvaluator):
         event = matches[0] if len(matches) == 1 else None
         checks.append(cls._check(CHECKPOINT_SPECS[spec_index], target is not None and event is not None, {"object_count": len(objects), "object": target or objects, "event": _summary(event or {})})); ordered.append(event); spec_index += 1
 
-        order_actual = [_summary(row or {}) for row in ordered]
-        order_passed = all(ordered) and all(int(a.get("seq", -1)) < int(b.get("seq", -1)) for a, b in zip(ordered, ordered[1:]))
-        checks.append(cls._check(CHECKPOINT_SPECS[spec_index], bool(order_passed), order_actual))
+        # Only the stated and logically necessary orders (RULESET_SPEC["order_policy"]).
+        order_passed, order_actual = check_precedence(dict(zip(ORDER_NAMES, ordered)), ORDER_PAIRS)
+        checks.append(cls._check(CHECKPOINT_SPECS[spec_index], order_passed, order_actual))
         foreground_passed = foreground_app.casefold() in {"openbank", "openbank.exe"} and "openbank" in foreground_window.casefold()
         checks.append({"name": "foreground_openbank", "value_contract_id": "openbank.task02.foreground", "instruction_steps": list(range(1, 71)), "match_mode": "FINAL_UI_APP_EXACT", "expected": {"app": "openbank.exe", "window": "OpenBank"}, "actual": {"app": foreground_app, "window": foreground_window}, "passed": foreground_passed})
 

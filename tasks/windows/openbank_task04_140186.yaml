@@ -18,7 +18,7 @@ evaluation:
   evaluator_id: evaluators.windows.openbank_task04_140186:OpenBankTask04140186Evaluator
   params:
     port: 4340
-    expected_ruleset_sha256: 0a57cec2454fb14c57ddaad3aa114fa9216f41da2330fc825450cfcd9063d766
+    expected_ruleset_sha256: 788563f5800c05ec08648783bf7ac017431e36f96ba83b0ab6eeee187cfee01a
 limits:
   max_steps: 240
   step_timeout_seconds: 180
@@ -37,13 +37,12 @@ metadata:
   account: Jordan Lee
   gui_instruction_path: deliverables/openbank_win11_20260825/openbank_task_04.txt
   instruction_sha256: 54278c65f4ee70cd3e1af4d883ae03a29b5509bfbe83e473e98a149332102906
-  evaluator_ruleset_sha256: 0a57cec2454fb14c57ddaad3aa114fa9216f41da2330fc825450cfcd9063d766
+  evaluator_ruleset_sha256: 788563f5800c05ec08648783bf7ac017431e36f96ba83b0ab6eeee187cfee01a
   verifier_rules:
     primary_source: OpenBank /api/evaluation durable state and current-session events
     source_state_mode: human_completed_eval_only
     exact_step_coverage: 1-75
-    required_order: three statement downloads, savings paperless, two recipients, four transfers, two
-      alerts, credit card lock, and four alert-setting saves
+    required_order: the four transfers in the stated order; each new recipient before its transfer; nothing else ordered
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: openbank/Windows/windows.openbank.task04_140186

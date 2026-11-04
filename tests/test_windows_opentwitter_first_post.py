@@ -160,7 +160,8 @@ def test_v2_mobile_stream_first_post_is_alex_product_recap():
 def test_v2_engaging_the_second_mobile_post_fails():
     state, engaged = _run(V2_SPEC, pick=lambda app, label, ids: "p-1016" if label == "Mobile release candidate" else ids[0])
     assert engaged[3] == "p-1016"
-    assert set(_failed(V2, state)) == {"opentwitter.accessibility.trend_mobile_release_candidate", "opentwitter.accessibility.business_order"}
+    # The streams were still opened in the stated order, so only the engagement fails.
+    assert set(_failed(V2, state)) == {"opentwitter.accessibility.trend_mobile_release_candidate"}
 
 
 def test_v3_streams_two_and_three_list_the_already_engaged_post_first():
@@ -202,7 +203,10 @@ def test_v3_toggling_off_then_on_again_ends_engaged_and_passes():
     assert _failed(V3, state) == []
 
 
-def test_v3_stream_must_be_opened_after_the_previous_one():
+def test_v3_unopened_stream_whose_first_post_is_engaged_passes():
+    # The brief asks to engage the first post of each stream, not to open the streams (or open
+    # them in any order): "Roadmap notes 01" (Product) is never opened, but its first post is
+    # p-alex-2001, the "Support" post already reposted, liked and saved.
     app = _App()
     app.login()
     for text in V3_SPEC["posts"]:
@@ -214,9 +218,21 @@ def test_v3_stream_must_be_opened_after_the_previous_one():
     app.stream("Community")
     for action in SETS:
         app.toggle("p-1020", action)
+    assert _failed(V3, app.finish(V3_SPEC)) == []
+
+
+def test_v3_unopened_stream_whose_first_post_is_not_engaged_fails():
+    app = _App()
+    app.login()
+    for text in V3_SPEC["posts"]:
+        app.publish(text)
+    app.stream("Support")
+    app.stream("Community")
+    for action in SETS:
+        app.toggle("p-1020", action)
     failed = _failed(V3, app.finish(V3_SPEC))
-    assert "opentwitter.support.trend_roadmap_notes" in failed
-    assert "opentwitter.support.trend_support_macros" not in failed
+    assert {"opentwitter.support.trend_support_macros", "opentwitter.support.trend_roadmap_notes",
+            "opentwitter.support.trend_customer_updates"} == set(failed)
 
 
 def test_final_display_name_does_not_rewrite_the_stream_the_agent_saw():
@@ -276,6 +292,7 @@ def test_deleted_matching_post_makes_the_stream_unreadable():
     ("evaluators.windows.opentwitter_v1_content_billing_596978", "opentwitter_v1_content_billing_596978"),
     ("evaluators.windows.opentwitter_v2_accessibility_performance_231082", "opentwitter_v2_accessibility_performance_231082"),
     ("evaluators.windows.opentwitter_v3_support_roadmap_976928", "opentwitter_v3_support_roadmap_976928"),
+    ("evaluators.windows.opentwitter_v3_launch_coordination_327435", "opentwitter_v3_launch_coordination_327435"),
 ])
 def test_ruleset_digest_is_the_spec_and_the_live_task_binds_it(module_name, stem):
     import hashlib
@@ -288,5 +305,7 @@ def test_ruleset_digest_is_the_spec_and_the_live_task_binds_it(module_name, stem
     module = importlib.import_module(module_name)
     digest = hashlib.sha256(json.dumps(module.RULESET_SPEC, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     assert module.RULESET_SHA256 == digest
-    task = yaml.safe_load((Path(__file__).resolve().parents[1] / "tasks/v1/windows" / f"{stem}.yaml").read_text(encoding="utf8"))
-    assert task["evaluation"]["params"]["expected_ruleset_sha256"] == digest
+    for folder in ("tasks/v1/windows", "tasks/windows"):
+        task = yaml.safe_load((Path(__file__).resolve().parents[1] / folder / f"{stem}.yaml").read_text(encoding="utf8"))
+        assert task["evaluation"]["params"]["expected_ruleset_sha256"] == digest
+        assert task["metadata"]["evaluator_ruleset_sha256"] == digest
