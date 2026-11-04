@@ -382,6 +382,10 @@ models:
     provider: openai
     model_name: glm-5.3
     api_key_env: OPENLUX_GLM_API_KEY
+  openlux_glm_5_3_no_thinking:
+    provider: openai
+    model_name: glm-5.3
+    api_key_env: GLM53_API_KEY
     base_url: https://api.openlux.ai/v1
     metadata:
       reasoning_effort: none
