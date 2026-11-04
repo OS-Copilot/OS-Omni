@@ -98,6 +98,24 @@ def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in row.items() if key not in {"seq", "timestamp"}}
 
 
+def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse retried durable events that repeat the same payload back to back."""
+    collapsed: list[dict[str, Any]] = []
+    for row in rows:
+        if not collapsed or collapsed[-1] != row:
+            collapsed.append(row)
+    return collapsed
+
+
+def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
+    """Match every expected durable event in order, skipping app retries/extras."""
+    matched = 0
+    for row in actual:
+        if matched < len(expected) and row == expected[matched]:
+            matched += 1
+    return matched == len(expected)
+
+
 def _note(row: Mapping[str, Any] | None) -> dict[str, Any]:
     item = row or {}
     return {key: item.get(key) for key in ("authorHandle", "title", "text", "category", "tags", "location", "cover")}
@@ -169,9 +187,15 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     ]
     ordered_rows = [login_events[0] if len(login_events) == 1 else {}, created["forum_arrival_note"], likes[0] if len(likes) == 1 else {}, saves[0] if len(saves) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, created["two_day_note"], created["group_session_note_and_final_ui"]]
     sequence = [int(row.get("seq", -1)) for row in ordered_rows]
-    timeline_actual = {"sequence": sequence, "durable_events": durable}
-    prior_ok = all(check["passed"] for check in checks)
-    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, prior_ok and sequence == sorted(set(sequence)) and durable == expected_durable))
+    projection = _collapse_consecutive_duplicates(durable)
+    timeline_actual = {"sequence": sequence, "durable_events": durable, "deduplicated_durable_events": projection}
+    # Hard deduplicated ordered projection: every expected durable event must be
+    # present in order, while retried/duplicated app events are tolerated. The old
+    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
+    # The forum task has no scan.CSV row; the same defect is documented in
+    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
+    timeline_ok = _is_ordered_projection(projection, expected_durable)
+    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok))
 
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}

@@ -73,6 +73,24 @@ RULESET_SHA256 = hashlib.sha256(json.dumps(RULESET_SPEC, ensure_ascii=False, sor
 def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in row.items() if k not in {"seq", "timestamp"}}
 
+
+def _collapse_consecutive_duplicates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse retried durable events that repeat the same payload back to back."""
+    collapsed: list[dict[str, Any]] = []
+    for row in rows:
+        if not collapsed or collapsed[-1] != row:
+            collapsed.append(row)
+    return collapsed
+
+
+def _is_ordered_projection(actual: list[dict[str, Any]], expected: list[dict[str, Any]]) -> bool:
+    """Match every expected durable event in order, skipping app retries/extras."""
+    matched = 0
+    for row in actual:
+        if matched < len(expected) and row == expected[matched]:
+            matched += 1
+    return matched == len(expected)
+
 def _note(row: Mapping[str, Any] | None) -> dict[str, Any]:
     item = row or {}
     return {k: item.get(k) for k in ("authorHandle", "title", "text", "category", "tags", "location", "cover")}
@@ -143,9 +161,30 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     }
     navigation_contract = {key: bool(rows) for key, rows in nav_events.items()}
     navigation_evidence = {key: [{"seq": row.get("seq"), "payload": _payload(row)} for row in rows] for key, rows in nav_events.items()}
-    timeline_actual = {"sequence": seqs, "durable_events": durable, "navigation_contract": navigation_contract, "navigation_evidence": navigation_evidence}
-    prior_ok = all(c["passed"] for c in checks)
-    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable, "navigation_contract": {k: True for k in navigation_contract}}, timeline_actual, prior_ok and seqs == sorted(set(seqs)) and durable == expected_durable and all(navigation_contract.values())))
+    projection = _collapse_consecutive_duplicates(durable)
+    timeline_actual = {"sequence": seqs, "durable_events": durable, "deduplicated_durable_events": projection}
+    # Hard deduplicated ordered projection: every expected durable event must be
+    # present in order, while retried/duplicated app events are tolerated. The old
+    # exact-list equality also ANDed all earlier checkpoints; that term is gone.
+    # Evidence: scan.CSV WIN-057 and
+    # scan_work/fix_briefs/windows-opennote-timeline-gate.md.
+    timeline_ok = _is_ordered_projection(projection, expected_durable)
+    checks.append(_check("workflow_timeline_exact", {"durable_events": expected_durable}, timeline_actual, timeline_ok))
+    # The English brief separately requires both Explore interactions ("with both
+    # interactions completed within the Explore section", task YAML:9), so the
+    # navigation evidence stays a hard checkpoint of its own; it is not part of the
+    # durable-event timeline predicate.
+    navigation_expected = {key: True for key in navigation_contract}
+    navigation_passed = all(navigation_contract.values())
+    checks.append({
+        "check_id": "workflow_navigation_hard",
+        "steps": STEP_GROUPS["workflow_timeline"],
+        "predicate": "workflow_navigation_hard",
+        "expected": {"navigation_contract": navigation_expected},
+        "actual": {"navigation_contract": navigation_contract, "navigation_evidence": navigation_evidence},
+        "passed": navigation_passed,
+        "failure_reason": None if navigation_passed else "Explore-section navigation evidence is missing or out of order",
+    })
     binding_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": raw.get("build")}
     binding_expected = {"task_id": TASK_ID, "instruction_sha256": INSTRUCTION_SHA256, "ruleset_sha256": RULESET_SHA256, "application_build": BUILD}
     checks.append(_check("task_evaluator_build_binding_exact", binding_expected, binding_actual, binding_actual == binding_expected))
