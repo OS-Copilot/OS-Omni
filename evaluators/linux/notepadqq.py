@@ -88,7 +88,10 @@ PY"""
                     if expected_tail.strip().startswith("Keep this note"):
                         required_core = " ".join(expected_core.split())
                         actual_text = " ".join(actual_content.split())
-                        assert required_core in actual_text, f"content mismatch for {rel_path}"
+                        # The brief says the file's *first* sentence(s) are the
+                        # instructed text, so it must open the file; line breaks
+                        # between the sentences and what follows are free.
+                        assert actual_text.startswith(required_core), f"content mismatch for {rel_path}"
                     else:
                         # No brief fixes how many newlines end the file, and Gedit
                         # (ensure-trailing-newline) adds one on save when the

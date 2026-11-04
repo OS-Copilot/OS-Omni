@@ -83,7 +83,10 @@ PY"""
                     if expected_tail.strip().startswith("Keep this note"):
                         required_core = " ".join(expected_core.split())
                         actual_text = " ".join(actual_content.split())
-                        assert required_core in actual_text, f"content mismatch for {rel_path}"
+                        # The brief says the file's *first* sentence is the
+                        # instructed text, so it must open the file; what follows
+                        # (the legacy note or nothing) is free.
+                        assert actual_text.startswith(required_core), f"content mismatch for {rel_path}"
                     else:
                         assert actual_content == expected_content, f"content mismatch for {rel_path}"
                 if "contains" in expected:

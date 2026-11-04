@@ -49,16 +49,19 @@ result = {
     "local_folders_dir": str(local),
     "local_folders_exists": local.is_dir(),
     "folders": [],
+    "top_level_folders": [],
     "errors": [],
 }
 if local.is_dir():
     names = set()
+    top_level = set()
     for child in sorted(local.iterdir()):
         name = child.name
         if name.endswith(".msf") or name == "msgFilterRules.dat":
             continue
         if name.endswith(".sbd"):
             names.add(name[:-4])
+            top_level.add(name[:-4])
             for nested in sorted(child.iterdir()):
                 nested_name = nested.name
                 if nested_name.endswith(".msf"):
@@ -66,11 +69,26 @@ if local.is_dir():
                 names.add(nested_name[:-4] if nested_name.endswith(".sbd") else nested_name)
         else:
             names.add(name)
+            top_level.add(name)
     result["folders"] = sorted(name for name in names if name)
+    result["top_level_folders"] = sorted(name for name in top_level if name)
 else:
     result["errors"].append("Local Folders directory is absent: " + str(local))
+baseline_path = __BASELINE_PATH__
+if baseline_path:
+    try:
+        result["baseline_folders"] = json.loads(Path(baseline_path).expanduser().read_text(encoding="utf-8"))
+    except Exception as exc:
+        result["baseline_error"] = "%s: %s" % (type(exc).__name__, exc)
 print(json.dumps(result, ensure_ascii=False))
 '''
+
+
+def _folder_program(profile_dir: str, baseline_path: str = "") -> str:
+    """The folder listing program for ``profile_dir`` (plus an optional baseline file)."""
+    return (_FOLDER_PROGRAM.replace("__PROFILE_DIR__", repr(profile_dir))
+            .replace("__BASELINE_PATH__", repr(baseline_path)))
+
 
 _RULES_PROGRAM = r'''
 import json
@@ -227,6 +245,7 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
         required_event_title = str(params.get("required_event_title") or "").strip()
         seed_folders = [str(item) for item in (params.get("expected_seed_folders") or [])]
         require_seed_folders = bool(params.get("require_seed_folders", False))
+        baseline_path = str(params.get("seed_folder_baseline_path") or "").strip()
         if not required_folder and not required_event_title:
             return EvalResult(
                 status=EvalStatus.FAIL,
@@ -235,11 +254,7 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
 
         controller = context.get("controller")
         try:
-            folders = _run_program(
-                controller,
-                _FOLDER_PROGRAM.replace("__PROFILE_DIR__", repr(profile_dir)),
-                timeout,
-            )
+            folders = _run_program(controller, _folder_program(profile_dir, baseline_path), timeout)
         except Exception as exc:
             return EvalResult(
                 status=EvalStatus.FAIL,
@@ -248,22 +263,34 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
 
         checks: list[dict[str, Any]] = []
         observed_folders = [str(name) for name in folders.get("folders") or []]
+        top_level_folders = [str(name) for name in folders.get("top_level_folders") or []]
+        baseline = folders.get("baseline_folders")
+        baseline_folders = (
+            {str(name) for name in baseline} if isinstance(baseline, list) else None
+        )
 
         for name in seed_folders:
-            present = name in observed_folders
+            # The brief says the existing folders "must remain in place", so a seed
+            # folder that the initializer saw directly under Local Folders must still
+            # be there (not deleted, moved into Trash or under another folder).  A
+            # seed folder the snapshot never had is not the agent's doing: the
+            # task's verifier_rules (tasks/v1/linux/
+            # thunderbird_qa66_mail_folder_search_calendar.yaml) keep that case
+            # diagnostic, as is every seed folder when no baseline was recorded.
+            seeded = baseline_folders is not None and name in baseline_folders
+            if seeded:
+                present = name in top_level_folders
+            else:
+                present = name in observed_folders
             check = {
                 "check_id": "seed_folder:%s" % name,
                 "passed": present,
-                "expected": {"folder": name, "present": True},
-                "observed": {"present": present},
+                "expected": {"folder": name, "present": True,
+                             "in_place": seeded},
+                "observed": {"present": present,
+                             "in_initial_state": None if baseline_folders is None else seeded},
             }
-            # The seed folders pre-exist in the VM snapshot.  The task's own
-            # verifier_rules call their presence diagnostic evidence only and
-            # say a missing seed folder must not fail an otherwise correct
-            # answer (tasks/v1/linux/
-            # thunderbird_qa66_mail_folder_search_calendar.yaml:122-123), so
-            # record them without failing the run unless a task opts in.
-            if not require_seed_folders:
+            if not (require_seed_folders or seeded):
                 check["diagnostic"] = True
             checks.append(check)
 
@@ -318,6 +345,9 @@ class ThunderbirdFolderCalendarEvaluator(BaseEvaluator):
             "failures": failed,
             "diagnostic_failures": diagnostic_failures,
             "require_seed_folders": require_seed_folders,
+            "top_level_folders": top_level_folders,
+            "seed_folder_baseline": None if baseline_folders is None else sorted(baseline_folders),
+            "seed_folder_baseline_error": folders.get("baseline_error"),
         }
         if not checks:
             return EvalResult(status=EvalStatus.FAIL, message="no folder or calendar requirement was comparable", metadata=metadata)
@@ -416,11 +446,7 @@ class ThunderbirdTaskEvaluator(BaseEvaluator):
         if required_folders:
             profile_dir = self._profile_dir(declared_path, params)
             try:
-                folder_evidence = _run_program(
-                    controller,
-                    _FOLDER_PROGRAM.replace("__PROFILE_DIR__", repr(profile_dir)),
-                    timeout,
-                )
+                folder_evidence = _run_program(controller, _folder_program(profile_dir), timeout)
             except Exception as exc:
                 folder_evidence = {"errors": ["%s: %s" % (type(exc).__name__, exc)]}
             observed_folders = [str(name) for name in folder_evidence.get("folders") or []]
