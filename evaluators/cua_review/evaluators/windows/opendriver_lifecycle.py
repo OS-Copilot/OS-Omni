@@ -14,7 +14,7 @@ part of the decision.
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 from evaluators.cua_review.core.evaluation import EvalResult, EvalStatus
 from evaluators.cua_review.evaluators.windows.opendriver import (
@@ -88,6 +88,24 @@ class OpenDriverEvidenceEvaluator(OpenDriverAccountEvaluator):
                 "the payout amount the task requires is not held",
             })
 
+        # The task's unique strings (the other two document IDs and dates, the rating
+        # comment, the ticket and its replies, the payout note) are graded as values the
+        # store records.  Each must be a whole field value, so the payout form's default
+        # note "Weekly payout request" is not the instruction's "Weekly payout".
+        expected_text = [str(x) for x in (params.get("expected_text") or []) if str(x).strip()]
+        if expected_text and params.get("require_storage_expected_text"):
+            values = list(_scalar_values(store.get("data")))
+            missing = [text for text in expected_text
+                       if not any(_value_equals(value, text) for value in values)]
+            checks.append({
+                "check_id": "storage_expected_text",
+                "passed": not missing,
+                "expected": expected_text,
+                "observed": {"missing": missing},
+                "failure_reason": "" if not missing else
+                "the store does not record every value the task requires",
+            })
+
         if params.get("require_logged_out_sessions_empty"):
             count = self.count_sessions(store)
             checks.append({
@@ -116,3 +134,25 @@ class OpenDriverEvidenceEvaluator(OpenDriverAccountEvaluator):
                               metadata=metadata)
         return EvalResult(status=EvalStatus.PASS,
                           message="the records the task requires are held", metadata=metadata)
+
+
+def _scalar_values(node: Any) -> Iterator[Any]:
+    """Every scalar value the store holds, at any depth."""
+    if isinstance(node, Mapping):
+        for value in node.values():
+            yield from _scalar_values(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _scalar_values(value)
+    elif node is not None and not isinstance(node, bool):
+        yield node
+
+
+def _value_equals(value: Any, text: str) -> bool:
+    """A recorded value equal to ``text``: same words, or the same number."""
+    if _normalise(value) == _normalise(text):
+        return True
+    try:
+        return abs(float(value) - float(text)) < 1e-9
+    except (TypeError, ValueError):
+        return False
