@@ -846,9 +846,9 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
             "from_addresses": [address for _, address in getaddresses(message.get_all("From", []))],
             "to_addresses": [address for _, address in getaddresses(message.get_all("To", []))],
             "date": date_value,
-            "message_id": cls._normalize_reference(message.get("Message-ID")),
-            "in_reply_to": cls._normalize_reference(message.get("In-Reply-To")),
-            "references": cls._normalize_reference(message.get("References")),
+            "message_id": cls._normalize_reference(cls._raw_header(message, "Message-ID")),
+            "in_reply_to": cls._normalize_reference(cls._raw_header(message, "In-Reply-To")),
+            "references": cls._normalize_reference(cls._raw_header(message, "References")),
             "body": body,
             "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
             "attachments": attachments,
@@ -874,6 +874,16 @@ class MailyInstruction33Round9StateEvaluator(BaseEvaluator):
             "body_sha256": parsed.get("body_sha256"),
             "attachments": parsed.get("attachments"),
         }
+
+    @staticmethod
+    def _raw_header(message: Any, name: str) -> str | None:
+        # Wire value, not the policy.default structured header: from Python
+        # 3.13 that rewrites the doubled-domain seed ids (``<a@b@c>``) on parse.
+        wanted = name.lower()
+        for key, value in message.raw_items():
+            if key.lower() == wanted:
+                return str(value)
+        return None
 
     @staticmethod
     def _normalize_reference(value: Any) -> str:

@@ -14,15 +14,15 @@ init:
     purge_greenmail: true
     greenmail_reset_confirmed: true
     verify_seeds: true
-    api_base_url: http://hanqideMacBook-pro.local:8081
-    smtp_host: hanqideMacBook-pro.local
+    api_base_url: http://127.0.0.1:8081
+    smtp_host: 127.0.0.1
     smtp_port: 3025
     wait_ms: 800
     return_home_after_init: false
 evaluation:
   evaluator_id: evaluators.ios.maily_instruction_3_1:MailyInstruction31StateEvaluator
   params:
-    api_base_url: http://hanqideMacBook-pro.local:8081
+    api_base_url: http://127.0.0.1:8081
     timeout_seconds: 5
     poll_interval_seconds: 1
     bundle_id: de.enough.maily

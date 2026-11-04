@@ -28,8 +28,8 @@ init:
     purge_greenmail: true
     greenmail_reset_confirmed: true
     verify_seeds: true
-    api_base_url: http://hanqideMacBook-pro.local:8081
-    smtp_host: hanqideMacBook-pro.local
+    api_base_url: http://127.0.0.1:8081
+    smtp_host: 127.0.0.1
     smtp_port: 3025
     snapshot_name: osomni-opendriver-ios-source-fixed-promax
     initial_state_note: Maily must already contain the reviewed Alex Rivera account and Field seed messages.
@@ -41,7 +41,7 @@ init:
 evaluation:
   evaluator_id: evaluators.ios.maily_instruction_3_3:MailyInstruction33Round9StateEvaluator
   params:
-    api_base_url: http://hanqideMacBook-pro.local:8081
+    api_base_url: http://127.0.0.1:8081
     timeout_seconds: 5
     poll_interval_seconds: 1
     bundle_id: de.enough.maily

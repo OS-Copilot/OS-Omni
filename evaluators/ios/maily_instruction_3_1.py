@@ -471,10 +471,20 @@ class MailyInstruction31StateEvaluator(BaseEvaluator):
             "plain_text": plain_text,
             "authored_text": authored_text,
             "quoted_text": quoted_text,
-            "in_reply_to": str(message.get("In-Reply-To") or ""),
-            "references": str(message.get("References") or ""),
+            "in_reply_to": cls._raw_header(message, "In-Reply-To"),
+            "references": cls._raw_header(message, "References"),
             "attachments": cls._attachments(message),
         }
+
+    @staticmethod
+    def _raw_header(message: Message, name: str) -> str:
+        # Wire value, not the policy.default structured header: from Python
+        # 3.13 that rewrites the doubled-domain seed ids (``<a@b@c>``) on parse.
+        wanted = name.lower()
+        for key, value in message.raw_items():
+            if key.lower() == wanted:
+                return str(value)
+        return ""
 
     @staticmethod
     def _addresses(message: Message, header: str) -> list[str]:

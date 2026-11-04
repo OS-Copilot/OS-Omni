@@ -23,9 +23,6 @@ def _reference_row(spec, *, uid, index, wrong_attachment=False):
     msg["Date"] = format_datetime(datetime(2026, 10, 12, tzinfo=timezone.utc) + timedelta(minutes=index))
     msg["Message-ID"] = f"<reference-{index}@example.test>"
     source_id = spec.get("source_message_id")
-    if source_id:
-        msg["In-Reply-To"] = source_id
-        msg["References"] = source_id
     body = spec["body"]
     if spec["source_subject"]:
         body += f"\n{spec['source_subject']}"
@@ -45,7 +42,13 @@ def _reference_row(spec, *, uid, index, wrong_attachment=False):
             data = b"wrong attachment bytes"
         maintype, subtype = attachment["content_type"].split("/", 1)
         msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
-    return {"uid": uid, "subject": spec["subject"], "mimeMessage": msg.as_string()}
+    mime = msg.as_string()
+    if source_id:
+        # Thread headers go on the wire verbatim, as Maily sends them: the
+        # EmailMessage header registry rewrites the doubled-domain seed ids
+        # from Python 3.13 (see initializers/ios/maily_benchmark_seed.py).
+        mime = f"In-Reply-To: {source_id}\nReferences: {source_id}\n" + mime
+    return {"uid": uid, "subject": spec["subject"], "mimeMessage": mime}
 
 
 def test_maily3_runtime_binding_uses_device_type_not_mutable_simulator_name():

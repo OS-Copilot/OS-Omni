@@ -85,7 +85,7 @@ metadata:
     extraction_method: task_snapshot
     instruction_format: english_natural_language
     instruction_summary_source: generated_english_natural_language
-    source_instruction_sha256: c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac
+    source_instruction_sha256: 68253625575c15c5efc9a2278a03f59bf0ed9550d11fc04e7a217d33c05049ff
     source_instruction: |-
       1. 轻点底部导航栏里的“Me”。
       2. 轻点个人页顶部的“Edit Profile”。

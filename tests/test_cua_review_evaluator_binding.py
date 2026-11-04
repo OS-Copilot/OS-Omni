@@ -40,8 +40,18 @@ def _spec(relative: str):
     return load_task_spec(REPO_ROOT / relative)
 
 
+def _legacy_photoedit_spec(name: str):
+    # 5cad99f rebuilt the v1 Windows OpenPhotoEdit tasks as GIMP tasks without
+    # review provenance; the reviewed definitions the strict evaluators were
+    # written against are kept at the task's ``metadata.legacy_task``.
+    live = _spec(f"tasks/v1/windows/{name}.yaml")
+    legacy = _spec(live.metadata["legacy_task"])
+    assert legacy.task_id == live.task_id
+    return legacy
+
+
 def test_binding_supplies_source_instruction_and_original_evaluator() -> None:
-    spec = _spec("tasks/v1/windows/" + WINDOWS_PHOTOEDIT[1] + ".yaml")
+    spec = _legacy_photoedit_spec(WINDOWS_PHOTOEDIT[1])
     provenance = spec.metadata["cua_tasks_review"]
     binding = task_binding_context(spec)
 
@@ -64,7 +74,7 @@ def test_binding_reads_provenance_for_macos_runner_tasks() -> None:
 
 def test_windows_photoedit_binding_holds_and_reaches_the_guest_read() -> None:
     for name in WINDOWS_PHOTOEDIT:
-        spec = _spec(f"tasks/v1/windows/{name}.yaml")
+        spec = _legacy_photoedit_spec(name)
         module = importlib.import_module(spec.evaluation.evaluator_id.split(":")[0])
         params = spec.evaluation.params
         if "expected_evaluator_source_sha256" in params:

@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Tuple
 
 import anthropic
-import httpx
+
+try:  # the SDK's own HTTP library: httpx2 for anthropic >= 1.0, httpx before
+    import httpx2 as httpx
+except ImportError:
+    import httpx
 
 from ..errors import LLMClientError, LLMErrorCode
 from .base import ProviderAdapter, ProviderRequest, ProviderResult

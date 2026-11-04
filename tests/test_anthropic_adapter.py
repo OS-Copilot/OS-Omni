@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import json
 
-import httpx
 import pytest
+
+try:  # anthropic >= 1.0 is built on httpx2 and rejects httpx.Client instances
+    import httpx2 as httpx
+except ImportError:  # anthropic 0.x
+    import httpx
 
 from core.llm.errors import LLMClientError, LLMErrorCode
 from core.llm.providers.anthropic_adapter import DEFAULT_MAX_TOKENS, AnthropicAdapter

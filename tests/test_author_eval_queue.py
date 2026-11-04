@@ -28,6 +28,15 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 import author_eval_queue as queue
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _restore_environment():
+    """default_runner() sets OS_OMNI_* audit switches for the queue process; keep them out of other tests."""
+    with mock.patch.dict(os.environ):
+        yield
+
 
 def _write_report(path: Path, platform: str = "ios", passed: bool = True) -> Path:
     path.write_text(
@@ -159,12 +168,17 @@ class PlanTests(unittest.TestCase):
                         entry["effective_max_steps"], entry["original_max_steps"]
                     )
 
-    def test_plan_covers_both_step_limits(self) -> None:
-        originals = {
-            entry["original_max_steps"] for entry in queue.build_plan_entries("ios")
-        }
-        self.assertIn(100, originals)
-        self.assertIn(240, originals)
+    def test_plan_reads_standardized_step_limit_and_applies_cap(self) -> None:
+        # 6f5d89f standardized every v1 single-platform task to max_steps 300
+        # (iOS previously mixed 100 and 240), so the plan must read that
+        # task-file limit and clamp it to the queue cap.
+        for platform in ("ios", "macos"):
+            with self.subTest(platform=platform):
+                entries = queue.build_plan_entries(platform)
+                self.assertEqual({e["original_max_steps"] for e in entries}, {300})
+                self.assertEqual(
+                    {e["effective_max_steps"] for e in entries}, {queue.MAX_STEP_CAP}
+                )
 
     def test_results_root_is_independent_of_android_local_eval(self) -> None:
         for platform in ("ios", "macos"):
