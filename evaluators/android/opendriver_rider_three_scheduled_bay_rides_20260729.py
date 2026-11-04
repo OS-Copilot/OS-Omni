@@ -250,6 +250,7 @@ class OpenDriverRiderWorkflowEvaluator(BaseEvaluator):
                 "agent_step_count": None,
                 "min_agent_steps": min_agent_steps,
                 "min_agent_steps_met": True,
+                "min_agent_steps_required": False,
                 "note": "No trajectory file was available, so trajectory-only checks were skipped for manual evaluator-only runs.",
             }
 
@@ -272,6 +273,7 @@ class OpenDriverRiderWorkflowEvaluator(BaseEvaluator):
             "agent_step_count": step_count,
             "min_agent_steps": min_agent_steps,
             "min_agent_steps_met": step_count >= min_agent_steps,
+            "min_agent_steps_required": False,
             "parse_errors": parse_errors[:5],
         }
 
@@ -321,10 +323,9 @@ class OpenDriverRiderScheduledRidesEvaluator(BaseEvaluator):
             context,
             min_agent_steps=min_agent_steps,
         )
-        checks = {
-            **evidence["checks"],
-            "min_agent_steps_met": bool(trajectory.get("min_agent_steps_met", True)),
-        }
+        # The count of recorded steps is reported (metadata["trajectory"]) but is not
+        # required: no instruction sets a step minimum, and fewer steps is not a failure.
+        checks = {**evidence["checks"]}
         failures = [name for name, passed in checks.items() if not passed]
         metadata = {
             "app_package": app_package,
@@ -590,10 +591,9 @@ class OpenDriverDriverTripWorkflowEvaluator(BaseEvaluator):
             context,
             min_agent_steps=min_agent_steps,
         )
-        checks = {
-            **evidence["checks"],
-            "min_agent_steps_met": bool(trajectory.get("min_agent_steps_met", True)),
-        }
+        # The count of recorded steps is reported (metadata["trajectory"]) but is not
+        # required: no instruction sets a step minimum, and fewer steps is not a failure.
+        checks = {**evidence["checks"]}
         failures = [name for name, passed in checks.items() if not passed]
         metadata = {
             "app_package": app_package,
