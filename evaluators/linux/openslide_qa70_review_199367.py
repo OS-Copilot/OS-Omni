@@ -25,6 +25,9 @@ RULESET_SPEC = {
     "slide2": {"text": "Metrics", "chart_alt": "qa70 chart", "chart_animation": "fade", "chart_front": True},
     "slide3": {
         "layout": "comparison",
+        # The shape and its duplicate are the #FFD7C8 shapes added to the slide after its Comparison
+        # layout placeholders, whatever their size (the brief names only the fill).
+        "shape_identity": "added after the layout placeholders; any size",
         "shape_fill": "#ffd7c8",
         "shape_count": 2,
         "copies_identical": True,
@@ -45,6 +48,9 @@ RULESET_SPEC = {
             "tolerance": 20,
         },
         "note_sequence": ["qa70 speaker note", "Decision owners locked for Friday review"],
+        # Either recorded generations show the first note before the second, or the final notes still
+        # hold both in that order (LevelDB compaction may drop the intermediate generation).
+        "note_evidence": "history_or_final_text_order",
         "comments": ["qa70 comment", "quarterly decision matrix owner review"],
     },
     "automatic_process": {
@@ -57,7 +63,7 @@ RULESET_SPEC = {
 _COMPUTED_RULESET_SHA256 = hashlib.sha256(
     json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 ).hexdigest()
-RULESET_SHA256 = "c8e6b44c95f0831faa93b5f8c9957e4ec283a516e47af51e64c0e650f10bbd40"
+RULESET_SHA256 = "cf6d5a3f2d2c292093d71e9a5f65b1a1dca631a3af28c26a300dfa81adc1204a"
 if _COMPUTED_RULESET_SHA256 != RULESET_SHA256:
     raise RuntimeError("OpenSlide ruleset digest constant is stale")
 STEP_GROUPS = {
@@ -79,7 +85,16 @@ def _objects(slide: Mapping[str, Any], kind: str | None = None) -> list[Mapping[
 
 
 def _texts(slide: Mapping[str, Any]) -> list[str]:
-    return [str(obj.get("text") or "") for obj in _objects(slide, "text")]
+    return [str(obj.get("text") or "").strip() for obj in _objects(slide, "text")]
+
+
+def _task_shapes(slide: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """The #FFD7C8 shapes added to the slide (not the Comparison layout's own boxes), any size."""
+    fill = RULESET_SPEC["slide3"]["shape_fill"]
+    return [
+        obj for obj in reader.added_objects(slide, "shape")
+        if str((obj.get("style") or {}).get("fill") or "").lower() == fill
+    ]
 
 
 def _covers_content_area(bounds: Mapping[str, Any], spec: Mapping[str, Any]) -> bool:
@@ -225,6 +240,8 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
     if len(slides) >= 4:
         slide1_texts = _texts(slides[0])
         add("slide1.title", "openslide.qa70.deck", "QA70 Review", slide1_texts, "QA70 Review" in slide1_texts, [7, 8, 9, 10], "TEXT_EXACT")
+        slide2_texts = _texts(slides[1])
+        add("slide2.title", "openslide.qa70.deck", RULESET_SPEC["slide2"]["text"], slide2_texts, RULESET_SPEC["slide2"]["text"] in slide2_texts, [11, 12, 13, 14], "TEXT_EXACT")
 
         charts = _objects(slides[1], "chart")
         chart_actual = [{"alt": chart.get("alt"), "animation": chart.get("animation")} for chart in charts]
@@ -235,21 +252,14 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         slide2_max_z = max((float(obj.get("z") or 0) for obj in slide2_objects), default=0)
         add("slide2.chart_front", "openslide.qa70.deck", True, {"chart_z": chart_z, "max_z": slide2_max_z}, len(charts) == 1 and float(chart_z or 0) == slide2_max_z, [15, 16, 17, 18, 19])
 
-        shapes = [
-            obj for obj in _objects(slides[2], "shape")
-            if str((obj.get("style") or {}).get("fill") or "").lower() == "#ffd7c8"
-            and obj.get("w") == 260 and obj.get("h") == 140
-        ]
+        add("slide3.layout", "openslide.qa70.shape_process", RULESET_SPEC["slide3"]["layout"], slides[2].get("layout"), slides[2].get("layout") == RULESET_SPEC["slide3"]["layout"], [32, 33])
+        shapes = _task_shapes(slides[2])
         shape_counts: list[int] = []
         for deck in versions:
             deck_slides = list(deck.get("slides") or [])
             if len(deck_slides) < 3:
                 continue
-            shape_counts.append(sum(
-                1 for obj in _objects(deck_slides[2], "shape")
-                if str((obj.get("style") or {}).get("fill") or "").lower() == "#ffd7c8"
-                and obj.get("w") == 260 and obj.get("h") == 140
-            ))
+            shape_counts.append(len(_task_shapes(deck_slides[2])))
         xs = sorted(float(obj.get("x") or 0) for obj in shapes)
         moved_right = len(xs) == 2 and xs[1] > xs[0]
         signatures = [
@@ -292,10 +302,21 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
 
         note_history = _slide4_values(versions, "notes")
         expected_notes = RULESET_SPEC["slide4"]["note_sequence"]
-        first_note = next((index for index, value in enumerate(note_history) if value == expected_notes[0]), None)
+        first_note = next((index for index, value in enumerate(note_history) if str(value or "").strip() == expected_notes[0]), None)
         second_note = next((index for index, value in enumerate(note_history) if expected_notes[1] in str(value or "")), None)
-        notes_passed = first_note is not None and second_note is not None and first_note < second_note
-        add("slide4.notes_sequence", "openslide.qa70.final_review", expected_notes, note_history, notes_passed, [48, 49, 50, 71, 72], "ORDERED_EXACT")
+        history_order = first_note is not None and second_note is not None and first_note < second_note
+        final_notes = str(slides[3].get("notes") or "")
+        final_first, final_second = final_notes.find(expected_notes[0]), final_notes.find(expected_notes[1])
+        final_order = 0 <= final_first and final_first + len(expected_notes[0]) <= final_second
+        add(
+            "slide4.notes_sequence",
+            "openslide.qa70.final_review",
+            {"sequence": expected_notes, "evidence": RULESET_SPEC["slide4"]["note_evidence"]},
+            {"history": note_history, "history_order": history_order, "final_text_order": final_order},
+            (history_order or final_order) and expected_notes[1] in final_notes,
+            [48, 49, 50, 71, 72],
+            "ORDERED_EXACT",
+        )
 
         comments = [str(row.get("text") or "") for row in slides[3].get("comments", []) if isinstance(row, Mapping)]
         chronological_comments = list(reversed(comments))
@@ -333,7 +354,8 @@ class OpenSlideQa70Review199367Evaluator(BaseEvaluator):
         if expected_ruleset and expected_ruleset != RULESET_SHA256:
             return EvalResult(status=EvalStatus.ERROR, message="ruleset digest mismatch")
         source = Path(inspect.getfile(reader)).read_text(encoding="utf-8")
-        script = source + "\n_h=read_history(" + json.dumps(profile) + ")\n_v=deck_versions(_h," + json.dumps(FINAL_TITLE) + ")\nprint(json.dumps({'target_versions':_v,'final_title_count':sum(1 for d in (_h['versions'][-1]['decks'] if _h['versions'] else []) if d.get('title')==" + json.dumps(FINAL_TITLE) + "),'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))\n"
+        # The deck is followed by its id (generations before the title was set count too).
+        script = source + "\n_h=read_history(" + json.dumps(profile) + ")\n_v,_n=final_deck_versions(_h," + json.dumps(FINAL_TITLE) + ")\nprint(json.dumps({'target_versions':_v,'final_title_count':_n,'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))\n"
         try:
             raw = controller.run_python_script(script, timeout=int(params.get("timeout", 60)))
             observed = json.loads(raw.get("stdout") or raw.get("output") or "")

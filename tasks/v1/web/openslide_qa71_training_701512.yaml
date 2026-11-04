@@ -33,7 +33,7 @@ metadata:
   snapshot_name: s1
   source_state_mode: human_completed_eval_only
   instruction_sha256: c6b09470b4e9b7152bf5309fc2ff2dedbc151560dc1d88a446ac18ee6763bd3d
-  ruleset_sha256: 4ad594ea658060c7211b30448530c8cd1cce46714cd9d45148018d64e9718cdb
+  ruleset_sha256: 9e0d515be8b9460d2993d29ece18b7fca12e78c9f1575c763ca9b56424366b6c
   evaluation_standard: Exact persisted deck state plus required copy/paste and layer-order history.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review

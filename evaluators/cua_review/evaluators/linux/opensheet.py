@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import glob
 import json
+import os
+import re
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -125,6 +127,28 @@ def _style_matches(cell: Mapping[str, Any], expected: Mapping[str, Any]) -> bool
     return True
 
 
+# Chrome saves a repeated download of "name.json" as "name (1).json", "name (2).json", ...
+_COPY_SUFFIX = re.compile(r" \((\d+)\)(?=\.[^./]*$)")
+
+
+def _export_order(item: Mapping[str, Any]) -> tuple[float, int, str]:
+    path = str(item.get("path") or "")
+    try:
+        mtime = float(item.get("mtime") or 0)
+    except (TypeError, ValueError):
+        mtime = 0.0
+    match = _COPY_SUFFIX.search(os.path.basename(path))
+    return mtime, int(match.group(1)) if match else 0, path
+
+
+def _newest_first(exports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Order export files newest first: by modification time, then Chrome's "(N)" copy number."""
+    unique: dict[str, dict[str, Any]] = {}
+    for item in exports:
+        unique.setdefault(str(item.get("path") or ""), item)
+    return sorted(unique.values(), key=_export_order, reverse=True)
+
+
 def _view_matches(sheet: Mapping[str, Any], expected: Mapping[str, Any]) -> bool:
     view = sheet.get("view") if isinstance(sheet.get("view"), Mapping) else {}
     for field, wanted in expected.items():
@@ -214,8 +238,11 @@ class OpenSheetPlantBudgetInventoryEvaluator(BaseEvaluator):
         expected_export = params.get("expected_export")
         if isinstance(expected_export, Mapping):
             patterns = [str(item) for item in (expected_export.get("patterns") or [])]
-            exports = self._collect_exports(controller, patterns)
+            # The final export is the one graded ("saving the final file"): the newest matching file,
+            # not the first by name ("daily-shift (1).json" sorts before "daily-shift.json").
+            exports = _newest_first(self._collect_exports(controller, patterns))
             metadata["exports"] = [item.get("path") for item in exports]
+            metadata["export_graded"] = exports[0].get("path") if exports else None
             record("export.file", bool(exports), [item.get("path") for item in exports])
             if exports:
                 document_export = exports[0].get("document")
@@ -256,7 +283,7 @@ class OpenSheetPlantBudgetInventoryEvaluator(BaseEvaluator):
     @staticmethod
     def _collect_exports(controller: Any, patterns: list[str]) -> list[dict[str, Any]]:
         program = (
-            "import glob, json\n"
+            "import glob, json, os\n"
             "patterns = json.loads(%s)\n"
             "found = []\n"
             "for pattern in patterns:\n"
@@ -267,12 +294,16 @@ class OpenSheetPlantBudgetInventoryEvaluator(BaseEvaluator):
             "                document = json.load(handle)\n"
             "        except Exception:\n"
             "            document = None\n"
-            "        found.append({'path': path, 'document': document})\n"
+            "        try:\n"
+            "            mtime = os.path.getmtime(path)\n"
+            "        except OSError:\n"
+            "            mtime = 0\n"
+            "        found.append({'path': path, 'mtime': mtime, 'document': document})\n"
             "print(json.dumps(found, ensure_ascii=False))\n"
         ) % json.dumps(json.dumps(patterns))
         parsed = _run_python(controller, program, timeout=60)
         if isinstance(parsed, list):
-            return [item for item in parsed if isinstance(item, Mapping)]
+            return [dict(item) for item in parsed if isinstance(item, Mapping)]
         found: list[dict[str, Any]] = []
         for pattern in patterns:
             for path in sorted(glob.glob(pattern)):
@@ -282,5 +313,9 @@ class OpenSheetPlantBudgetInventoryEvaluator(BaseEvaluator):
                         document = json.load(handle)
                 except Exception:
                     document = None
-                found.append({"path": path, "document": document})
+                try:
+                    mtime = os.path.getmtime(path)
+                except OSError:
+                    mtime = 0
+                found.append({"path": path, "mtime": mtime, "document": document})
         return found

@@ -21,7 +21,7 @@ evaluation:
   params:
     profile_dir: /home/user/.config/google-chrome/Default/Local Storage/leveldb
     source_state_mode: human_completed_eval_only
-    expected_ruleset_sha256: c8e6b44c95f0831faa93b5f8c9957e4ec283a516e47af51e64c0e650f10bbd40
+    expected_ruleset_sha256: cf6d5a3f2d2c292093d71e9a5f65b1a1dca631a3af28c26a300dfa81adc1204a
     timeout: 60
 limits:
   max_steps: 300
@@ -35,7 +35,7 @@ metadata:
   snapshot_name: s1
   source_state_mode: human_completed_eval_only
   instruction_sha256: ff3042b9e5895c0a39c4f53401dfc6517dbce3ddb5c9f7c83c0f71bdbb6a4862
-  ruleset_sha256: c8e6b44c95f0831faa93b5f8c9957e4ec283a516e47af51e64c0e650f10bbd40
+  ruleset_sha256: cf6d5a3f2d2c292093d71e9a5f65b1a1dca631a3af28c26a300dfa81adc1204a
   source_instruction_path: gui_instruction.txt
   evaluation_standard: Exact persisted state and ordered causal evidence for the original 72-operation
     instruction.

@@ -360,3 +360,68 @@ def deck_versions(history, title):
             if isinstance(deck, dict) and deck.get("title") == title:
                 found.append(deck)
     return found
+
+
+def final_deck_versions(history, title):
+    """Return ``(generations, count)`` for the deck titled ``title`` in the newest generation.
+
+    The deck is followed by its id, so generations recorded before a rename count too;
+    ``count`` is how many decks hold ``title`` now. With no such deck, this falls back to
+    :func:`deck_versions` (generations that held ``title``).
+    """
+    versions = history.get("versions") or []
+    newest = (versions[-1].get("decks") or []) if versions else []
+    final = [deck for deck in newest if isinstance(deck, dict) and deck.get("title") == title]
+    deck_id = final[0].get("id") if final else None
+    if not deck_id:
+        return deck_versions(history, title), len(final)
+    found = []
+    for version in versions:
+        for deck in version.get("decks") or []:
+            if isinstance(deck, dict) and deck.get("id") == deck_id:
+                found.append(deck)
+    return found, len(final)
+
+
+# OpenSlide object ids are "obj-<Date.now() in base 36>-<random>". Applying a layout (directly or
+# through a template) empties the slide and creates all of its placeholders in one synchronous call,
+# so they share one creation time; Insert and Paste create their objects later, from separate clicks.
+LAYOUT_BATCH_MS = 100
+
+
+def object_created_ms(obj):
+    """Creation time (ms) encoded in an OpenSlide object id, or ``None``."""
+    parts = str(obj.get("id") or "").split("-")
+    if len(parts) < 3 or parts[0] != "obj":
+        return None
+    try:
+        return int(parts[1], 36)
+    except ValueError:
+        return None
+
+
+def added_objects(slide, kind=None):
+    """Objects added to ``slide`` after its layout placeholders (the earliest-created batch).
+
+    Objects without a readable id count as added when stacked above the layout (z > 1):
+    layouts create their objects at z 0/1 and Insert/Paste stack the new object on top.
+    """
+    rows = [obj for obj in (slide.get("objects") or []) if isinstance(obj, dict)]
+    times = [object_created_ms(obj) for obj in rows]
+    known = [value for value in times if value is not None]
+    layout_ms = min(known) if known else None
+    added = []
+    for obj, created in zip(rows, times):
+        if kind is not None and obj.get("type") != kind:
+            continue
+        if created is not None and layout_ms is not None:
+            if created - layout_ms > LAYOUT_BATCH_MS:
+                added.append(obj)
+            continue
+        try:
+            stacked = float(obj.get("z") or 0) > 1
+        except (TypeError, ValueError):
+            stacked = False
+        if stacked:
+            added.append(obj)
+    return added
