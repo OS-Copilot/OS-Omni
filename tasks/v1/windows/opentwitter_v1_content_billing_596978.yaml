@@ -21,7 +21,7 @@ evaluation:
   evaluator_id: evaluators.windows.opentwitter_v1_content_billing_596978:OpenTwitterV1ContentBilling596978Evaluator
   params:
     port: 4350
-    expected_ruleset_sha256: 56496fba09296d5703cb426fd8f87ffc0315c59a75979b77ba4b56a983a83702
+    expected_ruleset_sha256: cbd5257523bfd4f87ef8ebdc736072140a5d21a6ea87ad70979bacea6fe7267b
 limits:
   max_steps: 300
   step_timeout_seconds: 180
