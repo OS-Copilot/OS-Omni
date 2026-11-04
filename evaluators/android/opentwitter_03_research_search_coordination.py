@@ -94,7 +94,12 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
                     baseline = loaded if isinstance(loaded, dict) else None
                 except Exception:
                     baseline = None
-            add_check("full_run_baseline_present", baseline is not None, self.BASELINE_FILENAME, str(baseline_path))
+            # The bound v1 initializer only launches OpenTwitter; it never writes this
+            # baseline file (only the unbound local_eval wrapper did, local_eval/baselines.py:102).
+            # Requiring it made every full v1 run fail, so it is opt-in for callers that
+            # do write it; a run that supplies the file still gets the baseline_* checks below.
+            if bool(params.get("require_full_run_baseline", False)):
+                add_check("full_run_baseline_present", baseline is not None, self.BASELINE_FILENAME, str(baseline_path))
         baseline_seq = event_sequence((baseline or {}).get("evaluation_event_seq"))
         all_events = state.get("evaluationEvents") if isinstance(state.get("evaluationEvents"), list) else []
         events = [
