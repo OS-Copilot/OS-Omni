@@ -28,6 +28,15 @@ class ForegroundTextEvaluator(BaseEvaluator):
         forbidden = [
             str(value) for value in (params.get("forbidden_text_tokens") or [])
         ]
+        # Phrases the expected screen itself shows that contain a forbidden
+        # token (the OpenDriver login page's "Create account" button contains
+        # "Account", a signed-in tab).  They are masked for the forbidden check
+        # only; the token still counts anywhere else.  Default: none.
+        forbidden_exempt = [
+            str(value)
+            for value in (params.get("forbidden_text_exempt_phrases") or [])
+            if str(value or "")
+        ]
         case_sensitive = bool(params.get("case_sensitive", False))
 
         observation = context.get("final_observation")
@@ -59,13 +68,21 @@ class ForegroundTextEvaluator(BaseEvaluator):
         visible_text = "\n".join(text_parts)
         compared_text = visible_text if case_sensitive else visible_text.casefold()
 
-        def present(token: str) -> bool:
-            compared = token if case_sensitive else token.casefold()
-            return compared in compared_text
+        def fold(value: str) -> str:
+            return value if case_sensitive else value.casefold()
+
+        def present(token: str, text: str = compared_text) -> bool:
+            return fold(token) in text
+
+        forbidden_text = compared_text
+        for phrase in forbidden_exempt:
+            forbidden_text = forbidden_text.replace(fold(phrase), "\n")
 
         missing = [token for token in required if not present(token)]
         any_matches = [token for token in required_any if present(token)]
-        forbidden_matches = [token for token in forbidden if present(token)]
+        forbidden_matches = [
+            token for token in forbidden if present(token, forbidden_text)
+        ]
 
         foreground = ""
         foreground_ok = True
@@ -95,6 +112,7 @@ class ForegroundTextEvaluator(BaseEvaluator):
             "matched_required_any": any_matches,
             "forbidden_text_tokens": forbidden,
             "forbidden_matches": forbidden_matches,
+            "forbidden_text_exempt_phrases": forbidden_exempt,
             "ui_text_excerpt": visible_text[:4000],
         }
         if passed:

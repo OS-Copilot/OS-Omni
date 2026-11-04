@@ -175,13 +175,20 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
                     matched_object_id=post_id,
                 )
             reply_text = str(spec.get("reply_text") or "")
+            reply_texts = self._accepted_texts(reply_text, spec.get("reply_text_variants"))
             reply_matches = self._matching_comments(
-                comments, post_id, expected_handle, reply_text, created_after
+                comments, post_id, expected_handle, reply_texts, created_after
             )
             add_check(
                 f"target_post_{post_id}_reply_exact_unique",
                 len(reply_matches) == 1,
-                {"post_id": post_id, "author_handle": expected_handle, "text": reply_text, "count": 1},
+                {
+                    "post_id": post_id,
+                    "author_handle": expected_handle,
+                    "text": reply_text,
+                    "accepted_texts": list(reply_texts),
+                    "count": 1,
+                },
                 {"count": len(reply_matches), "ids": [item.get("id") for item in reply_matches]},
                 matched_object_id=reply_matches[0].get("id") if len(reply_matches) == 1 else None,
             )
@@ -191,19 +198,20 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
                 continue
             handle = str(spec.get("handle") or "")
             text = str(spec.get("text") or "")
+            texts = self._accepted_texts(text, spec.get("text_variants"))
             matches = [
                 item
                 for item in messages
                 if isinstance(item, Mapping)
                 and bool(item.get("outbound"))
                 and str(item.get("handle") or "") == handle
-                and str(item.get("text") or "") == text
+                and str(item.get("text") or "") in texts
                 and self._created_after(item.get("createdAt"), created_after)
             ]
             add_check(
                 f"message_{handle}_exact_unique",
                 len(matches) == 1,
-                {"handle": handle, "text": text, "outbound": True, "count": 1},
+                {"handle": handle, "text": text, "accepted_texts": list(texts), "outbound": True, "count": 1},
                 {"count": len(matches), "ids": [item.get("id") for item in matches]},
                 matched_object_id=matches[0].get("id") if len(matches) == 1 else None,
             )
@@ -213,18 +221,19 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             if not isinstance(spec, Mapping):
                 continue
             text = str(spec.get("text") or "")
+            texts = self._accepted_texts(text, spec.get("text_variants"))
             matches = [
                 post
                 for post in posts
                 if isinstance(post, Mapping)
                 and str(post.get("authorHandle") or "") == expected_handle
-                and str(post.get("text") or "") == text
+                and str(post.get("text") or "") in texts
                 and self._created_after(post.get("createdAt"), created_after)
             ]
             add_check(
                 f"created_post_{text}_exact_unique",
                 len(matches) == 1,
-                {"author_handle": expected_handle, "text": text, "count": 1},
+                {"author_handle": expected_handle, "text": text, "accepted_texts": list(texts), "count": 1},
                 {"count": len(matches), "ids": [post.get("id") for post in matches]},
                 matched_object_id=matches[0].get("id") if len(matches) == 1 else None,
             )
@@ -245,13 +254,14 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
                 matched_object_id=owner_post_id or None,
             )
         owner_reply = str(params.get("owner_reply_text") or "")
+        owner_reply_texts = self._accepted_texts(owner_reply, params.get("owner_reply_text_variants"))
         owner_reply_matches = self._matching_comments(
-            comments, owner_post_id, expected_handle, owner_reply, created_after
+            comments, owner_post_id, expected_handle, owner_reply_texts, created_after
         ) if owner_post_id else []
         add_check(
             "owner_post_reply_exact_unique",
             len(owner_reply_matches) == 1,
-            {"post_id": owner_post_id, "text": owner_reply, "count": 1},
+            {"post_id": owner_post_id, "text": owner_reply, "accepted_texts": list(owner_reply_texts), "count": 1},
             {"count": len(owner_reply_matches), "ids": [item.get("id") for item in owner_reply_matches]},
             matched_object_id=owner_reply_matches[0].get("id") if len(owner_reply_matches) == 1 else None,
         )
@@ -353,21 +363,37 @@ class OpenTwitterMobileIncidentFrontendAuditEvaluator(BaseEvaluator):
             metadata=metadata,
         )
 
+    @staticmethod
+    def _accepted_texts(text: str, variants: Any) -> tuple[str, ...]:
+        """Return the exact text plus the exact variants a task also accepts.
+
+        The English brief quotes some texts with the sentence or list
+        punctuation inside the closing quote (“Draft issue tracked.”, “Timeline
+        owner set,”), so a reader cannot tell whether that mark belongs to the
+        text.  Such a task lists the other reading as a variant; every variant
+        is still compared exactly.
+        """
+        accepted = [text]
+        if isinstance(variants, (list, tuple)):
+            accepted.extend(str(item) for item in variants if str(item or ""))
+        return tuple(dict.fromkeys(accepted))
+
     @classmethod
     def _matching_comments(
         cls,
         comments: Mapping[str, Any],
         post_id: str,
         expected_handle: str,
-        text: str,
+        text: str | tuple[str, ...] | list[str],
         created_after: str,
     ) -> list[Mapping[str, Any]]:
+        texts = (text,) if isinstance(text, str) else tuple(text)
         return [
             item
             for item in (comments.get(post_id) or [])
             if isinstance(item, Mapping)
             and str(item.get("authorHandle") or "") == expected_handle
-            and str(item.get("text") or "") == text
+            and str(item.get("text") or "") in texts
             and cls._created_after(item.get("createdAt"), created_after)
         ]
 

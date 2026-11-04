@@ -45,6 +45,11 @@ evaluation:
     - Create support ticket
     - Reply to ticket
     - Save invoice PDF
+    # The logged-out login page shows "Create account" (Rider/Driver) or "Admin
+    # accounts are invite-only" (Admin) below Login; neither is the Account tab.
+    forbidden_text_exempt_phrases:
+    - Create account
+    - Admin accounts are invite-only
 limits:
   max_steps: 300
   step_timeout_seconds: 180

@@ -70,6 +70,11 @@ evaluation:
       - like
       - repost
       reply_text: Draft issue tracked
+      # The brief puts sentence/list punctuation inside the closing quote
+      # (“Draft issue tracked.”, “Timeline owner set,”), so *_variants hold the
+      # other reading of such texts; each is still compared exactly.
+      reply_text_variants:
+      - Draft issue tracked.
     - id: p-1014
       author_handle: devon
       text: Runbooks age quietly. Add a review date beside the owner name so stale operational guidance
@@ -78,6 +83,8 @@ evaluation:
       - bookmark
       - like
       reply_text: Timeline owner set
+      reply_text_variants:
+      - Timeline owner set,
     - id: p-1007
       author_handle: jamal
       text: 'A tiny frontend win: delaying non-critical chart hydration made the first paint feel instant
@@ -86,6 +93,8 @@ evaluation:
       - like
       - bookmark
       reply_text: Paint timing logged
+      reply_text_variants:
+      - Paint timing logged.
     messages:
     - handle: maya
       text: Mobile gate is clear
@@ -93,13 +102,19 @@ evaluation:
       text: Runbook owner added
     - handle: ben
       text: QA gate reviewed.
+      text_variants:
+      - QA gate reviewed
     - handle: priya
       text: Mobile audit filed.
     created_posts:
     - text: Mobile gate ready.
     - text: Runbook owner set.
+      text_variants:
+      - Runbook owner set
     owner_post_text: Mobile gate ready.
     owner_reply_text: Release owner Elena
+    owner_reply_text_variants:
+    - Release owner Elena,
     owner_post_actions:
     - like
     - bookmark

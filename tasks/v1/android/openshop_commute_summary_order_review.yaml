@@ -10,7 +10,7 @@ instruction: 'Place a new order in the OpenShop application while logged in as L
   payment method, with the order note set to exactly "Commute Summary". The resulting order must display
   a total of 850.56 and a status of Awaiting Shipment, and the shopping cart must be empty upon completion
   of the purchase. The order history must contain a review for the Polar Day Slim Business Backpack with
-  the 16-inch specification within the historical order ID TBH-LUCAS-20260321-004, featuring a rating
+  the 15.6-inch specification within the historical order ID TBH-LUCAS-20260321-004, featuring a rating
   of exactly 4 out of 5 and the review text exactly "Fits work laptop". The application must remain on
   the order history page with the user still logged in as Lucas Lin.'
 init:

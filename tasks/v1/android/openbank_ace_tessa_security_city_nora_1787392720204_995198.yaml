@@ -27,7 +27,7 @@ evaluation:
   params:
     app_package: com.killt.openbank
     local_state_key: openbank.localState.v7
-    expected_ruleset_sha256: e683bc43ef4b55d7061277b2522671fc3d0457faa6ebd6005e67f71e260fdd01
+    expected_ruleset_sha256: 922f6c3fb38558de9ec3c3652102cf654eb3b15f54dcb233f5b1237eb61bfe81
     source_state_mode: fresh_clone_verified
 limits:
   max_steps: 300
@@ -43,7 +43,7 @@ metadata:
   snapshot_name: sn2
   source_state_mode: fresh_clone_verified
   instruction_sha256: 6d1bb5e6e921907f180064b5d80c86c6609778452faa6660a51d4ca0d607fb48
-  evaluator_ruleset_sha256: e683bc43ef4b55d7061277b2522671fc3d0457faa6ebd6005e67f71e260fdd01
+  evaluator_ruleset_sha256: 922f6c3fb38558de9ec3c3652102cf654eb3b15f54dcb233f5b1237eb61bfe81
   verifier_rules:
     matching: exact_case_sensitive_typed_values_and_cardinality
     event_order: exact_relevant_event_projection_no_extras
