@@ -183,11 +183,24 @@ def _weekly_every_week(items: list[Any]) -> tuple[bool, list[str]]:
             return False, values
         key, value = token.split("=", 1)
         key = key.strip().upper()
-        if key in parts:
+        value = value.strip().upper()
+        if not key or not value or key in parts:
             return False, values
-        parts[key] = value.strip().upper()
-    allowed = ({"FREQ"}, {"FREQ", "INTERVAL"})
-    passed = set(parts) in allowed and parts.get("FREQ") == "WEEKLY" and parts.get("INTERVAL", "1") == "1"
+        parts[key] = value
+    # Thunderbird serialises standard weekly parts (BYDAY, WKST, UNTIL, COUNT)
+    # for a Weekly event; the task only requires repeating every week. Accept
+    # them while pinning FREQ=WEEKLY, INTERVAL=1 and a single weekday BYDAY.
+    weekdays = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"}
+    allowed = {"FREQ", "INTERVAL", "BYDAY", "WKST", "UNTIL", "COUNT"}
+    passed = (
+        set(parts) <= allowed
+        and parts.get("FREQ") == "WEEKLY"
+        and parts.get("INTERVAL", "1") == "1"
+    )
+    if passed and "BYDAY" in parts and parts["BYDAY"] not in weekdays:
+        passed = False
+    if passed and "WKST" in parts and parts["WKST"] not in weekdays:
+        passed = False
     return passed, values
 
 
