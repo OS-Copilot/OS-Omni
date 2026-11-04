@@ -298,6 +298,7 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         *,
         boundary: Mapping[str, Any],
         observed: Mapping[str, Any] | None = None,
+        require_durable_event_order: bool = False,
     ) -> EvalResult:
         recipients = _objects(state, "recipients")
         transfers = _objects(state, "transfers")
@@ -508,17 +509,27 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 )
             )
 
+        # The whole-window projection is a process diagnostic, not an outcome
+        # requirement: the English instruction names the durable deliverables
+        # (dispute, recipients, transfers, paperless setting, alert settings) but
+        # not an exact replay of the global UI event log, and normal navigation
+        # can repeat or reorder relevant events. It only gates when a caller
+        # explicitly opts in via params.require_durable_event_order; the ten
+        # object checks above keep every deliverable and its exact causal event
+        # count authoritative (see scan.CSV IOS-008).
         order_spec = CHECKPOINT_SPECS[-1]
-        checks.append(
-            _check(
-                order_spec,
-                order_ok,
-                actual=observed_labels,
-                evidence=projection,
-                event_evidence=projection,
-                failure_reason="causal event projection is not the exact expected sequence",
+        order_required = bool(require_durable_event_order)
+        if order_required:
+            checks.append(
+                _check(
+                    order_spec,
+                    order_ok,
+                    actual=observed_labels,
+                    evidence=projection,
+                    event_evidence=projection,
+                    failure_reason="causal event projection is not the exact expected sequence",
+                )
             )
-        )
 
         session_expected = {
             "loggedIn": True,
@@ -539,7 +550,8 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         coverage = [
             {
                 "step": step,
-                "checkpoint_names": [checks[index]["name"], "durable_event_order_exact"],
+                "checkpoint_names": [checks[index]["name"]]
+                + (["durable_event_order_exact"] if order_required else []),
                 "dimensions": {
                     "final_object": "exact durable object or exact source transaction",
                     "content": "case-sensitive fields and Decimal-cent values",
@@ -548,10 +560,15 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 },
                 "mapping_basis": (
                     f"step belongs to STEP_GROUPS.{group}; its compound chain requires "
-                    "the exact object/event checkpoint and exact global event order"
+                    "the exact object/event checkpoint"
+                    + (" and exact global event order" if order_required else "")
                 ),
-                "pass": bool(checks[index]["passed"] and order_ok),
-                "passed": bool(checks[index]["passed"] and order_ok),
+                "pass": bool(
+                    checks[index]["passed"] and (order_ok or not order_required)
+                ),
+                "passed": bool(
+                    checks[index]["passed"] and (order_ok or not order_required)
+                ),
             }
             for index, (group, steps) in enumerate(STEP_GROUPS.items())
             for step in steps
@@ -560,7 +577,11 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
         return EvalResult(
             status=status,
             message=(
-                "All exact OpenBank2 state and ordered-event checkpoints passed"
+                (
+                    "All exact OpenBank2 state and ordered-event checkpoints passed"
+                    if order_required
+                    else "All exact OpenBank2 state and causal-event checkpoints passed"
+                )
                 if status is EvalStatus.PASS
                 else "OpenBank2 verification failed: " + ", ".join(failed)
             ),
@@ -573,6 +594,22 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 "boundary": dict(boundary),
                 "checks": checks,
                 "failed_checks": failed,
+                "event_order_diagnostic": {
+                    "check_id": "durable_event_order_exact",
+                    "required": order_required,
+                    "blocking": order_required,
+                    "matched": order_ok,
+                    "expected": list(EXPECTED_EVENT_ORDER),
+                    "observed": observed_labels,
+                    "projection": projection,
+                    "note": (
+                        "Whole-window event order is diagnostic only unless "
+                        "params.require_durable_event_order is true: the instruction "
+                        "does not require an exact UI event-log replay, and every "
+                        "deliverable plus its exact causal-event count is still graded "
+                        "by the ten object checks."
+                    ),
+                },
                 "session_exact": {
                     "passed": session_ok,
                     "expected": session_expected,
@@ -833,7 +870,14 @@ class OpenBankCardRebateDispute183183Evaluator(BaseEvaluator):
                 }
             )
             boundary = self._resolve_boundary(context, params)
-            return self.evaluate_state(state, boundary=boundary, observed=observed)
+            return self.evaluate_state(
+                state,
+                boundary=boundary,
+                observed=observed,
+                require_durable_event_order=bool(
+                    params.get("require_durable_event_order", False)
+                ),
+            )
         except Exception as exc:
             return EvalResult(
                 status=EvalStatus.ERROR,
