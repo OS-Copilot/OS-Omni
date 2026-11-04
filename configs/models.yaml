@@ -399,6 +399,7 @@ models:
       reasoning_effort: high
       system_prompt_as_user: true
   deepseek_flash_high_uncapped:
+  deepseek_flash_high:
     provider: openai
     model_name: deepseek-flash
     api_key_env: DEEPSEEK_API_KEY
@@ -443,3 +444,7 @@ models:
     metadata:
       reasoning_effort: none
       system_prompt_as_user: true
+    max_output_tokens: 4096
+    metadata:
+      api_mode: responses
+      reasoning_effort: high
