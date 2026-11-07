@@ -115,8 +115,8 @@ macOS,opendriver,macos.opendriver.driver_weekly_closeout_textedit,FAIL,FAIL,FAIL
 macOS,opendriver,macos.opendriver.rider_commute_fare_review_textedit,FAIL,PASS,FAIL,,,FAIL,,,PASS,FAIL,FAIL,,FAIL,,,,,FAIL
 macOS,opendriver,macos.opendriver.rider_priority_lost_textedit,FAIL,FAIL,FAIL,,,FAIL,,,FAIL,FAIL,FAIL,,FAIL,,,,,FAIL
 macOS,opennote,macos.opennote.macos1_canal_train_walk_liked_profile_workflow,FAIL,FAIL,FAIL,,,FAIL,,,PASS,FAIL,FAIL,,FAIL,,,,,PASS
-macOS,opennote,macos.opennote.macos1_coat_swap_saved_workflow,FAIL,FAIL,PASS,,,FAIL,,,PASS,FAIL,FAIL,,FAIL,,,,,
-macOS,opennote,macos.opennote.macos1_harbor_coffee_saved_workflow,FAIL,FAIL,FAIL,,,FAIL,,,FAIL,FAIL,FAIL,,FAIL,,,,,FAIL
+macOS,opennote,macos.opennote.macos1_coat_swap_saved_workflow,FAIL,FAIL,PASS,,,FAIL,,,PASS,FAIL,FAIL,,FAIL,,,,,FAIL
+macOS,opennote,macos.opennote.macos1_harbor_coffee_saved_workflow,FAIL,FAIL,FAIL,,,FAIL,,FAIL,FAIL,FAIL,FAIL,,FAIL,,,,,FAIL
 macOS,opennote,macos.opennote.macos1_weekend_reset_saved_workflow,FAIL,FAIL,FAIL,,,FAIL,,,FAIL,FAIL,FAIL,,FAIL,,,,,FAIL
 macOS,openphotoedit,macos.openphotoedit.macos1_anime_clean_floral_cool_exports,FAIL,FAIL,FAIL,,,FAIL,,,FAIL,FAIL,FAIL,,FAIL,,,,,
 macOS,openphotoedit,macos.openphotoedit.macos1_anime_soft_cream_exports,FAIL,FAIL,FAIL,,,FAIL,,,FAIL,FAIL,FAIL,,FAIL,,,,,
