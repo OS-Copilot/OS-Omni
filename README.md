@@ -2,7 +2,7 @@
 
 **OS-Omni: Benchmarking Generalist Computer-Using Agents on Long-Horizon Workflows Across Platforms**
 
-[Project Page](https://os-copilot.github.io/OS-Omni-Home/) | [Paper (arXiv)](https://arxiv.org/pdf/2611.34232) | [Hugging Face Paper Page](https://huggingface.co/papers/2611.34232)
+[Project Page](https://os-copilot.github.io/OS-Omni-Home/) | [Paper (arXiv)](https://arxiv.org/pdf/2611.34232) | [Hugging Face Paper Page](https://huggingface.co/papers/2611.34232) | [Discord](https://discord.gg/fADJQaMTRb)
 
 OS-Omni is a **live cross-platform GUI benchmark** and runtime stack for agent
 evaluation. We release tasks in versioned waves of **300 tasks each**, starting
