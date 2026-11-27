@@ -7,12 +7,19 @@ import html
 import json
 import re
 import zlib
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import unquote
 from xml.etree import ElementTree as ET
 
 from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+
+
+_LAUNCH_MATRIX_EXPECTED = (
+    Path(__file__).resolve().parents[2]
+    / "tasks/v1/macos/files/drawio/launch_matrix_sync/expected/launch_matrix_sync.drawio"
+)
 
 
 def _resolve_local_path(raw_path: str, *, task: Any, run_dir: Any) -> Path:
@@ -57,7 +64,52 @@ def _decode_diagram_payload(diagram_el: ET.Element, *, compressed: bool) -> ET.E
     return ET.fromstring(xml_text)
 
 
-def extract_drawio_semantics(raw_xml: str) -> dict[str, Any]:
+def _normalize_layout_number(raw_value: str) -> str:
+    """Compare decimal spellings exactly, without float rounding or defaults."""
+    value = raw_value.strip()
+    if not re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", value):
+        return value
+    try:
+        number = Decimal(value)
+    except InvalidOperation:
+        return value
+    if number.is_zero():
+        return "0"
+    sign, digits, exponent = number.as_tuple()
+    coefficient = list(digits)
+    while coefficient[-1] == 0:
+        coefficient.pop()
+        exponent += 1
+    return f"{'-' if sign else ''}{''.join(str(digit) for digit in coefficient)}e{exponent}"
+
+
+def _normalize_style(raw_style: str) -> dict[str, Any]:
+    named_styles: list[str] = []
+    values: dict[str, str] = {}
+    for token in raw_style.split(";"):
+        token = token.strip()
+        if not token:
+            continue
+        if "=" not in token:
+            # Named styles may inherit in order; only explicit key order is immaterial.
+            named_styles.append(token)
+            continue
+        key, value = token.split("=", 1)
+        values[key.strip()] = _normalize_layout_number(value)
+    return {"named_styles": named_styles, "values": values}
+
+
+def _normalize_geometry(element: ET.Element) -> dict[str, Any]:
+    return {
+        "tag": element.tag,
+        "attributes": {
+            key: _normalize_layout_number(value) for key, value in element.attrib.items()
+        },
+        "children": [_normalize_geometry(child) for child in element],
+    }
+
+
+def extract_drawio_semantics(raw_xml: str, *, include_layout: bool = False) -> dict[str, Any]:
     root = ET.fromstring(raw_xml)
     compressed = str(root.attrib.get("compressed", "true")).strip().lower() == "true"
 
@@ -65,14 +117,38 @@ def extract_drawio_semantics(raw_xml: str) -> dict[str, Any]:
     for diagram_el in root.findall("diagram"):
         graph_root = _decode_diagram_payload(diagram_el, compressed=compressed)
         cells: dict[str, dict[str, Any]] = {}
+        shape_ids: list[str] = []
+        layout_cells: dict[str, dict[str, Any]] = {}
 
         root_el = graph_root.find("root")
-        for cell_el in root_el.findall("mxCell") if root_el is not None else []:
-            cell_id = str(cell_el.attrib.get("id") or "").strip()
+        for entry in list(root_el) if root_el is not None else []:
+            if entry.tag == "mxCell":
+                cell_el = entry
+                cell_id = str(cell_el.attrib.get("id") or "").strip()
+                raw_value = cell_el.attrib.get("value")
+            else:
+                # mxCellCodec moves the ID onto a user-object wrapper and
+                # stores its display text in the wrapper's label attribute.
+                cell_el = entry.find("mxCell")
+                if cell_el is None:
+                    continue
+                cell_id = str(entry.attrib.get("id") or "").strip()
+                raw_value = entry.attrib.get("label")
+
+            if any(str(cell_el.attrib.get(kind) or "").strip() == "1" for kind in ("vertex", "edge")):
+                shape_ids.append(cell_id)
+            if include_layout and cell_id:
+                # Include the root/layer cells: changing an ancestor's parent or
+                # geometry can move the rectangles while their own x/y stay intact.
+                layout_cells[cell_id] = {
+                    "parent": str(cell_el.attrib.get("parent") or "").strip(),
+                    "style": _normalize_style(str(cell_el.attrib.get("style") or "")),
+                    "geometry": [_normalize_geometry(item) for item in cell_el.findall("mxGeometry")],
+                }
             if not cell_id or cell_id in {"0", "1"}:
                 continue
 
-            value = _normalize_value(cell_el.attrib.get("value"))
+            value = _normalize_value(raw_value)
             if not value:
                 continue
 
@@ -85,13 +161,15 @@ def extract_drawio_semantics(raw_xml: str) -> dict[str, Any]:
                 "style": str(cell_el.attrib.get("style") or "").strip(),
             }
 
-        pages.append(
-            {
-                "id": str(diagram_el.attrib.get("id") or "").strip(),
-                "name": str(diagram_el.attrib.get("name") or "").strip(),
-                "cells": cells,
-            }
-        )
+        page = {
+            "id": str(diagram_el.attrib.get("id") or "").strip(),
+            "name": str(diagram_el.attrib.get("name") or "").strip(),
+            "cells": cells,
+            "shape_ids": shape_ids,
+        }
+        if include_layout:
+            page["layout_cells"] = layout_cells
+        pages.append(page)
 
     return {"pages": pages}
 
@@ -140,9 +218,12 @@ class DrawIODiagramEvaluator(BaseEvaluator):
         except Exception as exc:
             return EvalResult(status=EvalStatus.ERROR, message=f"failed to decode draw.io file: {exc}")
 
+        # This task explicitly permits text replacement only. Keep other draw.io
+        # tasks' existing label/membership contract unchanged.
+        preserve_layout = expected_path.resolve() == _LAUNCH_MATRIX_EXPECTED
         try:
-            actual_semantics = extract_drawio_semantics(actual_xml)
-            expected_semantics = extract_drawio_semantics(expected_xml)
+            actual_semantics = extract_drawio_semantics(actual_xml, include_layout=preserve_layout)
+            expected_semantics = extract_drawio_semantics(expected_xml, include_layout=preserve_layout)
         except Exception as exc:
             return EvalResult(status=EvalStatus.ERROR, message=f"failed to parse draw.io file: {exc}")
 
@@ -173,6 +254,16 @@ class DrawIODiagramEvaluator(BaseEvaluator):
                     f"page name mismatch for {expected_page['id']}: expected {expected_page['name']!r}, observed {actual_page['name']!r}"
                 )
 
+            actual_shape_ids = actual_page["shape_ids"]
+            expected_shape_ids = expected_page["shape_ids"]
+            if sorted(actual_shape_ids) != sorted(expected_shape_ids):
+                failures.append(
+                    f"shape IDs mismatch on page {expected_page['name']!r}: "
+                    f"expected count {len(expected_shape_ids)}, observed {len(actual_shape_ids)}; "
+                    f"missing={sorted(set(expected_shape_ids) - set(actual_shape_ids))}, "
+                    f"unexpected={sorted(set(actual_shape_ids) - set(expected_shape_ids))}"
+                )
+
             actual_cells = actual_page["cells"]
             for cell_id, expected_cell in expected_page["cells"].items():
                 actual_cell = actual_cells.get(cell_id)
@@ -184,9 +275,24 @@ class DrawIODiagramEvaluator(BaseEvaluator):
                         f"cell {cell_id} mismatch on page {expected_page['name']}: expected {expected_cell['value']!r}, observed {actual_cell['value']!r}"
                     )
 
+            if preserve_layout:
+                actual_layout = actual_page["layout_cells"]
+                for cell_id, expected_cell in expected_page["layout_cells"].items():
+                    actual_cell = actual_layout.get(cell_id)
+                    if actual_cell is None:
+                        failures.append(f"missing layout cell {cell_id} on page {expected_page['name']}")
+                        continue
+                    for field in ("parent", "style", "geometry"):
+                        if actual_cell[field] != expected_cell[field]:
+                            failures.append(
+                                f"cell {cell_id} {field} mismatch on page {expected_page['name']}: "
+                                f"expected {expected_cell[field]!r}, observed {actual_cell[field]!r}"
+                            )
+
         status = EvalStatus.PASS if not failures else EvalStatus.FAIL
         message = (
-            "draw.io file matches expected labels"
+            ("draw.io file matches expected labels and preserved layout" if preserve_layout
+             else "draw.io file matches expected labels")
             if not failures
             else "; ".join(failures)
         )

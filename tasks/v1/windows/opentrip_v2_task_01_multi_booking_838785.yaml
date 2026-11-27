@@ -4,7 +4,7 @@ platform: windows
 instruction: Create five confirmed bookings in OpenTrip, ending with all five visible in the user’s booking
   list. The first booking is a flight from Shanghai (SHA) to Sanya (SYX) for 2026-06-12 on the Eastern
   Star ES6821 flight, signed in with pre-filled credentials, with the traveler set to Maya Chen · Passport,
-  the cabin set to Economy, the payment method set to Bank Card, and the Note field containing exactly
+  the cabin set to Business, the payment method set to Bank Card, and the Note field containing exactly
   V2sanyaSalesA. The second booking is a hotel in Beijing at the Beijing Jade Pavilion Boutique Stay,
   with the Deluxe Twin Room selected, the payment method set to WeChat Pay, and the Note field containing
   exactly V2BeijingTwinA. The third booking is a flight from Shanghai (PVG) to Chongqing (CKG) for 2026-06-01
@@ -54,7 +54,7 @@ evaluation:
       flight_from: SHA
       flight_to: SYX
       flight_date: '2026-06-12'
-      cabin: economy  # the instruction asks for Economy (the source GUI steps chose Business)
+      cabin: business  # the instruction asks for Business (aligned with upstream main)
       traveler_id: traveler-maya
       traveler_name: Maya Chen
       traveler_document_type: Passport
