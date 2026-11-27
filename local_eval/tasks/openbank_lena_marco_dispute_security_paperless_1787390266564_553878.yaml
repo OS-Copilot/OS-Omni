@@ -1,0 +1,347 @@
+task_id: android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878
+platform: android
+instruction: '1. 在 Accounts 页面向下滑动，直到“Transfer money ›”快捷操作可见，以便后续创建 Lena Wu 和 Marco
+  Li 收款人。
+
+  2. 点击“Transfer money ›”。
+
+  3. 在 Transfers 页面向上滑动，直到“Add recipient”表单可见，以便后续创建 Lena Wu 收款人。
+
+  4. 点击“Name”字段。
+
+  5. 在该字段输入“Lena Wu”。
+
+  6. 点击“Account number”字段。
+
+  7. 在该字段输入“2946081375”。
+
+  8. 点击“Routing number”字段。
+
+  9. 在该字段输入“121000358”。
+
+  10. 点击“Bank”字段。
+
+  11. 在该字段输入“OpenBank”。
+
+  12. 点击“Nickname”字段。
+
+  13. 在该字段输入“Design split”。
+
+  14. 点击“Save recipient”。
+
+  15. 点击“Name”字段。
+
+  16. 在该字段输入“Marco Li”。
+
+  17. 点击“Account number”字段。
+
+  18. 在该字段输入“5831974062”。
+
+  19. 点击“Routing number”字段。
+
+  20. 在该字段输入“122105155”。
+
+  21. 点击“Bank”字段。
+
+  22. 在该字段输入“OpenBank”。
+
+  23. 点击“Nickname”字段。
+
+  24. 在该字段输入“Studio rent”。
+
+  25. 点击“Save recipient”。
+
+  26. 在 Transfers 页面向下滑动，直到“New Transfer”表单可见，以便后续提交 Lena Wu 的 Design split 转账。
+
+  27. 点击“To”选择控件。
+
+  28. 点击“Lena Wu”。
+
+  29. 在“From”下拉中选择“Everyday Checking ••••2381”。
+
+  30. 点击“Memo”字段。
+
+  31. 在该字段输入“Design split”。
+
+  32. 点击“Amount”字段。
+
+  33. 在该字段输入“4.20”。
+
+  34. 点击“Date”控件。
+
+  35. 在日期控件中选择“2026-06-01”。
+
+  36. 点击“Submit transfer”。
+
+  37. 点击“To”选择控件。
+
+  38. 点击“Marco Li”。
+
+  39. 点击“Memo”字段。
+
+  40. 在该字段输入“Studio rent”。
+
+  41. 点击“Amount”字段。
+
+  42. 在该字段输入“1.25”。
+
+  43. 点击“Submit transfer”。
+
+  44. 点击底部导航栏的“Activity”。
+
+  45. 点击“Search merchant or description”字段。
+
+  46. 在该字段输入“Studio rent”。
+
+  47. 点击“Category”筛选控件。
+
+  48. 点击“Transfer”。
+
+  49. 点击“Status”筛选控件。
+
+  50. 点击“Posted”。
+
+  51. 点击“Time”筛选控件。
+
+  52. 点击“Last 30 days”。
+
+  53. 点击“Search”。
+
+  54. 点击搜索结果中“Transfer to Marco Li”条目右侧的“Details”。
+
+  55. 点击争议表单的“Details”文本框。
+
+  56. 在该字段输入“Unknown rent debit”。
+
+  57. 点击“Submit dispute”，提交 Marco Li 的 Studio rent 争议。
+
+  58. 点击底部导航栏的“Security”。
+
+  59. 在 Security 页面向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒渠道。
+
+  60. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+  61. 点击该提醒表单底部的“Save”。
+
+  62. 在 Security 页面向下滑动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+  63. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+  64. 点击该提醒表单底部的“Save”。
+
+  65. 在 Security 页面向上滑动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+  66. 点击“Upcoming bill”行的“Mark Read”。
+
+  67. 在 Security 页面向下滑动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+  68. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+  69. 点击该提醒表单底部的“Save”。
+
+  70. 在 Security 页面向上滑动，直到“Card controls”区域可见，以便后续设置 OpenBank Rewards Card 为锁定状态。
+
+  71. 点击处于“Unlocked”状态的“OpenBank Rewards Card”行内“Lock”，将该卡设置为锁定状态。
+
+  72. 点击底部导航栏的“Statements”。
+
+  73. 点击“Rainy Day Savings •••9140”。
+
+  74. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+  75. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openbank
+    snapshot_name: sn2
+    source_initializer: evaluators.cua_review.initializers.android.android_openbank_lena_marco_dispute_security_paperless_1787390266564_553878:AndroidOpenBankLenaMarcoDisputeSecurityPaperless1787390266564553878Initializer
+evaluation:
+  evaluator_id: local_eval.openbank_evaluator:InstalledOpenBankEvaluator
+  params:
+    expected_ruleset_sha256: 88111bf7037c334a3d670ea89f808fd8a0648c9ed61de47d80e63a1afa1d3e3d
+    source_state_mode: fresh_clone_verified
+    source_evaluator: evaluators.android.openbank_lena_marco_dispute_security_paperless_1787390266564_553878:AndroidOpenBankLenaMarcoDisputeSecurityPaperless1787390266564553878Evaluator
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  app: OpenBank
+  app_name: OpenBank
+  app_bundle_id: com.killt.openbank
+  required_packages_any:
+  - com.killt.openbank
+  android_vm_profile: quail2
+  avd_name: quail2
+  snapshot_name: sn2
+  source_state_mode: fresh_clone_verified
+  instruction_sha256: 4d179eaea6d1110b625f9c1834d7a7d3da7545d142c158a3fd353661008eb70f
+  evaluator_ruleset_required: true
+  human_eval_only_compatible: true
+  evaluator_ruleset_sha256: 88111bf7037c334a3d670ea89f808fd8a0648c9ed61de47d80e63a1afa1d3e3d
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openbank/Android/android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 47d57ef7502d0b875b522a0a3dc0985182f66a2876f41082dbe51399b04d3e0e
+    source_instruction: '1. 在 Accounts 页面向下滑动，直到“Transfer money ›”快捷操作可见，以便后续创建 Lena
+      Wu 和 Marco Li 收款人。
+
+      2. 点击“Transfer money ›”。
+
+      3. 在 Transfers 页面向上滑动，直到“Add recipient”表单可见，以便后续创建 Lena Wu 收款人。
+
+      4. 点击“Name”字段。
+
+      5. 在该字段输入“Lena Wu”。
+
+      6. 点击“Account number”字段。
+
+      7. 在该字段输入“2946081375”。
+
+      8. 点击“Routing number”字段。
+
+      9. 在该字段输入“121000358”。
+
+      10. 点击“Bank”字段。
+
+      11. 在该字段输入“OpenBank”。
+
+      12. 点击“Nickname”字段。
+
+      13. 在该字段输入“Design split”。
+
+      14. 点击“Save recipient”。
+
+      15. 点击“Name”字段。
+
+      16. 在该字段输入“Marco Li”。
+
+      17. 点击“Account number”字段。
+
+      18. 在该字段输入“5831974062”。
+
+      19. 点击“Routing number”字段。
+
+      20. 在该字段输入“122105155”。
+
+      21. 点击“Bank”字段。
+
+      22. 在该字段输入“OpenBank”。
+
+      23. 点击“Nickname”字段。
+
+      24. 在该字段输入“Studio rent”。
+
+      25. 点击“Save recipient”。
+
+      26. 在 Transfers 页面向下滑动，直到“New Transfer”表单可见，以便后续提交 Lena Wu 的 Design split 转账。
+
+      27. 点击“To”选择控件。
+
+      28. 点击“Lena Wu”。
+
+      29. 在“From”下拉中选择“Everyday Checking ••••2381”。
+
+      30. 点击“Memo”字段。
+
+      31. 在该字段输入“Design split”。
+
+      32. 点击“Amount”字段。
+
+      33. 在该字段输入“4.20”。
+
+      34. 点击“Date”控件。
+
+      35. 在日期控件中选择“2026-06-01”。
+
+      36. 点击“Submit transfer”。
+
+      37. 点击“To”选择控件。
+
+      38. 点击“Marco Li”。
+
+      39. 点击“Memo”字段。
+
+      40. 在该字段输入“Studio rent”。
+
+      41. 点击“Amount”字段。
+
+      42. 在该字段输入“1.25”。
+
+      43. 点击“Submit transfer”。
+
+      44. 点击底部导航栏的“Activity”。
+
+      45. 点击“Search merchant or description”字段。
+
+      46. 在该字段输入“Studio rent”。
+
+      47. 点击“Category”筛选控件。
+
+      48. 点击“Transfer”。
+
+      49. 点击“Status”筛选控件。
+
+      50. 点击“Posted”。
+
+      51. 点击“Time”筛选控件。
+
+      52. 点击“Last 30 days”。
+
+      53. 点击“Search”。
+
+      54. 点击搜索结果中“Transfer to Marco Li”条目右侧的“Details”。
+
+      55. 点击争议表单的“Details”文本框。
+
+      56. 在该字段输入“Unknown rent debit”。
+
+      57. 点击“Submit dispute”，提交 Marco Li 的 Studio rent 争议。
+
+      58. 点击底部导航栏的“Security”。
+
+      59. 在 Security 页面向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒渠道。
+
+      60. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+      61. 点击该提醒表单底部的“Save”。
+
+      62. 在 Security 页面向下滑动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+      63. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+      64. 点击该提醒表单底部的“Save”。
+
+      65. 在 Security 页面向上滑动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+      66. 点击“Upcoming bill”行的“Mark Read”。
+
+      67. 在 Security 页面向下滑动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+      68. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+      69. 点击该提醒表单底部的“Save”。
+
+      70. 在 Security 页面向上滑动，直到“Card controls”区域可见，以便后续设置 OpenBank Rewards Card 为锁定状态。
+
+      71. 点击处于“Unlocked”状态的“OpenBank Rewards Card”行内“Lock”，将该卡设置为锁定状态。
+
+      72. 点击底部导航栏的“Statements”。
+
+      73. 点击“Rainy Day Savings •••9140”。
+
+      74. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+      75. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。'
+    release_path: benchmark/tasks/openbank/Android/android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878
+    original_evaluator_id: evaluators.android.android_openbank_lena_marco_dispute_security_paperless_1787390266564_553878:AndroidOpenBankLenaMarcoDisputeSecurityPaperless1787390266564553878Evaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.android_openbank_lena_marco_dispute_security_paperless_1787390266564_553878:AndroidOpenBankLenaMarcoDisputeSecurityPaperless1787390266564553878Initializer
+  local_repair:
+    source_task: tasks/v1/android/openbank_lena_marco_dispute_security_paperless_1787390266564_553878.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

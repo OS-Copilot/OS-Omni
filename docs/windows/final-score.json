@@ -1,0 +1,590 @@
+{
+  "valid_completed": 48,
+  "pass": 0,
+  "model_fail": 48,
+  "model": "deepseek_flash",
+  "reasoning_effort": "none",
+  "history_window": 3,
+  "action_space": "code_adapter",
+  "observation": "screenshot_only",
+  "snapshot": "author-windows-baseline-ready",
+  "task_versions": "39 original task ideas; 9 author reconstructed tasks (4 images, 4 routes, 1 driver logout)",
+  "tasks": [
+    {
+      "task_id": "windows.actual_budget.add_transactions",
+      "verdict": "FAIL",
+      "steps": 99,
+      "max_steps": 100,
+      "report": "runs/windows.actual_budget.add_transactions/attempt-001/result.json",
+      "report_sha256": "2551e89b23c36a826ddba76cea924238b260e6917a82f7eab4d4361d029cd521",
+      "termination": {
+        "status": "FAIL",
+        "message": "stdout contains failure marker. Output: EVAL_RESULT:FAIL C:\\Users\\User\\Documents\\Actual\\My-Finances-b6ac020\\db.sqlite: missing account: Ops Checking; missing account: Emergency Buffer; missing account: Travel Envelope; missing account: Tax Reserve; missing account: Audit Escrow; missing account: Vendor Holdback; missing account: Compliance Reserve; missing account: Equipment Lease | C:\\Users\\User\\Documents\\Actual\\My-Finances-b6ac020\\cache.sqlite: unsupported Actual schema | C:\\Users\\User\\AppData\\Roaming\\actual\\actual-server\\user-files\\group-a90e7147-c689-413e-8616-75b50402f0d2.sqlite: unsupported Actual schema"
+      }
+    },
+    {
+      "task_id": "windows.blender.robot_tower_layout_scene",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.blender.robot_tower_layout_scene/attempt-001/result.json",
+      "report_sha256": "a88a45d312ed9204ad53fda0b2307e50ca17f5b146196a4f224a2a1907a4f59c",
+      "termination": {
+        "status": "FAIL",
+        "message": "Expected exit code 0, got 1. Output: EVAL_RESULT:FAIL primary render resolution_x expected 1800 got 1920"
+      }
+    },
+    {
+      "task_id": "windows.calc.crosssheet_chart",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.calc.crosssheet_chart/attempt-003/result.json",
+      "report_sha256": "a47c0d277ec3f4915cd855c686ca1487a56e6e67f54af519f3ccdea19cc852d5",
+      "termination": {
+        "status": "FAIL",
+        "message": "Expected exit code 0, got 1. Output: EVAL_RESULT:FAIL summary_sort_wrong got=['Delta', 'Alpha', 'Epsilon', 'Gamma', 'Beta'] expected=['Alpha', 'Gamma', 'Delta', 'Epsilon', 'Beta']"
+      }
+    },
+    {
+      "task_id": "windows.calendar.create_recurring_event",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.calendar.create_recurring_event/attempt-001/result.json",
+      "report_sha256": "97881d02378c5b374f612175fda17f2a90b778e128cb21bcd04d38ae7a0f870c",
+      "termination": {
+        "status": "FAIL",
+        "message": "Expected exit code 0, got 1. Output: EVAL_RESULT:FAIL release calendar details missing: Weekly Release Triage:not_found; QA Sign-off:not_found; Launch Readiness Review:not_found"
+      }
+    },
+    {
+      "task_id": "windows.cross_app.openshop_calendar_checkout_coffee_followup_hard",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.cross_app.openshop_calendar_checkout_coffee_followup_hard/attempt-001/result.json",
+      "report_sha256": "f232b44075e22d921de01835b0a420df4ddaae343908779abd1dcac0f30edcdd",
+      "termination": {
+        "status": "FAIL",
+        "message": "stdout contains failure marker. Output: EVAL_RESULT:FAIL expected 1 order, got [{'id': 'TB1791773382780', 'createdAt': '2026-10-12T02:49:42.780Z', 'address': {'id': 'addr-office', 'label': 'Office', 'receiver': 'Lucas Lin', 'phone': '138****2211', 'fullAddress': 'Floor 7, Tower A, 88 Boyun Road, Zhangjiang, Pudong, Shanghai'}, 'payment': {'id': 'wechat', 'label': 'WeChat Pay', 'desc': 'Scan to pay'}, 'note': 'Leave it at the front desk', 'items': [{'id': 'cart-1791773206101', 'quantity': 2, 'selectedSpec': '20 sachets', 'unitPrice': 78, 'lineTotal': 156, 'product': {'id': 'p1005', 'title': 'Mountain Isle Pour-Over Coffee 20 Pack', 'category': 'Grocery', 'image': '/assets/products/product-051.png', 'price': 78, 'originalPrice': 89, 'sales': 3378, 'rating': 4.8, 'badge': 'New User Deal', 'accent': 'coffee', 'summary': 'Medium-dark roast with a nutty finish, ideal for office coffee breaks.', 'detail': 'A convenient pour-over pack for fast morning coffee without a machine.', 'specs': ['20 sachets', '10 sachets', '40 sachets', '60 sachets'], 'optionPrices': {'20 sachets': 78, '10 sachets': 42.38, '40 sachets': 143.55, '60 sachets': 205.1}, 'imageVariants': ['/assets/products/product-051.png', '/assets/products/product-052.png...<truncated>"
+      }
+    },
+    {
+      "task_id": "windows.deltachat.atlas_access_audit_snap1",
+      "verdict": "FAIL",
+      "steps": 43,
+      "max_steps": 180,
+      "report": "runs/windows.deltachat.atlas_access_audit_snap1/attempt-002/result.json",
+      "report_sha256": "f827fe7b1af27f8751e413f296c471c44e2b460c94536da5fd23334d28563f8e",
+      "termination": {
+        "status": "FAIL",
+        "message": "Missing exact message in Saved Messages: Owner Maya Friday; Missing exact message in Saved Messages: Keys before color; Missing exact message in Saved Messages: Review scope locked; Missing exact message in Saved Messages: Atlas Access; Missing exact message in Saved Messages: Keyboard pass first; Missing exact message in Saved Messages: Contrast pass next; Missing exact message in Saved Messages: Atlas Fixes; Missing exact message in Saved Messages: Release after review; Missing exact message in Saved Messages: Maya owns closure; Missing exact message in Saved Messages: Atlas matrix ready; Missing exact message in Saved Messages: Atlas matrix ready | final index; Missing exact message in Saved Messages: Keyboard proof filed; Missing exact message in Saved Messages: Contrast proof filed; Missing copied-source message in Saved Messages containing Train tickets and ending  | audit source; Missing copied-source message in Saved Messages containing Mockups posted and ending  | visual source; Missing copied-source message in Saved Messages containing Incidents are green and ending  | release gate"
+      }
+    },
+    {
+      "task_id": "windows.deltachat.harbor_migration_snap1",
+      "verdict": "FAIL",
+      "steps": 60,
+      "max_steps": 180,
+      "report": "runs/windows.deltachat.harbor_migration_snap1/attempt-001/result.json",
+      "report_sha256": "a0b22a0fbf2fddc6536a676510ccb6e38bf26f118ffd0db071738525310f5228",
+      "termination": {
+        "status": "FAIL",
+        "message": "Missing exact message in Saved Messages: Harbor Control; Missing exact message in Saved Messages: Freeze at 08:30; Missing exact message in Saved Messages: Owner is Riley; Missing exact message in Saved Messages: Database copy first; Missing exact message in Saved Messages: API switch second; Missing exact message in Saved Messages: Freeze at 08:30 | harbor record; Missing exact message in Saved Messages: Harbor Review; Missing exact message in Saved Messages: Both gates reviewed; Missing exact message in Saved Messages: Migration brief done; Missing exact message in Saved Messages: Client notice queued; Missing copied-source message in Saved Messages containing Incidents are green and ending  | backend proof; Missing copied-source message in Saved Messages containing backend proof and ending  | review copy; Missing copied-source message in Saved Messages containing Train tickets and ending  | frontend proof"
+      }
+    },
+    {
+      "task_id": "windows.deltachat.nova_event_snap1",
+      "verdict": "FAIL",
+      "steps": 85,
+      "max_steps": 180,
+      "report": "runs/windows.deltachat.nova_event_snap1/attempt-001/result.json",
+      "report_sha256": "024179533a5ac9b70eed113dc1beda8e2851a094d24192615dcb8c49acbeb491",
+      "termination": {
+        "status": "FAIL",
+        "message": "Missing exact message in Saved Messages: Event opens 18:00; Missing exact message in Saved Messages: Doors check at 17; Missing exact message in Saved Messages: Owner is Morgan; Missing exact message in Saved Messages: Nova Command; Missing exact message in Saved Messages: Event opens 18:00 | command time; Missing exact message in Saved Messages: Mobile proof linked; Missing exact message in Saved Messages: Venue gate linked; Missing exact message in Saved Messages: Guest design linked; Missing exact message in Saved Messages: Nova event cleared; Missing copied-source message in Saved Messages containing Train tickets and ending  | mobile proof; Missing copied-source message in Saved Messages containing Incidents are green and ending  | venue gate; Missing copied-source message in Saved Messages containing Mockups posted and ending  | guest design"
+      }
+    },
+    {
+      "task_id": "windows.drawio.ellipse_vertical_divider_styled",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.drawio.ellipse_vertical_divider_styled/attempt-001/result.json",
+      "report_sha256": "1ae263995e56be5c7381871adca5ce2a817cc428f1b2c5f151860862b89cd7df",
+      "termination": {
+        "status": "FAIL",
+        "message": "stdout contains failure marker. Output: EVAL_RESULT:FAIL expected exactly one shape, found 0"
+      }
+    },
+    {
+      "task_id": "windows.gimp.apple_and_orange_focus_blur_bw_upside_down",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.gimp.apple_and_orange_focus_blur_bw_upside_down/attempt-001/result.json",
+      "report_sha256": "f83a3eb6baaef9b5c22afe6419907b5147dd8a2c5fcaf7e4117cd764b3a55948",
+      "termination": {
+        "status": "FAIL",
+        "message": "stdout contains failure marker. Output: EVAL_RESULT:FAIL export file was not created"
+      }
+    },
+    {
+      "task_id": "windows.impress.animation_transition",
+      "verdict": "FAIL",
+      "steps": 98,
+      "max_steps": 100,
+      "report": "runs/windows.impress.animation_transition/attempt-001/result.json",
+      "report_sha256": "fdf7a79abc13e31d56e8940f07f0272c55376c6ea1e601e5fee409961ac58d5a",
+      "termination": {
+        "status": "FAIL",
+        "message": "Expected exit code 0, got 1. Output: Traceback (most recent call last):\n  File \"<stdin>\", line 10, in <module>\n  File \"C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\api.py\", line 31, in Presentation\n    presentation_part = Package.open(pptx).main_document_part\n                        ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\opc\\package.py\", line 82, in open\n    return cls(pkg_file)._load()\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\opc\\package.py\", line 160, in _load\n    pkg_xml_rels, parts = _PackageLoader.load(self._pkg_file, cast(\"Package\", self))\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\opc\\package.py\", line 190, in load\n    return cls(pkg_file, package)._load()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\pptx\\opc\\package.py\", line 194, in _load\n    parts, xml_rels = self._parts, self._xml_rels\n                      ^^^^^^^^^^^\n  File \"C:\\Users\\...<truncated>"
+      }
+    },
+    {
+      "task_id": "windows.notepad.append_text",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.notepad.append_text/attempt-002/result.json",
+      "report_sha256": "a68007ecfdfc02bcce2b46cc64d4b84530f7dd96b724ccca68934a230be49e7f",
+      "termination": {
+        "status": "FAIL",
+        "message": "supplemental file missing or unreadable: C:\\Users\\User\\Documents\\helloworld_hard_plus\\windows_notepad_append_text\\hard_plus_handoff.tsv (WindowsRuntimeError: HTTP 404 POST http://192.168.36.132:5000/file: {\"error\":\"file not found\"}\n)"
+      }
+    },
+    {
+      "task_id": "windows.openbank.task01_551454",
+      "verdict": "FAIL",
+      "steps": 99,
+      "max_steps": 180,
+      "report": "runs/windows.openbank.task01_551454/attempt-002/result.json",
+      "report_sha256": "32c2b3c9959add35c87abe8703fd940253f552d96294011de5262d07eddd5500",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenBank task01 evaluation failed: openbank.task01.transfer_elliot, openbank.task01.transfer_nora, openbank.task01.transfer_priya, openbank.task01.bill_northstar, openbank.task01.bill_rewards, openbank.task01.dispute_ace, openbank.task01.dispute_caffe, openbank.task01.business_order"
+      }
+    },
+    {
+      "task_id": "windows.openbank.task02_056264",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openbank.task02_056264/attempt-001/result.json",
+      "report_sha256": "054431dd0144f60ac7078dae773ce57ae3f8c9aaa36b934e1a5c636c10a5f1c5",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenBank task02 evaluation failed: openbank.task02.card.1, openbank.task02.alert_setting.2, openbank.task02.alert_setting.3, openbank.task02.alert_setting.4, openbank.task02.paperless.1, openbank.task02.paperless.2, openbank.task02.paperless.3, openbank.task02.statement_download.1, openbank.task02.statement_download.2, openbank.task02.transfer, openbank.task02.bill_payment, openbank.task02.business_order"
+      }
+    },
+    {
+      "task_id": "windows.openbank.task03_702660",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openbank.task03_702660/attempt-001/result.json",
+      "report_sha256": "dafa5affd1d20e507d56245b916aedf813996e456b78816e48d4c27e2ebcea52",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenBank task03 evaluation failed: openbank.task03.dispute_elm, openbank.task03.dispute_rei, openbank.task03.dispute_parking, openbank.task03.dispute_cloudbox, openbank.task03.bill_northstar_65, openbank.task03.bill_rewards_350, openbank.task03.bill_northstar_7, openbank.task03.recipient_caleb, openbank.task03.transfer_caleb, openbank.task03.business_order"
+      }
+    },
+    {
+      "task_id": "windows.openbank.task04_140186",
+      "verdict": "FAIL",
+      "steps": 44,
+      "max_steps": 180,
+      "report": "runs/windows.openbank.task04_140186/attempt-001/result.json",
+      "report_sha256": "43131b78b5cb8fc94d6e609194a5dd8bfc5987bf41b4e02ed13c45a9263d680b",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenBank task04 evaluation failed: openbank.task04.statement_download.1, openbank.task04.statement_download.2, openbank.task04.statement_download.3, openbank.task04.paperless.savings, openbank.task04.recipient.1, openbank.task04.recipient.2, openbank.task04.transfer.1, openbank.task04.transfer.2, openbank.task04.transfer.3, openbank.task04.transfer.4, openbank.task04.alert.1, openbank.task04.alert.2, openbank.task04.card.credit, openbank.task04.alert_setting.1, openbank.task04.alert_setting.2, openbank.task04.alert_setting.3, openbank.task04.alert_setting.4, openbank.task04.business_order"
+      }
+    },
+    {
+      "task_id": "windows.opendriver.driver_onboarding_trip_support_snapshot1",
+      "verdict": "FAIL",
+      "steps": 38,
+      "max_steps": 180,
+      "report": "runs/windows.opendriver.driver_onboarding_trip_support_snapshot1/attempt-001/result.json",
+      "report_sha256": "8fb0f812d011d269a7b9c3312615d23d13b145e78c0567665f47f6ec378276d1",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenDriver final evidence failed: new_driver_profile, driver_document_1, driver_document_2, driver_document_3, three_required_documents_submitted, driver_to_rider_rating, completed_trip_seed, new_sample_request_rejected, report_rider_support_ticket_new, report_rider_category_exact, driver_support_reply_1, driver_support_reply_2, final_support_page_visible"
+      }
+    },
+    {
+      "task_id": "windows.opendriver.driver_ops_snap1",
+      "verdict": "FAIL",
+      "steps": 36,
+      "max_steps": 180,
+      "report": "runs/windows.opendriver.driver_ops_snap1/attempt-001/result.json",
+      "report_sha256": "796e202ca18d793ec96ace391ffd6aff3dd4ee0c8b2960904772b448544eaca6",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenDriver evaluation failed: account, profile, document, payout"
+      }
+    },
+    {
+      "task_id": "windows.opendriver.rider_account_support_logout",
+      "verdict": "FAIL",
+      "steps": 122,
+      "max_steps": 180,
+      "report": "runs/windows.opendriver.rider_account_support_logout/attempt-002/result.json",
+      "report_sha256": "78e2fca41e922c8adc38741e4e252177eaa9b2912bc358a7894440a60f53417d",
+      "termination": {
+        "status": "PASS",
+        "message": "OpenDriver logout evaluation failed: support_messages"
+      }
+    },
+    {
+      "task_id": "windows.opendriver.rider_account_support_logout_snapshot2",
+      "verdict": "FAIL",
+      "steps": 80,
+      "max_steps": 180,
+      "report": "runs/windows.opendriver.rider_account_support_logout_snapshot2/attempt-001/result.json",
+      "report_sha256": "8b4df3821942daf2edc4ef4da99b656afb7228b9583d0fcf9c4cc90885fdf88c",
+      "termination": {
+        "status": "PASS",
+        "message": "OpenDriver logout evaluation failed: support_messages"
+      }
+    },
+    {
+      "task_id": "windows.openfood.customer_cart_cross_role_audit",
+      "verdict": "FAIL",
+      "steps": 50,
+      "max_steps": 180,
+      "report": "runs/windows.openfood.customer_cart_cross_role_audit/attempt-002/audited-result.json",
+      "report_sha256": "d60ee64a1f1f066dfbc2e7b8e5a52e71b1ddc633621507f58c3a8fe4d19af762",
+      "termination": {
+        "status": "FAIL",
+        "message": "Wrong selected restaurant: expected Dumpling Room No.20 San Jose CA; selected r48 is Dumpling Room No.20 Warren MI"
+      }
+    },
+    {
+      "task_id": "windows.openfood.multirole_orders_support_cart_snapshot1",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openfood.multirole_orders_support_cart_snapshot1/attempt-002/result.json",
+      "report_sha256": "fcfbd9cb3d62c98d7fc5a69276fb1eca953060f682d9d84ad59f83e08229f1bb",
+      "termination": {
+        "status": "FAIL",
+        "message": "createdOrders contained 0 orders, expected exactly 2; menuAvailability['m3'] was None, expected False; restaurantOpen['r4'] was None, expected False; found 0 exact matching support tickets, expected 1; final selectedRestaurantId was 'r54', expected 'r2'; final cart was {}, expected {'m11': 2, 'm12': 2}; final filters were {'q': 'dum', 'cuisine': 'Chinese', 'sort': 'rating'}, expected {'q': 'banh mi', 'cuisine': 'Vietnamese', 'sort': 'fee'}; Snapshot 1 seed did not expose courier route D-346"
+      }
+    },
+    {
+      "task_id": "windows.openfood.place_order_from_existing_restaurants",
+      "verdict": "FAIL",
+      "steps": 100,
+      "max_steps": 100,
+      "report": "runs/windows.openfood.place_order_from_existing_restaurants/attempt-001/result.json",
+      "report_sha256": "55b2d74faabca4b5c614b1ceeb80eb43cd8d9911ab49624a35b6e22cb0f3b544",
+      "termination": {
+        "status": "FAIL",
+        "message": "stdout contains failure marker. Output: {\n  \"target\": \"OpenFood localStorage order placed by Lucas Lin in Snapshot_2\",\n  \"storage_copy_dir\": \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\os_omni_openfood_leveldb_eval\",\n  \"checks\": [\n    {\n      \"name\": \"marker_timestamp_optional\",\n      \"expected\": \"present during full execution; optional during manual_eval\",\n      \"actual\": true,\n      \"marker\": \"2026-10-12T06:22:40.4933416Z\"\n    },\n    {\n      \"name\": \"openfood_leveldb_copy_found\",\n      \"expected\": \"copied .log or .ldb files from %APPDATA%\\\\openfood\\\\Local Storage\\\\leveldb\",\n      \"actual\": 1,\n      \"files\": [\n        \"000003.log\"\n      ]\n    },\n    {\n      \"name\": \"openfood_static_state_found\",\n      \"expected\": true,\n      \"actual\": true\n    },\n    {\n      \"name\": \"visited_required_restaurants_in_order\",\n      \"expected\": [\n        \"r7 / Station Riverwalk Deli No. 33 Aurora IL\",\n        \"r8 / Fox Valley Grill Union Aurora IL\",\n        \"r1 / Dumpling Room No. 20 San Jose CA\",\n        \"r2 / Santana Row Banh Mi Market No. 12 San Jose CA\",\n        \"r18 / Harbor Space City Viet-Cajun Houston TX\"\n      ],\n      \"actual\": [\n        \"r7\"\n      ],\n      \"pass\": false\n    },\n    {\n      \"name\": \"cart_or_order_activity_for_each_requ...<truncated>"
+      }
+    },
+    {
+      "task_id": "windows.openfood.two_orders_support_courier_snapshot1",
+      "verdict": "FAIL",
+      "steps": 141,
+      "max_steps": 180,
+      "report": "runs/windows.openfood.two_orders_support_courier_snapshot1/attempt-002/result.json",
+      "report_sha256": "4582c112282b3c0ad72f2597c9c98dff7bddf8a083dc056d3b6ffc5465d813fc",
+      "termination": {
+        "status": "FAIL",
+        "message": "created_order_count: actual=0, expected=2; merchant_menu_availability: actual=None, expected=False; support_ticket: actual={'count': 0, 'matches': []}, expected={'subject': 'Soup quality', 'description': 'Soup was cold', 'status': 'OPEN', 'customer_id': 'lucas', 'count': 1}; courier_route_seed_present: actual=[], expected={'id': 'D-333', 'restaurant': 'Station Queens Dumpling No. 33 New York City NY'}; final_selected_restaurant: actual='r1', expected=''; final_filters: actual={'q': 'banh', 'cuisine': 'Vietnamese', 'sort': 'eta'}, expected={'q': 'dumpling', 'cuisine': 'Chinese', 'sort': 'rating'}"
+      }
+    },
+    {
+      "task_id": "windows.opennavigation.googleplex_drive_snapshot1_103013",
+      "verdict": "FAIL",
+      "steps": 81,
+      "max_steps": 180,
+      "report": "runs/windows.opennavigation.googleplex_drive_snapshot1_103013/attempt-002/result.json",
+      "report_sha256": "49651a7dc08623bc6cfa122eaa83d5f8037aff8757b6879ce11a51a34a4d8d6f",
+      "termination": {
+        "status": "FAIL",
+        "message": "Exact ordered routes or final planner differ"
+      }
+    },
+    {
+      "task_id": "windows.opennavigation.meta_googleplex_meta_stanford_other_time_snapshot1_098133",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opennavigation.meta_googleplex_meta_stanford_other_time_snapshot1_098133/attempt-002/result.json",
+      "report_sha256": "38208f7aad440024ce0a7105e6c1c641882dca7a3e84b6ed90fb1a9b61b9ef53",
+      "termination": {
+        "status": "FAIL",
+        "message": "Exact ordered routes or final planner differ"
+      }
+    },
+    {
+      "task_id": "windows.opennavigation.repaired_multistop_routes_snapshot1_069627",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opennavigation.repaired_multistop_routes_snapshot1_069627/attempt-002/result.json",
+      "report_sha256": "524001b214ccad926b77cbfd50fb4a121182a0c613acd650a0d1aeb6c768300d",
+      "termination": {
+        "status": "FAIL",
+        "message": "Exact ordered routes or final planner differ"
+      }
+    },
+    {
+      "task_id": "windows.opennavigation.stanford_meta_multistop_snapshot1_581746",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opennavigation.stanford_meta_multistop_snapshot1_581746/attempt-002/result.json",
+      "report_sha256": "7254360de43f53fa7953d622543aa0f5407647be88d9b01c8d1102d5ef2e5fb1",
+      "termination": {
+        "status": "FAIL",
+        "message": "Exact ordered routes or final planner differ"
+      }
+    },
+    {
+      "task_id": "windows.opennote.community_meal_three_notes_1788409691786_981937",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opennote.community_meal_three_notes_1788409691786_981937/attempt-003/result.json",
+      "report_sha256": "0e7268e382e041421a276932aa08f1eae723949ae6c374951d09387565f19b60",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenNote2 exact checks failed: login_identity_exact, bakery_save_exact, orange_note_exact, blue_note_exact, meal_plan_exact, picnic_engagement_exact, workflow_timeline_exact"
+      }
+    },
+    {
+      "task_id": "windows.opennote.forum_arrival_three_notes_1788412586968_101704",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opennote.forum_arrival_three_notes_1788412586968_101704/attempt-001/result.json",
+      "report_sha256": "3a2c964b98320091b90a1fb4ab0248dbe959441ce0363bf16ac74f13e18721d9",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenNote4 exact checks failed: login_identity_exact, profile_bio_exact, forum_arrival_note_exact, two_day_note_exact, group_session_note_and_final_ui_exact, old_street_engagement_exact, workflow_timeline_exact"
+      }
+    },
+    {
+      "task_id": "windows.opennote.live_music_visuals_three_notes_1788411372670_327795",
+      "verdict": "FAIL",
+      "steps": 79,
+      "max_steps": 180,
+      "report": "runs/windows.opennote.live_music_visuals_three_notes_1788411372670_327795/attempt-001/result.json",
+      "report_sha256": "07db33c8512d28ee8d6e1a3919e32524e8e25672aba587a4c91c6398e9869574",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenNote3 exact checks failed: login_identity_exact, profile_role_exact, blue_green_note_exact, live_music_note_exact, curly_note_exact, drew_engagement_exact, seasonal_engagement_exact, workflow_timeline_exact"
+      }
+    },
+    {
+      "task_id": "windows.opennote.stage_makeup_three_notes_1788408391290_206403",
+      "verdict": "FAIL",
+      "steps": 127,
+      "max_steps": 180,
+      "report": "runs/windows.opennote.stage_makeup_three_notes_1788408391290_206403/attempt-001/result.json",
+      "report_sha256": "7ac637fe5b0a6de69215d6bbd21b88cc939839f7419626a4b94da813d44f5edd",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenNote exact checks failed: white_note_exact, blue_note_exact, two_role_note_exact, beauty_engagement_exact, profile_role_exact, workflow_timeline_exact"
+      }
+    },
+    {
+      "task_id": "windows.openphotoedit1.community_four_exports.sn2_1788424022642_141994",
+      "verdict": "FAIL",
+      "steps": 117,
+      "max_steps": 180,
+      "report": "runs/windows.openphotoedit1.community_four_exports.sn2_1788424022642_141994/attempt-002/result.json",
+      "report_sha256": "282ff3b3e650460a9c5805edd23272a4cba97fda7ee1530a92628cb7b27f204e",
+      "termination": {
+        "status": "FAIL",
+        "message": "Author image exports mismatch"
+      }
+    },
+    {
+      "task_id": "windows.openphotoedit2.experimental_four_exports.sn2_1788426175327_359007",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openphotoedit2.experimental_four_exports.sn2_1788426175327_359007/attempt-002/result.json",
+      "report_sha256": "ccfa7aa1d3c2a3ba02947b7f8104b1ca4ac70cf330616f19e5b0fcdaf3615dc2",
+      "termination": {
+        "status": "FAIL",
+        "message": "Author image exports mismatch"
+      }
+    },
+    {
+      "task_id": "windows.openphotoedit3.four_exact_exports.sn2_1788428213830_533412",
+      "verdict": "FAIL",
+      "steps": 50,
+      "max_steps": 180,
+      "report": "runs/windows.openphotoedit3.four_exact_exports.sn2_1788428213830_533412/attempt-002/result.json",
+      "report_sha256": "6754745018999dd6e68e155227b9ec2f07e8b1ca1a274e793117b53048baf0f1",
+      "termination": {
+        "status": "FAIL",
+        "message": "Author image exports mismatch"
+      }
+    },
+    {
+      "task_id": "windows.openphotoedit4.four_exact_exports.sn2_1788431223596_956080",
+      "verdict": "FAIL",
+      "steps": 153,
+      "max_steps": 180,
+      "report": "runs/windows.openphotoedit4.four_exact_exports.sn2_1788431223596_956080/attempt-002/result.json",
+      "report_sha256": "e7649b2c85fcbfa7d428b01cb75f90bbe3bf9ceeacdad313949160fb5a59e446",
+      "termination": {
+        "status": "FAIL",
+        "message": "Author image exports mismatch"
+      }
+    },
+    {
+      "task_id": "windows.openshop.baby_care_order_574732",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openshop.baby_care_order_574732/attempt-001/result.json",
+      "report_sha256": "60642ecfb469c7c778916b2c36f054893e90ffc4c9065213cf645216b10eb6ce",
+      "termination": {
+        "status": "FAIL",
+        "message": "latest_order.note: expected 'BabyCareBox', got 'Leave at the front desk if nobody answers.'"
+      }
+    },
+    {
+      "task_id": "windows.openshop.core_bundle_reviews_403191",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.openshop.core_bundle_reviews_403191/attempt-002/result.json",
+      "report_sha256": "a11efda417990c51353b83939d7f78ff63c85c9ef7456b1b118267bb872c9094",
+      "termination": {
+        "status": "FAIL",
+        "message": "cart.empty: expected 0, got 1"
+      }
+    },
+    {
+      "task_id": "windows.openshop.music_category_order_100114",
+      "verdict": "FAIL",
+      "steps": 47,
+      "max_steps": 180,
+      "report": "runs/windows.openshop.music_category_order_100114/attempt-001/result.json",
+      "report_sha256": "8aa971071e0e8ea9f4df97968eaa239cd30724218f82d3652240e0095ca16a27",
+      "termination": {
+        "status": "FAIL",
+        "message": "first_order: expected {'address': 'Office', 'payment': 'WeChat Pay', 'note': 'StudioWaveOne', 'status': 'Awaiting Shipment', 'items': {'p2300': {'title': 'Acoustic Row Portable Mini Mixer', 'quantity': 2, 'selected_spec': 'Gift Set', 'rating': 4, 'review': 'MixerRunsClean'}, 'p2301': {'title': 'ChordLab USB Ukulele Starter Kit', 'quantity': 1, 'selected_spec': 'Gift Set', 'rating': None, 'review': None}}}, got {'address': 'Home', 'payment': 'Alipay', 'note': 'Please call before delivery.', 'status': 'Completed', 'items': {'p1002': {'title': 'Mukawa Folding Camping Table and Chair Set', 'quantity': 1, 'selected_spec': 'Medium', 'rating': None, 'review': None}}}"
+      }
+    },
+    {
+      "task_id": "windows.openshop.two_stage_travel_orders_150970",
+      "verdict": "FAIL",
+      "steps": 54,
+      "max_steps": 180,
+      "report": "runs/windows.openshop.two_stage_travel_orders_150970/attempt-001/result.json",
+      "report_sha256": "e19a0887a587549bb2e049d6f3a372dada22add613f5e0eca3b3f1c8c3466c9b",
+      "termination": {
+        "status": "FAIL",
+        "message": "first_order: expected {'address': 'Home', 'payment': 'Cash on Delivery', 'note': 'TrailLoadOne', 'status': 'Awaiting Shipment', 'items': {'p2445': {'title': 'Summit Lane Waterproof Camp Chair', 'quantity': 2, 'selected_spec': 'Trail Kit', 'rating': 4, 'review': 'ChairPacksQuick'}, 'p2446': {'title': 'Wayfarer Co Compact Hiking Backpack', 'quantity': 1, 'selected_spec': 'Trail Kit', 'rating': 3, 'review': 'PackFitsGear'}, 'p2447': {'title': 'Trailhouse Quick-Dry Trekking Pole Pair', 'quantity': 2, 'selected_spec': 'Trail Kit', 'rating': None, 'review': None}}}, got {'address': 'Office', 'payment': 'WeChat Pay', 'note': 'Office delivery during business hours.', 'status': 'Delivered', 'items': {'p1005': {'title': 'Mountain Isle Pour-Over Coffee 20 Pack', 'quantity': 2, 'selected_spec': '20 sachets', 'rating': None, 'review': None}, 'p2121': {'title': 'ClearPage Compact Document Folder', 'quantity': 1, 'selected_spec': 'Black', 'rating': None, 'review': None}}}"
+      }
+    },
+    {
+      "task_id": "windows.opentrip.v1_multi_booking_817321",
+      "verdict": "FAIL",
+      "steps": 43,
+      "max_steps": 180,
+      "report": "runs/windows.opentrip.v1_multi_booking_817321/attempt-001/result.json",
+      "report_sha256": "14d325e84b60625eacb55e99bd53838103cd5c155a0421aeef86b89bcb9040e3",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTrip booking evaluation failed: session, booking.v1_north_business, booking.v1_chengdu_family, booking.v1_sanya_board, booking.v1_beijing_twin, booking.v1_sanya_base"
+      }
+    },
+    {
+      "task_id": "windows.opentrip.v2_multi_booking_906787",
+      "verdict": "FAIL",
+      "steps": 137,
+      "max_steps": 180,
+      "report": "runs/windows.opentrip.v2_multi_booking_906787/attempt-001/result.json",
+      "report_sha256": "6c83bce70f598a0e5a963210e34751a118addac29d90ee86bc2bcbc95f6a352e",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTrip booking evaluation failed: session, booking.v2_chengdu_lead, booking.v2_sanya_exec, booking.v2_beijing_ops, booking.v2_north_board, booking.v2_sanya_base"
+      }
+    },
+    {
+      "task_id": "windows.opentrip.v2_task_01_multi_booking_838785",
+      "verdict": "FAIL",
+      "steps": 22,
+      "max_steps": 180,
+      "report": "runs/windows.opentrip.v2_task_01_multi_booking_838785/attempt-001/result.json",
+      "report_sha256": "4326bda54aba9c0baf9b8311fc8f56206a2c2b1ab6011c2e9702761548cfe5e4",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTrip booking evaluation failed: booking.v2t01_sanya_sales, booking.v2t01_beijing_twin, booking.v2t01_north_deal, booking.v2t01_chengdu_team, booking.v2t01_sanya_base"
+      }
+    },
+    {
+      "task_id": "windows.opentrip.v2_task_02_multi_booking_352929",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opentrip.v2_task_02_multi_booking_352929/attempt-001/result.json",
+      "report_sha256": "714d22a7a3936e69a452f3d61da47097680a666040a436dc1bff384c8d5ea29f",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTrip booking evaluation failed: session, booking.v2t02_beijing_lead, booking.v2t02_north_exec, booking.v2t02_chengdu_ops, booking.v2t02_sanya_board, booking.v2t02_sanya_base"
+      }
+    },
+    {
+      "task_id": "windows.opentwitter.v1_content_billing_596978",
+      "verdict": "FAIL",
+      "steps": 160,
+      "max_steps": 180,
+      "report": "runs/windows.opentwitter.v1_content_billing_596978/attempt-001/result.json",
+      "report_sha256": "cc1d70e70805bff2202020887e970b1aa28a952b04dbbe5b3ed946c4405121d6",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTwitter content/billing evaluation failed: opentwitter.content_billing.trend_help_center, opentwitter.content_billing.trend_incident_drills, opentwitter.content_billing.trend_feature_naming, opentwitter.content_billing.trend_changelog_builder, opentwitter.content_billing.message_samir, opentwitter.content_billing.message_vivian, opentwitter.content_billing.message_jamal, opentwitter.content_billing.message_sofia, opentwitter.content_billing.notifications, opentwitter.content_billing.profile, opentwitter.content_billing.business_order"
+      }
+    },
+    {
+      "task_id": "windows.opentwitter.v2_accessibility_performance_231082",
+      "verdict": "FAIL",
+      "steps": 177,
+      "max_steps": 180,
+      "report": "runs/windows.opentwitter.v2_accessibility_performance_231082/attempt-001/result.json",
+      "report_sha256": "6835c7ce9163c64c9f0cb687438498414ec5eba9f7ef72cb1e863ea61454de2c",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTwitter accessibility/performance evaluation failed: opentwitter.accessibility.post_focus, opentwitter.accessibility.post_draft, opentwitter.accessibility.trend_security_reviews, opentwitter.accessibility.trend_frontend_performance, opentwitter.accessibility.trend_ai_assistant_rollout, opentwitter.accessibility.trend_mobile_release_candidate, opentwitter.accessibility.message_hana, opentwitter.accessibility.message_caleblee133, opentwitter.accessibility.message_amina, opentwitter.accessibility.message_theo, opentwitter.accessibility.notifications, opentwitter.accessibility.profile, opentwitter.accessibility.business_order, opentwitter.accessibility.foreground"
+      }
+    },
+    {
+      "task_id": "windows.opentwitter.v3_launch_coordination_327435",
+      "verdict": "FAIL",
+      "steps": 180,
+      "max_steps": 180,
+      "report": "runs/windows.opentwitter.v3_launch_coordination_327435/attempt-001/result.json",
+      "report_sha256": "cd625f67ae03448ae400911a40eef9525e95a583914492258cd9027c562ffe04",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTwitter launch coordination evaluation failed: opentwitter.launch.login, opentwitter.launch.post_owner, opentwitter.launch.post_pricing, opentwitter.launch.post_recap, opentwitter.launch.post_handoff, opentwitter.launch.trend_release_notes, opentwitter.launch.trend_incident_reviews, opentwitter.launch.trend_product_launches, opentwitter.launch.trend_transit_dashboards, opentwitter.launch.message_maya, opentwitter.launch.message_devon, opentwitter.launch.message_nora, opentwitter.launch.message_priya, opentwitter.launch.notifications, opentwitter.launch.profile, opentwitter.launch.business_order"
+      }
+    },
+    {
+      "task_id": "windows.opentwitter.v3_support_roadmap_976928",
+      "verdict": "FAIL",
+      "steps": 16,
+      "max_steps": 180,
+      "report": "runs/windows.opentwitter.v3_support_roadmap_976928/attempt-001/result.json",
+      "report_sha256": "d9fdf8578115f1e5ab96bbccf7771dda1d7595d964949ec330ba1f628df76d12",
+      "termination": {
+        "status": "FAIL",
+        "message": "OpenTwitter support roadmap evaluation failed: opentwitter.support.login, opentwitter.support.post_owner, opentwitter.support.post_pricing, opentwitter.support.post_recap, opentwitter.support.post_handoff, opentwitter.support.trend_support_macros, opentwitter.support.trend_roadmap_notes, opentwitter.support.trend_customer_updates, opentwitter.support.trend_community_replies, opentwitter.support.message_marcus, opentwitter.support.message_iris, opentwitter.support.message_omar, opentwitter.support.message_colerivera31, opentwitter.support.notifications, opentwitter.support.profile, opentwitter.support.business_order, opentwitter.support.foreground"
+      }
+    }
+  ]
+}

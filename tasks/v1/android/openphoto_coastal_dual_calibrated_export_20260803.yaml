@@ -37,11 +37,18 @@ evaluation:
     export_dir: /sdcard/Pictures/OpenPhotoEdit
     min_file_size_bytes: 100000
     min_agent_steps: 65
-    require_baseline_for_run_dir: true
+    # The initializer writes openphoto_calibrated_baseline.json (exports that existed before the run are
+    # then not counted); evaluation of a run directory without it stays possible, so it is not required.
+    require_baseline_for_run_dir: false
     expected_dimensions:
     - 1280
     - 800
     channel_tolerance: 12
+    # Both inputs carry identical calibration patches, so each profile is also bound to its input
+    # photo by a coarse luminance correlation outside the calibration area.
+    source_binding:
+      fixture_key: coastal
+      min_correlation: 0.9
     sample_boxes:
       red:
       - 906
@@ -64,35 +71,35 @@ evaluation:
       source_file: landscape_18.jpg
       expected_median_rgb:
         red:
-        - 203
-        - 23
-        - 24
+        - 186
+        - 31
+        - 34
         green:
-        - 27
-        - 204
         - 35
+        - 187
+        - 38
         blue:
-        - 3
-        - 3
-        - 195
+        - 7
+        - 8
+        - 178
     - profile_id: seated_coast_landscape_17
       role: 同一男子坐在海岸悬崖边
       source_file: landscape_17.jpg
       expected_median_rgb:
         red:
-        - 242
-        - 37
-        - 34
+        - 222
+        - 46
+        - 46
         green:
-        - 36
-        - 242
-        - 35
+        - 48
+        - 222
+        - 44
         blue:
-        - 14
-        - 13
-        - 241
+        - 28
+        - 26
+        - 220
 limits:
-  max_steps: 260
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:
@@ -124,50 +131,68 @@ metadata:
   - Android Studio Quail 1 Android Emulator/AVD AndroidWorldAvd_20260611_1 has snapshot display name snap_2026-08-03_16-11-57
     available.
   - OpenPhotoEdit package com.killt.openphotoedit is installed in snapshot snap_2026-08-03_16-11-57.
-  - The snapshot contains /sdcard/Pictures/landscape_18.jpg as the calibrated standing coastal-cliff source
-    photo.
-  - The snapshot contains /sdcard/Pictures/landscape_17.jpg as the calibrated seated coastal-cliff source
-    photo.
-  - The snapshot starts without /sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_*.jpg export evidence.
-  initializer_message: OpenPhotoCalibratedBaselineInitializer does not restore snapshots, delete exports,
-    import photos, apply edits, or create target evidence. It verifies package/source files, fails if
-    OpenPhotoEdit exports already exist, records the clean baseline, opens the app, and confirms home
-    anchors.
+  - 'The snapshot photos carry no calibration area, so the initializer installs the calibrated inputs: /sdcard/Pictures/landscape_18.jpg
+    (man standing at the cliff edge looking into the distance); /sdcard/Pictures/landscape_17.jpg (the same man
+    sitting at the cliff edge), each built from its bundled base photo with RGB 190/40/40, 40/190/40 and 40/40/190
+    patches over the sample boxes padded by 8 px (JPEG quality 98, 4:4:4).'
+  - Exports already present in /sdcard/Pictures/OpenPhotoEdit are recorded in openphoto_calibrated_baseline.json
+    and are not counted.
+  initializer_message: OpenPhotoCalibratedBaselineInitializer builds the calibrated inputs from the bundled base
+    photos, pushes them over the file names the brief cites, checks size/SHA-256 on the device, waits for MediaStore
+    to index them, records pre-existing exports in openphoto_calibrated_baseline.json, and launches OpenPhotoEdit.
+    It does not import photos, apply edits, or create exports.
+  calibrated_inputs:
+  - profile_id: standing_coast_landscape_18
+    device_path: /sdcard/Pictures/landscape_18.jpg
+    shows: man standing at the cliff edge looking into the distance
+    base_photo: assets/android/openphoto/coast_cliff_standing.jpg
+    base_photo_origin: snapshot photo landscape_18.jpg (no calibration area)
+    base_photo_sha256: 155842efc58fdec30599c2be0946ca466cfd3e5f44dc040d40a7bf00caf94922
+  - profile_id: seated_coast_landscape_17
+    device_path: /sdcard/Pictures/landscape_17.jpg
+    shows: the same man sitting at the cliff edge
+    base_photo: assets/android/openphoto/coast_cliff_seated.jpg
+    base_photo_origin: snapshot photo landscape_17.jpg (no calibration area)
+    base_photo_sha256: 8ea2c8d59f727635d124a229399bda48a1d62611343bd0c137e4eeb5b61bd878
   reference_probe:
-    snapshot_name: snap_2026-08-03_16-11-57
-    reference_run_note: Reference exports were produced by applying the exact requested slider values
-      in OpenPhotoEdit, then the VM was restored to snap_2026-08-03_16-11-57 and the export directory
-      was rechecked as absent.
-    standing_reference_export:
+    calibration_input: RGB 190/40/40, 40/190/40, 40/40/190 patches over the sample boxes, padded by 8 px
+    reference_source: tools/openphoto_android_edit_model.py, a port of BitmapEditor.applyParams (the export path)
+      validated against the four benchmark-v2 device exports; each median is the midpoint of the per-channel
+      range over all slider values that display the requested labels (a label shows value.toInt()). No device
+      export exists for this task yet.
+    superseded: The earlier medians came from a lost snapshot whose inputs are not recoverable; with the snapshot
+      photos (no calibration area) or pure 255/0 stripes they are unreachable, and pure stripes stay saturated
+      so an unedited export would match.
+    standing_coast_landscape_18_reference_export:
       source_file: landscape_18.jpg
       sample_median_rgb:
         red:
-        - 203
-        - 23
-        - 24
+        - 186
+        - 31
+        - 34
         green:
-        - 27
-        - 204
         - 35
+        - 187
+        - 38
         blue:
-        - 3
-        - 3
-        - 195
-    seated_reference_export:
+        - 7
+        - 8
+        - 178
+    seated_coast_landscape_17_reference_export:
       source_file: landscape_17.jpg
       sample_median_rgb:
         red:
-        - 242
-        - 37
-        - 34
+        - 222
+        - 46
+        - 46
         green:
-        - 36
-        - 242
-        - 35
+        - 48
+        - 222
+        - 44
         blue:
-        - 14
-        - 13
-        - 241
+        - 28
+        - 26
+        - 220
   verifier_rules:
     primary_business_evidence:
     - Exactly this task's durable evidence is two OpenPhotoEdit JPG exports whose upper-right calibration
@@ -177,6 +202,9 @@ metadata:
     - The seated profile must match a distinct JPG exported from landscape_17.jpg after the Clean/portrait/HSL/landscape
       recipe.
     - For full automatic runs, counted exports must be new relative to the initializer baseline.
+    - Each matched export must also correlate best, and at least 0.9, with the input photo of its profile
+      (coarse luminance grid outside the calibration area), so the right recipe on the wrong photo does
+      not count.
     - The final foreground UI must still be OpenPhotoEdit editor with editor anchors such as Export/Edit/Filters/Landscape/HSL
       visible.
     instruction_mapping:

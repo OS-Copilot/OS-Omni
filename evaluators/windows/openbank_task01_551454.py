@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence, find_dispute_route
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -112,7 +113,7 @@ CHECKPOINTS = {'openbank.task01.recipient_elliot': {'steps': [1, 2, 3, 4, 5, 6, 
                                               76,
                                               77,
                                               78],
-                                    'checks': ['ORDERED_EXACT']}}
+                                    'checks': ['PAIRWISE_PRECEDENCE']}}
 RULESET_SPEC = {'task_id': 'windows.openbank.task01_551454',
  'source_state_mode': 'human_completed_eval_only',
  'recipients': [{'name': 'Elliot Stone',
@@ -273,8 +274,10 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task01_551454',
                                                               76,
                                                               77,
                                                               78],
-                                                    'checks': ['ORDERED_EXACT']}}}
-RULESET_SHA256 = '5ee8e473b50600a2c10b854a380929822efafacdb129ffceb136883b42b5e5d5'
+                                                    'checks': ['PAIRWISE_PRECEDENCE']}}}
+RULESET_SPEC["event_route_policy"] = "search < detail < submit; subsequent inspection does not erase a completed route"
+RULESET_SPEC["order_policy"] = {'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order', 'stated': [], 'necessary': [['recipient_elliot', 'transfer_elliot'], ['recipient_nora', 'transfer_nora'], ['recipient_priya', 'transfer_priya']], 'necessary_reason': 'a transfer needs its recipient saved first'}
+RULESET_SHA256 = 'ba5dc2b1f5d37f60790bada82c15daf64cd8a6017a0d0302bb8164dc6cf02f90'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task01_551454:OpenBankTask01551454Evaluator"
 
@@ -290,6 +293,9 @@ STEP_GROUPS = {
     "dispute_ace": list(range(61, 70)),
     "dispute_caffe": list(range(70, 79)),
 }
+#: Business actions in the order this evaluator collects their events.
+ORDER_NAMES = list(STEP_GROUPS)
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task01.recipient_elliot", "steps": STEP_GROUPS["recipient_elliot"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["recipients"][0]},
     {"value_contract_id": "openbank.task01.recipient_nora", "steps": STEP_GROUPS["recipient_nora"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["recipients"][1]},
@@ -301,7 +307,7 @@ CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task01.bill_rewards", "steps": STEP_GROUPS["bill_rewards"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["bill_payments"][1]},
     {"value_contract_id": "openbank.task01.dispute_ace", "steps": STEP_GROUPS["dispute_ace"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_ROUTE_EXACT", "expected": RULESET_SPEC["disputes"][0]},
     {"value_contract_id": "openbank.task01.dispute_caffe", "steps": STEP_GROUPS["dispute_caffe"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_ROUTE_EXACT", "expected": RULESET_SPEC["disputes"][1]},
-    {"value_contract_id": "openbank.task01.business_order", "steps": list(range(1, 79)), "match_mode": "ORDERED_EXACT", "expected": ["recipient_elliot", "recipient_nora", "recipient_priya", "transfer_elliot", "transfer_nora", "transfer_priya", "bill_northstar", "bill_rewards", "dispute_ace", "dispute_caffe"]},
+    {"value_contract_id": "openbank.task01.business_order", "steps": list(range(1, 79)), "match_mode": "PAIRWISE_PRECEDENCE", "expected": ORDER_PAIRS},
 ]
 
 
@@ -384,19 +390,14 @@ class OpenBankTask01551454Evaluator(BaseEvaluator):
         for offset, expected in enumerate(RULESET_SPEC["disputes"], start=8):
             matches = [row for row in disputes if row.get("merchant") == expected["merchant"] and row.get("reason") == expected["reason"] and row.get("contactedMerchant") is True and row.get("details") == expected["details"] and row.get("status") == "Submitted"]
             target = matches[0] if len(matches) == 1 else None
-            search_events = [row for row in events if row.get("type") == "transactions_viewed" and row.get("q") == expected["query"] and int(row.get("total", 0)) > 0]
-            detail_events = [row for row in events if target and row.get("type") == "transaction_details_viewed" and row.get("transactionId") == target.get("transactionId")]
-            submit_events = [row for row in events if target and row.get("type") == "transaction_dispute_submitted" and row.get("disputeId") == target.get("id") and row.get("transactionId") == target.get("transactionId") and row.get("reason") == expected["reason"]]
-            search = search_events[-1] if search_events else None
-            detail = next((row for row in detail_events if search and int(row.get("seq", -1)) > int(search.get("seq", -1))), None)
-            submit = next((row for row in submit_events if detail and int(row.get("seq", -1)) > int(detail.get("seq", -1))), None)
+            search, detail, submit = find_dispute_route(events, target, expected)
             passed = len(matches) == 1 and search is not None and detail is not None and submit is not None
             checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {"object_count": len(matches), "search": _summary(search or {}), "detail": _summary(detail or {}), "submit": _summary(submit or {}), "object": target or matches}))
             ordered_events.append(submit)
 
-        order_actual = [_summary(row or {}) for row in ordered_events]
-        order_passed = all(ordered_events) and all(int(left.get("seq", -1)) < int(right.get("seq", -1)) for left, right in zip(ordered_events, ordered_events[1:]))
-        checks.append(cls._check(CHECKPOINT_SPECS[10], bool(order_passed), order_actual))
+        # Only the stated and logically necessary orders (RULESET_SPEC["order_policy"]).
+        order_passed, order_actual = check_precedence(dict(zip(ORDER_NAMES, ordered_events)), ORDER_PAIRS)
+        checks.append(cls._check(CHECKPOINT_SPECS[10], order_passed, order_actual))
         foreground_passed = foreground_app.casefold() in {"openbank", "openbank.exe"} and "openbank" in foreground_window.casefold()
         checks.append({"name": "foreground_openbank", "value_contract_id": "openbank.task01.foreground", "instruction_steps": list(range(1, 79)), "match_mode": "FINAL_UI_APP_EXACT", "expected": {"app": "openbank.exe", "window": "OpenBank"}, "actual": {"app": foreground_app, "window": foreground_window}, "passed": foreground_passed})
 

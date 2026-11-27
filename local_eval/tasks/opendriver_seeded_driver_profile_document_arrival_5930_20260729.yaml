@@ -1,0 +1,360 @@
+task_id: android.opendriver.seeded_driver_profile_document_arrival_5930_20260729
+platform: android
+instruction: '请只使用安卓虚拟机里可见的 Android GUI 完成 OpenDriver Driver 资料审核、文档提交和接单到达工作流。从 Android
+  Studio 快照 `snap_2026-07-29_17-27-46` 对应的初始状态开始，OpenDriver 已安装，Driver 账号可用，工作区选择栏、Account、Work、Driver
+  documents、快捷消息和模拟请求功能已经由快照提供。不要 Sign Out / 不要退出登录；最后停留在已接行程页面，完成 Mark arrived 后停止。
+
+
+  自动执行时，如果需要清空已有输入框内容，请优先点入输入框后使用 Ctrl+A/全选再输入新文本；不要使用 KEYCODE_MOVE_END，不要使用 for/seq
+  循环，也不要连续发送大量 KEYCODE_DEL。
+
+
+  1. 打开安卓虚拟机中的 OpenDriver 应用。
+
+  2. 点按工作区选择栏中的 Driver。
+
+  3. 点按 Name 输入框，输入 Jordan Scan。
+
+  4. 点按 Email 输入框，输入 jordan.driver26@example.com。
+
+  5. 点按 Password 输入框，输入 Test12345!。
+
+  6. 点按 Login。
+
+  7. 点按顶部标签栏中的 Account。
+
+  8. 点按 License number 输入框，删除原有驾照号码，输入 CA-DL-59302。
+
+  9. 点按 Vehicle make 输入框，删除原有车辆品牌，输入 Honda。
+
+  10. 点按 Vehicle model 输入框，删除原有车辆型号，输入 Accord。
+
+  11. 点按 Vehicle year 输入框，删除原有车辆年份，输入 2025。
+
+  12. 点按 License plate 输入框，删除原有车牌号码，输入 DRV 5930。
+
+  13. 点按 Vehicle color 输入框，删除原有车辆颜色，输入 Silver。
+
+  14. 点按 Save profile for review。
+
+  15. 向上滑动页面，露出 Driver documents 区域。
+
+  16. 点按 Document type 下拉框，点按 Insurance。
+
+  17. 点按 Document ID 输入框，删除原有证件编号，输入 INS-5930-CA。
+
+  18. 点按 Expires at 输入框，删除原有到期日期，输入 2029-03-31。
+
+  19. 点按 Submit document。
+
+  20. 向下滑动页面，露出顶部标签栏。
+
+  21. 点按顶部标签栏中的 Work。
+
+  22. 点按 Generate request now。
+
+  23. 向上滑动页面，露出请求卡片底部。
+
+  24. 点按 Accept trip。
+
+  25. 点按 Message。
+
+  26. 点按快捷消息 I am on my way.。
+
+  27. 点按快捷消息 Please meet at the pickup pin.。
+
+  28. 点按消息输入框，输入 Blue car near pin，点按 Send。
+
+  29. 点按消息输入框，输入 Arriving in 2 min，点按 Send。
+
+  30. 点按消息输入框，输入 Please be ready，点按 Send。
+
+  31. 点按消息输入框，输入 Gate side pickup，点按 Send。
+
+  32. 点按消息输入框，输入 Hazard lights on，点按 Send。
+
+  33. 点按弹窗中的 Close。
+
+  34. 向上滑动活动行程页面，露出主操作按钮。
+
+  35. 点按 Start driving to pickup。
+
+  36. 点按 Message。
+
+  37. 点按快捷消息 I have arrived.。
+
+  38. 点按消息输入框，输入 At pickup pin，点按 Send。
+
+  39. 点按弹窗中的 Close。
+
+  40. 向上滑动活动行程页面，露出主操作按钮。
+
+  41. 点按 Mark arrived，保持在当前已接行程页面，不要退出应用或退出登录。'
+init:
+  initializer_id: local_eval.driver_baseline:RecoveredDriverInitializer
+  params:
+    app_package: com.killt.opendriver
+    app_activity: com.killt.opendriver.MainActivity
+    snapshot_name: snap_2026-07-29_17-27-46
+    wait_ms: 2000
+    forbidden_backend_needles_all:
+    - - CA-DL-59302
+    - - DRV 5930
+    - - INS-5930-CA
+    - - Blue car near pin
+    - - Arriving in 2 min
+    - - Please be ready
+    - - Gate side pickup
+    - - Hazard lights on
+    - - At pickup pin
+    source_initializer: evaluators.cua_review.initializers.android.opendriver:OpenDriverDriverBaselineInitializer
+evaluation:
+  evaluator_id: evaluators.android.opendriver_seeded_driver_profile_document_arrival_5930_20260729:OpenDriverDriverTripWorkflowEvaluator
+  params:
+    app_package: com.killt.opendriver
+    expected_user:
+      workspace: Driver
+    expected_profile:
+      license_number: CA-DL-59302
+      vehicle_make: Honda
+      vehicle_model: Accord
+      vehicle_year: '2025'
+      license_plate: DRV 5930
+      vehicle_color: Silver
+    expected_document:
+      type: insurance
+      identifier: INS-5930-CA
+      expires_at: '2029-03-31'
+      allowed_statuses:
+      - submitted
+      - pending
+      - under_review
+      - approved
+    expected_active_trip:
+      allowed_statuses:
+      - arrived
+      - arrived_at_pickup
+      - at_pickup
+    expected_messages:
+    - I am on my way.
+    - Please meet at the pickup pin.
+    - Blue car near pin
+    - Arriving in 2 min
+    - Please be ready
+    - Gate side pickup
+    - Hazard lights on
+    - I have arrived.
+    - At pickup pin
+    expected_final:
+      visible_text: []
+    min_agent_steps: 40
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  tags:
+  - android
+  - opendriver
+  - driver
+  - seeded-driver
+  - profile
+  - documents
+  - active-trip
+  - messages
+  - hard
+  - benchmark
+  app: OpenDriver
+  app_name: OpenDriver
+  app_bundle_id: com.killt.opendriver
+  required_packages_any:
+  - com.killt.opendriver
+  difficulty: hard
+  android_vm_profile: quail1
+  avd_name: AndroidWorldAvd_20260611_1
+  snapshot_name: snap_2026-07-29_17-27-46
+  task_number: opendriver-seeded-driver-profile-document-arrival-5930-20260729
+  description: Use the available OpenDriver Driver workspace to update unique 5930
+    vehicle/profile evidence, submit insurance evidence, accept a generated request,
+    send required messages, and mark arrived.
+  prerequisites:
+  - Android Studio Quail 1 Android Emulator/AVD AndroidWorldAvd_20260611_1 has snapshot
+    display name snap_2026-07-29_17-27-46 available.
+  - OpenDriver package com.killt.opendriver is installed in snapshot snap_2026-07-29_17-27-46.
+  - The snapshot contains an available seeded Driver workspace and a mock backend
+    reachable at http://127.0.0.1:4320.
+  - The task begins before CA-DL-59302, DRV 5930, INS-5930-CA, and the required 5930
+    trip messages exist.
+  initializer_message: OpenDriverDriverBaselineInitializer does not restore snapshots,
+    clear app data, log in, edit profile fields, submit documents, generate rides,
+    accept trips, send messages, or advance trip status. It opens OpenDriver and fails
+    if target 5930/profile/document/message evidence is already present in read-only
+    backend state.
+  verifier_rules:
+    primary_business_evidence:
+    - OpenDriver read-only backend GET endpoints must show a Driver role/profile record.
+    - The Driver profile must exactly match CA-DL-59302, Honda, Accord, 2025, DRV
+      5930, and Silver.
+    - The insurance document must match INS-5930-CA and 2029-03-31 with a submitted/pending/under_review/approved
+      status.
+    - The same final active driver ride must exist after Mark arrived, with an arrived/arrived_at_pickup/at_pickup
+      status.
+    - The final active ride must contain all nine required message texts, including
+      unique custom messages Blue car near pin, Arriving in 2 min, Please be ready,
+      Gate side pickup, Hazard lights on, and At pickup pin.
+    instruction_mapping:
+    - Steps 2-6 correspond to entering the available Driver workspace; the seeded
+      backend may retain its original Driver identity.
+    - Steps 7-14 correspond to durable Driver profile fields.
+    - Steps 15-19 correspond to the insurance document submission.
+    - Steps 20-24 correspond to generating and accepting a driver trip.
+    - Steps 25-38 correspond to required quick and custom trip messages.
+    - Steps 39-41 correspond to final arrived trip state.
+    data_source_priority:
+    - OpenDriver backend GET endpoints are primary durable evidence.
+    - Final Android accessibility text is auxiliary context only; no exact scroll
+      position is required.
+    - Trajectory evidence is used only for full automatic-run process fidelity and
+      minimum step count.
+    forbidden_assumptions:
+    - Do not pass on prefilled CA-DL-48291 / Toyota Camry / INS-48291 state.
+    - Do not pass on any ride unless the active ride contains the required message
+      set and arrived status.
+    - Do not treat opening dropdowns, scrolling, or dialogs as standalone completion
+      evidence.
+    non_final_intermediate_pages:
+    - Login, Account form editing, Driver documents dropdown, Work request generation,
+      message dialog, close dialog, scrolling, and the Start driving intermediate
+      state are process pages.
+  evaluation_standard: The evaluator must find unique 5930 profile and insurance evidence
+    plus one final active driver ride in arrived state containing all required messages.
+  durable_checks:
+  - A Driver role/profile record is present.
+  - Driver profile fields exactly match the requested license, vehicle, plate, and
+    color.
+  - Insurance document identifier and expiry match.
+  - Active driver ride exists and has an arrived-type status.
+  - All required quick and custom messages are present on the active ride.
+  - Automatic trajectory has at least 40 recorded agent steps.
+  weak_or_process_only_steps:
+  - The Name and Email entered on the login screen are not hard-checked because this
+    OpenDriver snapshot keeps the seeded Driver identity in backend state.
+  - Dropdown opening, field clearing, scrolling, modal closing, and exposing hidden
+    controls are process actions; they are verified only through final durable backend
+    fields.
+  - Generate request now and Accept trip are verified through the final active driver
+    ride rather than an intermediate request card.
+  - Start driving to pickup is verified through the later arrived status, not as a
+    separate transient state.
+  manual_verifier_note: scripts/evaluate_android_task_only.py skips reset, snapshot
+    restore, initializer, and GUI agent actions. Manual evaluator-only runs verify
+    the current OpenDriver VM state and skip trajectory-only checks when no trajectory.jsonl
+    is available.
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: opendriver/Android/android.opendriver.seeded_driver_profile_document_arrival_5930_20260729
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: e92a5ab10405e9979cab05f079bcb8dc8b6121ea994fc62a63bbda91ed861ee5
+    source_instruction: '请只使用安卓虚拟机里可见的 Android GUI 完成 OpenDriver Driver 资料审核、文档提交和接单到达工作流。从
+      Android Studio 快照 `snap_2026-07-29_17-27-46` 对应的初始状态开始，OpenDriver 已安装，Driver
+      账号可用，工作区选择栏、Account、Work、Driver documents、快捷消息和模拟请求功能已经由快照提供。不要 Sign Out / 不要退出登录；最后停留在已接行程页面，完成
+      Mark arrived 后停止。
+
+
+      自动执行时，如果需要清空已有输入框内容，请优先点入输入框后使用 Ctrl+A/全选再输入新文本；不要使用 KEYCODE_MOVE_END，不要使用 for/seq
+      循环，也不要连续发送大量 KEYCODE_DEL。
+
+
+      1. 打开安卓虚拟机中的 OpenDriver 应用。
+
+      2. 点按工作区选择栏中的 Driver。
+
+      3. 点按 Name 输入框，输入 Jordan Scan。
+
+      4. 点按 Email 输入框，输入 jordan.driver26@example.com。
+
+      5. 点按 Password 输入框，输入 Test12345!。
+
+      6. 点按 Login。
+
+      7. 点按顶部标签栏中的 Account。
+
+      8. 点按 License number 输入框，删除原有驾照号码，输入 CA-DL-59302。
+
+      9. 点按 Vehicle make 输入框，删除原有车辆品牌，输入 Honda。
+
+      10. 点按 Vehicle model 输入框，删除原有车辆型号，输入 Accord。
+
+      11. 点按 Vehicle year 输入框，删除原有车辆年份，输入 2025。
+
+      12. 点按 License plate 输入框，删除原有车牌号码，输入 DRV 5930。
+
+      13. 点按 Vehicle color 输入框，删除原有车辆颜色，输入 Silver。
+
+      14. 点按 Save profile for review。
+
+      15. 向上滑动页面，露出 Driver documents 区域。
+
+      16. 点按 Document type 下拉框，点按 Insurance。
+
+      17. 点按 Document ID 输入框，删除原有证件编号，输入 INS-5930-CA。
+
+      18. 点按 Expires at 输入框，删除原有到期日期，输入 2029-03-31。
+
+      19. 点按 Submit document。
+
+      20. 向下滑动页面，露出顶部标签栏。
+
+      21. 点按顶部标签栏中的 Work。
+
+      22. 点按 Generate request now。
+
+      23. 向上滑动页面，露出请求卡片底部。
+
+      24. 点按 Accept trip。
+
+      25. 点按 Message。
+
+      26. 点按快捷消息 I am on my way.。
+
+      27. 点按快捷消息 Please meet at the pickup pin.。
+
+      28. 点按消息输入框，输入 Blue car near pin，点按 Send。
+
+      29. 点按消息输入框，输入 Arriving in 2 min，点按 Send。
+
+      30. 点按消息输入框，输入 Please be ready，点按 Send。
+
+      31. 点按消息输入框，输入 Gate side pickup，点按 Send。
+
+      32. 点按消息输入框，输入 Hazard lights on，点按 Send。
+
+      33. 点按弹窗中的 Close。
+
+      34. 向上滑动活动行程页面，露出主操作按钮。
+
+      35. 点按 Start driving to pickup。
+
+      36. 点按 Message。
+
+      37. 点按快捷消息 I have arrived.。
+
+      38. 点按消息输入框，输入 At pickup pin，点按 Send。
+
+      39. 点按弹窗中的 Close。
+
+      40. 向上滑动活动行程页面，露出主操作按钮。
+
+      41. 点按 Mark arrived，保持在当前已接行程页面，不要退出应用或退出登录。'
+    release_path: benchmark/tasks/opendriver/Android/android.opendriver.seeded_driver_profile_document_arrival_5930_20260729
+    original_evaluator_id: evaluators.android.opendriver:OpenDriverDriverTripWorkflowEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.opendriver:OpenDriverDriverBaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/opendriver_seeded_driver_profile_document_arrival_5930_20260729.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true
+    backend: Replacement developed from installed APK API contract, with seeded accounts
+      and empty result state

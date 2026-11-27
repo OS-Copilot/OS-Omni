@@ -157,21 +157,27 @@ evaluation:
         alignment_vertical:
           method: eq
           ref: center
+    # LibreOffice rounds the entered size to its dialog precision (0.01 cm / 0.01 in): "24pt"
+    # is stored as 0.84 cm and saved as ht="23.8", and a width of 18 characters is 4.0325 cm,
+    # which the dialog cannot hold. The tolerances cover that rounding, not a different size.
     - type: row_height
       sheet_idx: 0
       row: 1
       method: eq
       ref: 24
+      tolerance: 0.5
     - type: column_width
       sheet_idx: 0
       column: A
       method: eq
       ref: 18
+      tolerance: 0.1
     - type: column_width
       sheet_idx: 0
       column: B
       method: eq
       ref: 22
+      tolerance: 0.1
     - type: sheet_data
       sheet_idx0: 0
       sheet_idx1: EI0
@@ -189,8 +195,8 @@ evaluation:
         freeze=A1:B1
         status=ready-for-review
 limits:
-  max_steps: 100
-  timeout_seconds: 0
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

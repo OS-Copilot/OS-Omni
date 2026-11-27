@@ -91,6 +91,7 @@ def load_execution_handoff(execution_path: str | Path) -> Dict[str, Any]:
         "action_mode": raw.get("action_mode"),
         "observation_mode": raw.get("observation_mode"),
         "history_window": raw.get("history_window"),
+        "max_steps": raw.get("max_steps"),
         "metadata": dict(metadata),
     }
 

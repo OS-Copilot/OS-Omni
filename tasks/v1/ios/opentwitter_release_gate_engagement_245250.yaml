@@ -20,8 +20,9 @@ init:
   params:
     bundle_id: com.killt.opentwitter
     require_logged_in: true
+    reset_to_seed: true
     login_if_missing: false
-    wait_ms: 1200
+    wait_ms: 6000
     bootstrap_wait_ms: 1200
     return_home_after_init: false
     author_handle: alex
@@ -56,10 +57,10 @@ evaluation:
     ios_device_profile: iphone17-0
     source_state_mode: human_completed_eval_only
     expected_instruction_sha256: 217e2e2503a33d04030cd05f2582c5c80c16fb601832b25cb2d8836216b85204
-    expected_ruleset_sha256: a38e8686a3c24a57f270bbdb8257148a8f8d685e3eb32bb8754acbc160ac286d
+    expected_ruleset_sha256: 2016395844958a38e1e45d232beb342cd3f6f8d48647c1be67522ea30d4bfc5a
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -75,7 +76,7 @@ metadata:
   source_state_mode: human_completed_eval_only
   starts_logged_in_as: alex
   instruction_sha256: 19fd8533b2dca160497d215d8765f50150504727259e936c91393a6e40498bac
-  evaluator_ruleset_sha256: a38e8686a3c24a57f270bbdb8257148a8f8d685e3eb32bb8754acbc160ac286d
+  evaluator_ruleset_sha256: 2016395844958a38e1e45d232beb342cd3f6f8d48647c1be67522ea30d4bfc5a
   verifier_rules:
   - Read only from the current OpenTwitter WebKit localStorage state; do not launch the app or create
     Appium sessions.
@@ -84,8 +85,10 @@ metadata:
   - Steps 31-75 require six exact seeded post identities, exact alex replies, and instruction-specific
     engagement state.
   - Steps 76-77 require every alex notification to be read and a notifications_marked_read causal event.
-  - Required business events are projected by exact event type and post identity and must occur in instruction
-    order.
+  - Required business events are projected by exact event type and post identity and compared as a multiset
+    (no missing, extra or duplicate one; a repeated mark-all-read counts once). The only orders checked are the
+    brief's "then mark all notifications as read" (after every other required event) and each created post
+    existing before it is engaged; the per-post engagement lists are enumerations, not sequences.
   - Final likedPostIds, bookmarkedPostIds, and repostedPostIds are exact sets; active extra state fails.
   description: Create three release posts, engage the specified following-feed posts, and mark all notifications
     read.

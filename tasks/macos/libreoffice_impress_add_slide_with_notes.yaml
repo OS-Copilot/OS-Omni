@@ -1,0 +1,133 @@
+task_id: macos.libreoffice.impress.add_slide_with_notes
+platform: macos
+instruction: 'I need to finish the blank last slide in this LibreOffice Impress presentation.
+  Turn it into a "Next Steps" slide with these bullet points: Finalize project charter,
+  Assign team leads, Set up weekly stand-ups, and Create shared workspace.
+
+  Make the first two bullet lines bold because they are blockers, and leave the
+  last two bullet lines as regular text. Also add a speaker note telling me to
+  emphasize that the first two blockers must be completed by end of week, and
+  that the shared workspace setup can start next Monday. When you add the note,
+  click the visible "Click to add Notes" prompt in the lower pane and type the
+  note there. Save when finished.
+
+  '
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "killall -9 soffice.bin >/dev/null 2>&1 || true\nkillall -9 LibreOffice\
+        \ >/dev/null 2>&1 || true\npkill -9 -f LibreOffice >/dev/null 2>&1 || true\n\
+        rm -f \"$HOME/Library/Application Support/LibreOffice/4/.lock\" || true\n\
+        rm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/temp\"/* ||\
+        \ true\nrm -rf \"$HOME/Library/Application Support/LibreOffice/4/user/backup\"\
+        /* || true\npython3 - <<'PY'\nfrom pathlib import Path\nimport re\n\npath\
+        \ = Path.home() / \"Library/Application Support/LibreOffice/4/user/registrymodifications.xcu\"\
+        \npath.parent.mkdir(parents=True, exist_ok=True)\n\nentry = '<item oor:path=\"\
+        /org.openoffice.Office.Common/Save/Document\"><prop oor:name=\"WarnAlienFormat\"\
+        \ oor:op=\"fuse\"><value>false</value></prop></item>'\nif path.exists():\n\
+        \    text = path.read_text(encoding=\"utf-8\")\nelse:\n    text = (\n    \
+        \    '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n'\n        '<oor:items\
+        \ xmlns:oor=\"http://openoffice.org/2001/registry\" '\n        'xmlns:xs=\"\
+        http://www.w3.org/2001/XMLSchema\" '\n        'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+        >\\n'\n        '</oor:items>\\n'\n    )\n\npattern = re.compile(\n    r'<item\
+        \ oor:path=\"/org\\.openoffice\\.Office\\.Common/Save/Document\">.*?<prop\
+        \ oor:name=\"WarnAlienFormat\" oor:op=\"fuse\"><value>.*?</value></prop></item>',\n\
+        \    re.DOTALL,\n)\nif pattern.search(text):\n    text = pattern.sub(entry,\
+        \ text, count=1)\nelif entry not in text:\n    text = text.replace('</oor:items>',\
+        \ entry + '\\n</oor:items>')\n\npath.write_text(text, encoding=\"utf-8\")\n\
+        PY\nsleep 2\n"
+      timeout: 30
+    - type: upload_file
+      local_path: files/libreoffice/impress_add_slide_with_notes_template.pptx
+      path: ~/Downloads/impress_add_slide_with_notes_template.pptx
+    - type: run_bash
+      script: 'open -a "LibreOffice" "$HOME/Downloads/impress_add_slide_with_notes_template.pptx"
+        >/dev/null 2>&1 &
+
+        '
+      timeout: 30
+    - type: wait
+      ms: 9000
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: Discard All
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      optional: true
+      action:
+        type: tap
+        target:
+          text: 'Yes'
+    - type: wait
+      optional: true
+      ms: 700
+    - type: action
+      action:
+        type: keyboard
+        action: escape
+    - type: wait
+      ms: 1000
+    - type: run_bash
+      script: |
+        osascript <<'APPLESCRIPT'
+        tell application "LibreOffice" to activate
+        delay 0.6
+        tell application "System Events"
+          tell process "LibreOffice"
+            click menu bar item "View" of menu bar 1
+            delay 0.3
+            click menu item "Notes Pane" of menu 1 of menu bar item "View" of menu bar 1
+          end tell
+        end tell
+        APPLESCRIPT
+      timeout: 20
+    - type: wait
+      ms: 1200
+evaluation:
+  evaluator_id: evaluators.macos.libreoffice_impress:LibreOfficeImpressEvaluator
+  params:
+    remote_path: ~/Downloads/impress_add_slide_with_notes_template.pptx
+    save_before_eval: true
+    expected_slide_count: 3
+    expected_slide_titles:
+    - Project Kickoff Meeting
+    - Agenda
+    - Next Steps
+    per_slide_required_text:
+      Project Kickoff Meeting:
+      - Q2 2025 Planning Session
+      Agenda:
+      - Introductions
+      - Goals
+      - Timeline
+      - Q&A
+      Next Steps:
+      - Finalize project charter
+      - Assign team leads
+      - Set up weekly stand-ups
+      - Create shared workspace
+    per_slide_required_bold_fragments:
+      Next Steps:
+      - Finalize project charter
+      - Assign team leads
+    per_slide_required_plain_fragments:
+      Next Steps:
+      - Set up weekly stand-ups
+      - Create shared workspace
+    per_slide_required_notes:
+      Next Steps:
+      - first two blockers
+      - completed by end of week
+      - next Monday
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

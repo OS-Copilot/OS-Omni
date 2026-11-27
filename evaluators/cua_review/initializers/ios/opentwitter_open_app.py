@@ -9,7 +9,117 @@ launches the client and gives that surface time to settle.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import sqlite3
+import subprocess
+import time
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
+
 from evaluators.cua_review.core.initialization import BaseInitializer
+from evaluators.cua_review.core.evaluation import EvalResult, EvalStatus
+from evaluators.cua_review.platforms.ios.webview_state import (
+    ITEM_TABLE,
+    find_state_database,
+    resolve_state_key,
+    stored_value,
+)
+
+
+LOCAL_STATE_KEY_PREFIX = "opentwitter.localState."
+
+
+def _seed_from_app_bundle(udid: str, bundle_id: str) -> tuple[dict[str, Any], str]:
+    result = subprocess.run(
+        ["xcrun", "simctl", "get_app_container", udid, bundle_id, "app"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        raise RuntimeError("could not locate the installed OpenTwitter app bundle")
+    seed_path = Path(result.stdout.strip()) / "public" / "seed-data.js"
+    source = seed_path.read_text(encoding="utf-8")
+    seed = _parse_seed_data_js(source)
+    return seed, hashlib.sha256(seed_path.read_bytes()).hexdigest()
+
+
+def _parse_seed_data_js(source: str) -> dict[str, Any]:
+    marker = "window.opentwitterSeed ="
+    if marker not in source:
+        raise ValueError("installed OpenTwitter bundle has no window.opentwitterSeed")
+    payload = source.split(marker, 1)[1].strip()
+    if payload.endswith(";"):
+        payload = payload[:-1]
+    seed = json.loads(payload)
+    if not isinstance(seed, dict) or not isinstance(seed.get("account"), dict):
+        raise ValueError("installed OpenTwitter seed data has an invalid structure")
+    return seed
+
+
+def _seeded_logged_in_state(seed: Mapping[str, Any], handle: str) -> dict[str, Any]:
+    account = seed.get("account")
+    users = seed.get("users")
+    if not isinstance(account, Mapping) or not isinstance(users, list):
+        raise ValueError("OpenTwitter seed is missing account or users")
+    seed_handle = str(account.get("username") or "")
+    if handle != seed_handle:
+        raise ValueError(f"requested account {handle!r} does not match seed account {seed_handle!r}")
+    user = next((row for row in users if isinstance(row, Mapping) and row.get("handle") == handle), None)
+    if user is None:
+        raise ValueError(f"OpenTwitter seed has no user {handle!r}")
+    session_user = {
+        "handle": handle,
+        "displayName": user.get("displayName", ""),
+        "email": account.get("email", ""),
+        "avatar": user.get("avatar", ""),
+    }
+    return {
+        "session": {"loggedIn": True, "user": session_user},
+        "accounts": {
+            handle: {
+                "handle": handle,
+                "email": account.get("email", ""),
+                "username": handle,
+                "password": account.get("password", ""),
+            }
+        },
+        "users": list(users),
+        "userStateByHandle": {
+            handle: {
+                "following": list(seed.get("following") or []),
+                "followers": list(seed.get("followers") or []),
+                "likedPostIds": ["p-1005"],
+                "repostedPostIds": [],
+                "bookmarkedPostIds": ["p-1001"],
+                "messages": list(seed.get("messages") or []),
+                "notifications": list(seed.get("notifications") or []),
+            }
+        },
+        "posts": list(seed.get("posts") or []),
+        "comments": dict(seed.get("comments") or {}),
+        "evaluationMode": None,
+        "evaluationEvents": [],
+        "evaluationEventSeq": 0,
+    }
+
+
+def _write_seeded_state(db_path: Path, state_key: str, state: Mapping[str, Any]) -> str:
+    encoded = json.dumps(state, ensure_ascii=False, separators=(",", ":")).encode("utf-16-le")
+    with sqlite3.connect(db_path, timeout=10) as connection:
+        connection.execute("PRAGMA busy_timeout = 10000")
+        cursor = connection.execute(
+            f"UPDATE {ITEM_TABLE} SET value = ? WHERE key = ?",
+            (sqlite3.Binary(encoded), state_key),
+        )
+        if cursor.rowcount != 1:
+            raise ValueError("OpenTwitter local-storage state row was not updated")
+        connection.commit()
+    if stored_value(db_path, state_key) != encoded:
+        raise ValueError("OpenTwitter seed state did not persist exactly")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class OpenTwitterOpenAppInitializer(BaseInitializer):
@@ -20,3 +130,83 @@ class OpenTwitterOpenAppInitializer(BaseInitializer):
     BUNDLE_ID = "com.killt.opentwitter"
 
     SETTLE_MS = 1200
+
+    def initialize(self, context: Mapping[str, Any]) -> EvalResult:
+        params = {**dict(self.TASK_PARAMS), **dict(context.get("params") or {})}
+        if params.get("reset_to_seed") is not True:
+            return super().initialize(context)
+
+        udid = str(params.get("udid") or context.get("udid") or "").strip()
+        bundle_id = str(params.get("bundle_id") or self.BUNDLE_ID).strip()
+        handle = str(params.get("expected_logged_in_handle") or "alex").strip()
+        if not udid or bundle_id != self.BUNDLE_ID:
+            return self._result(
+                EvalStatus.ERROR,
+                "seed reset needs the bound simulator and OpenTwitter bundle",
+                {"udid": udid or None, "bundle_id": bundle_id},
+            )
+        try:
+            from evaluators.cua_review.core.initialization import (
+                app_data_container,
+                launch_app,
+                simulator_is_booted,
+                wait_until_running,
+            )
+
+            if not simulator_is_booted(udid):
+                raise RuntimeError(f"simulator {udid} is not booted")
+            if not self._app_is_running(udid, bundle_id):
+                launch_app(udid, bundle_id)
+                wait_until_running(udid, bundle_id)
+                time.sleep(0.8)
+            self._terminate_app(udid, bundle_id)
+
+            container = app_data_container(udid, bundle_id)
+            if container is None:
+                raise RuntimeError("OpenTwitter app data container was not found")
+            seed, seed_sha256 = _seed_from_app_bundle(udid, bundle_id)
+            state = _seeded_logged_in_state(seed, handle)
+            db_path = find_state_database(container, LOCAL_STATE_KEY_PREFIX)
+            state_key = resolve_state_key(db_path, LOCAL_STATE_KEY_PREFIX)
+            state_sha256 = _write_seeded_state(db_path, state_key, state)
+        except Exception as exc:  # noqa: BLE001
+            return self._result(
+                EvalStatus.ERROR,
+                f"could not restore OpenTwitter's task seed: {type(exc).__name__}: {exc}",
+                {"udid": udid, "bundle_id": bundle_id, "read_only": False},
+            )
+
+        result = super().initialize(context)
+        result.metadata.update(
+            {
+                "read_only": False,
+                "seed_state_restored": True,
+                "seed_source_sha256": seed_sha256,
+                "seeded_state_sha256": state_sha256,
+                "seeded_user_handle": handle,
+            }
+        )
+        return result
+
+    @staticmethod
+    def _app_is_running(udid: str, bundle_id: str) -> bool:
+        result = subprocess.run(
+            ["xcrun", "simctl", "spawn", udid, "launchctl", "list"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return result.returncode == 0 and bundle_id in result.stdout
+
+    @staticmethod
+    def _terminate_app(udid: str, bundle_id: str) -> None:
+        if not OpenTwitterOpenAppInitializer._app_is_running(udid, bundle_id):
+            return
+        result = subprocess.run(
+            ["xcrun", "simctl", "terminate", udid, bundle_id],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"could not stop OpenTwitter: {(result.stderr or result.stdout).strip()}")

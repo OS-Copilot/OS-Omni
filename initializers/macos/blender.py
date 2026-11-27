@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shlex
 import time
+from pathlib import Path
 from typing import Any, Mapping
 
 from core.init import BaseInitializer, InitResult, InitStatus
@@ -378,26 +379,54 @@ PY"""
         self._run(controller, script, timeout=180)
 
     def _launch_app(self, controller: Any, *, app_command: str, blend_path: str, launch_args: list[str]) -> None:
-        command_parts = [shlex.quote(app_command), *[shlex.quote(arg) for arg in launch_args], "--factory-startup", shlex.quote(blend_path)]
-        command = " ".join(command_parts)
+        executable = Path(app_command).resolve()
+        app_bundle = next(
+            (str(parent) for parent in executable.parents if parent.suffix == ".app"),
+            str(executable),
+        )
+        arguments = " ".join(shlex.quote(arg) for arg in launch_args)
         launch_script = "\n".join(
             [
-                f"nohup bash -lc {shlex.quote(command)} >/tmp/helloworld-blender-launch.log 2>&1 &",
-                "sleep 1",
+                # Reused VMs can leave another app's floating window over the
+                # target (for example Thunderbird's global search bar). Hide
+                # other GUI apps in one System Events operation; do not quit
+                # them or discard their persisted data.
+                "osascript <<'APPLESCRIPT'\n"
+                'tell application "System Events"\n'
+                '  set visible of (every application process whose background only is false and name is not "Blender" and name is not "Finder" and name is not "Dock" and name is not "SystemUIServer" and name is not "Terminal") to false\n'
+                "end tell\n"
+                "APPLESCRIPT",
+                # Launch the application and open the prepared document as a
+                # LaunchServices document request. Passing a .blend path after
+                # `open --args` can leave the GUI on Blender's unsaved default
+                # scene even though the saved file is correct.
+                f"nohup open -a {shlex.quote(app_bundle)} --args {arguments} >/tmp/helloworld-blender-launch.log 2>&1 &",
+                "sleep 2",
+                f"open -a {shlex.quote(app_bundle)} {shlex.quote(blend_path)}",
+                "sleep 2",
+                "osascript -e 'tell application \"Blender\" to activate'",
             ]
         )
-        self._run(controller, launch_script, timeout=15)
+        self._run(controller, launch_script, timeout=30)
 
     def _dismiss_splash(self, controller: Any) -> None:
-        if not hasattr(controller, "execute_action"):
+        if not hasattr(controller, "run_python_script"):
             return
         try:
-            ui_nodes = []
-            if hasattr(controller, "observe"):
-                observation = controller.observe(include_ui_tree=True, include_screenshot_data=False)
-                ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
-            controller.execute_action({"type": "keyboard", "action": "escape", "count": 1}, ui_nodes)
-            time.sleep(0.5)
+            width = int(getattr(controller, "width", 1920) or 1920)
+            height = int(getattr(controller, "height", 1080) or 1080)
+            # Blender 4.2 presents a first-run Quick Setup dialog. Choosing its
+            # visible default Continue button once prevents it from blocking
+            # benchmark actions; when absent this click only lands in the 3D
+            # viewport and Escape clears any incidental selection.
+            controller.run_python_script(
+                "import pyautogui, time\n"
+                f"pyautogui.click({width // 2}, {int(height * 0.714)})\n"
+                "time.sleep(1.0)\n"
+                "pyautogui.press('escape')\n"
+                "time.sleep(0.5)\n",
+                timeout=8,
+            )
         except Exception:
             return
 

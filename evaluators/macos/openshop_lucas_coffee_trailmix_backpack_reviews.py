@@ -12,6 +12,7 @@ observed state, pass status, and a failure reason in ``metadata``.
 
 from __future__ import annotations
 
+import itertools
 import json
 import math
 from textwrap import dedent
@@ -28,12 +29,23 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
     - ``ui``: foreground app name / bundle id auxiliary check.
     - ``session``: logged_in, phone, user_name.
     - ``cart``: item_count, total, and per-item quantity/selected_spec.
-    - ``orders``: count; ``recent`` (ordered list, newest first) or ``latest``
+    - ``orders``: count; ``recent`` (the newest ``len(recent)`` orders, matched
+      one-to-one in any order unless ``recent_in_order`` is true) or ``latest``
       (single order); ``by_id`` (stable order id); items include quantity,
-      selected_spec, and review rating/text.
-    - ``benchmark.ordered``: benchmark events that must appear in this order
-      (extra events between matches are allowed; every key except ``type`` is a
-      matcher field).
+      selected_spec, and review rating/text (``text_variants`` lists other exact
+      texts the brief's punctuation also allows).
+    - ``benchmark.ordered``: the recorded demo ledger; a non-blocking diagnostic
+      unless ``benchmark.require_ordered`` is true (extra events between matches
+      are allowed; every key except ``type`` is a matcher field).
+    - ``benchmark.required_events``: events the brief itself asks for (e.g. a
+      named search in a named category); each must occur at least once, at any
+      position and any number of times.
+    - ``benchmark.precedence``: pairwise orders the brief states with temporal
+      language (``before`` -> ``after``); a matching ``after`` event must follow
+      a matching ``before`` event.
+
+    Matchers may use ``order_label`` to stand for the ``orderId`` of the order
+    that the ``recent`` expectation with that label was matched to.
     """
 
     DEFAULT_PORT = 4310
@@ -54,6 +66,7 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
                 "auxiliary foreground accessibility observation",
             ],
             "checks": [],
+            "diagnostics": [],
             "observed_state": {},
             "failure_reasons": [],
             "business_state_mutated": False,
@@ -115,16 +128,19 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
         observed: Any,
         passed: bool,
         failure_reason: str,
+        *,
+        diagnostic: bool = False,
     ) -> None:
-        metadata.setdefault("checks", []).append(
-            {
-                "check": name,
-                "expected": expected,
-                "observed": observed,
-                "pass": bool(passed),
-            }
-        )
-        if not passed:
+        entry = {
+            "check": name,
+            "expected": expected,
+            "observed": observed,
+            "pass": bool(passed),
+        }
+        if diagnostic:
+            entry["diagnostic"] = True
+        metadata.setdefault("checks", []).append(entry)
+        if not passed and not diagnostic:
             metadata.setdefault("failure_reasons", []).append(f"{name}: {failure_reason}")
 
     @classmethod
@@ -359,26 +375,12 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
 
         recent = expectation.get("recent")
         if isinstance(recent, list):
-            for index, order_expectation in enumerate(recent):
-                if not isinstance(order_expectation, Mapping):
-                    continue
-                label = str(order_expectation.get("label") or f"recent[{index}]")
-                if index >= len(orders):
-                    cls._record(
-                        metadata,
-                        f"orders.recent[{index}]",
-                        "order present",
-                        "none",
-                        False,
-                        f"expected recent order {label!r} at index {index}, observed no order",
-                    )
-                    continue
-                cls._validate_order(
-                    order_expectation,
-                    orders[index],
-                    metadata,
-                    order_label=f"recent[{index}] ({label})",
-                )
+            cls._check_recent_orders(
+                recent,
+                orders,
+                metadata,
+                in_order=bool(expectation.get("recent_in_order", False)),
+            )
         elif isinstance(expectation.get("latest"), Mapping):
             latest = dict(expectation["latest"])
             if not orders:
@@ -422,6 +424,83 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
             if order_match is None:
                 continue
             cls._validate_order(expected_order, order_match, metadata, order_label=f"order {order_id}")
+
+    MAX_UNORDERED_RECENT = 6
+
+    @classmethod
+    def _check_recent_orders(
+        cls,
+        recent: list[Any],
+        orders: list[Any],
+        metadata: dict[str, Any],
+        *,
+        in_order: bool,
+    ) -> None:
+        """Match the ``recent`` expectations to the newest orders.
+
+        ``/api/orders`` lists orders newest first.  The two-order briefs call
+        the new orders "the first order" and "the second order" without saying
+        which must be placed first; those are record labels, not chronology.
+        So by default each expectation is matched to a distinct order among the
+        newest ``len(recent)`` orders (the assignment with the fewest failed
+        checks wins; ties keep the newest-first mapping), while
+        ``orders.count`` still pins how many orders exist.  ``recent_in_order``
+        restores the positional newest-first mapping.
+        """
+
+        indexed = [
+            (index, dict(item)) for index, item in enumerate(recent) if isinstance(item, Mapping)
+        ]
+        size = len(recent)
+        assignment: dict[int, int] = {index: index for index, _ in indexed}
+        if not in_order and len(indexed) > 1 and size <= cls.MAX_UNORDERED_RECENT:
+            best_failures: int | None = None
+            for permutation in itertools.permutations(range(size), size):
+                failures = 0
+                for index, order_expectation in indexed:
+                    position = permutation[index]
+                    if position >= len(orders):
+                        failures += 1
+                        continue
+                    scratch: dict[str, Any] = {"checks": [], "failure_reasons": []}
+                    cls._validate_order(
+                        order_expectation, orders[position], scratch, order_label="candidate"
+                    )
+                    failures += len(scratch["failure_reasons"])
+                    if best_failures is not None and failures >= best_failures:
+                        break
+                if best_failures is None or failures < best_failures:
+                    best_failures = failures
+                    assignment = {index: permutation[index] for index, _ in indexed}
+                if best_failures == 0:
+                    break
+
+        matched: dict[str, Any] = {}
+        for index, order_expectation in indexed:
+            position = assignment[index]
+            label = str(order_expectation.get("label") or f"recent[{index}]")
+            if position >= len(orders):
+                cls._record(
+                    metadata,
+                    f"orders.recent[{position}]",
+                    "order present",
+                    "none",
+                    False,
+                    f"expected recent order {label!r} among the newest {size} orders, observed no order",
+                )
+                continue
+            order = dict(orders[position] or {})
+            matched[label] = {"position": position, "order_id": str(order.get("id") or "")}
+            cls._validate_order(
+                order_expectation,
+                order,
+                metadata,
+                order_label=f"recent[{position}] ({label})",
+            )
+        metadata["recent_order_assignment"] = {
+            "mode": "positional" if in_order else "unordered",
+            "orders": matched,
+        }
 
     @classmethod
     def _validate_order(
@@ -580,15 +659,31 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
             )
         if "text" in review_expectation:
             expected_text = str(review_expectation.get("text") or "")
+            accepted = cls._accepted_texts(expected_text, review_expectation.get("text_variants"))
             actual_text = str(actual_review.get("review") or actual_review.get("text") or "")
             cls._record(
                 metadata,
                 f"{order_label}.item.{product_id}.review.text",
-                expected_text,
+                expected_text if len(accepted) == 1 else list(accepted),
                 actual_text,
-                actual_text.strip() == expected_text.strip(),
-                f"expected {order_label} product {product_id} review text={expected_text!r}, observed {actual_text!r}",
+                actual_text.strip() in {text.strip() for text in accepted},
+                f"expected {order_label} product {product_id} review text in {list(accepted)!r}, observed {actual_text!r}",
             )
+
+    @staticmethod
+    def _accepted_texts(text: str, variants: Any) -> tuple[str, ...]:
+        """The exact text plus the exact variants a task also accepts.
+
+        Some briefs quote a review with the sentence punctuation inside the
+        closing quote (“Good to share,”), so a reader cannot tell whether the
+        mark belongs to the text; such a task lists the other reading as a
+        variant.  Every accepted text is still compared exactly (after strip).
+        """
+
+        accepted = [text]
+        if isinstance(variants, (list, tuple)):
+            accepted.extend(str(item) for item in variants if str(item or ""))
+        return tuple(dict.fromkeys(accepted))
 
     @classmethod
     def _check_benchmark(
@@ -599,10 +694,135 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
     ) -> None:
         if not isinstance(expectation, Mapping):
             return
-        ordered = expectation.get("ordered")
-        if not isinstance(ordered, list):
-            return
         events = list((payload or {}).get("events") or [])
+        ordered = expectation.get("ordered")
+        if isinstance(ordered, list):
+            cls._check_ordered_ledger(expectation, ordered, events, metadata)
+        cls._check_required_events(expectation.get("required_events"), events, metadata)
+        cls._check_event_precedence(expectation.get("precedence"), events, metadata)
+
+    @classmethod
+    def _event_matches(
+        cls,
+        event: Any,
+        expected_event: Mapping[str, Any],
+        metadata: Mapping[str, Any],
+    ) -> bool:
+        if not isinstance(event, Mapping):
+            return False
+        event_type = str(expected_event.get("type") or "").strip()
+        if str(event.get("type") or "") != event_type:
+            return False
+        for key, value in expected_event.items():
+            if key in {"type", "label"}:
+                continue
+            if key == "order_label":
+                assigned = ((metadata.get("recent_order_assignment") or {}).get("orders") or {}).get(
+                    str(value)
+                )
+                order_id = str((assigned or {}).get("order_id") or "")
+                if not order_id or str(event.get("orderId") or "") != order_id:
+                    return False
+                continue
+            if not cls._field_matches(event.get(key), value):
+                return False
+        return True
+
+    @classmethod
+    def _check_required_events(
+        cls,
+        required: Any,
+        events: list[Any],
+        metadata: dict[str, Any],
+    ) -> None:
+        """Events the brief asks for as deliverables: at least once, anywhere."""
+
+        if not isinstance(required, list):
+            return
+        for position, expected_event in enumerate(required):
+            if not isinstance(expected_event, Mapping):
+                continue
+            label = str(expected_event.get("label") or f"required_events[{position}]")
+            matches = [
+                index
+                for index, event in enumerate(events)
+                if cls._event_matches(event, expected_event, metadata)
+            ]
+            cls._record(
+                metadata,
+                f"benchmark.required_event.{label}",
+                {key: value for key, value in expected_event.items() if key != "label"},
+                {"match_count": len(matches), "event_indices": matches},
+                bool(matches),
+                f"expected at least one benchmark event matching {dict(expected_event)}, observed none",
+            )
+
+    @classmethod
+    def _check_event_precedence(
+        cls,
+        pairs: Any,
+        events: list[Any],
+        metadata: dict[str, Any],
+    ) -> None:
+        """Brief-stated pairwise orders: some ``after`` match follows a ``before`` match.
+
+        Only orders the brief states with temporal language ("followed by",
+        "replacing an initial ...") are listed; the latest matching ``after``
+        event (the one that produced the final state) must come after the first
+        matching ``before`` event.
+        """
+
+        if not isinstance(pairs, list):
+            return
+        for position, pair in enumerate(pairs):
+            if not isinstance(pair, Mapping):
+                continue
+            label = str(pair.get("label") or f"precedence[{position}]")
+            before = pair.get("before") if isinstance(pair.get("before"), Mapping) else {}
+            after = pair.get("after") if isinstance(pair.get("after"), Mapping) else {}
+            before_indices = [
+                index for index, event in enumerate(events) if cls._event_matches(event, before, metadata)
+            ]
+            after_indices = [
+                index for index, event in enumerate(events) if cls._event_matches(event, after, metadata)
+            ]
+            passed = bool(before_indices and after_indices and max(after_indices) > min(before_indices))
+            if not before_indices:
+                reason = f"no benchmark event matches the earlier step {dict(before)}"
+            elif not after_indices:
+                reason = f"no benchmark event matches the later step {dict(after)}"
+            else:
+                reason = (
+                    f"the later step {dict(after)} (events {after_indices}) never follows "
+                    f"the earlier step {dict(before)} (events {before_indices})"
+                )
+            cls._record(
+                metadata,
+                f"benchmark.precedence.{label}",
+                {"before": dict(before), "after": dict(after)},
+                {"before_indices": before_indices, "after_indices": after_indices},
+                passed,
+                reason,
+            )
+
+    @classmethod
+    def _check_ordered_ledger(
+        cls,
+        expectation: Mapping[str, Any],
+        ordered: list[Any],
+        events: list[Any],
+        metadata: dict[str, Any],
+    ) -> None:
+        # Restored benchmark instrumentation: the recorded demo's whole ledger,
+        # including searches, product views and the order of the orders and
+        # reviews.  The English briefs never state that order (scan.CSV MAC-037 /
+        # MAC-040, class step_gate), so the ledger is diagnostic unless a task
+        # explicitly opts in; orders the brief does state live in
+        # ``benchmark.precedence`` and searches it asks for in
+        # ``benchmark.required_events``.
+        require_ordered = bool(expectation.get("require_ordered", False))
+        prefix = "benchmark.ordered" if require_ordered else "benchmark.ordered.diagnostic"
+        matched_all = True
         cursor = 0
         for position, expected_event in enumerate(ordered):
             if not isinstance(expected_event, Mapping):
@@ -611,12 +831,14 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
             if not event_type:
                 cls._record(
                     metadata,
-                    f"benchmark.ordered[{position}]",
+                    f"{prefix}[{position}]",
                     "type present",
                     "missing",
                     False,
                     "benchmark event expectation is missing type",
+                    diagnostic=not require_ordered,
                 )
+                matched_all = False
                 continue
             matcher = {key: value for key, value in expected_event.items() if key != "type"}
             found_at: int | None = None
@@ -629,14 +851,30 @@ class _OpenShopMacOSApiEvaluatorBase(BaseEvaluator):
                     break
             cls._record(
                 metadata,
-                f"benchmark.ordered[{position}]",
+                f"{prefix}[{position}]",
                 {"type": event_type, **matcher},
                 found_at if found_at is not None else "no matching event",
                 found_at is not None,
                 f"expected ordered benchmark event {event_type} with {matcher}, observed none after cursor {cursor}",
+                diagnostic=not require_ordered,
             )
             if found_at is not None:
                 cursor = found_at + 1
+            else:
+                matched_all = False
+        if not require_ordered:
+            metadata.setdefault("diagnostics", []).append(
+                {
+                    "diagnostic_id": "benchmark.ordered",
+                    "passed": matched_all,
+                    "blocking": False,
+                    "note": (
+                        "The recorded demo ledger's order is not stated in the brief; PASS/FAIL "
+                        "comes from the durable session/cart/order/review state plus any "
+                        "benchmark.required_events and benchmark.precedence checks."
+                    ),
+                }
+            )
 
     @classmethod
     def _check_ui(

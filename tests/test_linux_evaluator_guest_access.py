@@ -268,7 +268,9 @@ def test_marble_evaluator_closes_marble_before_reading_its_settings() -> None:
     assert result.metadata["app_close"] == {"was_running": True, "exited": True}
 
 
-def test_openslide_qa70_rehearsal_is_matched_by_action_not_annotator_phrases(tmp_path):
+def test_openslide_qa70_rehearsal_needs_the_presenter_on_screen_not_words_or_keys(tmp_path):
+    # The rehearsal is read from the presenter overlay in the step screenshots (see
+    # tests/test_web_openslide_evaluators.py); reflections and inputs without it are not enough.
     import json
 
     from evaluators.linux.openslide_qa70_review_199367 import _collect_trajectory_process
@@ -286,7 +288,5 @@ def test_openslide_qa70_rehearsal_is_matched_by_action_not_annotator_phrases(tmp
     (tmp_path / "trajectory.jsonl").write_text("\n".join(json.dumps(item) for item in rows))
     evidence = _collect_trajectory_process({"run_dir": str(tmp_path)})
     assert [check["check_id"] for check in evidence["checks"]] == ["slideshow.rehearse_navigation"]
-    assert evidence["checks"][0]["passed"]
-
-    (tmp_path / "trajectory.jsonl").write_text("\n".join(json.dumps(item) for item in rows[:3]))
-    assert not _collect_trajectory_process({"run_dir": str(tmp_path)})["checks"][0]["passed"]
+    assert not evidence["checks"][0]["passed"]
+    assert evidence["checks"][0]["actual"]["steps_without_screenshot"] == [1, 2, 3, 4]

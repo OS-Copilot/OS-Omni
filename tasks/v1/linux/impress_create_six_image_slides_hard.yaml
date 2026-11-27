@@ -75,9 +75,18 @@ evaluation:
       examine_number_of_slides: true
       examine_text: false
       examine_shape: true
-      examine_image_size: true
+      # The brief gives no target geometry ("the same placement and fitted size as the
+      # reference kiosk layout"; the seeded deck has no picture to copy), so the pictures are
+      # not sized against the hidden gold deck. picture_box_rules below requires all six to
+      # share slide 1's box instead, as the Windows peer (impress_slide_shape_bold) does.
+      examine_image_size: false
       examine_run_count: false
       examine_alignment: false
+    picture_box_rules:
+    - reference_slide: 1
+      slides: [2, 3, 4, 5, 6]
+      picture_index: 1
+      tolerance: 0.005
     image_count_rules:
     - slide_index: 1
       picture_count: 1
@@ -110,6 +119,21 @@ evaluation:
     - slide_index: 6
       picture_index: 1
       descr: pic6.png
+    # Alt text alone does not identify the picture: slide N must show the Desktop picN.png
+    # (same bytes, or the same pixels if Impress re-encoded it).
+    picture_image_rules:
+    - slide_index: 1
+      source_path: /home/user/Desktop/pic1.png
+    - slide_index: 2
+      source_path: /home/user/Desktop/pic2.png
+    - slide_index: 3
+      source_path: /home/user/Desktop/pic3.png
+    - slide_index: 4
+      source_path: /home/user/Desktop/pic4.png
+    - slide_index: 5
+      source_path: /home/user/Desktop/pic5.png
+    - slide_index: 6
+      source_path: /home/user/Desktop/pic6.png
     text_artifacts:
     - path: /tmp/helloworld_office/impress_asset_manifest.csv
       equals: |
@@ -127,8 +151,8 @@ evaluation:
         owner=media-desk
         status=ready-for-preview
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

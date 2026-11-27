@@ -25,6 +25,11 @@ class DeltaChatInitializer(BaseInitializer):
     )
     DEFAULT_FINAL_WAIT_MS = 5000
     DEFAULT_BOOT_TIMEOUT = 240
+    # Matches vm_guest_password in configs/linux.yaml.
+    DEFAULT_GUEST_SUDO_PASSWORD = "password"
+    # The relay's TLS certificate is checked against the guest clock, which a restored
+    # snapshot leaves at the snapshot date; behind by more than this, it is set to host time.
+    MAX_GUEST_CLOCK_LAG_SECONDS = 300
 
     CONTACT_SEEDS = [
         {
@@ -108,8 +113,10 @@ class DeltaChatInitializer(BaseInitializer):
         final_wait_ms = int(params.get("final_wait_ms", self.DEFAULT_FINAL_WAIT_MS) or self.DEFAULT_FINAL_WAIT_MS)
         boot_timeout = int(params.get("boot_timeout_seconds", self.DEFAULT_BOOT_TIMEOUT) or self.DEFAULT_BOOT_TIMEOUT)
         force_reseed = bool(params.get("force_reseed", False))
+        sudo_password = str(params.get("guest_sudo_password") or self.DEFAULT_GUEST_SUDO_PASSWORD)
 
         try:
+            self._sync_guest_clock(controller, sudo_password=sudo_password)
             self._run(controller, f"command -v {shlex.quote(app_command)} >/dev/null 2>&1", timeout=10)
             self._run(controller, f"test -x {shlex.quote(rpc_path)}", timeout=10)
             self._stop_app(controller)
@@ -186,6 +193,17 @@ class DeltaChatInitializer(BaseInitializer):
             output = str(result.get("output", "")).strip()
             raise RuntimeError(output or f"guest command failed with exit code {returncode}")
         return result
+
+    def _sync_guest_clock(self, controller: Any, *, sudo_password: str) -> None:
+        guest_now = int(str(self._run(controller, "date -u +%s", timeout=10).get("output", "")).strip())
+        host_now = int(time.time())
+        if host_now - guest_now <= self.MAX_GUEST_CLOCK_LAG_SECONDS:
+            return
+        self._run(
+            controller,
+            f"printf '%s\\n' {shlex.quote(sudo_password)} | sudo -S -p '' date -u -s @{host_now} >/dev/null",
+            timeout=15,
+        )
 
     def _cache_exists(self, controller: Any, cache_archive: str) -> bool:
         result = controller.run_bash_script(
@@ -345,8 +363,10 @@ class DeltaChatOracleInitializer(DeltaChatInitializer):
         final_wait_ms = int(params.get("final_wait_ms", self.DEFAULT_FINAL_WAIT_MS) or self.DEFAULT_FINAL_WAIT_MS)
         boot_timeout = int(params.get("boot_timeout_seconds", self.DEFAULT_BOOT_TIMEOUT) or self.DEFAULT_BOOT_TIMEOUT)
         force_reseed = bool(params.get("force_reseed", False))
+        sudo_password = str(params.get("guest_sudo_password") or self.DEFAULT_GUEST_SUDO_PASSWORD)
 
         try:
+            self._sync_guest_clock(controller, sudo_password=sudo_password)
             self._run(controller, f"command -v {shlex.quote(app_command)} >/dev/null 2>&1", timeout=10)
             self._run(controller, f"test -x {shlex.quote(rpc_path)}", timeout=10)
             self._stop_app(controller)

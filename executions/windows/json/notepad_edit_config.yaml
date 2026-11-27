@@ -1,0 +1,9 @@
+tasks:
+- tasks/windows/notepad_edit_config.yaml
+models:
+- gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows yifan single-task run - notepad edit config

@@ -10,7 +10,7 @@ instruction: |-
 
   A new recipient must be saved with the name "Caleb Wong", the nickname "Research", the bank "Metro Bank", the routing number "021000021", and the account number "8642073159". A new transfer must be submitted from the account "Rainy Day Savings ...9140" to "Caleb Wong" for an amount of "149.75" on the date "2026-06-06" with the memo "T3 research".
 init:
-  initializer_id: initializers.windows.open_app:OpenAppInitializer
+  initializer_id: initializers.windows.openbank_rebuilt:OpenBankRebuiltInitializer
   params:
     app_name: OpenBank
     wait_ms: 1200
@@ -18,9 +18,9 @@ evaluation:
   evaluator_id: evaluators.windows.openbank_task03_702660:OpenBankTask03702660Evaluator
   params:
     port: 4340
-    expected_ruleset_sha256: ec1492ca27dd4204213465843e54591bcfe7669d6113a6538cf99a0dc980b9e7
+    expected_ruleset_sha256: 2d1fca66dc86a026f8eb36f22783ed69e60917085f693d0becc38cdac209e1af
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenBank
@@ -41,7 +41,7 @@ metadata:
     primary_source: OpenBank /api/evaluation durable state and current-session events
     source_state_mode: human_completed_eval_only
     exact_step_coverage: 1-76
-    required_order: four disputes, three bill payments, recipient creation, transfer submission
+    required_order: no stated order; Caleb Wong recipient before its transfer
     final_ui: OpenBank remains the foreground application
   task_version: '1.1'
   snapshot_name: s1

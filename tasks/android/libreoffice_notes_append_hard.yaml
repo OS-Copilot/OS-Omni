@@ -1,0 +1,42 @@
+task_id: android.libreoffice.notes_append_hard
+platform: android
+instruction: Open notes.odt in LibreOffice, go to the very end, and append only the FINAL checklist, not the archival sections. The exact twelve new lines must be Final 01 - Task A completed, Final 02 - Task B completed, Final 03 - Task C completed, Final 04 - Budget checked, Final 05 - Owner notified, Final 06 - Risk log archived, Final 07 - Follow-up scheduled, Final 08 - Device handoff confirmed, Final 09 - Metrics snapshot attached, Final 10 - Rollback owner Mei, Final 11 - Archive code BMK-774, and Final 12 - Do not copy draft checklist. Make all twelve lines bold, make only the even-numbered lines italic, save, reopen the file, and make sure each final line appears exactly once.
+init:
+  initializer_id: initializers.android.libreoffice_notes_append_prep:LibreOfficeNotesAppendPrepInitializer
+  params:
+    app_package: "org.documentfoundation.libreoffice"
+    app_activity: "org.libreoffice.ui.LibreOfficeUIActivity"
+    document_dir: "/sdcard/Documents"
+    filename: "notes.odt"
+    clear_app_data: false
+    wait_ms: 2400
+evaluation:
+  evaluator_id: evaluators.android.libreoffice_notes_append:LibreOfficeNotesAppendEvaluator
+  params:
+    expected_filename: "notes.odt"
+    required_lines:
+      - "Final 01 - Task A completed"
+      - "Final 02 - Task B completed"
+      - "Final 03 - Task C completed"
+      - "Final 04 - Budget checked"
+      - "Final 05 - Owner notified"
+      - "Final 06 - Risk log archived"
+      - "Final 07 - Follow-up scheduled"
+      - "Final 08 - Device handoff confirmed"
+      - "Final 09 - Metrics snapshot attached"
+      - "Final 10 - Rollback owner Mei"
+      - "Final 11 - Archive code BMK-774"
+      - "Final 12 - Do not copy draft checklist"
+    require_exact_line_counts: true
+    expected_line_count: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [libreoffice, android, odt, append, formatting, hard, benchmark]
+  app: LibreOffice
+  app_bundle_id: org.documentfoundation.libreoffice
+  difficulty: hard
+  description: "Append a twelve-line final checklist at document end while avoiding archival decoys, then save/reopen and verify each exact line appears once."
+  prerequisites:
+    - "LibreOffice is installed on the emulator."

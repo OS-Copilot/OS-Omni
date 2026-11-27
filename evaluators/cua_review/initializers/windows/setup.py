@@ -152,7 +152,9 @@ def launch(controller: Any, target: str) -> str:
     return run_powershell(
         controller,
         "$ErrorActionPreference = 'Stop'\n"
-        f"Start-Process -FilePath \"{target}\"\n"
+        f"$launchTarget = [Environment]::ExpandEnvironmentVariables(\"{target}\")\n"
+        "if (-not (Test-Path -LiteralPath $launchTarget)) { throw 'Resolved application launch path missing' }\n"
+        "Start-Process -FilePath $launchTarget\n"
         "Write-Output 'LAUNCHED'",
         timeout=60,
     ).strip()

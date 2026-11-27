@@ -37,12 +37,12 @@ evaluation:
     expected_app_js_sha256: c139357582bae62edb7cf780dfcbaacf58ca0fcd312c3559e75173ed5d61e1fa
     expected_seed_data_sha256: 6b1836923d6ad21aa0e977c03e3f0ba77ce531582488b75b8acb0a2cf43ebcba
     expected_flight_data_sha256: 2c4fdf3a3d4b4644c7d9dbed8cd4bd14fe217b1bf8124d174fdb8c802c0716b5
-    expected_ruleset_sha256: 446dba3671bd302d382fe6f233e49fe6ff5bfa1379ed7efbea5f4f233a11bb35
+    expected_ruleset_sha256: 2a0ad6e1e4a2b88c96ab1a44e8fc4307f083917b4577744462086eb5e687b1ea
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-1
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -62,7 +62,7 @@ metadata:
   ios_device_profile: iphone17-1
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 6af33bdcd0dd55b0f0cbe384d9b1c0b5301ef4117fc024c881430612df8bf295
-  evaluator_ruleset_sha256: 446dba3671bd302d382fe6f233e49fe6ff5bfa1379ed7efbea5f4f233a11bb35
+  evaluator_ruleset_sha256: 2a0ad6e1e4a2b88c96ab1a44e8fc4307f083917b4577744462086eb5e687b1ea
   recording: 2026-08-03_16-04-42.mp4
   description: Exact OpenTrip review, flight, hotel, and reschedule verification under fresh task identity
     234497.
@@ -75,12 +75,13 @@ metadata:
     evidence:
     - Only opentrip.localState.v1 from the exact capacitor://localhost WebKit origin is authoritative.
     - SQLite, WAL, and SHM are copied to a host temporary directory before read-only inspection.
-    - Committed WAL states must prove review, flight booking, hotel booking, and reschedule in strict
-      order.
+    - Committed WAL states must show the review, flight booking, hotel booking, and reschedule each
+      landing once, in any order.
     - Manual eval and automatic full-run evaluation use the same evaluator, ruleset digest, and checkpoints.
     strictness:
-    - Every persisted field, dynamic identifier, cardinality, causal window, and transition order is exact.
-    - Extra, duplicate, malformed, corrected-after-wrong, fuzzy, or out-of-order target data fails.
+    - Every persisted field, dynamic identifier, cardinality, and causal window is exact.
+    - Extra, duplicate, malformed, corrected-after-wrong, or fuzzy target data fails; the brief states
+      no order between the target records, so none is required.
     coverage:
     - All 74 steps map to one of four durable chains; uncovered_data_steps must be empty.
     - Transient navigation/search steps are not represented as invented events.

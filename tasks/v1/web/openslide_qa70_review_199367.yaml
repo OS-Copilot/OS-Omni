@@ -21,11 +21,11 @@ evaluation:
   params:
     profile_dir: /home/user/.config/google-chrome/Default/Local Storage/leveldb
     source_state_mode: human_completed_eval_only
-    expected_ruleset_sha256: 00c754b53b8cae31537b9975956ed5ce27832526180d4747ec413a6225fff261
+    expected_ruleset_sha256: 8f32b17a0f4fb81ab5c207a7d378b9d314d42ddd2f64d473b48e711a08bfd6e1
     timeout: 60
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: openslide_qa70
   bundle_id: openslide
@@ -35,10 +35,10 @@ metadata:
   snapshot_name: s1
   source_state_mode: human_completed_eval_only
   instruction_sha256: ff3042b9e5895c0a39c4f53401dfc6517dbce3ddb5c9f7c83c0f71bdbb6a4862
-  ruleset_sha256: 00c754b53b8cae31537b9975956ed5ce27832526180d4747ec413a6225fff261
+  ruleset_sha256: 8f32b17a0f4fb81ab5c207a7d378b9d314d42ddd2f64d473b48e711a08bfd6e1
   source_instruction_path: gui_instruction.txt
-  evaluation_standard: Exact persisted state and ordered causal evidence for the original 72-operation
-    instruction.
+  evaluation_standard: Exact persisted deck state plus the rehearsal seen in the run; only the orders the
+    English instruction states are graded.
   renumbering_provenance:
     mode: NUMBER_ONLY_REPAIR
     old_instruction_sha256: a859fd95bccd7ee038f5c5f3cdc254f519942c9fd6f28ec9f4d8eac68cf199da

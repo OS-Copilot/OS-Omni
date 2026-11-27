@@ -30,7 +30,7 @@ evaluation:
     instruction_raw_sha256: 99dbb4a1080ce1e5758f1d36170736f036c25678e1ae132cff5d4abc08991800
     expected_ruleset_sha256: 64fdd0f04bbfe7147f27135efe740fb46050640db036773dd8d3c1b99458a1e1
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenBank

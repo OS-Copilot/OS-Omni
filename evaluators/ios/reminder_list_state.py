@@ -54,6 +54,27 @@ class ReminderListStateEvaluator(BaseEvaluator):
             )
 
         actual_bundle_id = str(getattr(observation, "foreground_bundle_id", "") or "").strip()
+        ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
+        list_view_ok, observed_titles = self._is_expected_list_view(ui_nodes, required_list_name)
+
+        # Opt-in for tasks whose brief grades only the list's contents: when the
+        # agent ends elsewhere (another app, the lists home, another list), open
+        # the list here instead of failing on where the run stopped.
+        navigation: dict[str, Any] | None = None
+        if self._coerce_bool(params.get("navigate_to_list")) and (
+            actual_bundle_id != required_bundle_id or not list_view_ok
+        ):
+            navigated, navigation = self._navigate_to_list(
+                controller=controller,
+                bundle_id=required_bundle_id,
+                list_name=required_list_name,
+            )
+            if navigated is not None:
+                observation = navigated
+                actual_bundle_id = str(getattr(observation, "foreground_bundle_id", "") or "").strip()
+                ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
+                list_view_ok, observed_titles = self._is_expected_list_view(ui_nodes, required_list_name)
+
         if actual_bundle_id != required_bundle_id:
             return EvalResult(
                 status=EvalStatus.FAIL,
@@ -64,11 +85,10 @@ class ReminderListStateEvaluator(BaseEvaluator):
                 metadata={
                     "required_bundle_id": required_bundle_id,
                     "actual_bundle_id": actual_bundle_id,
+                    "navigation": navigation,
                 },
             )
 
-        ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
-        list_view_ok, observed_titles = self._is_expected_list_view(ui_nodes, required_list_name)
         if not list_view_ok:
             return EvalResult(
                 status=EvalStatus.FAIL,
@@ -76,6 +96,7 @@ class ReminderListStateEvaluator(BaseEvaluator):
                 metadata={
                     "required_list_name": required_list_name,
                     "observed_titles": observed_titles,
+                    "navigation": navigation,
                 },
             )
 
@@ -138,6 +159,7 @@ class ReminderListStateEvaluator(BaseEvaluator):
                     "observed_reminder_titles_in_order": observed_reminder_titles_in_order,
                     "expected_ordered_titles": expected_ordered_titles_normalized,
                     "order_mismatch": order_mismatch,
+                    "navigation": navigation,
                 },
             )
 
@@ -150,8 +172,90 @@ class ReminderListStateEvaluator(BaseEvaluator):
                 "expected_exact_titles": sorted(exact_titles),
                 "observed_reminder_titles_in_order": observed_reminder_titles_in_order,
                 "expected_ordered_titles": expected_ordered_titles_normalized,
+                "navigation": navigation,
             },
         )
+
+    MAX_NAVIGATION_STEPS = 4
+
+    def _navigate_to_list(
+        self,
+        *,
+        controller: Any,
+        bundle_id: str,
+        list_name: str,
+    ) -> tuple[Any | None, dict[str, Any]]:
+        """Bring Reminders forward and open *list_name* using Back and the list row only.
+
+        Never taps Done/Cancel or edits anything; if the app shows a sheet or an
+        editor without a Back button, navigation stops and the caller fails as before.
+        """
+        evidence: dict[str, Any] = {"attempted": True, "steps": [], "reached_list": False}
+        if controller is None or not hasattr(controller, "observe") or not hasattr(controller, "execute_action"):
+            evidence.update({"attempted": False, "reason": "controller cannot observe and act"})
+            return None, evidence
+        try:
+            observation = controller.observe(include_ui_tree=True)
+            if str(getattr(observation, "foreground_bundle_id", "") or "").strip() != bundle_id:
+                if not hasattr(controller, "activate_app"):
+                    evidence["reason"] = "controller cannot activate the app"
+                    return observation, evidence
+                controller.activate_app(bundle_id)
+                evidence["steps"].append("activate_app")
+                time.sleep(self.DEFAULT_SETTLE_SECONDS)
+                observation = controller.observe(include_ui_tree=True)
+
+            for _ in range(self.MAX_NAVIGATION_STEPS):
+                if str(getattr(observation, "foreground_bundle_id", "") or "").strip() != bundle_id:
+                    evidence["reason"] = "app is not in the foreground"
+                    break
+                ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
+                if self._is_expected_list_view(ui_nodes, list_name)[0]:
+                    evidence["reached_list"] = True
+                    break
+                target = self._find_list_cell(ui_nodes, list_name)
+                step = "open_list"
+                if target is None:
+                    target = self._find_back_button(ui_nodes)
+                    step = "back"
+                if target is None or target.get("id") is None:
+                    evidence["reason"] = "neither the list row nor a Back button is visible"
+                    break
+                result = controller.execute_action({"type": "tap", "target": target["id"]}, ui_nodes)
+                if not bool((result or {}).get("success")):
+                    evidence["reason"] = f"{step} tap failed"
+                    break
+                evidence["steps"].append(step)
+                time.sleep(self.DEFAULT_SETTLE_SECONDS)
+                observation = controller.observe(include_ui_tree=True)
+            else:
+                ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
+                evidence["reached_list"] = self._is_expected_list_view(ui_nodes, list_name)[0]
+        except Exception as exc:
+            evidence["reason"] = f"{type(exc).__name__}: {exc}"
+            return None, evidence
+        return observation, evidence
+
+    @classmethod
+    def _find_list_cell(cls, ui_nodes: list[dict[str, Any]], list_name: str) -> dict[str, Any] | None:
+        wanted = cls._normalize_text(list_name)
+        for node in ui_nodes:
+            if str(node.get("type") or "").strip() != "Cell" or cls._is_reminder_cell(node):
+                continue
+            raw = str(node.get("text") or "").strip()
+            for sep in ("，", ","):
+                if sep in raw:
+                    raw = raw.split(sep, 1)[0].strip()
+                    break
+            if cls._normalize_text(raw) == wanted and node.get("id") is not None:
+                return node
+        return None
+
+    @staticmethod
+    def _coerce_bool(raw: Any) -> bool:
+        if isinstance(raw, bool):
+            return raw
+        return str(raw or "").strip().casefold() in {"1", "true", "yes", "on"}
 
     @staticmethod
     def _coerce_text_list(raw: Any) -> list[str]:
@@ -418,6 +522,10 @@ class ReminderListStateEvaluator(BaseEvaluator):
 
     @classmethod
     def _has_back_button(cls, ui_nodes: list[dict[str, Any]]) -> bool:
+        return cls._find_back_button(ui_nodes) is not None
+
+    @classmethod
+    def _find_back_button(cls, ui_nodes: list[dict[str, Any]]) -> dict[str, Any] | None:
         wanted = {cls._normalize_text(text) for text in cls.BACK_BUTTON_TEXTS}
         for node in ui_nodes:
             if str(node.get("type") or "").strip() != "Button":
@@ -429,8 +537,8 @@ class ReminderListStateEvaluator(BaseEvaluator):
             text = cls._normalize_text(str(node.get("text") or ""))
             selector = cls._normalize_text(str(node.get("selector") or ""))
             if text in wanted or selector == cls._normalize_text("BackButton"):
-                return True
-        return False
+                return node
+        return None
 
     @staticmethod
     def _extract_reminder_title(text: str) -> str:

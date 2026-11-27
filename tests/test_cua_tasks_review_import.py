@@ -28,25 +28,29 @@ def test_cua_review_manifest_covers_all_generated_tasks() -> None:
     entries = manifest["tasks"]
     generated = [REPO_ROOT / entry["task_path"] for entry in entries]
 
-    assert manifest["task_count"] == 212
-    assert len(entries) == 212
-    assert len(generated) == 212
+    # 12 imported tasks were later rebuilt outside the review pack (Windows OpenPhotoEdit -> GIMP and
+    # OpenNavigation, iOS OpenPhotoEdit; commit 5cad99f) and carry no cua_tasks_review provenance.
+    assert manifest["task_count"] == 200
+    assert len(entries) == 200
+    assert len(generated) == 200
     assert all(path.is_file() for path in generated)
     assert manifest["platform_counts"] == {
         "android": 48,
-        "ios": 34,
+        "ios": 30,
         "linux": 58,
         "macos": 33,
-        "windows": 39,
+        "windows": 31,
     }
     assert manifest["extraction_counts"] == {
         "reconstructed_artifacts": 1,
         "reconstructed_flat_args": 4,
         "repaired_partial_snapshot": 1,
-        "task_snapshot": 206,
+        "task_snapshot": 194,
     }
+    # PR #19 restores six Windows workflows verbatim (preserve_original_instruction in the map).
     assert manifest["instruction_summary_source_counts"] == {
-        "generated_english_natural_language": 212,
+        "generated_english_natural_language": 194,
+        "preserved_source_instruction": 6,
     }
     assert {entry["task_path"] for entry in entries} == {
         path.relative_to(REPO_ROOT).as_posix() for path in generated
@@ -69,15 +73,15 @@ def test_all_cua_review_tasks_satisfy_task_spec_schema() -> None:
     specs = [load_task_spec(entry["task_path"]) for entry in _manifest()["tasks"]]
     task_ids = [spec.task_id for spec in specs]
 
-    assert len(task_ids) == 212
-    assert len(set(task_ids)) == 212
+    assert len(task_ids) == 200
+    assert len(set(task_ids)) == 200
     assert all(task_id == task_id.lower() for task_id in task_ids)
     assert Counter(spec.platform for spec in specs) == {
         "android": 48,
-        "ios": 34,
+        "ios": 30,
         "linux": 58,
         "macos": 33,
-        "windows": 39,
+        "windows": 31,
     }
 
 
@@ -88,18 +92,23 @@ def test_instructions_are_english_natural_language_with_current_hashes() -> None
     for entry in _manifest()["tasks"]:
         spec = load_task_spec(entry["task_path"])
         provenance = spec.metadata["cua_tasks_review"]
-        assert provenance["instruction_format"] == "english_natural_language"
         assert provenance["source_instruction_sha256"]
         assert spec.instruction == records[spec.task_id]["instruction"]
-        assert not re.search(r"[\u3400-\u9fff]", spec.instruction)
-        assert not re.search(r"(?m)^\s*(?:[-*#]|\d+[.)])\s+", spec.instruction)
-        prose = re.sub(r'`[^`]*`|"[^"\n]*"|“[^”\n]*”', "", spec.instruction)
-        assert not re.search(
-            r"(?i)\b(?:double[- ]click|click|tap|scroll|swipe)(?:s|ed|ing)?\b|"
-            r"\bwait\s+(?:for|until)\b|\[step\s+\d+\]",
-            prose,
-        )
-        assert not re.match(r"^\s*1[.)、]", spec.instruction)
+        preserved = provenance["instruction_format"] == "original_numbered_workflow"
+        if preserved:
+            # Kept verbatim on purpose (PR #19); the English-brief style rules below do not apply.
+            assert records[spec.task_id].get("preserve_original_instruction") is True
+        else:
+            assert provenance["instruction_format"] == "english_natural_language"
+            assert not re.search(r"[\u3400-\u9fff]", spec.instruction)
+            assert not re.search(r"(?m)^\s*(?:[-*#]|\d+[.)])\s+", spec.instruction)
+            prose = re.sub(r'`[^`]*`|"[^"\n]*"|“[^”\n]*”', "", spec.instruction)
+            assert not re.search(
+                r"(?i)\b(?:double[- ]click|click|tap|scroll|swipe)(?:s|ed|ing)?\b|"
+                r"\bwait\s+(?:for|until)\b|\[step\s+\d+\]",
+                prose,
+            )
+            assert not re.match(r"^\s*1[.)、]", spec.instruction)
         current_hash = hashlib.sha256(spec.instruction.encode("utf-8")).hexdigest()
         metadata = spec.metadata
         for key in (
@@ -109,7 +118,9 @@ def test_instructions_are_english_natural_language_with_current_hashes() -> None
         ):
             if key in metadata:
                 assert metadata[key] == current_hash
-        # Evaluators bind to the source instruction the runners pass them.
+        # Evaluators bind to the source instruction the runners pass them, or (when a task's brief was
+        # rewritten after review, e.g. ios.opennote.live_music_visuals_three_notes_495011 in 5cad99f) to the
+        # current English instruction.
         source = provenance["source_instruction"]
         assert (
             hashlib.sha256(source.encode("utf-8")).hexdigest()
@@ -119,7 +130,7 @@ def test_instructions_are_english_natural_language_with_current_hashes() -> None
         if "expected_instruction_sha256" in evaluation_params:
             assert evaluation_params["expected_instruction_sha256"] in {
                 hashlib.sha256(text.encode("utf-8")).hexdigest()
-                for text in (source, source.rstrip("\n") + "\n")
+                for text in (source, source.rstrip("\n") + "\n", spec.instruction)
             }
 
 
@@ -178,6 +189,17 @@ def test_every_cua_review_evaluator_loads_through_the_runner_loader() -> None:
         assert isinstance(load_evaluator(entry["evaluator_id"]), BaseEvaluator)
 
 
+# Tasks whose release initializer was replaced on purpose in 5cad99f (consolidated source sync): Maily seeds its
+# benchmark mailbox, and the iOS OpenDriver driver tasks start from a cleaned backend state.
+DELIBERATELY_REPLACED_INITIALIZERS = {
+    "ios.maily.instruction_3_1": "initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer",
+    "ios.maily.instruction_3_2": "initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer",
+    "ios.maily.instruction_3_3": "initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer",
+    "ios.opendriver.driver_payout_trip_support_profile": "evaluators.cua_review.initializers.ios.opendriver_clean:OpenDriverCleanIOSInitializer",
+    "ios.opendriver.driver_requests_insurance_support_payout": "evaluators.cua_review.initializers.ios.opendriver_clean:OpenDriverCleanIOSInitializer",
+}
+
+
 def test_every_cua_review_initializer_loads_through_the_runner_loader() -> None:
     manifest = _manifest()
 
@@ -189,7 +211,10 @@ def test_every_cua_review_initializer_loads_through_the_runner_loader() -> None:
         assert isinstance(load_initializer(entry["initializer_id"]), BaseInitializer)
         task = yaml.safe_load((REPO_ROOT / entry["task_path"]).read_text(encoding="utf-8"))
         original = task["metadata"]["cua_tasks_review"].get("original_initializer_id")
-        if entry["initializer_id"].startswith("evaluators.cua_review."):
+        if entry["task_id"] in DELIBERATELY_REPLACED_INITIALIZERS:
+            # The release initializer stays recorded as provenance; the task now uses a replacement.
+            assert original and entry["initializer_id"] == DELIBERATELY_REPLACED_INITIALIZERS[entry["task_id"]]
+        elif entry["initializer_id"].startswith("evaluators.cua_review."):
             assert original and entry["initializer_id"] == f"evaluators.cua_review.{original}"
         else:
             assert original is None

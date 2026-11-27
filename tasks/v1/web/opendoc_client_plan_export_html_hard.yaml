@@ -75,8 +75,8 @@ evaluation:
       final_state:
       - OpenDoc should remain open on the current Client Plan document page.
 limits:
-  max_steps: 130
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDoc
   vm_profile: ubuntu0

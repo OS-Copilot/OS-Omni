@@ -27,9 +27,14 @@ evaluation:
     expected_path: /tmp/helloworld_office/calc_30e3e107_expected.xlsx
     sheet: Sheet2
     numeric_tolerance: 1e-3
+    # The brief asks for the percentages of Sex, Civil Status and Highest Educational
+    # Attainment, not for the field each pivot counts, so the data-field caption
+    # ("Count - Civil Status" vs "Count - Respondents") is not compared; the row labels,
+    # values, totals and layout still are.
+    ignore_pivot_data_captions: true
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

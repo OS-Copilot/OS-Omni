@@ -60,9 +60,6 @@ class AndroidTransferSourceInitializer(BaseInitializer):
                     f"file://{open_path}",
                     "-t",
                     "text/plain",
-                    # Other apps (Material Files) also handle text/plain; open Markor directly.
-                    "-p",
-                    app_package,
                 ]
             )
             if wait_ms > 0:

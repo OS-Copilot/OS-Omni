@@ -6,7 +6,9 @@ instruction: |-
 
   The driver workspace must be accessed, and the Money, Account, and Support sections must be visited before returning to the Work area. A sample request must be generated, and the ride request card displayed under Available ride requests must be selected. The first ride request must be rejected. A second sample request must be generated, and the ride request card under Available ride requests must be selected again. The trip must be accepted, and the active trip view must be opened. Within the Active trip controls panel, the passenger card for Riley Rider must be interacted with, and the Message function must be used. The trip must be opened again, and both the Message rider and Contact support functions must be used. The trip must be opened again, and the Mark arrived function must be used. The arrived status row must be selected. The Money tab must be visited, and the trip must be opened again to use the Message rider function. The Account and Support tabs must be visited, and the view must be refreshed. The trip must be opened again, and the Contact support function must be used. The driver arriving status row must be selected, and the Mark arrived function must be used to ensure the trip status is advanced to arrived.
 init:
-  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  # CanvasKit and the Roboto font come from gstatic.com, whose certificates are not yet valid for
+  # the guest clock (Sep 2026): the window stays blank. This initializer serves both locally first.
+  initializer_id: initializers.linux.opendriver:OpenDriverInitializer
   params:
     steps:
     - type: run_bash
@@ -53,8 +55,8 @@ evaluation:
       console.log(JSON.stringify({rideId: target.id, status: target.status, riderId: target.riderId, updatedAt: target.updatedAt}, null, 2));
       NODE
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDriver
   task_number: 1-2

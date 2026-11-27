@@ -1,0 +1,529 @@
+task_id: android.opentwitter.04_mobile_incident_frontend_audit
+platform: android
+instruction: 'OpenTwitter 已处于 Alex Chen（@alex）登录状态。全程只使用可见 Android GUI；不要 Sign Out，不要退出登录。完成以下操作，最后停留在
+  Priya Shah 聊天页面，并让刚发送的 `Mobile audit filed.` 可见：
+
+  1. 打开应用 OpenTwitter。
+
+  2. 选择底部 Explore。
+
+  3. 点击顶部 For you。
+
+  4. 点击趋势 Mobile release candidate。
+
+  5. 向上滑动结果页，使 Elena Rossi 的 Mobile 帖子操作区可见。
+
+  6. 点击 Elena Rossi 帖子下方的 Like。
+
+  7. 点击该帖子下方的 Repost。
+
+  8. 点击该帖子下方的 Reply。
+
+  9. 选择 Post your reply 文本框。
+
+  10. 输入 Draft issue tracked。
+
+  11. 点击评论区的 Reply 按钮。
+
+  12. 点击底部 Home。
+
+  13. 选择底部 Explore。
+
+  14. 点击顶部 Trending。
+
+  15. 向上滑动趋势列表，使 Incident reviews 可见。
+
+  16. 点击趋势 Incident reviews。
+
+  17. 向上滑动结果页，使 Devon Brooks 正文以 `Runbooks age quietly.` 开头的 Reliability 帖子可见。
+
+  18. 点击 Devon Brooks 帖子下方的 Save。
+
+  19. 点击该帖子下方的 Reply。
+
+  20. 选择 Post your reply 文本框。
+
+  21. 输入 Timeline owner set。
+
+  22. 点击评论区的 Reply 按钮。
+
+  23. 点击该帖子下方的 Like。
+
+  24. 选择底部 Messages。
+
+  25. 点击会话列表中的 Maya Patel。
+
+  26. 点击 Message Maya Patel 文本框。
+
+  27. 输入 Mobile gate is clear。
+
+  28. 点击蓝色 Send。
+
+  29. 点击聊天页左上角 Back。
+
+  30. 点击会话列表中的 Devon Brooks。
+
+  31. 点击 Message Devon Brooks 文本框。
+
+  32. 输入 Runbook owner added。
+
+  33. 点击蓝色 Send。
+
+  34. 点击聊天页左上角 Back。
+
+  35. 点击会话列表中的 Ben Carter。
+
+  36. 点击 Message Ben Carter 文本框。
+
+  37. 输入 QA gate reviewed.。
+
+  38. 点击蓝色 Send。
+
+  39. 点击聊天页底部 Home。
+
+  40. 点击 What is happening? 文本框。
+
+  41. 输入 Mobile gate ready.。
+
+  42. 点击蓝色 Post。
+
+  43. 点击 What is happening? 文本框。
+
+  44. 输入 Runbook owner set.。
+
+  45. 点击蓝色 Post。
+
+  46. 选择底部 Explore。
+
+  47. 点击顶部 Technology。
+
+  48. 向上滑动趋势列表，使 Frontend performance 可见。
+
+  49. 点击趋势 Frontend performance。
+
+  50. 向上滑动结果页，使 Jamal Reed 的 Frontend 帖子操作区可见。
+
+  51. 点击 Jamal Reed 帖子下方的 Like。
+
+  52. 点击该帖子下方的 Save。
+
+  53. 点击该帖子下方的 Reply。
+
+  54. 选择 Post your reply 文本框。
+
+  55. 输入 Paint timing logged。
+
+  56. 点击评论区的 Reply 按钮。
+
+  57. 点击底部 Notifications。
+
+  58. 点击 Mark all as read。
+
+  59. 点击底部 Home。
+
+  60. 向上滑动 Home 信息流，使 Mobile gate ready. 帖子可见。
+
+  61. 点击 Mobile gate ready. 帖子下方的 Reply。
+
+  62. 选择 Post your reply 文本框。
+
+  63. 输入 Release owner Elena。
+
+  64. 点击评论区的 Reply 按钮。
+
+  65. 点击该帖子下方的 Like。
+
+  66. 点击该帖子下方的 Save。
+
+  67. 选择底部 Messages。
+
+  68. 点击会话列表中的 Priya Shah。
+
+  69. 点击 Message Priya Shah 文本框。
+
+  70. 输入 Mobile audit filed.。
+
+  71. 点击蓝色 Send。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.opentwitter
+    app_activity: com.killt.opentwitter.MainActivity
+    local_state_key: opentwitter.localState.v7
+    expected_handle: alex
+    wait_ms: 1800
+    snapshot_name: snap_2026-06-26_16-31-13
+    target_posts:
+    - id: p-1016
+      author_handle: elena
+      text: Mobile release candidate is stable after the notification tap fix. The
+        remaining blocker is a flaky offline draft restore test.
+      actions:
+      - like
+      - repost
+    - id: p-1014
+      author_handle: devon
+      text: Runbooks age quietly. Add a review date beside the owner name so stale
+        operational guidance is visible before an incident.
+      actions:
+      - bookmark
+      - like
+    - id: p-1007
+      author_handle: jamal
+      text: 'A tiny frontend win: delaying non-critical chart hydration made the first
+        paint feel instant on older laptops.'
+      actions:
+      - like
+      - bookmark
+    forbidden_exact_texts:
+    - Draft issue tracked
+    - Timeline owner set
+    - Mobile gate is clear
+    - Runbook owner added
+    - QA gate reviewed.
+    - Mobile gate ready.
+    - Runbook owner set.
+    - Paint timing logged
+    - Release owner Elena
+    - Mobile audit filed.
+    source_initializer: evaluators.cua_review.initializers.android.opentwitter:OpenTwitterBaselineInitializer
+evaluation:
+  evaluator_id: evaluators.android.opentwitter_04_mobile_incident_frontend_audit:OpenTwitterMobileIncidentFrontendAuditEvaluator
+  params:
+    app_package: com.killt.opentwitter
+    local_state_key: opentwitter.localState.v7
+    expected_handle: alex
+    snapshot_name: snap_2026-06-26_16-31-13
+    created_after: '2026-06-26T08:31:13Z'
+    target_posts:
+    - id: p-1016
+      author_handle: elena
+      text: Mobile release candidate is stable after the notification tap fix. The
+        remaining blocker is a flaky offline draft restore test.
+      actions:
+      - like
+      - repost
+      reply_text: Draft issue tracked
+    - id: p-1014
+      author_handle: devon
+      text: Runbooks age quietly. Add a review date beside the owner name so stale
+        operational guidance is visible before an incident.
+      actions:
+      - bookmark
+      - like
+      reply_text: Timeline owner set
+    - id: p-1007
+      author_handle: jamal
+      text: 'A tiny frontend win: delaying non-critical chart hydration made the first
+        paint feel instant on older laptops.'
+      actions:
+      - like
+      - bookmark
+      reply_text: Paint timing logged
+    messages:
+    - handle: maya
+      text: Mobile gate is clear
+    - handle: devon
+      text: Runbook owner added
+    - handle: ben
+      text: QA gate reviewed.
+    - handle: priya
+      text: Mobile audit filed.
+    created_posts:
+    - text: Mobile gate ready.
+    - text: Runbook owner set.
+    owner_post_text: Mobile gate ready.
+    owner_reply_text: Release owner Elena
+    owner_post_actions:
+    - like
+    - bookmark
+    final_view: messages
+    final_message_handle: priya
+    final_visible_text: Mobile audit filed.
+    event_sequence:
+    - type: timeline_view
+      query: Mobile
+    - type: post_like_toggled
+      postId: p-1016
+      active: true
+    - type: post_repost_toggled
+      postId: p-1016
+      active: true
+    - type: reply_button_clicked
+      postId: p-1016
+    - type: comment_created
+      postId: p-1016
+      text: Draft issue tracked
+    - type: timeline_view
+      query: Reliability
+    - type: post_bookmark_toggled
+      postId: p-1014
+      active: true
+    - type: reply_button_clicked
+      postId: p-1014
+    - type: comment_created
+      postId: p-1014
+      text: Timeline owner set
+    - type: post_like_toggled
+      postId: p-1014
+      active: true
+    - type: message_sent
+      handle: maya
+      text: Mobile gate is clear
+    - type: message_sent
+      handle: devon
+      text: Runbook owner added
+    - type: message_sent
+      handle: ben
+      text: QA gate reviewed.
+    - type: post_created
+      text: Mobile gate ready.
+    - type: post_created
+      text: Runbook owner set.
+    - type: timeline_view
+      query: Frontend
+    - type: post_like_toggled
+      postId: p-1007
+      active: true
+    - type: post_bookmark_toggled
+      postId: p-1007
+      active: true
+    - type: reply_button_clicked
+      postId: p-1007
+    - type: comment_created
+      postId: p-1007
+      text: Paint timing logged
+    - type: notifications_marked_read
+    - type: reply_button_clicked
+      owner_post: true
+    - type: comment_created
+      owner_post: true
+      text: Release owner Elena
+    - type: post_like_toggled
+      owner_post: true
+      active: true
+    - type: post_bookmark_toggled
+      owner_post: true
+      active: true
+    - type: message_sent
+      handle: priya
+      text: Mobile audit filed.
+limits:
+  max_steps: 150
+  step_timeout_seconds: 150
+metadata:
+  version: 1
+  app: OpenTwitter
+  app_name: opentwitter
+  app_bundle_id: com.killt.opentwitter
+  required_packages_any:
+  - com.killt.opentwitter
+  android_device_profile: ssk
+  avd_name: AndroidWorldAvd
+  snapshot_name: snap_2026-06-26_16-31-13
+  logged_in_account: Alex Chen (@alex)
+  dependencies:
+  - OpenTwitter package com.killt.opentwitter is installed in the supplied snapshot.
+  - Alex Chen (@alex) is already signed in; do not sign out.
+  - The installed APK maps Mobile release candidate, Incident reviews, and Frontend
+    performance to Mobile, Reliability, and Frontend result queries.
+  - The snapshot contains exact seed posts p-1016, p-1014, and p-1007 and initially
+    has unread notifications.
+  initializer_message: The initializer assumes the VM is already restored to snap_2026-06-26_16-31-13.
+    It performs a read-only DevTools baseline query, rejects existing exact target
+    evidence or already-active target interactions, writes a host-side baseline, and
+    returns to the launcher. It does not restore the snapshot or perform checked business
+    actions.
+  verifier_rules:
+  - Full runs require the clean host-side initializer baseline and only accept ordered
+    events newer than the baseline sequence.
+  - Seed interactions are bound to exact post IDs, authors, full text, and required
+    active action sets.
+  - Replies, messages, and created posts require exact text, exact author or recipient,
+    exactly one match, and timestamps after the snapshot time.
+  - The dynamically created Mobile gate ready. post ID is used to verify its reply,
+    like, bookmark, and event evidence.
+  - All notifications must be read and the final foreground DOM must be the open Priya
+    chat containing Mobile audit filed.
+  - The evaluator uses only read-only localStorage, DOM, and foreground-state reads
+    and returns EvalResult with per-check evidence and matched IDs.
+  weak_or_unverifiable_steps:
+  - Explore tab selections, swipes, exact Back/Home navigation paths, and text-field
+    focus are not durable final state and are not independently required by evaluator
+    PASS.
+  - Full-run trajectory can be audited for those GUI-only steps; durable business
+    actions are proven by exact final state and ordered events.
+  - Manual eval-only has no initializer baseline; exact uniqueness, timestamps, event
+    order, and final chat state reduce but cannot eliminate stale-state risk on an
+    unreverted VM.
+  tags:
+  - android
+  - opentwitter
+  - social
+  - replies
+  - messages
+  - notifications
+  - exact_state
+  - manual_eval
+  - kimi_k3
+  difficulty: hard
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: opentwitter/Android/android.opentwitter.04_mobile_incident_frontend_audit
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 95bddb688f056f2acf28b3d19bb162adeaeeca31e4fb7bda7444d3efb9e81de7
+    source_instruction: 'OpenTwitter 已处于 Alex Chen（@alex）登录状态。全程只使用可见 Android GUI；不要
+      Sign Out，不要退出登录。完成以下操作，最后停留在 Priya Shah 聊天页面，并让刚发送的 `Mobile audit filed.` 可见：
+
+      1. 打开应用 OpenTwitter。
+
+      2. 选择底部 Explore。
+
+      3. 点击顶部 For you。
+
+      4. 点击趋势 Mobile release candidate。
+
+      5. 向上滑动结果页，使 Elena Rossi 的 Mobile 帖子操作区可见。
+
+      6. 点击 Elena Rossi 帖子下方的 Like。
+
+      7. 点击该帖子下方的 Repost。
+
+      8. 点击该帖子下方的 Reply。
+
+      9. 选择 Post your reply 文本框。
+
+      10. 输入 Draft issue tracked。
+
+      11. 点击评论区的 Reply 按钮。
+
+      12. 点击底部 Home。
+
+      13. 选择底部 Explore。
+
+      14. 点击顶部 Trending。
+
+      15. 向上滑动趋势列表，使 Incident reviews 可见。
+
+      16. 点击趋势 Incident reviews。
+
+      17. 向上滑动结果页，使 Devon Brooks 正文以 `Runbooks age quietly.` 开头的 Reliability 帖子可见。
+
+      18. 点击 Devon Brooks 帖子下方的 Save。
+
+      19. 点击该帖子下方的 Reply。
+
+      20. 选择 Post your reply 文本框。
+
+      21. 输入 Timeline owner set。
+
+      22. 点击评论区的 Reply 按钮。
+
+      23. 点击该帖子下方的 Like。
+
+      24. 选择底部 Messages。
+
+      25. 点击会话列表中的 Maya Patel。
+
+      26. 点击 Message Maya Patel 文本框。
+
+      27. 输入 Mobile gate is clear。
+
+      28. 点击蓝色 Send。
+
+      29. 点击聊天页左上角 Back。
+
+      30. 点击会话列表中的 Devon Brooks。
+
+      31. 点击 Message Devon Brooks 文本框。
+
+      32. 输入 Runbook owner added。
+
+      33. 点击蓝色 Send。
+
+      34. 点击聊天页左上角 Back。
+
+      35. 点击会话列表中的 Ben Carter。
+
+      36. 点击 Message Ben Carter 文本框。
+
+      37. 输入 QA gate reviewed.。
+
+      38. 点击蓝色 Send。
+
+      39. 点击聊天页底部 Home。
+
+      40. 点击 What is happening? 文本框。
+
+      41. 输入 Mobile gate ready.。
+
+      42. 点击蓝色 Post。
+
+      43. 点击 What is happening? 文本框。
+
+      44. 输入 Runbook owner set.。
+
+      45. 点击蓝色 Post。
+
+      46. 选择底部 Explore。
+
+      47. 点击顶部 Technology。
+
+      48. 向上滑动趋势列表，使 Frontend performance 可见。
+
+      49. 点击趋势 Frontend performance。
+
+      50. 向上滑动结果页，使 Jamal Reed 的 Frontend 帖子操作区可见。
+
+      51. 点击 Jamal Reed 帖子下方的 Like。
+
+      52. 点击该帖子下方的 Save。
+
+      53. 点击该帖子下方的 Reply。
+
+      54. 选择 Post your reply 文本框。
+
+      55. 输入 Paint timing logged。
+
+      56. 点击评论区的 Reply 按钮。
+
+      57. 点击底部 Notifications。
+
+      58. 点击 Mark all as read。
+
+      59. 点击底部 Home。
+
+      60. 向上滑动 Home 信息流，使 Mobile gate ready. 帖子可见。
+
+      61. 点击 Mobile gate ready. 帖子下方的 Reply。
+
+      62. 选择 Post your reply 文本框。
+
+      63. 输入 Release owner Elena。
+
+      64. 点击评论区的 Reply 按钮。
+
+      65. 点击该帖子下方的 Like。
+
+      66. 点击该帖子下方的 Save。
+
+      67. 选择底部 Messages。
+
+      68. 点击会话列表中的 Priya Shah。
+
+      69. 点击 Message Priya Shah 文本框。
+
+      70. 输入 Mobile audit filed.。
+
+      71. 点击蓝色 Send。'
+    release_path: benchmark/tasks/opentwitter/Android/android.opentwitter.04_mobile_incident_frontend_audit
+    original_evaluator_id: evaluators.android.opentwitter_mobile_incident_frontend_audit:OpenTwitterMobileIncidentFrontendAuditEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.opentwitter:OpenTwitterBaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/opentwitter_04_mobile_incident_frontend_audit.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

@@ -8,6 +8,11 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.evaluators.windows.opendriver import (
+    contains_text,
+    read_window_text,
+    screen_text_metadata,
+)
 
 
 TASK_ID = 'windows.opendriver.driver_onboarding_trip_support_snapshot1'
@@ -97,7 +102,7 @@ class OpenDriverDriverLifecycleEvaluator(BaseEvaluator):
         metadata = {
             "evidence_sources": [
                 durable.get("evidence_source"),
-                "windows_accessibility_tree",
+                "windows_window_text_ocr_and_accessibility_tree",
                 "windows_process_inventory",
             ],
             "database_path": durable.get("database_path"),
@@ -691,19 +696,16 @@ print(json.dumps({
     @staticmethod
     def _collect_ui_evidence(context: Mapping[str, Any], params: Mapping[str, Any]) -> dict[str, Any]:
         controller = context["controller"]
-        observation = context.get("final_observation")
-        if hasattr(controller, "observe") and (
-            observation is None or not getattr(observation, "screenshot_data", None)
-        ):
-            observation = controller.observe(include_ui_tree=True, include_screenshot_data=True)
-
-        ui_nodes = list(getattr(observation, "ui_nodes", []) or []) if observation is not None else []
-        ui_text = "\n".join(
-            str(node.get("name") or node.get("text") or node.get("value") or "")
-            for node in ui_nodes
-            if isinstance(node, Mapping)
-        )
-        lower_ui_text = ui_text.lower()
+        process_names = [
+            str(item).strip()
+            for item in (params.get("process_names") or ["OpenDriver", "opendriver"])
+            if str(item).strip()
+        ]
+        # OpenDriver is a Flutter canvas: UI Automation only names the window frame, so
+        # the page text is the OCR of the window content plus any real UI-tree names.
+        screen = read_window_text(controller, context.get("final_observation"), app_keywords=process_names)
+        page_text = screen["text"]
+        has_page_text = bool(page_text.strip())
         required_text = [
             str(item).strip()
             for item in (params.get("required_final_ui_text") or [])
@@ -714,23 +716,18 @@ print(json.dumps({
             for item in (params.get("forbidden_final_ui_text") or [])
             if str(item).strip()
         ]
-        process_names = [
-            str(item).strip()
-            for item in (params.get("process_names") or ["OpenDriver", "opendriver"])
-            if str(item).strip()
-        ]
         support_tab_pixels = OpenDriverDriverLifecycleEvaluator._support_tab_pixel_evidence(
-            getattr(observation, "screenshot_data", None) if observation is not None else None
+            screen["screenshot"]
         )
-        accessibility_page_match = bool(ui_nodes) and all(
-            item.lower() in lower_ui_text for item in required_text
+        accessibility_page_match = has_page_text and all(
+            contains_text(page_text, item) for item in required_text
         )
-        forbidden_absent = bool(ui_nodes) and all(
-            item.lower() not in lower_ui_text for item in forbidden_text
+        forbidden_absent = has_page_text and all(
+            not contains_text(page_text, item) for item in forbidden_text
         )
         final_ticket_text = required_text[-1] if required_text else ""
-        final_ticket_visible = bool(ui_nodes) and bool(final_ticket_text) and (
-            final_ticket_text.lower() in lower_ui_text
+        final_ticket_visible = has_page_text and bool(final_ticket_text) and (
+            contains_text(page_text, final_ticket_text)
         )
         ticket_list_page_match = final_ticket_visible and forbidden_absent
         final_support_page_passed = (
@@ -782,20 +779,21 @@ foreach ($name in $targets) {{
                     "or_ticket_visible_with_dialog_closed": final_ticket_text,
                 },
                 "actual": {
-                    "ui_node_count": len(ui_nodes),
-                    "matched": {item: item.lower() in lower_ui_text for item in required_text},
+                    "ui_node_count": screen["ui_node_count"],
+                    "matched": {item: contains_text(page_text, item) for item in required_text},
                     "accessibility_page_match": accessibility_page_match,
                     "ticket_list_page_match": ticket_list_page_match,
                     "final_ticket_visible": final_ticket_visible,
                     "dialog_controls_absent": forbidden_absent,
                     "support_tab_pixels": support_tab_pixels,
+                    "screen_text": screen_text_metadata(screen),
                 },
-                "evidence_path": "final_observation.ui_nodes or final_observation.screenshot_data",
+                "evidence_path": "final_observation.screenshot_data (OCR) and ui_nodes",
                 "failure_reason": (
                     None
                     if final_support_page_passed
                     else (
-                        "Neither the accessibility tree, normalized Support-tab region, nor the exact "
+                        "Neither the window text, normalized Support-tab region, nor the exact "
                         "ticket-visible/dialog-closed state proves the final Driver Support page."
                     )
                 ),
@@ -804,19 +802,23 @@ foreach ($name in $targets) {{
                 "name": "support_ticket_dialog_closed",
                 "passed": forbidden_absent,
                 "expected": {"absent": forbidden_text},
-                "actual": {item: item.lower() in lower_ui_text for item in forbidden_text},
-                "evidence_path": "final_observation.ui_nodes",
+                "actual": {item: contains_text(page_text, item) for item in forbidden_text},
+                "evidence_path": "final_observation.screenshot_data (OCR) and ui_nodes",
                 "failure_reason": (
                     None
                     if forbidden_absent
-                    else "The final accessibility tree is empty or still shows ticket-detail reply controls."
+                    else (
+                        "The OpenDriver window text could not be read: " + (screen["ocr_error"] or "no text")
+                        if not has_page_text
+                        else "The final window still shows ticket-detail reply controls."
+                    )
                 ),
             },
         ]
         return {
-            "foreground_app": str(getattr(observation, "foreground_app", "") or "") if observation else "",
-            "foreground_window": str(getattr(observation, "foreground_window", "") or "") if observation else "",
-            "ui_node_count": len(ui_nodes),
+            "foreground_app": screen["foreground_app"],
+            "foreground_window": screen["foreground_window"],
+            "ui_node_count": screen["ui_node_count"],
             "visible_processes": visible_processes,
             "checks": checks,
         }

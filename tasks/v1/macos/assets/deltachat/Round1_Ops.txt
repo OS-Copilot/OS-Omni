@@ -1,0 +1,12 @@
+Round 1 Operations Handoff
+
+Harbor migration owner: Riley
+Freeze window: 08:30
+
+Cutover order:
+1. Freeze writes and confirm the source snapshot.
+2. Copy the database and verify the backup checksum.
+3. Switch the API after the database copy is confirmed.
+
+Release gate: ops_launch_green
+Record the operator, timestamp, and verification result before announcing completion.

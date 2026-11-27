@@ -1,0 +1,9 @@
+tasks:
+  - tasks/windows/thunderbird_create_contact_send_by_nickname.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Windows Thunderbird task - create a contact and send email by nickname

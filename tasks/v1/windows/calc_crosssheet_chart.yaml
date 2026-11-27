@@ -1,17 +1,22 @@
 task_id: windows.calc.crosssheet_chart
 platform: windows
-instruction: 'A quarterly sales workbook is open in LibreOffice Calc. It contains Q1, Q2, Q3, Q4, Products, and Summary sheets.
-  The quarter sheets list Product, Units, and Revenue, but the products are not in the same row order across quarters. Complete
-  the Summary sheet without changing the source quarter sheets. For each product in Summary column A, fill Category in column
-  B from the Products sheet. Fill Q1 Revenue through Q4 Revenue in columns C:F by looking up the matching product from the
-  corresponding quarter sheet. Fill Total Revenue in column G, Average Revenue in column H, Q4 Share in column I as Q4 Revenue
-  divided by Total Revenue, Target Variance in column J as Total Revenue minus the product target from Products, and Target
-  Status in column K as "Above Target" when Target Variance is nonnegative and "Below Target" otherwise. Format Q4 Share as
-  a percentage with one decimal place. Add conditional formatting to Target Variance so negative values are red and nonnegative
-  values are green. Add an auto-filter covering A1:K6, freeze the header row, and sort Summary by Category ascending and then
-  Total Revenue descending. Insert exactly one bar chart on the Summary sheet using the product names and Total Revenue values,
-  with the exact chart title "Annual Revenue by Product". Add a comment to cell K1 with the exact text "Target status is based
-  on Products targets". Save when done.
+instruction: 'A quarterly sales workbook is open in LibreOffice Calc. It contains
+  Q1, Q2, Q3, Q4, Products, and Summary sheets. The quarter sheets list Product, Units,
+  and Revenue, but the products are not in the same row order across quarters. Complete
+  the Summary sheet without changing the source quarter sheets. For each product in
+  Summary column A, fill Category in column B from the Products sheet. Fill Q1 Revenue
+  through Q4 Revenue in columns C:F by looking up the matching product from the corresponding
+  quarter sheet. Fill Total Revenue in column G, Average Revenue in column H, Q4 Share
+  in column I as Q4 Revenue divided by Total Revenue, Target Variance in column J
+  as Total Revenue minus the product target from Products, and Target Status in column
+  K as "Above Target" when Target Variance is nonnegative and "Below Target" otherwise.
+  Format Q4 Share as a percentage with one decimal place. Add conditional formatting
+  to Target Variance so negative values are red and nonnegative values are green.
+  Add an auto-filter covering A1:K6, freeze the header row, and sort Summary by Category
+  ascending and then Total Revenue descending. Insert exactly one bar chart on the
+  Summary sheet using the product names and Total Revenue values, with the exact chart
+  title "Annual Revenue by Product". Add a comment to cell K1 with the exact text
+  "Target status is based on Products targets". Save when done.
 
   '
 init:
@@ -19,33 +24,49 @@ init:
   params:
     steps:
     - type: run_powershell
-      script: "$ErrorActionPreference = \"Stop\"\n$py = @'\nimport os, subprocess, sys\ntry:\n    from openpyxl import Workbook\n\
-        except ImportError:\n    subprocess.check_call([sys.executable, \"-m\", \"pip\", \"install\", \"openpyxl\", \"-q\"\
-        ])\n    from openpyxl import Workbook\n\nwb = Workbook()\nquarter_data = {\n    \"Q1\": [(\"Alpha\", 120, 36000),\
-        \ (\"Beta\", 85, 25500), (\"Gamma\", 200, 40000), (\"Delta\", 95, 28500), (\"Epsilon\", 160, 38400)],\n    \"Q2\"\
-        : [(\"Gamma\", 180, 36000), (\"Alpha\", 150, 45000), (\"Epsilon\", 170, 40800), (\"Beta\", 90, 27000), (\"Delta\"\
-        , 110, 33000)],\n    \"Q3\": [(\"Delta\", 125, 37500), (\"Beta\", 110, 33000), (\"Alpha\", 130, 39000), (\"Gamma\"\
-        , 160, 32000), (\"Epsilon\", 155, 37200)],\n    \"Q4\": [(\"Epsilon\", 190, 45600), (\"Gamma\", 210, 42000), (\"Delta\"\
-        , 140, 42000), (\"Alpha\", 170, 51000), (\"Beta\", 118, 35400)],\n}\nfirst = True\nfor sheet_name, rows in quarter_data.items():\n\
-        \    ws = wb.active if first else wb.create_sheet(sheet_name)\n    if first:\n        ws.title = sheet_name\n    \
-        \    first = False\n    ws.append([\"Product\", \"Units\", \"Revenue\"])\n    for row in rows:\n        ws.append(row)\n\
-        \nproducts = wb.create_sheet(\"Products\")\nproducts.append([\"Product\", \"Category\", \"Annual Target\"])\nfor row\
-        \ in [\n    (\"Alpha\", \"Hardware\", 165000),\n    (\"Beta\", \"Software\", 125000),\n    (\"Gamma\", \"Hardware\"\
-        , 155000),\n    (\"Delta\", \"Services\", 145000),\n    (\"Epsilon\", \"Software\", 168000),\n]:\n    products.append(row)\n\
-        \nsummary = wb.create_sheet(\"Summary\")\nsummary.append([\"Product\", \"Category\", \"Q1 Revenue\", \"Q2 Revenue\"\
-        , \"Q3 Revenue\", \"Q4 Revenue\", \"Total Revenue\", \"Average Revenue\", \"Q4 Share\", \"Target Variance\", \"Target\
-        \ Status\"])\nfor prod in [\"Delta\", \"Alpha\", \"Epsilon\", \"Gamma\", \"Beta\"]:\n    summary.append([prod])\n\n\
-        path = os.path.join(os.environ[\"USERPROFILE\"], \"Downloads\", \"quarterly.xlsx\")\nos.makedirs(os.path.dirname(path),\
-        \ exist_ok=True)\nwb.save(path)\nprint(\"INIT_OK\", path)\n'@\n$tmp = Join-Path $env:TEMP \"hw_calc_crosssheet_chart_init.py\"\
-        \nSet-Content -LiteralPath $tmp -Value $py -Encoding UTF8\npy -3 -W ignore $tmp\n"
+      script: "$ErrorActionPreference = \"Stop\"\n$py = @'\nimport os, subprocess,\
+        \ sys\ntry:\n    from openpyxl import Workbook\nexcept ImportError:\n    subprocess.check_call([sys.executable,\
+        \ \"-m\", \"pip\", \"install\", \"openpyxl\", \"-q\"])\n    from openpyxl\
+        \ import Workbook\n\nwb = Workbook()\nquarter_data = {\n    \"Q1\": [(\"Alpha\"\
+        , 120, 36000), (\"Beta\", 85, 25500), (\"Gamma\", 200, 40000), (\"Delta\"\
+        , 95, 28500), (\"Epsilon\", 160, 38400)],\n    \"Q2\": [(\"Gamma\", 180, 36000),\
+        \ (\"Alpha\", 150, 45000), (\"Epsilon\", 170, 40800), (\"Beta\", 90, 27000),\
+        \ (\"Delta\", 110, 33000)],\n    \"Q3\": [(\"Delta\", 125, 37500), (\"Beta\"\
+        , 110, 33000), (\"Alpha\", 130, 39000), (\"Gamma\", 160, 32000), (\"Epsilon\"\
+        , 155, 37200)],\n    \"Q4\": [(\"Epsilon\", 190, 45600), (\"Gamma\", 210,\
+        \ 42000), (\"Delta\", 140, 42000), (\"Alpha\", 170, 51000), (\"Beta\", 118,\
+        \ 35400)],\n}\nfirst = True\nfor sheet_name, rows in quarter_data.items():\n\
+        \    ws = wb.active if first else wb.create_sheet(sheet_name)\n    if first:\n\
+        \        ws.title = sheet_name\n        first = False\n    ws.append([\"Product\"\
+        , \"Units\", \"Revenue\"])\n    for row in rows:\n        ws.append(row)\n\
+        \nproducts = wb.create_sheet(\"Products\")\nproducts.append([\"Product\",\
+        \ \"Category\", \"Annual Target\"])\nfor row in [\n    (\"Alpha\", \"Hardware\"\
+        , 165000),\n    (\"Beta\", \"Software\", 125000),\n    (\"Gamma\", \"Hardware\"\
+        , 155000),\n    (\"Delta\", \"Services\", 145000),\n    (\"Epsilon\", \"Software\"\
+        , 168000),\n]:\n    products.append(row)\n\nsummary = wb.create_sheet(\"Summary\"\
+        )\nsummary.append([\"Product\", \"Category\", \"Q1 Revenue\", \"Q2 Revenue\"\
+        , \"Q3 Revenue\", \"Q4 Revenue\", \"Total Revenue\", \"Average Revenue\",\
+        \ \"Q4 Share\", \"Target Variance\", \"Target Status\"])\nfor prod in [\"\
+        Delta\", \"Alpha\", \"Epsilon\", \"Gamma\", \"Beta\"]:\n    summary.append([prod])\n\
+        \npath = os.path.join(os.environ[\"USERPROFILE\"], \"Downloads\", \"quarterly.xlsx\"\
+        )\nos.makedirs(os.path.dirname(path), exist_ok=True)\nwb.save(path)\nprint(\"\
+        INIT_OK\", path)\n'@\n$tmp = Join-Path $env:TEMP \"hw_calc_crosssheet_chart_init.py\"\
+        \nSet-Content -LiteralPath $tmp -Value $py -Encoding UTF8\npy -3 -W ignore\
+        \ $tmp\n"
       timeout: 120
     - type: run_powershell
-      script: '$filePath = Join-Path $env:USERPROFILE "Downloads\quarterly.xlsx"
-
-        Start-Process $filePath
-
-        '
-      timeout: 15
+      script: "$filePath = Join-Path $env:USERPROFILE \"Downloads\\quarterly.xlsx\"\
+        \n$officeExe = \"C:\\Program Files\\LibreOffice\\program\\soffice.exe\"\n\
+        if (-not (Test-Path -LiteralPath $officeExe)) { throw \"Installed LibreOffice\
+        \ executable missing\" }\nStart-Process -FilePath $officeExe -ArgumentList\
+        \ @(\"--norestore\", \"--nofirststartwizard\", \"--calc\", $filePath)\n\n\
+        $deadline = [DateTime]::UtcNow.AddSeconds(180)\ndo {\n  $ready = Get-Process\
+        \ -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like\
+        \ '*quarterly.xlsx*LibreOffice Calc*' }\n  if ($ready) { Write-Output 'WORKBOOK_WINDOW_READY';\
+        \ break }\n  Start-Sleep -Seconds 2\n} while ([DateTime]::UtcNow -lt $deadline)\n\
+        if (-not $ready) { throw 'Quarterly workbook did not finish first-launch setup;\
+        \ no DS steps permitted' }\n"
+      timeout: 210
     - type: wait
       ms: 5000
 evaluation:
@@ -55,8 +76,8 @@ evaluation:
     stdout_contains: EVAL_RESULT:PASS
     timeout: 120
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - libreoffice
@@ -72,15 +93,17 @@ metadata:
   difficulty: hard
   app_name: libreoffice-calc
   human_steps: 104
-  description: 'Hard Calc task requiring cross-sheet lookup formulas over shuffled quarter sheets, product metadata lookup,
-    derived revenue metrics, target status logic, conditional formatting, sorting, filtering, freezing, and a chart.
+  description: 'Hard Calc task requiring cross-sheet lookup formulas over shuffled
+    quarter sheets, product metadata lookup, derived revenue metrics, target status
+    logic, conditional formatting, sorting, filtering, freezing, and a chart.
 
     '
   oracle_task: tasks/v1/windows/oracle/calc_crosssheet_chart_oracle.yaml
   oracle_model: cross_vm_oracle_wait
   hardness: hard-evaluable
-  evaluation_standard: cross-sheet formulas, derived values, source sheet preservation, sort order, freeze/filter state, conditional
-    formatting, chart, and comment are checked
+  evaluation_standard: cross-sheet formulas, derived values, source sheet preservation,
+    sort order, freeze/filter state, conditional formatting, chart, and comment are
+    checked
   linux_peer: linux.calc.demographic_profile_pivots
   linux_peer_file: tasks/linux/calc_demographic_profile_pivots_hard.yaml
   alignment_status: difficulty_equivalent

@@ -10,16 +10,17 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.evaluators.windows.openshop import OpenShopApiEvaluator
+from evaluators.windows.openshop_business_events import bind_orders_by_note, check_business_events
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
 TASK_ID = 'windows.openshop.two_stage_travel_orders_150970'
 TASK_VERSION = '1.1'
 CHECKPOINTS = {'login': {'steps': [1, 4], 'checks': ['session_login_exact']},
- 'first_order': {'steps': [5, 31], 'checks': ['first_order_exact', 'ordered_business_events_exact']},
- 'first_reviews': {'steps': [32, 42], 'checks': ['first_reviews_exact', 'ordered_business_events_exact']},
- 'second_order': {'steps': [43, 69], 'checks': ['second_order_exact', 'ordered_business_events_exact']},
- 'second_reviews': {'steps': [70, 80], 'checks': ['second_reviews_exact', 'ordered_business_events_exact']}}
+ 'first_order': {'steps': [5, 31], 'checks': ['first_order_exact', 'business_events']},
+ 'first_reviews': {'steps': [32, 42], 'checks': ['first_reviews_exact', 'business_events']},
+ 'second_order': {'steps': [43, 69], 'checks': ['second_order_exact', 'business_events']},
+ 'second_reviews': {'steps': [70, 80], 'checks': ['second_reviews_exact', 'business_events']}}
 RULESET_SPEC = {'schema_version': '1.0',
  'task_id': 'windows.openshop.two_stage_travel_orders_150970',
  'instruction_sha256': 'bcc9692a5f55df5bcbd7f7543dbff9c0cf0ebebdd545e53740cce0e781e7d4d3',
@@ -230,7 +231,7 @@ RULESET_SPEC = {'schema_version': '1.0',
                                  78,
                                  79,
                                  80],
-                       'value_contract_id': 'ordered_business_events_exact'}],
+                       'value_contract_id': 'business_events'}],
  'orders': [{'address': 'Home',
              'payment': 'Cash on Delivery',
              'note': 'TrailLoadOne',
@@ -269,48 +270,18 @@ RULESET_SPEC = {'schema_version': '1.0',
                                  'selected_spec': 'Trail Kit',
                                  'rating': None,
                                  'review': None}}}],
- 'event_sequence': [{'type': 'session_login_success', 'match': {'phone': '13800138000'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2445'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2445', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2446'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2446', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2447'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2447', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2445', 'quantity': 2}},
-                    {'type': 'cart_quantity_updated', 'match': {'productId': 'p2447', 'quantity': 2}},
-                    {'type': 'checkout_address_selected', 'match': {'addressId': 'addr-home'}},
-                    {'type': 'checkout_payment_selected', 'match': {'paymentMethodId': 'cod'}},
-                    {'type': 'checkout_submitted',
-                     'match': {'addressLabel': 'Home',
-                               'paymentLabel': 'Cash on Delivery',
-                               'note': 'TrailLoadOne',
-                               'itemCount': 3}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2445', 'rating': 4}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2446', 'rating': 3}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2448'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2448', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2449'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2449', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'catalog_view', 'match': {'category': 'Travel'}},
-                    {'type': 'product_view', 'match': {'productId': 'p2450'}},
-                    {'type': 'cart_item_added', 'match': {'productId': 'p2450', 'selectedSpec': 'Trail Kit'}},
-                    {'type': 'checkout_address_selected', 'match': {'addressId': 'addr-home'}},
-                    {'type': 'checkout_payment_selected', 'match': {'paymentMethodId': 'alipay'}},
-                    {'type': 'checkout_submitted',
-                     'match': {'addressLabel': 'Home',
-                               'paymentLabel': 'Alipay',
-                               'note': 'TrailLoadTwo',
-                               'itemCount': 3}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2448', 'rating': 4}},
-                    {'type': 'order_item_reviewed', 'match': {'productId': 'p2449', 'rating': 3}}],
- 'cardinality': {'target_orders': 'the two newest orders', 'final_cart_items': 0, 'raw_events': 31},
- 'order_binding': 'second order is newest; checkout and review events must bind to their exact order ids'}
-RULESET_SHA256 = '9e45048fa916392b56d5cb0a0cdb12145319e6513f52c6f9b6b9907db14d9c43'
+ 'business_events': {'required': ['session_login_success before the first checkout',
+                                  'cart_item_added (Trail Kit) for every order item before that order checkout',
+                                  'exactly one checkout_submitted per order, bound to its order id, note and item count; '
+                                  'no other checkout',
+                                  'exactly one order_item_reviewed per review, bound to its order id and rating, after '
+                                  'its own order checkout; no other review'],
+                     'never_required_or_counted': ['catalog_view', 'product_view', 'checkout_address_selected',
+                                                   'checkout_payment_selected', 'cart_quantity_updated'],
+                     'not_stated': 'which order is placed first; first/second are labels'},
+ 'cardinality': {'target_orders': 'one order per expected note', 'final_cart_items': 0, 'checkouts': 2, 'reviews': 4},
+ 'order_binding': 'each order is bound by its note; checkout and review events must bind to their exact order ids'}
+RULESET_SHA256 = '25f8568ef4d2fbe9fc930da48404fe75e32b9ec4807dfd8de0265c1c08e8ea05'
 # END OSOMNI_PORTABLE_BINDING
 INSTRUCTION_SHA256 = "bcc9692a5f55df5bcbd7f7543dbff9c0cf0ebebdd545e53740cce0e781e7d4d3"
 
@@ -318,10 +289,6 @@ INSTRUCTION_SHA256 = "bcc9692a5f55df5bcbd7f7543dbff9c0cf0ebebdd545e53740cce0e781
 def _digest(value: Mapping[str, Any]) -> str:
     encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def _event(event_type: str, **match: Any) -> dict[str, Any]:
-    return {"type": event_type, "match": match}
 
 
 FIRST_ITEMS = {
@@ -372,60 +339,6 @@ SECOND_ITEMS = {
     },
 }
 
-FIRST_EVENTS = [
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2445"),
-    _event("cart_item_added", productId="p2445", selectedSpec="Trail Kit"),
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2446"),
-    _event("cart_item_added", productId="p2446", selectedSpec="Trail Kit"),
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2447"),
-    _event("cart_item_added", productId="p2447", selectedSpec="Trail Kit"),
-    _event("cart_quantity_updated", productId="p2445", quantity=2),
-    _event("cart_quantity_updated", productId="p2447", quantity=2),
-    _event("checkout_address_selected", addressId="addr-home"),
-    _event("checkout_payment_selected", paymentMethodId="cod"),
-    _event(
-        "checkout_submitted",
-        addressLabel="Home",
-        paymentLabel="Cash on Delivery",
-        note="TrailLoadOne",
-        itemCount=3,
-    ),
-    _event("order_item_reviewed", productId="p2445", rating=4),
-    _event("order_item_reviewed", productId="p2446", rating=3),
-]
-
-SECOND_EVENTS = [
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2448"),
-    _event("cart_item_added", productId="p2448", selectedSpec="Trail Kit"),
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2449"),
-    _event("cart_item_added", productId="p2449", selectedSpec="Trail Kit"),
-    _event("catalog_view", category="Travel"),
-    _event("product_view", productId="p2450"),
-    _event("cart_item_added", productId="p2450", selectedSpec="Trail Kit"),
-    _event("checkout_address_selected", addressId="addr-home"),
-    _event("checkout_payment_selected", paymentMethodId="alipay"),
-    _event(
-        "checkout_submitted",
-        addressLabel="Home",
-        paymentLabel="Alipay",
-        note="TrailLoadTwo",
-        itemCount=3,
-    ),
-    _event("order_item_reviewed", productId="p2448", rating=4),
-    _event("order_item_reviewed", productId="p2449", rating=3),
-]
-
-EXPECTED_EVENTS = [
-    _event("session_login_success", phone="13800138000"),
-    *FIRST_EVENTS,
-    *SECOND_EVENTS,
-]
-
 STEP_GROUPS = {
     "login": [1, 2, 3, 4],
     "first_order": list(range(5, 32)),
@@ -440,14 +353,14 @@ CHECKPOINT_SPECS = [
     {"id": "first_reviews_exact", "steps": list(range(32, 43)), "value_contract_id": "first_reviews_exact"},
     {"id": "second_order_exact", "steps": list(range(43, 70)), "value_contract_id": "second_order_exact"},
     {"id": "second_reviews_exact", "steps": list(range(70, 81)), "value_contract_id": "second_reviews_exact"},
-    {"id": "event_sequence_exact", "steps": list(range(1, 81)), "value_contract_id": "ordered_business_events_exact"},
+    {"id": "event_sequence_exact", "steps": list(range(1, 81)), "value_contract_id": "business_events"},
 ]
 
 
 
 
 class OpenShopTwoStageTravelOrders150970Evaluator(BaseEvaluator):
-    """Verify exact durable state for both orders and their ordered events."""
+    """Verify both travel orders, their reviews and the business events behind them."""
 
     @staticmethod
     def _project_order(order: Mapping[str, Any]) -> dict[str, Any]:
@@ -472,30 +385,6 @@ class OpenShopTwoStageTravelOrders150970Evaluator(BaseEvaluator):
             "total": float(order.get("total") or 0),
             "items": items,
         }
-
-    @staticmethod
-    def _find_sequence(
-        events: list[Mapping[str, Any]], expected: list[Mapping[str, Any]]
-    ) -> tuple[list[Mapping[str, Any]], list[int]]:
-        cursor = 0
-        matched: list[Mapping[str, Any]] = []
-        indices: list[int] = []
-        for wanted in expected:
-            found = None
-            for index in range(cursor, len(events)):
-                event = dict(events[index] or {})
-                if str(event.get("type") or "") != str(wanted.get("type") or ""):
-                    continue
-                matcher = dict(wanted.get("match") or {})
-                if all(event.get(key) == value for key, value in matcher.items()):
-                    found = event
-                    indices.append(index)
-                    cursor = index + 1
-                    break
-            if found is None:
-                raise AssertionError(f"missing ordered event: {wanted}")
-            matched.append(found)
-        return matched, indices
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         controller = context.get("controller")
@@ -523,19 +412,27 @@ class OpenShopTwoStageTravelOrders150970Evaluator(BaseEvaluator):
             "checks": checks,
         }
 
-        def exact(check_id: str, value_contract_id: str, expected: Any, actual: Any) -> None:
+        def exact(
+            check_id: str,
+            value_contract_id: str,
+            expected: Any,
+            actual: Any,
+            *,
+            diagnostic: bool = False,
+        ) -> None:
             passed = actual == expected
-            checks.append(
-                {
-                    "check_id": check_id,
-                    "value_contract_id": value_contract_id,
-                    "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
-                    "expected": expected,
-                    "actual": actual,
-                    "passed": passed,
-                }
-            )
-            if not passed:
+            record = {
+                "check_id": check_id,
+                "value_contract_id": value_contract_id,
+                "match_mode": "SCALAR_EXACT" if not isinstance(expected, (dict, list)) else "ORDERED_EXACT",
+                "expected": expected,
+                "actual": actual,
+                "passed": passed,
+            }
+            if diagnostic:
+                record["diagnostic"] = True
+            checks.append(record)
+            if not passed and not diagnostic:
                 raise AssertionError(f"{check_id}: expected {expected!r}, got {actual!r}")
 
         try:
@@ -546,42 +443,43 @@ class OpenShopTwoStageTravelOrders150970Evaluator(BaseEvaluator):
             session = dict(session_payload.get("session") or {})
             orders = [self._project_order(dict(row or {})) for row in orders_payload.get("orders") or []]
             events = [dict(row or {}) for row in benchmark_payload.get("events") or []]
+            metadata["raw_events"] = events
 
             exact("session.logged_in", "session_login_exact", True, bool(session.get("loggedIn")))
             exact("session.phone", "session_login_exact", "13800138000", str((session.get("user") or {}).get("phone") or ""))
             exact("cart.empty", "final_cart_empty", 0, len(cart_payload.get("items") or []))
             exact("orders.at_least_two", "two_newest_orders_exact", True, len(orders) >= 2)
 
-            first_order = orders[1]
-            second_order = orders[0]
-            for name, order, expected in (
-                ("first", first_order, RULESET_SPEC["orders"][0]),
-                ("second", second_order, RULESET_SPEC["orders"][1]),
-            ):
-                projected = {key: order[key] for key in ("address", "payment", "note", "status", "items")}
+            # "The first order" / "the second order" are labels: bind each by its
+            # note, not by when it was placed.
+            names = ["first", "second"]
+            bound = bind_orders_by_note(orders, RULESET_SPEC["orders"])
+            for name, (order, candidates), expected in zip(names, bound, RULESET_SPEC["orders"]):
+                projected = (
+                    {key: order[key] for key in ("address", "payment", "note", "status", "items")}
+                    if order is not None
+                    else {"orders_with_note": [row["id"] for row in candidates]}
+                )
                 exact(f"{name}_order", f"{name}_order_exact", expected, projected)
 
-            matched, indices = self._find_sequence(events, EXPECTED_EVENTS)
-            exact("events.count", "ordered_business_events_exact", len(EXPECTED_EVENTS), len(events))
-            exact("events.unexpected", "ordered_business_events_exact", [], [event for i, event in enumerate(events) if i not in set(indices)])
-
-            first_checkout = matched[14]
-            first_reviews = matched[15:17]
-            second_checkout = matched[28]
-            second_reviews = matched[29:31]
-            exact("first.checkout_order_id", "first_order_event_binding", first_order["id"], str(first_checkout.get("orderId") or ""))
-            exact("first.review_order_ids", "first_reviews_exact", [first_order["id"]] * 2, [str(event.get("orderId") or "") for event in first_reviews])
-            exact("second.checkout_order_id", "second_order_event_binding", second_order["id"], str(second_checkout.get("orderId") or ""))
-            exact("second.review_order_ids", "second_reviews_exact", [second_order["id"]] * 2, [str(event.get("orderId") or "") for event in second_reviews])
-
+            # Grade the business actions the brief asks for, not the recorded click
+            # path (evaluators/windows/openshop_business_events.py).
+            business = check_business_events(
+                events,
+                [(name, order, expected) for name, (order, _), expected in zip(names, bound, RULESET_SPEC["orders"])],
+            )
+            checks.extend(business)
             metadata["current_state_evidence"] = {
                 "session": session,
                 "cart_item_count": len(cart_payload.get("items") or []),
                 "orders_newest_first": orders,
-                "matched_events": matched,
                 "raw_events": events,
-                "unexpected_events": [event for i, event in enumerate(events) if i not in set(indices)],
             }
+            failed = [row for row in business if not row["passed"]]
+            if failed:
+                raise AssertionError("; ".join(
+                    f"{row['check_id']}: expected {row['expected']!r}, got {row['actual']!r}" for row in failed
+                ))
         except AssertionError as exc:
             metadata["failure_reason"] = str(exc)
             return EvalResult(status=EvalStatus.FAIL, message=str(exc), metadata=metadata)
@@ -591,6 +489,6 @@ class OpenShopTwoStageTravelOrders150970Evaluator(BaseEvaluator):
 
         return EvalResult(
             status=EvalStatus.PASS,
-            message="All exact two-stage OpenShop travel-order checks passed",
+            message="Both OpenShop travel orders, reviews and business events passed",
             metadata=metadata,
         )

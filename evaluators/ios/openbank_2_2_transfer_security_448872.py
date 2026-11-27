@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Any, Mapping, Sequence
@@ -137,20 +138,33 @@ CHECKPOINT_SPECS = (
         },
     },
     {
-        "name": "durable_event_order_exact",
+        # The brief fixes no sequence (it lists Nora's recipient first and the
+        # Large purchase preference before the Upcoming bill read), so the task
+        # window must hold each required event, nothing unexpected, and only the
+        # one logically required order: Owen must exist before money goes to him.
+        "name": "durable_events_and_required_order",
         "steps": list(range(1, 78)),
-        "expected": [
-            "owen_recipient",
-            "owen_transfer",
-            "payment_due_text",
-            "rainy_day_transfer",
-            "city_utilities_payment",
-            "upcoming_bill_read",
-            "large_purchase_push",
-            "new_sign_in_read",
-            "checking_card_lock",
-            "nora_recipient",
-        ],
+        "expected": {
+            "labels": [
+                "owen_recipient",
+                "owen_transfer",
+                "payment_due_text",
+                "rainy_day_transfer",
+                "city_utilities_payment",
+                "upcoming_bill_read",
+                "large_purchase_push",
+                "new_sign_in_read",
+                "checking_card_lock",
+                "nora_recipient",
+            ],
+            "cardinality": (
+                "each label exactly once; a saved preference may be re-saved with the "
+                "identical payload"
+            ),
+            "repeatable_identical_labels": ["large_purchase_push", "payment_due_text"],
+            "unexpected_business_events": [],
+            "required_order": [["owen_recipient", "owen_transfer"]],
+        },
     },
 )
 
@@ -174,10 +188,13 @@ RULESET_SPEC = {
         "strings": "case-sensitive exact equality",
         "money": "Decimal cents exact equality",
         "cardinality": "exactly one target object",
-        "event_order": "exact projected sequence",
+        "event_order": (
+            "every required event present, no unexpected business event, and only the "
+            "logically required order (recipient before its transfer)"
+        ),
         "duplicate_policy": (
-            "collapse only consecutive byte-equivalent alert_setting_updated events "
-            "for the same expected setting outcome"
+            "byte-equivalent alert_setting_updated events for the same expected setting "
+            "outcome count once"
         ),
     },
     "final_ui": "not asserted; the instruction ends with a durable recipient submission",
@@ -676,9 +693,10 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
             nora=nora,
         )
         event_projection = cls._project_events(window_events, expected_events)
-        expected_labels = list(CHECKPOINT_SPECS[10]["expected"])
+        event_contract = CHECKPOINT_SPECS[10]["expected"]
+        expected_labels = list(event_contract["labels"])
         observed_labels = [item["label"] for item in event_projection]
-        order_ok = observed_labels == expected_labels
+        order_ok, order_evidence = cls._event_contract_ok(observed_labels, event_contract)
 
         event_by_label = {
             item["label"]: item
@@ -725,9 +743,12 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
             _check(
                 spec,
                 order_ok,
-                actual=observed_labels,
+                actual={"labels": observed_labels, **order_evidence},
                 evidence=event_projection,
-                failure_reason="durable event projection is not the exact expected sequence",
+                failure_reason=(
+                    "a required event is missing or repeated, an unexpected business event "
+                    "was recorded, or a transfer precedes its recipient"
+                ),
             )
         )
 
@@ -752,7 +773,7 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
                 "step": step,
                 "checkpoint_names": [
                     checks[index]["name"],
-                    "durable_event_order_exact",
+                    "durable_events_and_required_order",
                 ],
                 "dimensions": {
                     "final_object": "exact durable object or saved setting for the compound chain",
@@ -762,7 +783,7 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
                 },
                 "mapping_basis": (
                     f"step belongs to STEP_GROUPS.{group}; the group is accepted only when "
-                    "its exact final object and exact ordered causal event both pass"
+                    "its exact final object and its task-window causal event both pass"
                 ),
                 "pass": bool(checks[index]["passed"] and order_ok),
                 "passed": checks[index]["passed"],
@@ -774,7 +795,7 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
         return EvalResult(
             status=status,
             message=(
-                "All exact OpenBank1 durable-state and ordered-event checks passed"
+                "All exact OpenBank1 durable-state and causal-event checks passed"
                 if status is EvalStatus.PASS
                 else "OpenBank1 verification failed: " + ", ".join(failed)
             ),
@@ -802,6 +823,37 @@ class OpenBankTransferSecurity448872Evaluator(BaseEvaluator):
                 "observed": dict(observed or {}),
             },
         )
+
+    @staticmethod
+    def _event_contract_ok(
+        observed_labels: Sequence[str],
+        contract: Mapping[str, Any],
+    ) -> tuple[bool, dict[str, Any]]:
+        """Required events present once, nothing unexpected, required pairs ordered."""
+        counts = Counter(observed_labels)
+        repeatable = set(contract["repeatable_identical_labels"])
+        cardinality_errors = {
+            label: counts[label]
+            for label in contract["labels"]
+            if not (counts[label] >= 1 if label in repeatable else counts[label] == 1)
+        }
+        unexpected = [label for label in observed_labels if label.startswith("unexpected:")]
+        first_index = {}
+        for index, label in enumerate(observed_labels):
+            first_index.setdefault(label, index)
+        order_violations = [
+            [before, after]
+            for before, after in contract["required_order"]
+            if before in first_index
+            and after in first_index
+            and first_index[before] > first_index[after]
+        ]
+        evidence = {
+            "cardinality_errors": cardinality_errors,
+            "unexpected_business_events": unexpected,
+            "order_violations": order_violations,
+        }
+        return not (cardinality_errors or unexpected or order_violations), evidence
 
     @classmethod
     def _expected_events(

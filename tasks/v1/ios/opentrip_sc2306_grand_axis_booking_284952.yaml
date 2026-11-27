@@ -41,12 +41,12 @@ evaluation:
     expected_seed_data_sha256: 6b1836923d6ad21aa0e977c03e3f0ba77ce531582488b75b8acb0a2cf43ebcba
     expected_flight_data_sha256: 2c4fdf3a3d4b4644c7d9dbed8cd4bd14fe217b1bf8124d174fdb8c802c0716b5
     expected_base_state_sha256: f2e6ce37e0fa96ec73fba0be4a339bb3047e8552f688b50158e5f94924e9ff04
-    expected_ruleset_sha256: 6fb5c08108715f367437285ed865742a96aa5a6e4fa682f6cc70988f375f7ea2
+    expected_ruleset_sha256: 32515470f156c7313e9dc825fbb4eafbe0abe6cbb1e595abdb64eb2fb6c2f3ba
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-2
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -65,9 +65,9 @@ metadata:
   ios_device_profile: iphone17-2
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 488b9951fcbfe843791ad3011db5cc249d01fcac0140daf9e020327041b71ba8
-  evaluator_ruleset_sha256: 6fb5c08108715f367437285ed865742a96aa5a6e4fa682f6cc70988f375f7ea2
+  evaluator_ruleset_sha256: 32515470f156c7313e9dc825fbb4eafbe0abe6cbb1e595abdb64eb2fb6c2f3ba
   recording: 2026-08-03_17-10-09.mp4
-  description: Exact OpenTrip SC2306 flight then Grand Axis hotel verification under fresh task identity
+  description: Exact OpenTrip SC2306 flight and Grand Axis hotel verification under fresh task identity
     284952.
   prerequisites:
   - The approved human run remains available on the current iphone17-2 simulator until verifier_result.json
@@ -78,14 +78,15 @@ metadata:
     evidence:
     - Only opentrip.localState.v1 from the exact capacitor://localhost WebKit origin is authoritative.
     - SQLite, WAL, and SHM are copied to a host temporary directory before read-only inspection.
-    - Committed WAL states must prove exact SC2306 flight creation before exact Grand Axis hotel creation.
+    - Committed WAL states must show the exact SC2306 flight and the exact Grand Axis hotel each created
+      once, in either order.
     - Manual eval-only and automatic full-run evaluation use this same evaluator, ruleset digest, and
       checkpoint map.
     strictness:
     - Complete booking objects are compared by canonical SHA-256 after removing only dynamic id and createdAt.
-    - Every persisted field, dynamic identifier, cardinality, causal window, and transaction order is
-      exact.
-    - Extra, duplicate, malformed, corrected-after-wrong, fuzzy, or out-of-order target data fails.
+    - Every persisted field, dynamic identifier, cardinality, and causal window is exact.
+    - Extra, duplicate, malformed, corrected-after-wrong, or fuzzy target data fails; the brief states
+      no order between the target records, so none is required.
     coverage:
     - All persisted data steps map to exact final fields; uncovered_data_steps must be empty.
     - Transient navigation, sorting, and search actions remain part of their compound chain without invented

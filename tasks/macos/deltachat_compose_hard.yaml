@@ -1,0 +1,86 @@
+task_id: macos.deltachat.compose_hard
+platform: macos
+instruction: >
+  Open DeltaChat. If this is the first time opening, you may see a setup
+  wizard - skip it or close it.
+  Click on "New Chat" button (usually a pencil icon or "+" button).
+  In the "New Chat" dialog, select "Create Group".
+  Enter the group name "Project Team".
+  Add a description: "Group for project discussions".
+  Click "Next" or "Create" to create the group.
+  In the group chat, type the following message:
+  "Hello everyone! This is our new project group. Let's use this for
+  all project-related discussions."
+  Press Enter or click Send to send the message.
+  Finish after the message is sent.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall DeltaChat >/dev/null 2>&1 || true
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        open -a DeltaChat
+    - type: wait
+      ms: 8000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import sqlite3
+
+      # Check if DeltaChat database exists
+      deltachat_dir = os.path.expanduser("~/Library/Application Support/DeltaChat")
+      if not os.path.exists(deltachat_dir):
+          raise SystemExit("DELTACHAT_DIR_NOT_FOUND")
+
+      # Look for the database file
+      import glob
+      db_files = glob.glob(os.path.join(deltachat_dir, "**/*.db"), recursive=True)
+      if not db_files:
+          raise SystemExit("DATABASE_NOT_FOUND")
+
+      # Check if the group was created
+      group_found = False
+      for db_file in db_files:
+          try:
+              conn = sqlite3.connect(db_file)
+              cur = conn.cursor()
+              # Check for group chat
+              cur.execute("SELECT name FROM chats WHERE name='Project Team'")
+              if cur.fetchone():
+                  group_found = True
+                  conn.close()
+                  break
+              conn.close()
+          except:
+              continue
+
+      if not group_found:
+          raise SystemExit("GROUP_NOT_FOUND")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - deltachat
+  - messaging
+  - group
+  - hard
+  app_name: deltachat
+  difficulty: hard
+  description: Create a group chat and send a message in DeltaChat.

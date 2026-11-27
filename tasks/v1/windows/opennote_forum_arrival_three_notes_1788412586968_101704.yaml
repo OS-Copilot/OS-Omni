@@ -2,15 +2,82 @@
 task_id: windows.opennote.forum_arrival_three_notes_1788412586968_101704
 platform: windows
 instruction: |-
-  Log in to the OpenNote account for Lina Park using the Code Login method with the default phone number 13800000000 and verification code 2026, then publish three new notes, update the profile bio, and mark a specific existing post as liked and saved.
-
-  The first published note must be titled "Forum Arrival Outfit", categorized as "Fashion", located at "Forum entrance plaza", and tagged "forum trip outfit". Its body must contain the following lines in order: "Layer a comfortable coat over the travel outfit.", "Keep the ID pouch outside the coat for check-in.", "Wear flat shoes for the walk across the forum plaza.", "Straighten the coat collar before the arrival photo.", "Keep the forum badge visible above the coat pocket.", "Get a cold brew only after the registration handoff.", "Pack a light tote for the schedule and notebook.", and "Meet the full travel group at the plaza by noon." The sole cover image for this note must be the eighth image in the cover grid, which depicts a person in a black suit sitting at a coffee table.
-
-  The second published note must be titled "Two Day Forum Plan", categorized as "Fashion", located at "Forum resource area", and tagged "forum plan attire". Its body must contain the following lines in order: "Wear the easy coat for all first-day sessions.", "Prepare a lighter outfit for the planning session.", "Bring the marked session notes on the second day.", "Leave enough time for weather-related outfit changes.", "Place every badge clearly for the group photograph.", "Use one neutral tote for papers and small devices.", and "Keep the evening layer ready near the seminar room." The sole cover image for this note must be the twelfth image in the cover grid, which shows a person in a blue top standing by a window.
-
-  The third published note must be titled "Group Session Outfit", categorized as "Fashion", located at "Forum seminar room", and tagged "forum session attire". Its body must contain the following lines in order: "Wear a light top that stays neat while speaking.", "Pin the forum badge clearly on the upper chest.", "Keep both cuffs free for writing session notes.", "Avoid bright colors that distract from the speaker.", "Keep the full outfit tidy throughout the talk.", "Line up with the group for the closing photograph.", "Carry the printed agenda card in the front pocket.", and "Leave enough room to add a jacket after sunset." The sole cover image for this note must be the sixteenth image in the cover grid, which displays a tote bag, hangers, and clothing.
-
-  The existing post titled "I tried this old-street photo walks 17 times until it finally worked" must have both its "Like" and "Save" functions activated. The profile Bio content must have the text " Forum travel editor" appended to the end of the existing content and saved.
+  1. 单击左侧栏中的“Log In”按钮，打开“Log in to OpenNote”登录窗口。
+  2. 单击登录窗口顶部的“Code Login”标签，切换到验证码登录表单。
+  3. 保留默认手机号 `13800000000` 和验证码 `2026`，单击红色“Log In”按钮登录 Lina Park 账号。
+  4. 单击左侧导航栏中的“Post”，开始记录论坛抵达着装。
+  5. 单击 New Note 表单的 Title 输入框。
+  6. 在 Title 中输入 `Forum Arrival Outfit`。
+  7. 单击 Body 多行编辑区。
+  8. 在 Body 中输入 `Layer a comfortable coat over the travel outfit.`，按 Enter 建立外套搭配条目。
+  9. 在 Body 中输入 `Keep the ID pouch outside the coat for check-in.`，按 Enter 建立证件袋条目。
+  10. 在 Body 中输入 `Wear flat shoes for the walk across the forum plaza.`，按 Enter 建立平底鞋条目。
+  11. 在 Body 中输入 `Straighten the coat collar before the arrival photo.`，然后按 Enter 换行。
+  12. 在 Body 中输入 `Keep the forum badge visible above the coat pocket.`，然后按 Enter 换行。
+  13. 在 Body 中输入 `Get a cold brew only after the registration handoff.`，然后按 Enter 换行。
+  14. 在 Body 中输入 `Pack a light tote for the schedule and notebook.`，然后按 Enter 换行。
+  15. 在 Body 中输入 `Meet the full travel group at the plaza by noon.`。
+  16. 单击“Category”下拉框。
+  17. 在分类菜单中选择“Fashion”。
+  18. 单击 Location 输入框。
+  19. 在 Location 中输入 `Forum entrance plaza`。
+  20. 单击 Tags 输入框。
+  21. 在 Tags 中输入 `forum trip outfit`。
+  22. 在 Cover 网格中单击第八张“黑色西装人物坐在咖啡桌旁”的图片，使其红框选中并作为本帖唯一封面。
+  23. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交论坛抵达着装记录。
+  24. 单击“Publish”，发布 `Forum Arrival Outfit`。
+  25. 在个人 Posts 列表区域向下滚动，直到“I tried this old-street photo walks 17 times until it finally worked”卡片可见，以便后续单击该卡片并设置收藏状态。
+  26. 单击“I tried this old-street photo walks 17 times until it finally worked”帖子。
+  27. 单击当前未激活的“Like”，将这篇老街摄影散步笔记设为已点赞。
+  28. 单击当前未激活的“Save”，将这篇老街摄影散步笔记设为已收藏。
+  29. 单击详情右上角圆形关闭按钮，返回个人 Posts 列表继续维护论坛资料。
+  30. 在个人 Posts 列表区域向上滚动，直到页首“Edit Profile”按钮可见，以便后续单击该按钮编辑并保存论坛身份。
+  31. 单击个人页顶部的“Edit Profile”。
+  32. 单击“Bio”输入框。
+  33. 在 Bio 现有内容末尾输入 ` Forum travel editor`。
+  34. 单击“Save Profile”，保存论坛差旅编辑简介。
+  35. 单击左侧导航栏中的“Post”，开始编排两日论坛计划。
+  36. 单击 Title 输入框。
+  37. 在 Title 中输入 `Two Day Forum Plan`。
+  38. 单击 Body 多行编辑区。
+  39. 在 Body 中输入 `Wear the easy coat for all first-day sessions.`，按 Enter 建立首日外套条目。
+  40. 在 Body 中输入 `Prepare a lighter outfit for the planning session.`，按 Enter 建立准备会着装条目。
+  41. 在 Body 中输入 `Bring the marked session notes on the second day.`，按 Enter 建立次日笔记条目。
+  42. 在 Body 中输入 `Leave enough time for weather-related outfit changes.`，然后按 Enter 换行。
+  43. 在 Body 中输入 `Place every badge clearly for the group photograph.`，然后按 Enter 换行。
+  44. 在 Body 中输入 `Use one neutral tote for papers and small devices.`，然后按 Enter 换行。
+  45. 在 Body 中输入 `Keep the evening layer ready near the seminar room.`。
+  46. 单击“Category”下拉框。
+  47. 在分类菜单中选择“Fashion”。
+  48. 单击 Location 输入框。
+  49. 在 Location 中输入 `Forum resource area`。
+  50. 在 New Note 表单页面向下滚动，直到 Tags 输入框可见，以便后续设置 Tags、选择封面并提交两日论坛计划。
+  51. 单击 Tags 输入框。
+  52. 在 Tags 中输入 `forum plan attire`。
+  53. 在 Cover 网格中单击第十二张“蓝色上衣人物背靠站在窗边”的图片，使其红框选中并作为本帖唯一封面。
+  54. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交两日论坛计划。
+  55. 单击“Publish”，发布 `Two Day Forum Plan`。
+  56. 单击左侧导航栏中的“Post”，开始记录小组发言着装。
+  57. 单击 Title 输入框。
+  58. 在 Title 中输入 `Group Session Outfit`。
+  59. 单击 Body 多行编辑区。
+  60. 在 Body 中输入 `Wear a light top that stays neat while speaking.`，然后按 Enter 换行。
+  61. 在 Body 中输入 `Pin the forum badge clearly on the upper chest.`，然后按 Enter 换行。
+  62. 在 Body 中输入 `Keep both cuffs free for writing session notes.`，然后按 Enter 换行。
+  63. 在 Body 中输入 `Avoid bright colors that distract from the speaker.`，然后按 Enter 换行。
+  64. 在 Body 中输入 `Keep the full outfit tidy throughout the talk.`，然后按 Enter 换行。
+  65. 在 Body 中输入 `Line up with the group for the closing photograph.`，然后按 Enter 换行。
+  66. 在 Body 中输入 `Carry the printed agenda card in the front pocket.`，按 Enter 建立议程卡条目。
+  67. 在 Body 中输入 `Leave enough room to add a jacket after sunset.`。
+  68. 单击“Category”下拉框。
+  69. 在分类菜单中选择“Fashion”。
+  70. 单击 Location 输入框。
+  71. 在 Location 中输入 `Forum seminar room`。
+  72. 单击 Tags 输入框。
+  73. 在 Tags 中输入 `forum session attire`。
+  74. 在 Cover 网格中单击第十六张“托特包、衣架和服装陈列”的图片，使其红框选中并作为本帖唯一封面。
+  75. 在 New Note 表单页面向下滚动，直到“Publish”按钮可见，以便后续单击该按钮提交小组发言着装记录。
+  76. 单击“Publish”，提交并发布 `Group Session Outfit`。
 init:
   initializer_id: evaluators.cua_review.initializers.windows.opennote_forum_arrival:WindowsOpenNoteForumArrivalInitializer
   params:
@@ -23,12 +90,12 @@ evaluation:
   evaluator_id: evaluators.windows.opennote_forum_arrival_three_notes_1788412586968_101704:WindowsOpenNoteForumArrivalThreeNotesStrictEvaluator
   params:
     expected_instruction_sha256: 8106943b2851685d17a21b569e277a4dd32e00c53dd5f74fd061a12a4d27445a
-    expected_ruleset_sha256: 54a3c33e3d845199e41076a3d3976ab64e2d418c35bd2971caeec4c3cac349c2
+    expected_ruleset_sha256: 58e6064122dd712cffe509a1de6e5a82c4684de38e0266fbe8eb639eab1a62fc
     source_state_mode: human_completed_eval_only
     timeout: 90
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenNote4
   bundle_id: com.killt.openrednote
@@ -46,8 +113,8 @@ metadata:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: opennote/Windows/windows.opennote.forum_arrival_three_notes_1788412586968_101704
     extraction_method: task_snapshot
-    instruction_format: english_natural_language
-    instruction_summary_source: generated_english_natural_language
+    instruction_format: original_numbered_workflow
+    instruction_summary_source: preserved_source_instruction
     source_instruction_sha256: 8106943b2851685d17a21b569e277a4dd32e00c53dd5f74fd061a12a4d27445a
     source_instruction: |
       1. 单击左侧栏中的“Log In”按钮，打开“Log in to OpenNote”登录窗口。

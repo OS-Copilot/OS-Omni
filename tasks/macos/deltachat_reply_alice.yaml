@@ -1,0 +1,22 @@
+task_id: macos.deltachat.reply_alice
+platform: macos
+instruction: |
+  Delta Chat is open with a seeded benchmark profile.
+
+  Open the chat named `Alice`, read the existing messages, and send exactly this reply:
+  `Confirmed for 3 PM in Cedar-3.`
+init:
+  initializer_id: initializers.macos.deltachat:DeltaChatInitializer
+  params:
+    final_wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.deltachat:DeltaChatMessageEvaluator
+  params:
+    expectations:
+      - chat_name: Alice
+        expected_text: Confirmed for 3 PM in Cedar-3.
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy

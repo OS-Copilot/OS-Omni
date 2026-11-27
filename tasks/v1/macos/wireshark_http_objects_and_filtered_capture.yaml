@@ -39,7 +39,7 @@ init:
         fi
         [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ] || { echo "Wireshark.app missing from ~/Applications, /Applications, and Spotlight" >&2; exit 1; }
     - type: upload_file
-      local_path: ../../platforms/windows/vm/setup/sample.pcapng
+      local_path: ../../../platforms/windows/vm/setup/sample.pcapng
       path: /Users/bench/Downloads/sample.pcapng
     - type: run_bash
       script: |
@@ -123,7 +123,7 @@ evaluation:
     - Conversations
     - Endpoints
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.linux.local_storage import LOCAL_STORAGE_SOURCE
+
+
+# The guest program of ``_fetch_static_state`` holds this line (alone, unindented) where the
+# LevelDB reader of platforms/linux/local_storage.py (replay_history, read_state, ...) is put.
+LOCAL_STORAGE_READER_LINE = "# @osomni:local_storage_reader"
 
 
 class OpenTwitterStateEvaluator(BaseEvaluator):
@@ -76,6 +82,8 @@ PY"""
             import time
             import urllib.request
             from urllib.parse import urlparse
+
+            # @osomni:local_storage_reader
 
             DEVTOOLS_PORT = {OpenTwitterStateEvaluator.DEFAULT_DEVTOOLS_PORT}
             LOCAL_STATE_KEY = "opentwitter.localState.v2"
@@ -229,10 +237,51 @@ PY"""
                 ):
                     yield os.path.join(profile, "Default/Local Storage/leveldb")
 
-            def read_leveldb_state():
-                markers = tuple(json.loads(EXPECTED_MARKERS))
+            def own_lists(document):
+                # opentwitter.localState.v7 keeps the signed-in account's following / followers / liked /
+                # reposted / bookmarked ids, messages and notifications under userStateByHandle[handle];
+                # the reading below expects them at the top level, as the earlier schema had them.
+                by_handle = document.get("userStateByHandle")
+                user = (document.get("session") or {{}}).get("user") or {{}}
+                own = by_handle.get(user.get("handle") or "alex") if isinstance(by_handle, dict) else None
+                if not isinstance(own, dict):
+                    return document
+                merged = dict(document)
+                for field, value in own.items():
+                    merged.setdefault(field, value)
+                return merged
+
+            def reader_candidates(markers):
+                # Every stored generation of the document, newest first so that equal candidates go to
+                # the newest, read through the LevelDB format: a raw byte scan misses log records split
+                # across 32 KiB blocks and compressed table blocks.  The key carries the app's schema
+                # version (opentwitter.localState.v7 in the released app), so every
+                # opentwitter.localState.* key is read.
                 candidates = []
                 for base in iter_leveldb_dirs():
+                    try:
+                        keys = sorted({{name for _, name, _ in storage_entries(base)
+                                        if name == LOCAL_STATE_KEY or name.startswith("opentwitter.localState.")}})
+                        versions = [version for key in keys for version in replay_history(base, key)["versions"]]
+                    except Exception:
+                        continue
+                    texts = [version.get("text") or "" for version in reversed(versions)]
+                    if markers and not any(marker in raw for raw in texts for marker in markers):
+                        continue
+                    for raw in texts:
+                        try:
+                            candidate = json.loads(raw)
+                        except Exception:
+                            continue
+                        if isinstance(candidate, dict) and isinstance(candidate.get("posts"), list):
+                            score = sum(1 for marker in markers if marker in raw)
+                            candidates.append((score, len(raw), own_lists(candidate)))
+                return candidates
+
+            def read_leveldb_state():
+                markers = tuple(json.loads(EXPECTED_MARKERS))
+                candidates = reader_candidates(markers) if "replay_history" in globals() else []
+                for base in iter_leveldb_dirs() if not candidates else ():
                     try:
                         paths = [os.path.join(base, name) for name in os.listdir(base)]
                     except FileNotFoundError:
@@ -419,7 +468,7 @@ PY"""
             print(json.dumps(evaluation_state, ensure_ascii=False))
             PY
             """
-        ).strip()
+        ).strip().replace(LOCAL_STORAGE_READER_LINE, LOCAL_STORAGE_SOURCE, 1)
         result = controller.run_bash_script(script, timeout=max(timeout + 10, 30))
         output = str(result.get("output", "")).strip()
         if int(result.get("returncode", -1)) != 0:

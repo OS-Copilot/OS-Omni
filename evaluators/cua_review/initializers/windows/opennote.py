@@ -15,6 +15,7 @@ from evaluators.cua_review.initializers.windows.setup import (
     BaseWindowsInitializer,
     WindowsPreparationError,
     existing_paths,
+    run_powershell,
 )
 
 DEFAULT_APP_PATH = r"C:\OS-Omni\Apps\OpenNote\opennote.exe"
@@ -38,8 +39,27 @@ class WindowsOpenNoteInitializer(BaseWindowsInitializer):
         if not existing_paths(controller, [app_path]):
             raise WindowsPreparationError(
                 f"the OpenNote application is absent at {app_path}")
+        return f"{prepared}; the store is served on port {int(params.get('port') or DEFAULT_PORT)}"
+
+    def _confirm_started(self, controller: Any, params: Mapping[str, Any]) -> str:
+        confirmed = super()._confirm_started(controller, params)
         port = int(params.get("port") or DEFAULT_PORT)
-        return f"{prepared}; the store is served on port {port}"
+        if not 1 <= port <= 65535:
+            raise WindowsPreparationError("invalid OpenNote server port")
+        run_powershell(controller, f"""
+$deadline = [DateTime]::UtcNow.AddSeconds(45)
+$ready = $false
+do {{
+  try {{
+    $state = Invoke-RestMethod -Uri 'http://127.0.0.1:{port}/api/evaluation' -TimeoutSec 3
+    if ($null -ne $state) {{ $ready = $true; break }}
+  }} catch {{ }}
+  Start-Sleep -Seconds 1
+}} while ([DateTime]::UtcNow -lt $deadline)
+if (-not $ready) {{ throw 'OpenNote evaluation endpoint is unavailable before model execution' }}
+Write-Output 'OPENNOTE_ENDPOINT_READY'
+""", timeout=55)
+        return f"{confirmed}; evaluation endpoint ready on port {port}"
 
 
 class WindowsOpenNoteCommunityMealInitializer(WindowsOpenNoteInitializer):

@@ -75,13 +75,14 @@ DECLARED = (
             "status": "Completed",
         },
     ),
+    # The brief gives no transfer date for the second transfer (and the source steps never touch
+    # the Date control), so whatever date the form submitted is accepted.
     (
         "transfers",
         {
             "fromAccountId": "checking-2381",
             "recipientName": "Evan Holt",
             "amount": 1.40,
-            "scheduledDate": "2026-06-01",
             "memo": "House fund",
             "status": "Completed",
         },

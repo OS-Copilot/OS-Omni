@@ -180,11 +180,18 @@ class OpenDriverAccountEvaluator(BaseEvaluator):
     def support_messages(cls, store: Mapping[str, Any]) -> list[str]:
         """Text of every support message the store holds."""
         messages: list[str] = []
-        for _, node in cls.nodes(store):
+        for path, node in cls.nodes(store):
             body = cls.scalar(node, ("message", "body", "text", "content"))
             if body is None:
                 continue
-            if not any(key in node for key in ("ticketId", "ticket_id", "authorId", "author", "sender")):
+            initial_ticket = (
+                path.startswith("$.supportTickets[")
+                and path.count(".") == 1
+                and "id" in node and "userId" in node
+            )
+            if not initial_ticket and not any(
+                key in node for key in ("ticketId", "ticket_id", "authorId", "author", "sender")
+            ):
                 continue
             messages.append(str(body))
         return messages
@@ -264,6 +271,11 @@ class OpenDriverWindowsLogoutEvaluator(OpenDriverAccountEvaluator):
     account entry points and none of the signed-in workspace, and the store holds
     no active session.  Reaching that state is the task, so an empty session table
     is required whether or not the task also names the account it expects.
+
+    The screen is read with :func:`read_window_text` (OCR of the window, since the
+    Flutter canvas gives UI Automation no page text).  The entry page itself reads
+    "Create account", so a forbidden workspace label contained in an entry-point
+    phrase ("Account") only counts where it appears outside that phrase.
     """
 
     REQUIRE_NO_SESSIONS = True
@@ -283,37 +295,67 @@ class OpenDriverWindowsLogoutEvaluator(OpenDriverAccountEvaluator):
         controller = context.get("controller")
         checks = list((result.metadata or {}).get("checks") or [])
 
-        app, window, text = _foreground(controller)
+        screen = read_window_text(
+            controller, context.get("final_observation"),
+            app_keywords=params.get("expected_process_names") or ("OpenDriver",),
+        )
+        text = screen["text"]
         visible = _normalise(text)
+        # A screen that could not be read at all (no screenshot, OCR unavailable) is not
+        # a signed-out screen; the task may let the session table decide instead.
+        unreadable = not screen["readable"]
+        fallback = unreadable and bool(params.get("allow_database_state_fallback"))
+        unreadable_reason = ("the OpenDriver window text could not be read: "
+                             + (screen.get("ocr_error") or "no screen text"))
 
+        required = [str(x) for x in (params.get("required_text_tokens") or [])]
         required_any = [str(x) for x in (params.get("required_any_text_tokens") or [])]
+        if required:
+            missing = [token for token in required if not contains_text(visible, token)]
+            passed = fallback or (not unreadable and not missing)
+            checks.append({
+                "check_id": "signed_out_required_text",
+                "passed": passed,
+                "expected": required,
+                "observed": {"missing": missing, "database_state_fallback": fallback},
+                "failure_reason": "" if passed else
+                (unreadable_reason if unreadable else "the signed-out page text is not all on screen"),
+            })
         if required_any:
-            present = [token for token in required_any if _normalise(token) in visible]
+            present = [token for token in required_any if contains_text(visible, token)]
+            passed = fallback or bool(present)
             checks.append({
                 "check_id": "signed_out_entry_point",
-                "passed": bool(present) or not text,
+                "passed": passed,
                 "expected": required_any,
-                "observed": present,
-                "failure_reason": "" if present or not text else
-                "the signed-out entry point is not on screen",
+                "observed": {"present": present, "database_state_fallback": fallback},
+                "failure_reason": "" if passed else
+                (unreadable_reason if unreadable else "the signed-out entry point is not on screen"),
             })
 
         forbidden = [str(x) for x in (params.get("forbidden_text_tokens") or [])]
-        if forbidden and text:
-            present = [token for token in forbidden if _normalise(token) in visible]
+        if forbidden:
+            # The signed-out page itself reads "Create account": a workspace label such as
+            # the Account tab only counts when it appears outside the entry-point text.
+            entry_text = list(required) + list(required_any) + list(SIGNED_OUT_PAGE_TEXT)
+            present = [token for token in forbidden
+                       if contains_text(mask_enclosing_text(visible, token, entry_text), token)]
+            passed = fallback or (not unreadable and not present)
             checks.append({
                 "check_id": "workspace_absent",
-                "passed": not present,
+                "passed": passed,
                 "expected": [],
-                "observed": present,
-                "failure_reason": "" if not present else
-                "the signed-in workspace is still on screen",
+                "observed": {"present": present, "database_state_fallback": fallback},
+                "failure_reason": "" if passed else
+                (unreadable_reason if unreadable else "the signed-in workspace is still on screen"),
             })
 
         failed = [row["check_id"] for row in checks if not row["passed"]]
         metadata = dict(result.metadata or {})
         metadata.update({"checks": checks, "failed_checks": failed,
-                         "foreground_app": app, "foreground_window": window})
+                         "foreground_app": screen["foreground_app"],
+                         "foreground_window": screen["foreground_window"],
+                         "screen_text": screen_text_metadata(screen)})
         if failed:
             return EvalResult(status=EvalStatus.FAIL,
                               message="OpenDriver logout evaluation failed: " + ", ".join(failed),
@@ -331,23 +373,238 @@ def _field(node: Mapping[str, Any], *keys: str) -> Any:
     return None
 
 
-def _foreground(controller: Any) -> tuple[str, str, str]:
-    """Foreground application, window title and visible text, or empty strings."""
-    if controller is None or not hasattr(controller, "observe"):
-        return "", "", ""
-    try:
-        observation = controller.observe(include_ui_tree=True, include_screenshot_data=False)
-    except Exception:  # noqa: BLE001
-        return "", "", ""
-    app = str(getattr(observation, "foreground_app", "") or "")
-    window = str(getattr(observation, "foreground_window", "") or "")
+# -- screen text -------------------------------------------------------
+# OpenDriver for Windows is a Flutter web build (CanvasKit) inside Electron.  Flutter
+# paints every label on a canvas and builds no semantics tree unless a screen reader
+# asks for one, so UI Automation sees only the window frame ("opendriver", "Chrome
+# Legacy Window", the caption buttons) and Flutter's hidden autofill form, never the
+# page.  That form is a group named after every value typed into a text field this
+# session, each followed by a "Submit" button, and it outlives the page that typed
+# them: after a rider is created and signed out, the login page's tree still names
+# "Scan Rider" and "scan.rider@example.com".  So the page text is read from the final
+# screenshot, cropped to the window's web content, and the form is not page text.
+
+#: Names UI Automation gives the Electron window frame (English and Chinese Windows).
+WINDOW_FRAME_NAMES = frozenset({
+    "system", "minimize", "maximize", "restore", "close", "chrome legacy window",
+    "系统", "最小化", "最大化", "还原", "关闭",
+})
+
+#: The submit control Flutter adds to its hidden autofill form, by Windows locale.
+_AUTOFILL_SUBMIT = re.compile(r"(?:^|\s)(?:submit|提交)(?:\s|$)")
+
+#: Fixed text of the signed-out entry page (auth_screens.dart, WelcomeScreen).
+SIGNED_OUT_PAGE_TEXT = (
+    "Sign in to manage rides, driving, or operations.",
+    "Create account",
+    "Admin accounts are invite-only",
+    "Login",
+)
+
+NODE_TEXT_KEYS = ("text", "name", "description", "value", "content_desc")
+
+
+def observation_value(observation: Any, key: str, default: Any = None) -> Any:
+    """A field of an observation.
+
+    The Windows runtime controller returns a dataclass (attributes), the vendored
+    runtime returns a dict subclass, and saved run artifacts are plain mappings.
+    """
+    if observation is None:
+        return default
+    if isinstance(observation, Mapping):
+        value = observation.get(key)
+    else:
+        value = getattr(observation, key, None)
+    return default if value is None else value
+
+
+def observation_nodes(observation: Any) -> list[dict[str, Any]]:
+    nodes = observation_value(observation, "ui_nodes")
+    if not nodes and isinstance(observation, Mapping):
+        nodes = observation.get("a11y_tree")  # the saved result.json shape
+    if not isinstance(nodes, (list, tuple)):
+        return []
+    return [dict(node) for node in nodes if isinstance(node, Mapping)]
+
+
+def accessibility_page_text(nodes: list[dict[str, Any]], window_title: str = "") -> str:
+    """Names in the UI tree that are not the window frame, its title or the autofill form."""
+    title = _normalise(window_title)
     pieces: list[str] = []
-    nodes = observation.get("ui_nodes") if isinstance(observation, Mapping) else None
-    if isinstance(nodes, list):
-        for node in nodes:
-            if not isinstance(node, Mapping):
+    for node in nodes:
+        seen: set[str] = set()
+        for key in NODE_TEXT_KEYS:
+            value = str(node.get(key) or "").strip()
+            folded = _normalise(value)
+            if not value or folded in seen:
                 continue
-            for key in ("text", "description", "value", "content_desc"):
-                if node.get(key):
-                    pieces.append(str(node[key]))
-    return app, window, " \u241f ".join(pieces)
+            seen.add(folded)
+            if folded in WINDOW_FRAME_NAMES or (title and folded == title):
+                continue
+            if _AUTOFILL_SUBMIT.search(folded):
+                continue
+            pieces.append(value)
+    return "\n".join(pieces)
+
+
+def _node_box(node: Mapping[str, Any]) -> tuple[float, float, float, float] | None:
+    rect = node.get("rect")
+    if not isinstance(rect, Mapping):
+        return None
+    try:
+        x, y, w, h = (float(rect.get(key) or 0) for key in ("x", "y", "w", "h"))
+    except (TypeError, ValueError):
+        return None
+    if w <= 0 or h <= 0:
+        return None
+    return x, y, x + w, y + h
+
+
+def content_region(nodes: list[dict[str, Any]], image_size: tuple[int, int],
+                   screen_size: tuple[int, int] = (0, 0)) -> tuple[int, int, int, int] | None:
+    """Screenshot box of the foreground window's web content, else of the window."""
+    documents = [
+        box for node in nodes
+        if str(node.get("type") or "").casefold() in ("documentcontrol", "document")
+        and (box := _node_box(node)) is not None
+    ]
+    root = _node_box(nodes[0]) if nodes else None
+    candidates = documents or ([root] if root else [])
+    if not candidates:
+        return None
+    left, top, right, bottom = max(candidates, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+    width, height = image_size
+    screen_w, screen_h = screen_size
+    scale_x = width / screen_w if screen_w else 1.0
+    scale_y = height / screen_h if screen_h else 1.0
+    box = (max(0, int(left * scale_x)), max(0, int(top * scale_y)),
+           min(width, int(right * scale_x)), min(height, int(bottom * scale_y)))
+    if box[2] - box[0] < 64 or box[3] - box[1] < 64:
+        return None
+    return box
+
+
+def ocr_image_text(png: bytes) -> tuple[str, str]:
+    """Text read from an image of OpenDriver, and the error when nothing could read it."""
+    try:
+        import io
+
+        import pytesseract
+        from PIL import Image, ImageOps
+
+        image = ImageOps.grayscale(Image.open(io.BytesIO(png)).convert("RGB"))
+        # Sparse-text segmentation reads the scattered labels of cards, chips and tabs;
+        # the orientation-detecting pass also reads light text on filled buttons.
+        passes = [pytesseract.image_to_string(image, config=f"--psm {psm}") for psm in (11, 12)]
+        return "\n".join(passes), ""
+    except Exception as exc:  # noqa: BLE001 - fall back to the platform reader
+        tesseract_error = f"{type(exc).__name__}: {exc}"
+    try:
+        from evaluators.windows.ocr import read_screenshot_text
+
+        return read_screenshot_text(png), ""
+    except Exception as exc:  # noqa: BLE001 - no OCR engine is an unreadable screen
+        return "", f"{tesseract_error}; {type(exc).__name__}: {exc}"
+
+
+def read_window_text(controller: Any, observation: Any = None,
+                     app_keywords: Any = ("OpenDriver",)) -> dict[str, Any]:
+    """Visible text of the foreground OpenDriver window: UI names plus OCR of the page.
+
+    ``observation`` is the runner's final observation; the screen is observed again
+    when it carries no screenshot.  ``readable`` is false only when no text source
+    worked, so an OCR pass that ran and found a blank page is still readable.
+    """
+    observe_error = ""
+    shot = observation_value(observation, "screenshot_data")
+    if not (isinstance(shot, (bytes, bytearray)) and shot):
+        if controller is not None and hasattr(controller, "observe"):
+            try:
+                observation = controller.observe(include_ui_tree=True, include_screenshot_data=True)
+            except Exception as exc:  # noqa: BLE001 - recorded, decided by the caller
+                observe_error = f"{type(exc).__name__}: {exc}"
+    nodes = observation_nodes(observation)
+    app = str(observation_value(observation, "foreground_app", "") or "")
+    window = str(observation_value(observation, "foreground_window", "") or "")
+    accessibility = accessibility_page_text(nodes, window)
+    screenshot = observation_value(observation, "screenshot_data")
+    keywords = [str(k).casefold() for k in (app_keywords or ()) if str(k).strip()]
+    in_front = any(k in f"{app} {window}".casefold() for k in keywords)
+    region: tuple[int, int, int, int] | None = None
+    ocr_text, ocr_error, ocr_ran = "", "", False
+    if isinstance(screenshot, (bytes, bytearray)) and screenshot:
+        try:
+            import io
+
+            from PIL import Image
+
+            image = Image.open(io.BytesIO(bytes(screenshot))).convert("RGB")
+            screen_size = (int(observation_value(observation, "width", 0) or 0),
+                           int(observation_value(observation, "height", 0) or 0))
+            # Read only OpenDriver's page when it is in front, not the desktop around it.
+            region = content_region(nodes, image.size, screen_size) if in_front else None
+            buffer = io.BytesIO()
+            (image.crop(region) if region else image).save(buffer, format="PNG")
+            ocr_text, ocr_error = ocr_image_text(buffer.getvalue())
+            ocr_ran = not ocr_error
+        except Exception as exc:  # noqa: BLE001 - an unreadable image is no screen text
+            ocr_error = f"{type(exc).__name__}: {exc}"
+    else:
+        ocr_error = observe_error or "the observation holds no screenshot"
+    text = "\n".join(part for part in (accessibility, ocr_text) if part.strip())
+    return {
+        "text": text,
+        "readable": bool(text.strip()) or ocr_ran,
+        "accessibility_text": accessibility,
+        "ocr_text": ocr_text,
+        "ocr_error": ocr_error,
+        "region": list(region) if region else None,
+        "foreground_app": app,
+        "foreground_window": window,
+        "foreground_is_app": in_front,
+        "ui_node_count": len(nodes),
+        "screenshot": bytes(screenshot) if isinstance(screenshot, (bytes, bytearray)) else None,
+    }
+
+
+def screen_text_metadata(screen: Mapping[str, Any]) -> dict[str, Any]:
+    """The JSON-safe part of :func:`read_window_text`, for evaluator metadata."""
+    return {
+        "readable": screen.get("readable"),
+        "source": [name for name, key in (("ui_tree", "accessibility_text"), ("ocr", "ocr_text"))
+                   if str(screen.get(key) or "").strip()],
+        "region": screen.get("region"),
+        "foreground_is_app": screen.get("foreground_is_app"),
+        "ui_node_count": screen.get("ui_node_count"),
+        "ocr_error": screen.get("ocr_error") or "",
+        "text_excerpt": str(screen.get("text") or "")[:4000],
+    }
+
+
+def _text_pattern(token: Any) -> str:
+    # OCR may split or join words, so the words of a token match across any spacing.
+    return r"\s*".join(re.escape(word) for word in _normalise(token).split())
+
+
+def contains_text(visible: str, token: Any) -> bool:
+    """Whether normalised screen text contains ``token`` (case- and spacing-insensitive)."""
+    pattern = _text_pattern(token)
+    return bool(pattern) and re.search(pattern, _normalise(visible)) is not None
+
+
+def mask_enclosing_text(visible: str, token: Any, phrases: Any) -> str:
+    """``visible`` with every phrase that contains ``token`` (but is not it) blanked."""
+    folded = _normalise(token)
+    visible = _normalise(visible)
+    for phrase in phrases or ():
+        enclosing = _normalise(phrase)
+        if folded and folded != enclosing and folded in enclosing:
+            visible = re.sub(_text_pattern(phrase), " \u241f ", visible)
+    return visible
+
+
+def _foreground(controller: Any) -> tuple[str, str, str]:
+    """Foreground application, window title and visible text (kept for callers)."""
+    screen = read_window_text(controller)
+    return screen["foreground_app"], screen["foreground_window"], screen["text"]

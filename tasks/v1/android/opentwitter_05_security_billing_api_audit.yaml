@@ -105,76 +105,9 @@ evaluation:
     - like
     - bookmark
     final_view: notifications
-    event_sequence:
-    - type: timeline_view
-      query: Security
-    - type: post_like_toggled
-      postId: p-1010
-      active: true
-    - type: post_bookmark_toggled
-      postId: p-1010
-      active: true
-    - type: reply_button_clicked
-      postId: p-1010
-    - type: comment_created
-      postId: p-1010
-      text: Audit trail checked
-    - type: timeline_view
-      query: Billing
-    - type: post_repost_toggled
-      postId: p-1027
-      active: true
-    - type: post_bookmark_toggled
-      postId: p-1027
-      active: true
-    - type: reply_button_clicked
-      postId: p-1027
-    - type: comment_created
-      postId: p-1027
-      text: CSV fields verified
-    - type: timeline_view
-      query: Platform
-    - type: post_like_toggled
-      postId: p-1021
-      active: true
-    - type: post_bookmark_toggled
-      postId: p-1021
-      active: true
-    - type: reply_button_clicked
-      postId: p-1021
-    - type: comment_created
-      postId: p-1021
-      text: Client matrix ready
-    - type: message_sent
-      handle: priya
-      text: Audit notes filed.
-    - type: message_sent
-      handle: vivian
-      text: CSV review complete
-    - type: message_sent
-      handle: theo
-      text: Matrix review done.
-    - type: post_created
-      text: Export audit ready
-    - type: post_created
-      text: Client matrix set
-    - type: reply_button_clicked
-      owner_post: true
-    - type: comment_created
-      owner_post: true
-      text: Owners signed off
-    - type: post_like_toggled
-      owner_post: true
-      active: true
-    - type: post_bookmark_toggled
-      owner_post: true
-      active: true
-    - type: post_created
-      text: Audit owners ready
-    - type: notifications_marked_read
 limits:
-  max_steps: 150
-  step_timeout_seconds: 150
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: 1
   app: OpenTwitter
@@ -195,8 +128,8 @@ metadata:
     target interactions, writes a host-side baseline, and returns to the launcher. It does not restore
     the snapshot or perform checked business actions.
   verifier_rules:
-  - Full runs require a clean initializer baseline and only accept ordered events newer than the baseline
-    sequence.
+  - A recorded initializer baseline, when present, limits the events considered to those newer than it.
+  - The instruction states no order, so none is graded; browsing events are never required.
   - Seed interactions are bound to exact post IDs, authors, full text, and required active action sets.
   - Replies, messages, and created posts require exact text, exact author or recipient, exactly one match,
     and timestamps after the snapshot time.

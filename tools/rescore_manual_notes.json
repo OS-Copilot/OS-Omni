@@ -1,0 +1,69 @@
+{
+ "_doc": "Manual judgements for tools/rescore_classify.py. 'files': impact of a changed repo file, pinned to the sha256 it was reviewed at (a later edit makes it unreviewed again). impact: none (no effect on the environment / no scoring change), env (changes what the agent works in), env_when (env change only for tasks matching 'when': initializer_ids, init_params present, or init step types). 'runs': per results dir, per task: stale_ok (why unflushed Local Storage cannot change the verdict), live_checks_carried (checks that read the live VM, carried over from the original result), replay_mismatch (why the run-time replay differs), missing_ok, env_unaffected, class/new/why (full override). Per-run notes ('runs', keyed by results dir) are kept next to each run and passed with --notes.",
+ "files": {
+  "initializers/linux/openshop.py": {
+   "sha256": "245ab640e152f803700fb5af7cc6234b929f5a52a4cd69ad3f0b4fb06242ea9c",
+   "impact": "env_when",
+   "when": {
+    "initializer_ids": [
+     "initializers.linux.openshop:OpenShopInitializer"
+    ],
+    "init_step_types": [
+     "openshop_current_app",
+     "openshop_open_browser"
+    ]
+   },
+   "note": "OpenShop app patched at init (order 'Add note' page, p1004 '15.6-inch fit' spec, page catalog copy); setup.py imports it only for openshop_* steps"
+  },
+  "initializers/linux/opennote.py": {
+   "sha256": "128c6d892f03bfd533c08b96db1a80a2284d97a13ac1d156169f9905fa6b12c8",
+   "impact": "env_when",
+   "when": {
+    "init_params": [
+     "saved_note_ids"
+    ]
+   },
+   "note": "seeds saved notes before launch, only when init params set saved_note_ids (otherwise falls through to the unchanged launcher)"
+  },
+  "initializers/linux/opensheet.py": {
+   "sha256": "20d475903dddb8ecba63c5d8eb8fe8bc230c2e651220706da6383344f8eb3345",
+   "impact": "env",
+   "note": "OpenSheet app.js patched at init: focusout no longer commits the rendered display text (80 -> '80.0', formulas -> values)"
+  },
+  "initializers/linux/opensheet_aster_review.py": {
+   "sha256": "a914f0807f54da0a574a2eef88cb9a3c3a7ea706531633a2aba9277052362bb8",
+   "impact": "env",
+   "note": "applies the OpenSheet focusout patch at init"
+  },
+  "initializers/linux/opensheet_monthly_budget.py": {
+   "sha256": "8fb173316061383cb3ed350bd775fc9de301ad321eec31dccd9319b6e2fdac41",
+   "impact": "env",
+   "note": "applies the OpenSheet focusout patch at init"
+  },
+  "initializers/linux/opendriver.py": {
+   "sha256": "d2e1d2071f18115d7c9e4c6234cb42a54bb247d5a17f2d697cc53be8a7e03a02",
+   "impact": "env",
+   "note": "new initializer: serves CanvasKit and Roboto locally (gstatic certificates are not yet valid for the guest clock -> blank window)"
+  },
+  "evaluators/cua_review/evaluators/linux/opennavigation_sessions.py": {
+   "sha256": "d1a8c2509d4d0575ecf818de3a5cb2628805db30beec9ca69a697ed29fbbc906",
+   "impact": "none",
+   "note": "diff only adds REQUIRES_LIVE_BROWSER = True (the harness skips the browser flush); scoring logic unchanged"
+  },
+  "evaluators/cua_review/evaluators/linux/opennavigation.py": {
+   "sha256": "6b1800389df3b30705cf9cc3e0b1b086e83c5bd91ce3646ff9a0db0e94434075",
+   "impact": "none",
+   "note": "diff only adds REQUIRES_LIVE_BROWSER = True to three evaluator classes; scoring logic unchanged"
+  },
+  "initializers/linux/openwireshark.py": {
+   "sha256": "34d6a2907c7a2ee132d902ced349879d4a83491fb7dc091edc74841d1a0ff3c8",
+   "impact": "env_when",
+   "when": {
+    "init_params": [
+     "workspace_state"
+    ]
+   },
+   "note": "optional workspace_state reset (profile/filter) after launch; only tasks that set the param (openwireshark 9_0) start differently, 9_1 is unchanged"
+  }
+ }
+}

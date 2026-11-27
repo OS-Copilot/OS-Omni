@@ -42,31 +42,47 @@ STEP_GROUPS = {
     "credit_card_lock": list(range(70, 72)),
 }
 
-EXPECTED_EVENT_ORDER = (
-    "lena_recipient",
-    "marco_recipient",
-    "lena_transfer",
-    "marco_transfer",
-    "activity_initial_view",
-    "category_transfer",
-    "status_posted",
-    "filtered_result",
-    "filtered_result",
-    "filtered_result",
-    "marco_details",
-    "marco_dispute",
-    "marco_details",
-    "large_purchase_push",
-    "low_balance_text",
-    "upcoming_bill_read",
-    "payment_due_text",
-    "credit_card_lock",
+# The brief fixes no sequence. Only what is logically required is ordered: a
+# recipient exists before money goes to it, the Marco transfer exists before it
+# is disputed, and the entry is found with the stated Activity search before the
+# dispute is filed. Browsing (other Activity queries, opening details) is not a
+# business action and is not counted.
+REQUIRED_EVENT_ORDER = (
+    ("lena_recipient", "lena_transfer"),
+    ("marco_recipient", "marco_transfer"),
+    ("marco_transfer", "marco_dispute"),
+    ("filtered_result", "marco_dispute"),
 )
+# label -> (minimum count, maximum count or None) in the task window.
+EVENT_REQUIREMENTS = {
+    "lena_recipient": {"lena_recipient": (1, 1)},
+    "marco_recipient": {"marco_recipient": (1, 1)},
+    "lena_transfer": {"lena_transfer": (1, 1)},
+    "marco_transfer": {"marco_transfer": (1, 1)},
+    "activity_filter": {"filtered_result": (1, None)},
+    "marco_dispute": {"marco_dispute": (1, 1)},
+    "large_purchase_push": {"large_purchase_push": (1, None)},
+    "low_balance_text": {"low_balance_text": (1, None)},
+    "upcoming_bill_read": {"upcoming_bill_read": (1, 1)},
+    "payment_due_text": {"payment_due_text": (1, None)},
+    "credit_card_lock": {"credit_card_lock": (1, 1)},
+}
+_VIEW_EVENT_TYPES = {"transactions_viewed", "transaction_details_viewed"}
+# The stated search: "Studio rent" with Category Transfer, Status Posted, Time
+# Last 30 days. Paging and the derived date bounds are not part of the brief.
+FILTERED_SEARCH = {
+    "type": "transactions_viewed",
+    "q": "Studio rent",
+    "category": "Transfer",
+    "status": "Posted",
+    "dateRange": "last30",
+}
+FILTERED_SEARCH_ACCOUNT_IDS = ("all", "checking-2381")
 
 CHECKPOINT_SPECS = tuple(
     {"name": f"{group}_exact", "steps": steps}
     for group, steps in STEP_GROUPS.items()
-) + ({"name": "durable_event_order_exact", "steps": list(range(1, 72))},)
+) + ({"name": "durable_events_and_required_order", "steps": list(range(1, 72))},)
 
 RULESET_SPEC = {
     "schema_version": "1.0",
@@ -81,16 +97,23 @@ RULESET_SPEC = {
     "automatic_window": "initializer.metadata.baseline_max_event_seq",
     "step_groups": STEP_GROUPS,
     "checkpoint_specs": CHECKPOINT_SPECS,
+    "event_requirements": EVENT_REQUIREMENTS,
+    "required_event_order": REQUIRED_EVENT_ORDER,
+    "filtered_search": {
+        **FILTERED_SEARCH,
+        "accountId": list(FILTERED_SEARCH_ACCOUNT_IDS),
+        "total": 1,
+    },
     "matching": {
         "strings": "case-sensitive exact equality",
         "money": "Decimal cents exact equality",
         "cardinality": "exactly one target object",
         "dynamic_ids": "unique final objects joined exactly to causal events",
-        "event_order": "exact projected sequence",
+        "event_order": "only the logically required pairs in required_event_order",
         "duplicate_policy": (
-            "collapse only consecutive payload-identical details and alert-setting events; "
-            "retain three identical filtered-result events for last-30-days selection, "
-            "explicit Search, and the source result used by Details"
+            "payload-identical alert-setting saves may repeat; every other business event "
+            "exactly once; unmatched business events fail; Activity views and transaction "
+            "details views are browsing and are not counted"
         ),
     },
     "final_ui": "not_required_after_final_durable_card_lock",
@@ -173,6 +196,15 @@ def _event_payload(event: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in event.items() if key not in {"seq", "timestamp"}}
 
 
+def _is_filtered_search(payload: Mapping[str, Any]) -> bool:
+    """The Activity query the brief names, on all accounts or on Everyday Checking."""
+    return (
+        all(payload.get(key) == value for key, value in FILTERED_SEARCH.items())
+        and payload.get("accountId") in FILTERED_SEARCH_ACCOUNT_IDS
+        and payload.get("total") == 1
+    )
+
+
 def _check(
     name: str,
     steps: Sequence[int],
@@ -197,7 +229,7 @@ def _check(
 
 
 class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
-    """Verify exact business state and exact causal order without mutation."""
+    """Verify exact business state and the logically required causal order without mutation."""
 
     RULESET_SPEC = RULESET_SPEC
     RULESET_SHA256 = RULESET_SHA256
@@ -301,29 +333,13 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
             "payment_due_text": (payment, payment_rows, expected["payment_due_text"]),
             "credit_card_lock": (credit_card, credit_card_rows, expected["credit_card_lock"]),
         }
-        event_requirements = {
-            "lena_recipient": {"lena_recipient": 1},
-            "marco_recipient": {"marco_recipient": 1},
-            "lena_transfer": {"lena_transfer": 1},
-            "marco_transfer": {"marco_transfer": 1},
-            "activity_filter": {
-                "activity_initial_view": 1,
-                "category_transfer": 1,
-                "status_posted": 1,
-                "filtered_result": 3,
-            },
-            "marco_dispute": {"marco_details": 2, "marco_dispute": 1},
-            "large_purchase_push": {"large_purchase_push": 1},
-            "low_balance_text": {"low_balance_text": 1},
-            "upcoming_bill_read": {"upcoming_bill_read": 1},
-            "payment_due_text": {"payment_due_text": 1},
-            "credit_card_lock": {"credit_card_lock": 1},
-        }
-
         checks: list[dict[str, Any]] = []
         for group, steps in STEP_GROUPS.items():
-            required = event_requirements[group]
-            events_ok = all(counts[label] == amount for label, amount in required.items())
+            required = EVENT_REQUIREMENTS[group]
+            events_ok = all(
+                counts[label] >= low and (high is None or counts[label] <= high)
+                for label, (low, high) in required.items()
+            )
             group_events = [row for row in projection if row["label"] in required]
             if group == "activity_filter":
                 checks.append(
@@ -331,11 +347,14 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
                         "activity_filter_exact",
                         steps,
                         events_ok,
-                        expected=required,
+                        expected=dict(RULESET_SPEC["filtered_search"]),
                         actual={label: counts[label] for label in required},
                         evidence=group_events,
                         event_evidence=group_events,
-                        failure_reason="exact Activity query/filter/Search/source-result chain mismatch",
+                        failure_reason=(
+                            "no Activity search for \"Studio rent\" with Category Transfer, "
+                            "Status Posted and Time Last 30 days"
+                        ),
                     )
                 )
                 continue
@@ -364,17 +383,38 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
                 )
             )
 
-        order_ok = labels == list(EXPECTED_EVENT_ORDER)
+        unexpected = [label for label in labels if label.startswith("unexpected:")]
+        first_index: dict[str, int] = {}
+        for index, label in enumerate(labels):
+            first_index.setdefault(label, index)
+        order_violations = [
+            [before, after]
+            for before, after in REQUIRED_EVENT_ORDER
+            if before in first_index
+            and after in first_index
+            and first_index[before] > first_index[after]
+        ]
+        order_ok = not unexpected and not order_violations
         checks.append(
             _check(
-                "durable_event_order_exact",
+                "durable_events_and_required_order",
                 range(1, 72),
                 order_ok,
-                expected=list(EXPECTED_EVENT_ORDER),
-                actual=labels,
+                expected={
+                    "unexpected_business_events": [],
+                    "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+                },
+                actual={
+                    "labels": labels,
+                    "unexpected_business_events": unexpected,
+                    "order_violations": order_violations,
+                },
                 evidence=projection,
                 event_evidence=projection,
-                failure_reason="causal event projection is not the exact instruction order",
+                failure_reason=(
+                    "an unexpected business event was recorded or a logically required "
+                    "order (recipient < transfer < dispute, search < dispute) was broken"
+                ),
             )
         )
 
@@ -398,7 +438,7 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
         coverage = [
             {
                 "step": step,
-                "checkpoint_names": [f"{group}_exact", "durable_event_order_exact"],
+                "checkpoint_names": [f"{group}_exact", "durable_events_and_required_order"],
                 "dimensions": {
                     "final_object": "exact durable object or compound-chain object",
                     "content": "case-sensitive fields and Decimal-cent values",
@@ -416,7 +456,7 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
         return EvalResult(
             status=status,
             message=(
-                "All exact revised OpenBank3 state and ordered-event checkpoints passed"
+                "All exact revised OpenBank3 state and causal-event checkpoints passed"
                 if status is EvalStatus.PASS
                 else "Revised OpenBank3 verification failed: " + ", ".join(failed)
             ),
@@ -559,26 +599,8 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
                 "fromAccountId": "checking-2381", "recipientId": marco.get("id") if marco else None,
                 "amount": 1.25, "scheduledDate": "2026-06-01", "memo": "Studio rent",
             },
-            "activity_initial_view": {
-                "type": "transactions_viewed", "accountId": "all", "q": "",
-                "category": "all", "status": "all", "dateRange": "all", "from": "", "to": "",
-                "page": 1, "pageSize": 10, "total": 599,
-            },
-            "category_transfer": {
-                "type": "transactions_viewed", "accountId": "all", "q": "Studio rent",
-                "category": "Transfer", "status": "all", "dateRange": "all", "from": "", "to": "",
-                "page": 1, "pageSize": 10, "total": 1,
-            },
-            "status_posted": {
-                "type": "transactions_viewed", "accountId": "all", "q": "Studio rent",
-                "category": "Transfer", "status": "Posted", "dateRange": "all", "from": "", "to": "",
-                "page": 1, "pageSize": 10, "total": 1,
-            },
-            "filtered_result": {
-                "type": "transactions_viewed", "accountId": "all", "q": "Studio rent",
-                "category": "Transfer", "status": "Posted", "dateRange": "last30",
-                "from": "2026-05-03", "to": "2026-06-01", "page": 1, "pageSize": 10, "total": 1,
-            },
+            # "filtered_result" (the stated Activity search) is matched by
+            # _is_filtered_search; other Activity queries are browsing.
             "marco_details": {
                 "type": "transaction_details_viewed",
                 "transactionId": marco_txn.get("id") if marco_txn else None,
@@ -644,7 +666,14 @@ class OpenBankLenaMarcoDisputeSecurity086132Evaluator(BaseEvaluator):
                 label for label, expected in expected_payloads.items()
                 if _record_exact(payload, expected)
             ]
-            label = labels[0] if len(labels) == 1 else f"unexpected:{event.get('type')}:{event.get('seq')}"
+            if not labels and _is_filtered_search(payload):
+                labels = ["filtered_result"]
+            if len(labels) == 1:
+                label = labels[0]
+            elif event.get("type") in _VIEW_EVENT_TYPES:
+                continue
+            else:
+                label = f"unexpected:{event.get('type')}:{event.get('seq')}"
             if (
                 projected and label in _COLLAPSIBLE_LABELS
                 and projected[-1]["label"] == label and projected[-1]["payload"] == payload

@@ -10,11 +10,16 @@ instruction: |-
 
   Two product reviews must be submitted for specific items within these orders. The review for the "CasaPure Bamboo Storage Bin Set" in the second order must have a rating of 5 / 5 and the text "Bins fit shelves". The review for the "Mukawa Folding Camping Table and Chair Set" in the first order must have a rating of 4 / 5 and the text "Stable patio set". No reviews may be submitted for any other products.
 init:
-  initializer_id: initializers.ios.open_app:OpenAppInitializer
+  initializer_id: initializers.ios.openshop_seed_open_app:OpenShopSeedOpenAppInitializer
   params:
     bundle_id: com.killt.openshop
-    wait_ms: 1200
+    local_state_key: openshop.localState.v3
+    login_session: true
+    cart_items: []
+    bootstrap_webview: true
+    clear_saved_state: true
     return_home_after_init: false
+    wait_ms: 1200
 evaluation:
   evaluator_id: evaluators.ios.openshop_home_four_item_cart_checkout_368575:OpenShopHomeFourItemCartCheckout368575Evaluator
   params:
@@ -27,12 +32,12 @@ evaluation:
     manual_window_start: '2026-08-03T10:15:43+08:00'
     manual_window_end: '2026-08-03T10:25:22.900000+08:00'
     expected_instruction_sha256: 21cf0c825c9cc6d94b41337db26d92ee33665108baf9a5da54a353fec0646e3a
-    expected_ruleset_sha256: 8fd6d26f1459489da8dcf4e3d1a3b08b92524a8c2f11ee3b5841967c78c6edba
+    expected_ruleset_sha256: 3308cd2be05cf96955f613c3f60f7755ed534c07eba5b4fe8a8062929f81ae52
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-3
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -51,7 +56,7 @@ metadata:
   ios_device_profile: iphone17-3
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: 02b8a004a6bc0e80b9aa4e3a2ab981c8decb64eb1a306a591e75b2153b09b0e1
-  evaluator_ruleset_sha256: 8fd6d26f1459489da8dcf4e3d1a3b08b92524a8c2f11ee3b5841967c78c6edba
+  evaluator_ruleset_sha256: 3308cd2be05cf96955f613c3f60f7755ed534c07eba5b4fe8a8062929f81ae52
   recording: 2026-08-03_10-15-43.mp4
   description: OpenShop2 two exact orders and two exact reviews with strict durable sequence verification.
   prerequisites:
@@ -64,13 +69,15 @@ metadata:
     - Manual eval and automatic full-run evaluation use the same evaluator, ruleset digest, and business
       checkpoints.
     strictness:
-    - The two in-window orders have exact item cardinality, order, ids, titles, categories, specifications,
-      quantities, prices, line totals, addresses, payments, notes, statuses, and totals.
-    - The two in-window reviews have exact product, rating, text, and timestamp order; the other five
-      target products have no review.
-    - All seven cart id epochs, both order id/createdAt epochs, and both review timestamps form one strict
-      causal sequence.
-    - Extra, duplicate, malformed, or out-of-order in-window data fails.
+    - The two in-window orders, matched to the brief's first/second order by content, have exact item
+      cardinality, ids, titles, categories, specifications, quantities, prices, line totals, addresses,
+      payments, notes, statuses, and totals; line items are matched by product (no item sequence stated).
+    - The two in-window reviews have exact product, rating, and text; the other five target products have
+      no review.
+    - The only order checked is the brief's "and then", so both orders are placed before either review (and
+      each order's cart id epochs precede its createdAt). The orders and the reviews may each come in
+      either order.
+    - Extra, duplicate, or malformed in-window data fails.
     coverage:
     - Every data-producing step is bound to exact durable evidence; uncovered_data_steps must be empty.
     - Non-persisted search, category, scroll, page-open, focus, and navigation steps map to their durable

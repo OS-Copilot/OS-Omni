@@ -16,6 +16,7 @@ from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.opennote_store import DEFAULT_BUNDLE_ID, LOCAL_STATE_KEY, OpenNoteStore
+from evaluators.ios.brief_event_order import multiset_diff, order_violations
 
 
 TASK_ID = "ios.opennote.stage_makeup_three_notes_870344"
@@ -41,7 +42,7 @@ STEP_GROUPS = {
     "profile_role": [31, 32, 33, 34, 35],
     "blue_note": [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57],
     "two_role_note": [58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-    "timeline": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+    "durable_events": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
 }
 
 CHECKPOINTS = (
@@ -50,7 +51,7 @@ CHECKPOINTS = (
     "profile_role_exact",
     "blue_note_exact",
     "two_role_note_exact",
-    "timeline_exact",
+    "durable_events_and_required_order",
 )
 
 CHECKPOINT_SPECS = (
@@ -80,9 +81,9 @@ CHECKPOINT_SPECS = (
         "predicate": "two_role_note_exact_predicate",
     },
     {
-        "name": "timeline_exact",
+        "name": "durable_events_and_required_order",
         "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-        "predicate": "timeline_exact_predicate",
+        "predicate": "durable_events_and_required_order_predicate",
     },
 )
 
@@ -127,9 +128,9 @@ RULESET_SPEC = {
             "predicate": "two_role_note_exact_predicate",
         },
         {
-            "name": "timeline_exact",
+            "name": "durable_events_and_required_order",
             "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
-            "predicate": "timeline_exact_predicate",
+            "predicate": "durable_events_and_required_order_predicate",
         },
     ],
     "matching": {
@@ -139,7 +140,17 @@ RULESET_SPEC = {
         "covers": "decoded bytes exact SHA-256, MIME, and byte length",
         "dynamic_note_ids": "unique final note ID must equal the corresponding create event noteId",
         "event_window": "manual recording timestamps or automatic initializer baseline sequence",
-        "event_sequence": "exactly 14 consecutive, time-ordered events with no extras",
+        "event_sequence": (
+            "task-window business events (note_created, note_like_toggled, note_save_toggled, "
+            "profile_updated) equal the expected multiset; any other business event fails; "
+            "identical profile_updated re-saves count once; feed_view, note_detail_opened and "
+            "session events are browsing and are not counted"
+        ),
+        "required_event_order": (
+            "'Create and publish three new notes ... and then update the profile and interact "
+            "with an existing note': each of the three note_created precedes profile_updated, "
+            "the Like and the Save; no other order"
+        ),
     },
     "application_build": {
         "binary_sha256": "2f85792b383f1646f1df7ef396929fcd2df9aa2b9f569dffb13d600ceb95d8ac",
@@ -149,7 +160,7 @@ RULESET_SPEC = {
     "final_ui": "not_required_after_durable_publish",
 }
 
-RULESET_SHA256 = "1ea5eabde83cd572143ccb67b481326863e10b22e99db651246f9b323130848e"
+RULESET_SHA256 = "2c63e793a2bca8dcb12e59f97ac256ef85b638249f626c4c1a6d2b8edcec0b09"
 
 _NOTE_EXPECTED = {
     "white_note": {
@@ -261,7 +272,27 @@ def _failure(actual: Any, expected: Any, *, extra: bool = False) -> str | None:
     return "exact value, cardinality, or causal event contract mismatch"
 
 
-def _expected_events(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
+# Browsing is not a business action and is never counted (this also makes the
+# launch-time home feed_view irrelevant to where the baseline falls).
+_BROWSING_EVENT_TYPES = frozenset({"feed_view", "note_detail_opened"})
+# Saving an unchanged profile again leaves the same state; it counts once.
+_REPEATABLE_LABELS = frozenset({"profile_updated"})
+_NOTE_CREATED_LABELS = ("white_note_created", "blue_note_created", "two_role_note_created")
+# "Create and publish three new notes ... and then update the profile and interact
+# with an existing note": all three notes come before the profile update and the
+# Like/Save. Nothing is stated among the notes or between the profile and the note.
+REQUIRED_EVENT_ORDER: tuple[tuple[str, str], ...] = tuple(
+    (created, later)
+    for later in ("profile_updated", "beauty_like", "beauty_save")
+    for created in _NOTE_CREATED_LABELS
+)
+
+
+def _is_business_event(event_type: str) -> bool:
+    return event_type not in _BROWSING_EVENT_TYPES and not event_type.startswith("session_")
+
+
+def _expected_business_events(raw: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     groups = raw.get("groups") if isinstance(raw.get("groups"), Mapping) else {}
     white = groups.get("white_note") if isinstance(groups.get("white_note"), Mapping) else {}
     blue = groups.get("blue_note") if isinstance(groups.get("blue_note"), Mapping) else {}
@@ -269,22 +300,36 @@ def _expected_events(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
     white_id = (white.get("note") or {}).get("id") if isinstance(white.get("note"), Mapping) else None
     blue_id = (blue.get("note") or {}).get("id") if isinstance(blue.get("note"), Mapping) else None
     two_id = (two.get("note") or {}).get("id") if isinstance(two.get("note"), Mapping) else None
-    return [
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 420},
-        {"type": "note_created", "noteId": white_id, "title": "White Red Stage Look", "category": "Beauty", "tags": ["stage", "makeup", "red"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 421},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Beauty", "tag": "", "handle": "", "total": 39},
-        {"type": "note_detail_opened", "noteId": "n-3003"},
-        {"type": "note_like_toggled", "noteId": "n-3003", "authorHandle": "lena_27", "active": True},
-        {"type": "note_save_toggled", "noteId": "n-3003", "authorHandle": "lena_27", "active": True},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor Stage makeup editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying."},
-        {"type": "note_created", "noteId": blue_id, "title": "Blue Red Stage Look", "category": "Beauty", "tags": ["blue", "red", "contours"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 33},
-        {"type": "note_created", "noteId": two_id, "title": "Two Role Makeup List", "category": "Beauty", "tags": ["role", "makeup", "run"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 34},
-    ]
+    return {
+        "white_note_created": {"type": "note_created", "noteId": white_id, "title": "White Red Stage Look", "category": "Beauty", "tags": ["stage", "makeup", "red"]},
+        "beauty_like": {"type": "note_like_toggled", "noteId": "n-3003", "authorHandle": "lena_27", "active": True},
+        "beauty_save": {"type": "note_save_toggled", "noteId": "n-3003", "authorHandle": "lena_27", "active": True},
+        "profile_updated": {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor Stage makeup editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying."},
+        "blue_note_created": {"type": "note_created", "noteId": blue_id, "title": "Blue Red Stage Look", "category": "Beauty", "tags": ["blue", "red", "contours"]},
+        "two_role_note_created": {"type": "note_created", "noteId": two_id, "title": "Two Role Makeup List", "category": "Beauty", "tags": ["role", "makeup", "run"]},
+    }
+
+
+def _business_projection(
+    events: Any, expected: Mapping[str, Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    projection: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for event in events if isinstance(events, list) else []:
+        if not isinstance(event, Mapping):
+            continue
+        event_type = str(event.get("type") or "")
+        if not _is_business_event(event_type):
+            continue
+        payload = _event_payload(event)
+        label = next((name for name, wanted in expected.items() if payload == wanted), None)
+        if label is None:
+            label = f"unexpected:{event_type}:{event.get('seq')}"
+        elif label in _REPEATABLE_LABELS and label in seen:
+            continue
+        seen.add(label)
+        projection.append({"label": label, "seq": event.get("seq"), "payload": payload})
+    return projection
 
 
 def _note_predicate(raw: Mapping[str, Any], group_name: str) -> tuple[bool, Any, Any, str | None]:
@@ -348,40 +393,37 @@ def two_role_note_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, An
     return _note_predicate(raw, "two_role_note")
 
 
-def timeline_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
-    events = raw.get("event_suffix") if isinstance(raw.get("event_suffix"), list) else []
-    actual_payloads = [_event_payload(event) for event in events if isinstance(event, Mapping)]
-    expected_payloads = _expected_events(raw)
-    seqs = [event.get("seq") for event in events if isinstance(event, Mapping)]
-    seq_ok = (
-        len(seqs) == 14
-        and all(isinstance(seq, int) and not isinstance(seq, bool) for seq in seqs)
-        and seqs == list(range(seqs[0], seqs[0] + 14))
-    )
-    timestamps_ok = False
-    try:
-        timestamps = [_parse_datetime(event.get("timestamp")) for event in events]
-        timestamps_ok = len(timestamps) == 14 and timestamps == sorted(timestamps)
-    except (TypeError, ValueError):
-        timestamps_ok = False
+def durable_events_and_required_order_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
+    """Each requested business event exactly once, nothing else, notes before the rest."""
+    expected_events = _expected_business_events(raw)
+    projection = _business_projection(raw.get("event_suffix"), expected_events)
+    labels = [row["label"] for row in projection]
+    missing, extra = multiset_diff(list(expected_events), labels)
+    violations = order_violations(labels, REQUIRED_EVENT_ORDER)
     expected = {
-        "count": 14,
-        "consecutive_seq": True,
-        "monotonic_timestamps": True,
-        "payloads": expected_payloads,
+        "business_events": expected_events,
+        "missing": [],
+        "extra": [],
+        "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+        "order_violations": [],
     }
     actual = {
-        "count": len(events),
-        "consecutive_seq": seq_ok,
-        "monotonic_timestamps": timestamps_ok,
-        "payloads": actual_payloads,
+        "labels": labels,
+        "missing": missing,
+        "extra": extra,
+        "order_violations": violations,
+        "projection": projection,
     }
-    passed = actual == expected
-    return passed, expected, events, _failure(actual, expected)
+    passed = not missing and not extra and not violations
+    reason = None if passed else (
+        "a requested business event is missing, an unexpected or duplicate business event "
+        "was recorded, or the profile update / Like / Save came before a note was published"
+    )
+    return passed, expected, actual, reason
 
 
 class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
-    """Check exact durable values and the complete ordered causal suffix."""
+    """Check exact durable values, the requested business events and the brief's "and then"."""
 
     RULESET_SPEC = RULESET_SPEC
     RULESET_SHA256 = RULESET_SHA256
@@ -501,6 +543,7 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
             "name": spec["name"],
             "steps": list(spec["steps"]),
             "predicate": spec["predicate"],
+            "diagnostic": False,
             "passed": bool(passed),
             "expected": expected,
             "actual": actual,
@@ -532,7 +575,7 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
             profile_role_exact_predicate(raw),
             blue_note_exact_predicate(raw),
             two_role_note_exact_predicate(raw),
-            timeline_exact_predicate(raw),
+            durable_events_and_required_order_predicate(raw),
         )
         paths = (
             "$.groups.white_note",
@@ -554,6 +597,9 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
             )
             for spec, outcome, path in zip(CHECKPOINT_SPECS, outcomes, paths)
         ]
+        # The recorded event suffix (navigation, feed totals, step order) is not part
+        # of the brief; durable_events_and_required_order grades the requested business
+        # events as a multiset plus the brief's "and then" (notes before the rest).
         failures = [check["name"] for check in checks if not check["passed"]]
         metadata = {
             "task_id": TASK_ID,
@@ -577,7 +623,7 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
         }
         status = EvalStatus.PASS if not failures else EvalStatus.FAIL
         message = (
-            "All exact OpenNote state, cover, build, uniqueness, and causal-order checks passed"
+            "All exact OpenNote state, cover, build, uniqueness, and business-event checks passed"
             if not failures
             else "OpenNote exact verifier checks failed: " + ", ".join(failures)
         )
@@ -608,7 +654,7 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
         profile_role_exact_predicate(raw)
         blue_note_exact_predicate(raw)
         two_role_note_exact_predicate(raw)
-        timeline_exact_predicate(raw)
+        durable_events_and_required_order_predicate(raw)
         return cls.evaluate_evidence(raw)
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
@@ -669,7 +715,7 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
         profile_role_exact_predicate(raw)
         blue_note_exact_predicate(raw)
         two_role_note_exact_predicate(raw)
-        timeline_exact_predicate(raw)
+        durable_events_and_required_order_predicate(raw)
         result = self.evaluate_evidence(
             raw,
             evidence_source=str(evidence_path),
@@ -722,7 +768,8 @@ class OpenNoteStageMakeupThreeNotes870344Evaluator(BaseEvaluator):
         )
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container app failed: {proc.stderr.strip()}")
-        app = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        app = remap_simulator_container_path(proc.stdout.strip(), udid)
         files = {"binary_sha256": app / "App", "app_js_sha256": app / "public" / "app.js", "local_api_js_sha256": app / "public" / "local-api.js"}
         observed = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in files.items()}
         if observed != EXPECTED_BUILD:

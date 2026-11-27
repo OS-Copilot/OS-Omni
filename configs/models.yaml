@@ -1,4 +1,28 @@
 models:
+  qwen3_8_max_low:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENAI_API_KEY
+    base_url_env: OPENAI_BASE_URL
+    max_output_tokens: 16384
+    metadata:
+      api_mode: chat_completions
+      reasoning_effort: low
+      image_jpeg_quality: 85
+      stream: true
+      enable_thinking: true
+  qwen3_8_max_no_thinking:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENAI_API_KEY
+    base_url_env: OPENAI_BASE_URL
+    max_output_tokens: 16384
+    metadata:
+      api_mode: chat_completions
+      reasoning_effort: none
+      image_jpeg_quality: 85
+      stream: true
+      enable_thinking: false
   qwen3_8_27b_local:
     provider: openai
     model_name: Qwen/Qwen3.8-27B
@@ -10,13 +34,11 @@ models:
     metadata:
       reasoning_effort: medium
       computer_use_protocol: qwen
-
   gpt5_0:
     provider: openai
     model_name: gpt-5
     api_key_env: OPENAI_API_KEY
     base_url_env: OPENAI_BASE_URL
-
   gpt5_4:
     provider: openai
     model_name: gpt-5.4
@@ -27,7 +49,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   gpt5_5:
     provider: openai
     model_name: gpt-5.5
@@ -38,13 +59,11 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   gpt5_5_chat:
     provider: openai
     model_name: gpt-5.5
     api_key_env: OPENAI_API_KEY
     base_url_env: OPENAI_BASE_URL
-
   gpt5_4_local_responses:
     provider: openai
     model_name: gpt-5.4
@@ -55,7 +74,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   android_gpt5_4_local_responses:
     provider: openai
     model_name: gpt-5.4
@@ -66,7 +84,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   android_oracle_wait:
     provider: scripted
     model_name: android-oracle-wait
@@ -74,16 +91,14 @@ models:
     base_url: scripted://local
     metadata:
       script_actions:
-        - type: success
-          message: Android oracle completion should now match the evaluator.
-          assistant_text: The Android oracle state is already prepared.
-
+      - type: success
+        message: Android oracle completion should now match the evaluator.
+        assistant_text: The Android oracle state is already prepared.
   android_oracle_agent:
     provider: android_oracle
     model_name: android-oracle-agent
     api_key_env: OPENAI_API_KEY
     base_url: oracle://local
-
   free_codesonline_gpt5_4_responses:
     provider: openai
     model_name: gpt-5.4
@@ -94,7 +109,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   free_codesonline_gpt5_4_responses_high:
     provider: openai
     model_name: gpt-5.4
@@ -105,7 +119,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   free_codesonline_gpt5_4_high:
     provider: openai
     model_name: gpt-5.4
@@ -114,13 +127,11 @@ models:
     metadata:
       reasoning_effort: high
       reasoning_summary: detailed
-
   codez-gpt5_4:
     provider: openai
     model_name: gpt-5.4
     api_key_env: CODEZ_API_KEY
     base_url: https://codez.zwenooo.link/v1
-
   free_codesonline_gpt5_5_responses:
     provider: openai
     model_name: gpt-5.5
@@ -131,7 +142,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   codesonline_gpt5_5:
     provider: openai
     model_name: gpt-5.5
@@ -142,7 +152,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   free_codesonline_gpt5_3_codex_responses:
     provider: openai
     model_name: gpt-5.3-codex
@@ -158,74 +167,61 @@ models:
     model_name: gpt-4o
     api_key_env: OPENAI_API_KEY
     base_url_env: OPENAI_BASE_URL
-
   deepseek_chat:
     provider: deepseek
     model_name: deepseek-chat
     api_key_env: DEEPSEEK_API_KEY
     base_url: https://api.deepseek.com
-
   together_qwen3_6_plus:
     provider: together
     model_name: Qwen/Qwen3.6-Plus
     api_key_env: TOGETHER_API_KEY
     base_url: https://api.together.xyz/v1
-
   together_kimi_k2_6:
     provider: openai
     model_name: moonshotai/Kimi-K2.6
     api_key_env: TOGETHER_API_KEY_PRIVATE
     base_url: http://161.115.128.143/v1
-
-
   gpt5_mini:
     provider: openai
     model_name: gpt-5-mini-2025-08-07
     api_key_env: OPENAI_API_KEY
     base_url_env: OPENAI_API_URL
-
   gemini_3_flash:
     provider: google
     model_name: gemini-3-flash-preview
     api_key_env: GEMINI_API_KEY
     base_url_env: GEMINI_API_URL
-
   yunwu_gemini_3_1_pro_preview:
     provider: openai
     model_name: gemini-3.1-pro-preview
     api_key_env: YUNWU_API_KEY
     base_url_env: YUNWU_BASE_URL
-
   internvl3_5:
     provider: intern
     model_name: internvl3.5-241b-a28b
     api_key_env: INTERN_API_KEY
     base_url_env: INTERN_API_URL
-
   intern_s1_pro:
     provider: intern
     model_name: intern-s1-pro
     api_key_env: INTERN_API_KEY
     base_url_env: INTERN_API_URL
-
   taobao_gpt_5:
     provider: taobao
     model_name: gpt-5
     api_key_env: TAOBAO_API_KEY
     base_url_env: TAOBAO_API_URL
-
   taobao_gpt_5_4:
     provider: taobao
     model_name: gpt-5.4
     api_key_env: TAOBAO_API_KEY
     base_url_env: TAOBAO_API_URL
-
   linux_oracle_wait:
     provider: linux_gui_oracle
     model_name: linux-oracle-wait
     api_key_env: HELLOWORLD_LINUX_ORACLE_API_KEY
     base_url: oracle://local
-
   windows_deltachat_group_oracle:
     provider: scripted
     model_name: windows-deltachat-group-oracle
@@ -233,30 +229,29 @@ models:
     base_url: scripted://local
     metadata:
       script_actions:
-        - type: oracle_complete_deltachat_create_group_from_existing_chats
-          group_name: Launch Debrief
-          initial_members:
-            - name: Avery Design
-              email: avery.design@example.test
-            - name: Morgan Ops
-              email: morgan.ops@example.test
-            - name: Jordan Travel
-              email: jordan.travel@example.test
-          late_member:
-            name: Leader
-            email: leader@example.test
-          messages:
-            - |-
-              Thanks for the quick turnaround today.
-              Please post your final notes here before 6 PM.
-            - |-
-              Leader has been added.
-              Please keep all follow-ups in this group.
-          assistant_text: Preparing the Launch Debrief group with oracle privileges.
-        - type: success
-          message: Oracle completed the Launch Debrief task.
-          assistant_text: The Launch Debrief task should now be complete.
+      - type: oracle_complete_deltachat_create_group_from_existing_chats
+        group_name: Launch Debrief
+        initial_members:
+        - name: Avery Design
+          email: avery.design@example.test
+        - name: Morgan Ops
+          email: morgan.ops@example.test
+        - name: Jordan Travel
+          email: jordan.travel@example.test
+        late_member:
+          name: Leader
+          email: leader@example.test
+        messages:
+        - 'Thanks for the quick turnaround today.
 
+          Please post your final notes here before 6 PM.'
+        - 'Leader has been added.
+
+          Please keep all follow-ups in this group.'
+        assistant_text: Preparing the Launch Debrief group with oracle privileges.
+      - type: success
+        message: Oracle completed the Launch Debrief task.
+        assistant_text: The Launch Debrief task should now be complete.
   cross_vm_oracle_wait:
     provider: scripted
     model_name: cross-vm-oracle-wait
@@ -264,76 +259,64 @@ models:
     base_url: scripted://local
     metadata:
       script_actions:
-        - type: success
-          message: Oracle state is already prepared for this phase.
-          assistant_text: The oracle setup is already in place.
-
+      - type: success
+        message: Oracle state is already prepared for this phase.
+        assistant_text: The oracle setup is already in place.
   windows_oracle:
     provider: windows_oracle
     model_name: windows-oracle
     api_key_env: HELLOWORLD_WINDOWS_ORACLE_API_KEY
     base_url: oracle://local
-
   openshop_oracle:
     provider: linux_gui_oracle
     model_name: openshop-oracle
     api_key_env: HELLOWORLD_OPENSHOP_ORACLE_API_KEY
     base_url: oracle://local
-
   deltachat_oracle:
     provider: linux_gui_oracle
     model_name: deltachat-oracle
     api_key_env: HELLOWORLD_DELTACHAT_ORACLE_API_KEY
     base_url: oracle://local
-
   gimp_oracle:
     provider: linux_gui_oracle
     model_name: gimp-oracle
     api_key_env: HELLOWORLD_GIMP_ORACLE_API_KEY
     base_url: oracle://local
-
   zotero_oracle:
     provider: zotero_oracle
     model_name: zotero-oracle
     api_key_env: HELLOWORLD_ZOTERO_ORACLE_API_KEY
     base_url: oracle://local
-
   wireshark_oracle:
     provider: wireshark_oracle
     model_name: wireshark-oracle
     api_key_env: HELLOWORLD_WIRESHARK_ORACLE_API_KEY
     base_url: oracle://local
-
   linux_wireshark_oracle:
     provider: linux_gui_oracle
     model_name: linux-wireshark-oracle
     api_key_env: HELLOWORLD_LINUX_WIRESHARK_ORACLE_API_KEY
     base_url: oracle://local
-
   macos_blender_oracle:
     provider: macos_blender_oracle
     model_name: macos-blender-oracle
     api_key_env: HELLOWORLD_MACOS_BLENDER_ORACLE_API_KEY
     base_url: oracle://local
-
   macos_spotube_oracle:
     provider: macos_spotube_oracle
     model_name: macos-spotube-oracle
     api_key_env: HELLOWORLD_MACOS_SPOTUBE_ORACLE_API_KEY
     base_url: oracle://local
-
   macos_openshop_oracle:
     provider: macos_openshop_oracle
     model_name: macos-openshop-oracle
     api_key_env: HELLOWORLD_MACOS_OPENSHOP_ORACLE_API_KEY
     base_url: oracle://local
-
   macos_script_oracle:
     provider: macos_script_oracle
     model_name: macos-script-oracle
     api_key_env: HELLOWORLD_MACOS_SCRIPT_ORACLE_API_KEY
     base_url: oracle://local
-
   FKCODEX:
     provider: openai
     model_name: gpt-5.4
@@ -344,7 +327,6 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
   FKCODEX_GPT55:
     provider: openai
     model_name: gpt-5.5
@@ -355,26 +337,26 @@ models:
       reasoning_effort: high
       reasoning_summary: detailed
       text_verbosity: medium
-
-
   YUNWU_GEMINI3_1_FLASH:
     provider: google
     model_name: gemini-3.1-flash-lite-preview
     api_key_env: YUNWU_API_KEY
     base_url: https://yunwu.ai/v1beta
-
   YUNWU_GEMINI3_1_PRO:
     provider: google
     model_name: gemini-3.1-pro-preview
     api_key_env: YUNWU_API_KEY
     base_url: https://yunwu.ai/v1beta
-
   YUNWU_GEMINI3_PRO:
     provider: google
     model_name: gemini-3-pro-preview
     api_key_env: YUNWU_API_KEY
     base_url: https://yunwu.ai/v1
-
+  yunwu_claude_opus_4_7:
+    provider: openai
+    model_name: claude-opus-4-7
+    api_key_env: YUNWU_API_KEY
+    base_url: https://yunwu.ai/v1
   deepseek_flash:
     provider: openai
     model_name: deepseek-flash
@@ -384,9 +366,93 @@ models:
     metadata:
       api_mode: responses
       reasoning_effort: none
-
-  yunwu_claude_opus_4_7:
+  together_qwen_test2:
+    provider: together
+    model_name: red-lobster-7636/qwen-test2
+    api_key_env: TOGETHER_API_KEY
+    base_url: https://api.together.xyz/v1
+  openlux_qwen3_8_max:
     provider: openai
-    model_name: claude-opus-4-7
-    api_key_env: YUNWU_API_KEY
-    base_url: https://yunwu.ai/v1
+    model_name: qwen3.8-max
+    api_key_env: OPENLUX_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+  openlux_glm_5_3:
+    provider: openai
+    model_name: glm-5.3
+    api_key_env: OPENLUX_GLM_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
+  openlux_kimi_k3_high:
+    provider: openai
+    model_name: kimi-k3
+    api_key_env: KIMI_K3_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: high
+      system_prompt_as_user: true
+  deepseek_flash_high_uncapped:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
+    metadata:
+      api_mode: responses
+      reasoning_effort: high
+  claude_opus_5_5_high:
+    provider: anthropic
+    model_name: claude-opus-5-5
+    api_key_env: OPUS55_API_KEY
+    base_url_env: OPUS55_BASE_URL
+    metadata:
+      effort: high
+  openlux_qwen3_8_max_no_thinking:
+    provider: openai
+    model_name: qwen3.8-max
+    api_key_env: OPENLUX_API_KEY
+    base_url: https://api.openlux.ai/v1
+    temperature: 0.7
+    top_p: 0.8
+    max_output_tokens: 4096
+    metadata:
+      reasoning_effort: none
+      computer_use_protocol: qwen
+  together_qwen_test2_no_thinking:
+    provider: together
+    model_name: red-lobster-7636/qwen-test2
+    api_key_env: TOGETHER_API_KEY
+    base_url: https://api.together.xyz/v1
+    temperature: 0.7
+    top_p: 0.8
+    max_output_tokens: 4096
+    metadata:
+      enable_thinking: false
+      computer_use_protocol: qwen
+  openlux_glm_5_3_no_thinking:
+    provider: openai
+    model_name: glm-5.3
+    api_key_env: GLM53_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
+  openlux_kimi_k3_no_thinking:
+    provider: openai
+    model_name: kimi-k3
+    api_key_env: KIMI_K3_API_KEY
+    base_url: https://api.openlux.ai/v1
+    metadata:
+      reasoning_effort: none
+      system_prompt_as_user: true
+  deepseek_flash_high:
+    provider: openai
+    model_name: deepseek-flash
+    api_key_env: DEEPSEEK_API_KEY
+    base_url_env: DEEPSEEK_BASE_URL
+    max_output_tokens: 4096
+    metadata:
+      api_mode: responses
+      reasoning_effort: high

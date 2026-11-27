@@ -1,0 +1,11 @@
+{
+  "hf_pr": "https://huggingface.co/datasets/Cloudriver/OS-Omni-VM/discussions/9",
+  "revision": "refs/pr/9",
+  "pr_title_and_description": "Windows_v5_OPENA_app",
+  "verified_files": 165,
+  "verified_bytes": 138422420613,
+  "all_sha256_verified": true,
+  "boot_validation": "waived_by_user",
+  "snapshot": "author-windows-hf-ready",
+  "checked_at": 1791866229.0336773
+}

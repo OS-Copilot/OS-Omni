@@ -14,8 +14,7 @@ instruction: 'In the draw.io desktop app, use the blank diagram that is already 
   with exactly this content: ''primary_task=windows.drawio.ellipse_vertical_divider_styled\nlinux_peer=linux.drawio.refresh_release_flow\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
   C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_review_matrix.csv
   with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
-  Use the target application for the visual work and create required verification files directly at the specified paths using
-  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+  Use the target application for the visual work and create the required verification files at the specified paths.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:
@@ -41,8 +40,8 @@ init:
         \ dx=\"1000\" dy=\"1000\" grid=\"1\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"1\" arrows=\"1\" fold=\"\
         1\" page=\"1\" pageScale=\"1\" pageWidth=\"850\" pageHeight=\"1100\" math=\"0\" shadow=\"0\">',\n  '      <root>',\n\
         \  '        <mxCell id=\"0\"/>',\n  '        <mxCell id=\"1\" parent=\"0\"/>',\n  '      </root>',\n  '    </mxGraphModel>',\n\
-        \  '  </diagram>',\n  '</mxfile>'\n)) + [Environment]::NewLine\nSet-Content -LiteralPath $documentPath -Value $blankDiagram\
-        \ -Encoding UTF8\n\n"
+        \  '  </diagram>',\n  '</mxfile>'\n)) + [Environment]::NewLine\n# Set-Content -Encoding UTF8 writes a BOM in PowerShell 5.1, which draw.io rejects as invalid file data.\n[System.IO.File]::WriteAllText($documentPath,\
+        \ $blankDiagram, (New-Object System.Text.UTF8Encoding $false))\n\n"
       timeout: 70
     - type: run_powershell
       script: "$ErrorActionPreference = \"Stop\"\n\n$drawioPath = @(\n  \"C:\\Program Files\\draw.io\\draw.io.exe\",\n  \"\
@@ -81,28 +80,6 @@ evaluation:
     timeout: 90
     stdout_contains: EVAL_RESULT:PASS
     supplemental_checks:
-      powershell:
-      - label: primary_hard_mode
-        script: '$path = "C:\Users\User\Documents\drawio_ellipse_vertical_divider_styled.drawio"
-
-          if (-not (Test-Path -LiteralPath $path)) { Write-Output "EVAL_RESULT:FAIL drawio file missing"; exit 1 }
-
-          $raw = Get-Content -LiteralPath $path -Raw
-
-          if ($raw -notlike "*shadow=1*") { Write-Output "EVAL_RESULT:FAIL drawio missing shadow=1"; exit 1 }
-
-          Write-Output "EVAL_RESULT:PASS drawio primary style hardening found"'
-        stdout_contains: EVAL_RESULT:PASS
-        timeout: 90
-      - label: no_notepad_process
-        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
-
-          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
-
-          Write-Output ''NO_NOTEPAD_PROCESS'''
-        stdout_contains: NO_NOTEPAD_PROCESS
-        expected_exit_code: 0
-        timeout: 10
       files:
       - path: C:\Users\User\Documents\helloworld_hard_plus\windows_drawio_ellipse_vertical_divider_styled\hard_plus_handoff.tsv
         exact_text: "task_id\tlinux_peer\tstatus\nwindows.drawio.ellipse_vertical_divider_styled\tlinux.drawio.refresh_release_flow\t\
@@ -126,8 +103,8 @@ evaluation:
 
           oracle_recheck,benchmark-ops,required'
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - drawio

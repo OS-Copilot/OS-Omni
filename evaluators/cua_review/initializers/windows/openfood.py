@@ -11,13 +11,17 @@ data present and the task's target orders not yet placed.
 from __future__ import annotations
 
 import json
+import struct
 from typing import Any, Mapping
+
+from initializers.windows.electron_window import focus_electron_window
 
 from evaluators.cua_review.initializers.windows.setup import (
     BaseWindowsInitializer,
     WindowsPreparationError,
     existing_paths,
     read_local_state,
+    run_powershell,
 )
 
 STORE_DIR = r"%APPDATA%\openfood\Local Storage\leveldb"
@@ -31,15 +35,41 @@ class OpenFoodInitializer(BaseWindowsInitializer):
     APP_NAME = "OpenFood"
     SHORTCUT_NAMES = ("OpenFood", "Open Food")
     EXPECT_PROCESSES = ("openfood", "OpenFood")
+    ENTRY_PATHS = (r"C:\OS-Omni\Apps\OpenFood\openfood.exe", r"C:\Apps\OpenFood\openfood.exe")
     WAIT_MS = 2500
     PASS_MESSAGE = "OpenFood is open on its seeded snapshot"
 
+    def _launch(self, controller: Any, params: Mapping[str, Any]) -> str:
+        # Electron otherwise exposes only the window frame on some images,
+        # making the final-screen grader depend on an optional OCR installation.
+        targets = existing_paths(controller, list(self.ENTRY_PATHS))
+        if not targets:
+            raise WindowsPreparationError("OpenFood executable was not found")
+        target = targets[0].replace("'", "''")
+        run_powershell(
+            controller,
+            "$ErrorActionPreference = 'Stop'\n"
+            "Get-Process -Name openfood -ErrorAction SilentlyContinue | Stop-Process -Force\n"
+            f"Start-Process -FilePath '{target}' -ArgumentList '--force-renderer-accessibility','--remote-debugging-port=9435','--remote-debugging-address=127.0.0.1'\n"
+            "Write-Output 'LAUNCHED'",
+            timeout=30,
+        )
+        return "started OpenFood with renderer accessibility enabled"
+
     def _prepare(self, controller: Any, params: Mapping[str, Any]) -> str:
         prepared = super()._prepare(controller, params)
-        state = read_local_state(controller, STORE_DIR, STATE_KEY)
-        if not isinstance(state, Mapping):
-            raise WindowsPreparationError(
-                "the OpenFood local store does not hold the seeded state")
+        # The shipped current build holds static restaurants/users/orders in
+        # app.asar's shared seed; Local Storage holds only mutable UI/cart data
+        # and may legitimately be absent before the first launch.
+        archive = controller.get_file(r"C:\OS-Omni\Apps\OpenFood\resources\app.asar")
+        header_size = struct.unpack_from("<I", archive, 4)[0]
+        json_size = struct.unpack_from("<I", archive, 12)[0]
+        header = json.loads(archive[16:16 + json_size])
+        entry = header["files"]["shared"]["files"]["seed-data.json"]
+        start = 8 + header_size + int(entry["offset"])
+        state = json.loads(archive[start:start + entry["size"]])
+        if not isinstance(state, Mapping) or not state.get("restaurants"):
+            raise WindowsPreparationError("the installed OpenFood static seed is invalid")
         expected = [str(name) for name in (params.get("expected_restaurants") or [])]
         present = {str(row.get("name") or "") for row in (state.get("restaurants") or [])
                    if isinstance(row, Mapping)}
@@ -52,7 +82,9 @@ class OpenFoodInitializer(BaseWindowsInitializer):
     def _confirm_started(self, controller: Any, params: Mapping[str, Any]) -> str:
         if not params.get("launch_app", True):
             return "the task leaves the client closed; its shortcut is highlighted"
-        return super()._confirm_started(controller, params)
+        started = super()._confirm_started(controller, params)
+        focus_electron_window(controller, "openfood.exe", "OpenFood")
+        return started + "; foreground window confirmed"
 
 
 class OpenFoodReadyInitializer(OpenFoodInitializer):

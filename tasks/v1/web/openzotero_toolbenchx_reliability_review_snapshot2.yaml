@@ -50,7 +50,7 @@ evaluation:
     baseline_other_count: 79
     baseline_other_sha256: f42d6ed7d80828e43226b6134e9bfb1601a2529596cd2cf4a6ae140faa6978d4
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

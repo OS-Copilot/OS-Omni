@@ -5,8 +5,10 @@
 The workbook list is read from browser Local Storage and the declared export
 file is read from disk.  Only the persisted outcome is compared with the state
 the task declares: the workbook title, the cell values and sum formulas of its
-first sheet, the cell note, the header and status formatting, the frozen view,
-the active filter query and the exported workbook file.
+first sheet, the cell note, the header and status formatting (including the
+light header fill and the light yellow G6 fill), that the Aster
+filter was removed after the export, and the exported workbook file.
+The instruction does not ask for frozen panes, so the view is not compared.
 """
 
 from __future__ import annotations
@@ -38,15 +40,72 @@ DECLARED = {
     "expected_primary_notes": {"G2": "qa note"},
     "expected_primary_styles": [
         {
-            "addresses": ["A1", "F1", "G1"],
+            "addresses": ["A1", "B1", "C1", "D1", "E1", "F1", "G1"],
             "style": {"bold": True, "align": "center", "fontSize": "14"},
         },
         {"addresses": ["G6"], "style": {"bold": True}},
     ],
-    "expected_primary_view": {"freeze": True},
 }
 
 FILTER_TERM = "Aster"
+
+# OpenSheet stores a cell's fill as ``style.fill`` (``#rrggbb`` from the fill colour input;
+# the default is ``#ffffff``).  The instruction asks for a light fill on the whole header
+# range A1:G1 and a light yellow fill on G6.
+HEADER_FILL_ADDRESSES = ("A1", "B1", "C1", "D1", "E1", "F1", "G1")
+YELLOW_FILL_ADDRESSES = ("G6",)
+LIGHT_MIN_LIGHTNESS = 0.6  # HSL lightness; rejects dark and fully saturated fills (#ffff00 is 0.5)
+WHITE_MIN_CHANNEL = 250  # every channel at or above this reads as white / no fill
+YELLOW_HUE_RANGE = (38.0, 75.0)  # degrees; orange is ~30, yellow 60, yellow-green ~75
+YELLOW_MIN_CHROMA = 20  # max-min channel spread out of 255, so the hue is a visible tint
+
+
+def _rgb(value: Any) -> tuple[int, int, int] | None:
+    text = str(value or "").strip().lower()
+    if len(text) == 4 and text.startswith("#"):
+        text = "#" + "".join(ch * 2 for ch in text[1:])
+    if len(text) != 7 or not text.startswith("#"):
+        return None
+    try:
+        return int(text[1:3], 16), int(text[3:5], 16), int(text[5:7], 16)
+    except ValueError:
+        return None
+
+
+def _hue(rgb: tuple[int, int, int]) -> float:
+    r, g, b = rgb
+    high, low = max(rgb), min(rgb)
+    if high == low:
+        return 0.0
+    span = float(high - low)
+    if high == r:
+        hue = 60.0 * (((g - b) / span) % 6)
+    elif high == g:
+        hue = 60.0 * ((b - r) / span + 2)
+    else:
+        hue = 60.0 * ((r - g) / span + 4)
+    return hue % 360.0
+
+
+def _is_light_fill(value: Any) -> bool:
+    rgb = _rgb(value)
+    if rgb is None or min(rgb) >= WHITE_MIN_CHANNEL:
+        return False
+    return (max(rgb) + min(rgb)) / 510.0 >= LIGHT_MIN_LIGHTNESS
+
+
+def _is_light_yellow_fill(value: Any) -> bool:
+    rgb = _rgb(value)
+    if rgb is None or not _is_light_fill(value) or max(rgb) - min(rgb) < YELLOW_MIN_CHROMA:
+        return False
+    return YELLOW_HUE_RANGE[0] <= _hue(rgb) <= YELLOW_HUE_RANGE[1]
+
+
+def _cell_fill(sheet: Mapping[str, Any], address: str) -> str:
+    cells = sheet.get("cells") if isinstance(sheet.get("cells"), Mapping) else {}
+    cell = cells.get(address) if isinstance(cells, Mapping) else None
+    style = cell.get("style") if isinstance(cell, Mapping) and isinstance(cell.get("style"), Mapping) else {}
+    return str(style.get("fill") or "")
 
 
 def _sheets(document: Any, title: str) -> list[Mapping[str, Any]]:
@@ -58,17 +117,15 @@ def _sheets(document: Any, title: str) -> list[Mapping[str, Any]]:
     return []
 
 
-def _filter_present(document: Any, title: str, term: str) -> bool:
-    wanted = term.strip().lower()
+def _active_filters(document: Any, title: str) -> list[Any]:
+    """Filters still hiding rows: Clear filter stores ``{}``, and an empty query shows every row."""
+    found: list[Any] = []
     for sheet in _sheets(document, title):
         filters = sheet.get("filters")
-        if isinstance(filters, Mapping):
-            active = filters.get("active")
-            if isinstance(active, Mapping) and wanted in str(active.get("query") or "").lower():
-                return True
-        if wanted and wanted in json.dumps(filters, ensure_ascii=False).lower():
-            return True
-    return False
+        active = filters.get("active") if isinstance(filters, Mapping) else None
+        if isinstance(active, Mapping) and str(active.get("query") or "").strip():
+            found.append(active)
+    return found
 
 
 def _export_paths(params: Mapping[str, Any]) -> list[str]:
@@ -129,23 +186,45 @@ class OpenSheetAsterReviewEvaluator(OpenSheetPlantBudgetInventoryEvaluator):
         document, source = _read_document(context.get("controller"), key, _directories(declared))
         paths = _export_paths(params)
         files = _export_files(context.get("controller"), paths) if paths else []
-        filtered = _filter_present(document, title, FILTER_TERM)
+        # The filter is only needed while exporting; the instruction says it must be removed
+        # afterwards. OpenSheet's HTML table export writes every row whatever the filter, so
+        # the export itself cannot show whether the filter was active.
+        active_filters = _active_filters(document, title)
 
         metadata = dict(result.metadata or {})
         if source:
             metadata["source"] = source
         metadata["filter_term"] = FILTER_TERM
-        metadata["filter_present"] = filtered
+        metadata["active_filters"] = active_filters
         metadata["export_paths"] = paths
         metadata["export_files"] = files
+        checks = metadata.setdefault("checks", [])
+        sheets = _sheets(document, title)
+        primary = sheets[0] if sheets else {}
+        fill_failures: list[str] = []
+        for address in HEADER_FILL_ADDRESSES:
+            fill = _cell_fill(primary, address)
+            passed = _is_light_fill(fill)
+            checks.append({"name": "fill.light.%s" % address, "passed": passed, "actual": fill})
+            if not passed:
+                fill_failures.append("fill.light.%s" % address)
+        for address in YELLOW_FILL_ADDRESSES:
+            fill = _cell_fill(primary, address)
+            passed = _is_light_yellow_fill(fill)
+            checks.append({"name": "fill.light_yellow.%s" % address, "passed": passed, "actual": fill})
+            if not passed:
+                fill_failures.append("fill.light_yellow.%s" % address)
+        checks.append({"name": "filter_removed", "passed": not active_filters, "actual": active_filters})
+        if paths:
+            checks.append({"name": "export", "passed": bool(files), "actual": files})
         result.metadata = metadata
 
         if result.status == EvalStatus.FAIL:
             return result
 
-        failures: list[str] = []
-        if not filtered:
-            failures.append("filter")
+        failures: list[str] = list(fill_failures)
+        if active_filters:
+            failures.append("filter_removed")
         if paths and not files:
             failures.append("export")
         if failures:

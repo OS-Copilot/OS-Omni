@@ -1,0 +1,528 @@
+task_id: android.openphoto.cooking_dual_calibrated_export_20260804
+platform: android
+instruction: '任务：在 OpenPhotoEdit 中分别导入两张右上角带三原色校准区的烹饪活动照片，按指定数值完成两套自然纪实风格编辑并各导出一张成片。只在 Android 桌面、OpenPhotoEdit
+  和 Android Photo Picker 中操作，不要切换到无关应用。本任务不需要登录或注册；不要 Sign Out / 不要退出登录。最终导出第二张户外烹饪成片后，停留在当前 OpenPhotoEdit 编辑器页面，不要返回首页。
+
+
+  重要环境说明：本任务使用 Android Studio Quail 1 Android Emulator/AVD `AndroidWorldAvd_20260611_1`，VM 快照显示名称为 `snap_2026-08-03_16-11-57`。运行前
+  VM 应已经处于这个快照对应的初始状态。快照中必须已安装 OpenPhotoEdit 包 `com.killt.openphotoedit`，并且系统 Photo Picker 的 Recent/Photos 网格中可见右上角带三原色校准区的室内多人备餐照片和户外多人烹饪照片。文本映射确认：室内多人备餐源图是
+  `/sdcard/Pictures/portrait_20.jpg`，户外多人烹饪源图是 `/sdcard/Pictures/portrait_16.jpg`。快照初始状态不应存在 `/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_*.jpg`
+  导出图。
+
+
+  1. 点击 Android 虚拟机桌面上的 OpenPhotoEdit 图标打开软件。
+
+  2. 点击首页的 "Import Photo"。
+
+  3. 在 Android Photo Picker 中点击或确认停留在 "Photos" 标签页。
+
+  4. 在照片网格顶部找到右上角带三原色校准区的“多人围着锅具进行室内备餐”照片；它对应源文件 `portrait_20.jpg`。
+
+  5. 长按室内多人备餐照片缩略图，直到打开照片预览页。
+
+  6. 点击预览页底部的 "Add"，把室内备餐照片导入 OpenPhotoEdit。
+
+  7. 在底部工具栏选择 "Edit"。
+
+  8. 在 Edit 工具行选择 "Exposure"。
+
+  9. 把 Exposure 滑块拖到 +9，改善室内人物和锅具曝光。
+
+  10. 在 Edit 工具行选择 "Brightness"。
+
+  11. 把 Brightness 滑块拖到 +7，提亮活动现场中间调。
+
+  12. 在 Edit 工具行选择 "Contrast"。
+
+  13. 把 Contrast 滑块拖到 +6，保持多人画面的层次但不过度生硬。
+
+  14. 向左滑动 Edit 工具行，露出 "Temperature" 和 "Curve"。
+
+  15. 在 Edit 工具行选择 "Temperature"。
+
+  16. 把 Temperature 滑块拖到 +8，恢复室内灯光和食物暖色。
+
+  17. 在 Edit 工具行选择 "Saturation"。
+
+  18. 把 Saturation 滑块拖到 +5，温和增强食材和活动现场的整体色彩。
+
+  19. 在底部工具栏选择 "Landscape"。
+
+  20. 在 Landscape 工具行选择 "Structure"。
+
+  21. 把 Structure 滑块拖到 +10，增强锅具和食材纹理。
+
+  22. 在 Landscape 工具行选择 "HDR"。
+
+  23. 把 HDR 滑块拖到 +12，平衡室内高光和人物暗部。
+
+  24. 在底部工具栏选择 "HSL"。
+
+  25. 在颜色行选择 "Orange"。
+
+  26. 在参数行选择 "Luminance"。
+
+  27. 把 Orange 的 Luminance 滑块拖到 +8，提亮肤色和暖色食材。
+
+  28. 在参数行选择 "Saturation"。
+
+  29. 把 Orange 的 Saturation 滑块拖到 +6，适度增加食物暖色。
+
+  30. 在颜色行选择 "Yellow"。
+
+  31. 在参数行选择 "Hue"。
+
+  32. 把 Yellow 的 Hue 滑块拖到 -3，减少室内灯光的偏绿感。
+
+  33. 在底部工具栏选择 "Filters"。
+
+  34. 选择 "Clean" 滤镜。
+
+  35. 把 Amount 滑块拖到 16，保持纪实画面清楚自然。
+
+  36. 点击顶部 "Export"，导出室内备餐成片；等待导出完成，不要重复点击 Export。
+
+  37. 点击 OpenPhotoEdit 顶部返回控件。
+
+  38. 点击 "Discard"，关闭已经导出完成的室内工作副本并返回首页。
+
+  39. 点击首页的 "Import Photo"。
+
+  40. 在 Android Photo Picker 中点击或确认停留在 "Photos" 标签页。
+
+  41. 找到右上角带三原色校准区的“多人在户外围着烹饪区域交流”照片；它对应源文件 `portrait_16.jpg`，不要选择刚导出的室内成片。
+
+  42. 长按户外多人烹饪照片缩略图，直到打开照片预览页。
+
+  43. 点击预览页底部的 "Add"，把户外烹饪照片导入 OpenPhotoEdit。
+
+  44. 在底部工具栏选择 "Landscape"。
+
+  45. 在 Landscape 工具行选择 "Structure"。
+
+  46. 把 Structure 滑块拖到 +12，增强户外器具、人物服装和环境细节。
+
+  47. 在 Landscape 工具行选择 "Foliage"。
+
+  48. 把 Foliage 滑块拖到 +8，恢复树木和草地的自然绿色。
+
+  49. 在 Landscape 工具行选择 "Sky"。
+
+  50. 把 Sky 滑块拖到 +6，温和增加户外天空层次。
+
+  51. 在 Landscape 工具行选择 "HDR"。
+
+  52. 把 HDR 滑块拖到 +10，平衡日光和人物阴影。
+
+  53. 在底部工具栏选择 "Edit"。
+
+  54. 在 Edit 工具行选择 "Exposure"。
+
+  55. 把 Exposure 滑块拖到 +6，提亮户外人物面部。
+
+  56. 在 Edit 工具行选择 "Brightness"。
+
+  57. 把 Brightness 滑块拖到 +5，补充现场中间调亮度。
+
+  58. 在 Edit 工具行选择 "Contrast"。
+
+  59. 把 Contrast 滑块拖到 +8，增强人物与背景的分离。
+
+  60. 向左滑动 Edit 工具行，露出 "Temperature"。
+
+  61. 在 Edit 工具行选择 "Temperature"。
+
+  62. 把 Temperature 滑块拖到 +6，使户外照片与室内暖色保持协调。
+
+  63. 在底部工具栏选择 "HSL"。
+
+  64. 在颜色行选择 "Green"。
+
+  65. 在参数行选择 "Saturation"。
+
+  66. 把 Green 的 Saturation 滑块拖到 +8，增强现场植被颜色。
+
+  67. 在参数行选择 "Luminance"。
+
+  68. 把 Green 的 Luminance 滑块拖到 +5，避免绿色背景过暗。
+
+  69. 在颜色行选择 "Orange"。
+
+  70. 保持 "Luminance" 选中，把 Orange 的 Luminance 滑块拖到 +6，提亮人物肤色。
+
+  71. 在底部工具栏选择 "Filters"。
+
+  72. 选择 "Clean" 滤镜。
+
+  73. 把 Amount 滑块拖到 14，使户外纪实照片保持清晰自然。
+
+  74. 点击顶部 "Export"，导出户外烹饪成片，并最终停留在当前 OpenPhotoEdit 编辑器页面，不要返回首页，不要 Sign Out / 不要退出登录。'
+init:
+  initializer_id: local_eval.photo_baseline:PhotoInputBaselineInitializer
+  params:
+    app_package: com.killt.openphotoedit
+    export_dir: /sdcard/Pictures/OpenPhotoEdit
+    snapshot_name: snap_2026-08-03_16-11-57
+    required_source_files:
+    - /sdcard/Pictures/portrait_20.jpg
+    - /sdcard/Pictures/portrait_16.jpg
+    source_initializer: evaluators.cua_review.initializers.android.openphoto_cooking:OpenPhotoCookingBaselineInitializer
+evaluation:
+  evaluator_id: local_eval.photo_v2_evaluator:AuthorPhotoV2Evaluator
+  params:
+    app_package: com.killt.openphotoedit
+    export_dir: /sdcard/Pictures/OpenPhotoEdit
+    min_file_size_bytes: 100000
+    min_agent_steps: 74
+    require_baseline_for_run_dir: true
+    expected_dimensions:
+    - 960
+    - 1280
+    channel_tolerance: 1
+    sample_boxes:
+      red:
+      - 826
+      - 194
+      - 846
+      - 294
+      green:
+      - 866
+      - 194
+      - 886
+      - 294
+      blue:
+      - 906
+      - 194
+      - 926
+      - 294
+    profiles:
+    - profile_id: indoor_cooking_portrait_20
+      role: 室内多人备餐
+      source_file: portrait_20.jpg
+      expected_median_rgb:
+        red:
+        - 230
+        - 48
+        - 47
+        green:
+        - 46
+        - 226
+        - 41
+        blue:
+        - 54
+        - 51
+        - 228
+      reference_image: local_eval/benchmark-v2/references/indoor_cooking_portrait_20/correct.jpg
+      reference_sha256: cff3a7fab73aae70950b34ddb5e396258f2456c52f566af623b669d1085db9f1
+    - profile_id: outdoor_cooking_portrait_16
+      role: 户外多人烹饪
+      source_file: portrait_16.jpg
+      expected_median_rgb:
+        red:
+        - 217
+        - 47
+        - 47
+        green:
+        - 32
+        - 224
+        - 29
+        blue:
+        - 49
+        - 47
+        - 216
+      reference_image: local_eval/benchmark-v2/references/outdoor_cooking_portrait_16/correct.jpg
+      reference_sha256: bf050fec3828515d1079122f87a4a6c01b32aafdf400ff08f74de3de39b943c3
+    reference_mae_tolerance: 2.0
+limits:
+  max_steps: 180
+  step_timeout_seconds: 180
+metadata:
+  tags:
+  - android
+  - openphoto
+  - photo-editor
+  - calibrated-pixels
+  - photo-picker
+  - hsl
+  - landscape
+  - filters
+  - export
+  - cooking
+  - hard
+  - benchmark
+  app: OpenPhotoEdit
+  app_name: OpenPhotoEdit
+  app_bundle_id: com.killt.openphotoedit
+  required_packages_any:
+  - com.killt.openphotoedit
+  difficulty: hard
+  snapshot_name: snap_2026-08-03_16-11-57
+  android_vm_profile: quail1
+  avd_name: AndroidWorldAvd_20260611_1
+  task_number: openphoto-cooking-20260804
+  description: Import the calibrated indoor cooking and outdoor cooking photos, apply specified Edit/Landscape/HSL/Filter
+    settings, export both JPGs, and remain on the second editor page.
+  prerequisites:
+  - Android Studio Quail 1 Android Emulator/AVD AndroidWorldAvd_20260611_1 has snapshot display name snap_2026-08-03_16-11-57
+    available.
+  - OpenPhotoEdit package com.killt.openphotoedit is installed in snapshot snap_2026-08-03_16-11-57.
+  - The snapshot contains /sdcard/Pictures/portrait_20.jpg as the calibrated indoor cooking source photo.
+  - The snapshot contains /sdcard/Pictures/portrait_16.jpg as the calibrated outdoor cooking source photo.
+  - The snapshot starts without /sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_*.jpg export evidence.
+  initializer_message: OpenPhotoCookingBaselineInitializer does not restore snapshots, launch OpenPhotoEdit, delete
+    exports, import photos, apply edits, or create target evidence. It verifies package/source/export preconditions
+    and records a clean baseline.
+  source_mapping_evidence:
+    text_manifest: workbench/openphoto_colorblocks/calibration_manifest.json maps OpenPhoto-4 to portrait_20.jpg
+      as indoor cooking and portrait_16.jpg as outdoor cooking.
+    indoor_cooking_source_file: /sdcard/Pictures/portrait_20.jpg
+    outdoor_cooking_source_file: /sdcard/Pictures/portrait_16.jpg
+  reference_probe:
+    snapshot_name: snap_2026-08-03_16-11-57
+    reference_source: workbench/openphoto_colorblocks/reference_exports/reference_results.json contains reference
+      export medians for task4_indoor_cooking and task4_outdoor_cooking.
+    indoor_cooking_reference_export:
+      source_file: portrait_20.jpg
+      sample_median_rgb:
+        red:
+        - 249
+        - 39
+        - 38
+        green:
+        - 36
+        - 244
+        - 34
+        blue:
+        - 44
+        - 42
+        - 247
+    outdoor_cooking_reference_export:
+      source_file: portrait_16.jpg
+      sample_median_rgb:
+        red:
+        - 235
+        - 35
+        - 35
+        green:
+        - 19
+        - 241
+        - 18
+        blue:
+        - 39
+        - 37
+        - 234
+  verifier_rules:
+    primary_business_evidence:
+    - Exactly this task's durable evidence is two OpenPhotoEdit JPG exports whose upper-right calibration stripe
+      medians match the two cooking reference profiles within per-channel tolerance 12.
+    - The indoor cooking profile must match a distinct JPG exported from portrait_20.jpg after the Clean/Edit/Landscape/HSL
+      recipe.
+    - The outdoor cooking profile must match a distinct JPG exported from portrait_16.jpg after the Clean/Landscape/Edit/HSL
+      recipe.
+    - For full automatic runs, counted exports must be new relative to the initializer baseline.
+    - For manual eval-only runs without an initializer baseline, current exports are evaluated as final-state evidence
+      from the already completed manual run.
+    - The final foreground UI must still be OpenPhotoEdit editor with editor anchors such as Export/Edit/Filters/Landscape/HSL
+      visible.
+    data_source_priority:
+    - Exported JPG files under /sdcard/Pictures/OpenPhotoEdit are primary evidence.
+    - Calibration block medians from fixed boxes [826,194,846,294], [866,194,886,294], [906,194,926,294] are primary
+      edit evidence.
+    - Final UI accessibility evidence is auxiliary final-state evidence.
+    - trajectory.jsonl is used only for automatic-run process fidelity and minimum step count.
+    forbidden_assumptions:
+    - Do not pass based only on file existence, export count, UI text, substring matches, or old exports.
+    - Do not treat Photo Picker preview, Add, Discard dialog, tool-row scrolling, or intermediate slider pages as
+      final evidence.
+    - Do not assume exported filenames are fixed; match by calibrated pixels and distinct files.
+  evaluation_standard: PASS requires two distinct non-empty 960x1280 OpenPhotoEdit JPG exports, one matching the
+    indoor cooking profile and one matching the outdoor cooking profile by median RGB calibration stripes, final
+    editor UI evidence, and at least 74 trajectory records for full automatic runs.
+  known_weak_or_unverifiable_steps:
+  - Photo Picker visual identification and tool-row swipes are process steps; evaluator verifies their outcome through
+    source mapping and calibrated exported pixels rather than transient interactions.
+  - Exact finger path for each slider drag is not final-state-verifiable; evaluator verifies the resulting export
+    pixels generated by the requested slider values.
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openphoto/Android/android.openphoto.cooking_dual_calibrated_export_20260804
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 3a9cbb70c4e6de2ae80fd68f7b6008627e0325264094040489f8652857f2cd83
+    source_instruction: '任务：在 OpenPhotoEdit 中分别导入两张右上角带三原色校准区的烹饪活动照片，按指定数值完成两套自然纪实风格编辑并各导出一张成片。只在 Android 桌面、OpenPhotoEdit
+      和 Android Photo Picker 中操作，不要切换到无关应用。本任务不需要登录或注册；不要 Sign Out / 不要退出登录。最终导出第二张户外烹饪成片后，停留在当前 OpenPhotoEdit 编辑器页面，不要返回首页。
+
+
+      重要环境说明：本任务使用 Android Studio Quail 1 Android Emulator/AVD `AndroidWorldAvd_20260611_1`，VM 快照显示名称为 `snap_2026-08-03_16-11-57`。运行前
+      VM 应已经处于这个快照对应的初始状态。快照中必须已安装 OpenPhotoEdit 包 `com.killt.openphotoedit`，并且系统 Photo Picker 的 Recent/Photos 网格中可见右上角带三原色校准区的室内多人备餐照片和户外多人烹饪照片。文本映射确认：室内多人备餐源图是
+      `/sdcard/Pictures/portrait_20.jpg`，户外多人烹饪源图是 `/sdcard/Pictures/portrait_16.jpg`。快照初始状态不应存在 `/sdcard/Pictures/OpenPhotoEdit/OpenPhotoEdit_*.jpg`
+      导出图。
+
+
+      1. 点击 Android 虚拟机桌面上的 OpenPhotoEdit 图标打开软件。
+
+      2. 点击首页的 "Import Photo"。
+
+      3. 在 Android Photo Picker 中点击或确认停留在 "Photos" 标签页。
+
+      4. 在照片网格顶部找到右上角带三原色校准区的“多人围着锅具进行室内备餐”照片；它对应源文件 `portrait_20.jpg`。
+
+      5. 长按室内多人备餐照片缩略图，直到打开照片预览页。
+
+      6. 点击预览页底部的 "Add"，把室内备餐照片导入 OpenPhotoEdit。
+
+      7. 在底部工具栏选择 "Edit"。
+
+      8. 在 Edit 工具行选择 "Exposure"。
+
+      9. 把 Exposure 滑块拖到 +9，改善室内人物和锅具曝光。
+
+      10. 在 Edit 工具行选择 "Brightness"。
+
+      11. 把 Brightness 滑块拖到 +7，提亮活动现场中间调。
+
+      12. 在 Edit 工具行选择 "Contrast"。
+
+      13. 把 Contrast 滑块拖到 +6，保持多人画面的层次但不过度生硬。
+
+      14. 向左滑动 Edit 工具行，露出 "Temperature" 和 "Curve"。
+
+      15. 在 Edit 工具行选择 "Temperature"。
+
+      16. 把 Temperature 滑块拖到 +8，恢复室内灯光和食物暖色。
+
+      17. 在 Edit 工具行选择 "Saturation"。
+
+      18. 把 Saturation 滑块拖到 +5，温和增强食材和活动现场的整体色彩。
+
+      19. 在底部工具栏选择 "Landscape"。
+
+      20. 在 Landscape 工具行选择 "Structure"。
+
+      21. 把 Structure 滑块拖到 +10，增强锅具和食材纹理。
+
+      22. 在 Landscape 工具行选择 "HDR"。
+
+      23. 把 HDR 滑块拖到 +12，平衡室内高光和人物暗部。
+
+      24. 在底部工具栏选择 "HSL"。
+
+      25. 在颜色行选择 "Orange"。
+
+      26. 在参数行选择 "Luminance"。
+
+      27. 把 Orange 的 Luminance 滑块拖到 +8，提亮肤色和暖色食材。
+
+      28. 在参数行选择 "Saturation"。
+
+      29. 把 Orange 的 Saturation 滑块拖到 +6，适度增加食物暖色。
+
+      30. 在颜色行选择 "Yellow"。
+
+      31. 在参数行选择 "Hue"。
+
+      32. 把 Yellow 的 Hue 滑块拖到 -3，减少室内灯光的偏绿感。
+
+      33. 在底部工具栏选择 "Filters"。
+
+      34. 选择 "Clean" 滤镜。
+
+      35. 把 Amount 滑块拖到 16，保持纪实画面清楚自然。
+
+      36. 点击顶部 "Export"，导出室内备餐成片；等待导出完成，不要重复点击 Export。
+
+      37. 点击 OpenPhotoEdit 顶部返回控件。
+
+      38. 点击 "Discard"，关闭已经导出完成的室内工作副本并返回首页。
+
+      39. 点击首页的 "Import Photo"。
+
+      40. 在 Android Photo Picker 中点击或确认停留在 "Photos" 标签页。
+
+      41. 找到右上角带三原色校准区的“多人在户外围着烹饪区域交流”照片；它对应源文件 `portrait_16.jpg`，不要选择刚导出的室内成片。
+
+      42. 长按户外多人烹饪照片缩略图，直到打开照片预览页。
+
+      43. 点击预览页底部的 "Add"，把户外烹饪照片导入 OpenPhotoEdit。
+
+      44. 在底部工具栏选择 "Landscape"。
+
+      45. 在 Landscape 工具行选择 "Structure"。
+
+      46. 把 Structure 滑块拖到 +12，增强户外器具、人物服装和环境细节。
+
+      47. 在 Landscape 工具行选择 "Foliage"。
+
+      48. 把 Foliage 滑块拖到 +8，恢复树木和草地的自然绿色。
+
+      49. 在 Landscape 工具行选择 "Sky"。
+
+      50. 把 Sky 滑块拖到 +6，温和增加户外天空层次。
+
+      51. 在 Landscape 工具行选择 "HDR"。
+
+      52. 把 HDR 滑块拖到 +10，平衡日光和人物阴影。
+
+      53. 在底部工具栏选择 "Edit"。
+
+      54. 在 Edit 工具行选择 "Exposure"。
+
+      55. 把 Exposure 滑块拖到 +6，提亮户外人物面部。
+
+      56. 在 Edit 工具行选择 "Brightness"。
+
+      57. 把 Brightness 滑块拖到 +5，补充现场中间调亮度。
+
+      58. 在 Edit 工具行选择 "Contrast"。
+
+      59. 把 Contrast 滑块拖到 +8，增强人物与背景的分离。
+
+      60. 向左滑动 Edit 工具行，露出 "Temperature"。
+
+      61. 在 Edit 工具行选择 "Temperature"。
+
+      62. 把 Temperature 滑块拖到 +6，使户外照片与室内暖色保持协调。
+
+      63. 在底部工具栏选择 "HSL"。
+
+      64. 在颜色行选择 "Green"。
+
+      65. 在参数行选择 "Saturation"。
+
+      66. 把 Green 的 Saturation 滑块拖到 +8，增强现场植被颜色。
+
+      67. 在参数行选择 "Luminance"。
+
+      68. 把 Green 的 Luminance 滑块拖到 +5，避免绿色背景过暗。
+
+      69. 在颜色行选择 "Orange"。
+
+      70. 保持 "Luminance" 选中，把 Orange 的 Luminance 滑块拖到 +6，提亮人物肤色。
+
+      71. 在底部工具栏选择 "Filters"。
+
+      72. 选择 "Clean" 滤镜。
+
+      73. 把 Amount 滑块拖到 14，使户外纪实照片保持清晰自然。
+
+      74. 点击顶部 "Export"，导出户外烹饪成片，并最终停留在当前 OpenPhotoEdit 编辑器页面，不要返回首页，不要 Sign Out / 不要退出登录。'
+    release_path: benchmark/tasks/openphoto/Android/android.openphoto.cooking_dual_calibrated_export_20260804
+    original_evaluator_id: evaluators.android.openphoto_calibrated:OpenPhotoCoastalCalibrationEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.openphoto_cooking:OpenPhotoCookingBaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/openphoto_cooking_dual_calibrated_export_20260804.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true
+    photo_input_reconstruction: Downloaded source photos plus pure RGB calibration strips; original output thresholds
+      retained
+    limitations: 'Missing original outdoor cooking variant: reconstructed source differs'
+  benchmark_revision:
+    version: author-rebuilt-photo-v2
+    author_authorization: Generate missing cooking source; recalibrate evaluation locally
+    reference_origin: Exact task recipe on real original Android APK, independent probe; no DS traces used
+    legacy_task: local_eval/benchmark-v2/legacy/cooking-task.yaml
+    calibration: Unclipped primary RGB patches; per-channel tolerance1 plus whole-image MAE<=2
+    recipe_changed: false

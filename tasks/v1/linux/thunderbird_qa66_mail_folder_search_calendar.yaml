@@ -30,6 +30,21 @@ init:
         LOCAL_FOLDERS="$PROFILE_DIR/Mail/Local Folders"
         rm -f "$LOCAL_FOLDERS/qa66box" "$LOCAL_FOLDERS/qa66box.msf"
         rm -rf "$LOCAL_FOLDERS/qa66box.sbd"
+        # Record the folders directly under Local Folders at the start, so the evaluator can
+        # tell a seed folder the agent removed from one the snapshot never had.
+        python3 - <<'PY'
+        import json
+        from pathlib import Path
+
+        local = Path("/home/user/.thunderbird/t5q2a5hp.default-release/Mail/Local Folders")
+        names = set()
+        if local.is_dir():
+            for child in local.iterdir():
+                if child.name.endswith(".msf") or child.name == "msgFilterRules.dat":
+                    continue
+                names.add(child.name[:-4] if child.name.endswith(".sbd") else child.name)
+        Path("/tmp/os_omni_qa66_seed_folders.json").write_text(json.dumps(sorted(names)), encoding="utf-8")
+        PY
         python3 - <<'PY'
         import os
         import shutil
@@ -87,6 +102,9 @@ evaluation:
     profile_dir: /home/user/.thunderbird/t5q2a5hp.default-release
     required_folder: qa66box
     required_event_title: qa66 event
+    # Seed folders listed at init must still be directly under Local Folders ("must remain in
+    # place"); one the snapshot lacked stays diagnostic, as the verifier_rules say.
+    seed_folder_baseline_path: /tmp/os_omni_qa66_seed_folders.json
     expected_seed_folders:
     - Trash
     - Attachments - Images PDFs
@@ -98,8 +116,8 @@ evaluation:
     - Work - Bench Project
     timeout: 60
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux
@@ -120,7 +138,9 @@ metadata:
   - Verify durable final-state evidence that Thunderbird calendar storage contains an event titled qa66
     event.
   - Record expected seed folder presence as diagnostic evidence only, so missing seed data can be distinguished
-    from missing final user action without failing an otherwise correct answer.
+    from missing final user action without failing an otherwise correct answer. A seed folder that was directly
+    under Local Folders when the task started must still be there at the end (the brief says the existing folders
+    must remain in place).
   - Do not require Search Messages, Message Filters, or clicked seed events as final-state checks because
     those windows/clicks are transient UI workflow steps.
   cua_tasks_review:

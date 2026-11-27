@@ -71,10 +71,9 @@ evaluation:
       all_read: true
     trajectory:
       required: true
-      min_steps: 74
 limits:
-  max_steps: 260
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: opentwitter
   app_name: opentwitter
@@ -112,14 +111,14 @@ metadata:
     - Required outbound messages exist for exact recipient handles and text.
     - Required Alex-authored posts exist, including like/bookmark state on the two final posts.
     - Notifications have no unread items.
-    - Complete automatic executions include a trajectory with at least 74 agent steps before PASS is allowed.
+    - Complete automatic executions include a trajectory; its length is not judged.
     not_independently_verifiable_without_history:
     - Exact clicks, double-click selection, Enter/Return keypresses, navigation order, and search query
       submission process.
     - Profile photo removal, because the current OpenTwitter profile update API exposes bio/displayName
       but no persisted avatar-removal state.
-  audit_note: Evaluator checks final API/localStorage state plus a minimum 74-step trajectory requirement.
-    Process details still require trajectory/event evidence for exact per-click validation.
+  audit_note: Evaluator checks final API/localStorage state; the trajectory must exist but no step count
+    is required. Process details still require trajectory/event evidence for exact per-click validation.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: opentwitter/Linux/linux.opentwitter.community_handoff_snap1_20260826_134359

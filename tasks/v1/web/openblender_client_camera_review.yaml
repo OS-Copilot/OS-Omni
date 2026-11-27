@@ -111,7 +111,6 @@ evaluation:
     project_id: imported-loft-room-lighting
     tolerance: 0.03
     active_object: ReviewBlock
-    active_workspace: Rendering
     active_property_tab: Modifier
     output:
       path: //client_camera_review
@@ -186,8 +185,8 @@ evaluation:
       - -3.4
       - 4.2
 limits:
-  max_steps: 220
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

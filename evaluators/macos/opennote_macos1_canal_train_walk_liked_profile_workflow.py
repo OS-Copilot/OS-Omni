@@ -464,6 +464,7 @@ class OpenNoteEventTrioEvaluator(BaseEvaluator):
         foreground_ok = (
             "opennote" in str(ui.get("foreground_app") or "").casefold()
             or foreground_bundle_id in {item.casefold() for item in bundle_ids}
+            or bool(ui.get("accessibility_app_name"))
         )
         self._add_check(
             metadata,
@@ -1613,7 +1614,17 @@ raise SystemExit("OpenNote state was not found through read-only API or localSto
                 "observation_available": False,
             }
         parts: list[str] = []
-        for node in list(getattr(observation, "ui_nodes", None) or []):
+        nodes = list(getattr(observation, "ui_nodes", None) or [])
+        accessibility_app_name = any(
+            isinstance(node, Mapping)
+            and str(node.get("text") or "").strip().casefold() == "opennote"
+            and str(node.get("roleDescription") or node.get("role_description") or "")
+            .strip()
+            .casefold()
+            in {"menu bar item", "standard window"}
+            for node in nodes
+        )
+        for node in nodes:
             if not isinstance(node, Mapping):
                 continue
             for key in (
@@ -1635,6 +1646,7 @@ raise SystemExit("OpenNote state was not found through read-only API or localSto
             ),
             "text": "\n".join(parts),
             "observation_available": True,
+            "accessibility_app_name": accessibility_app_name,
         }
 
 
@@ -2084,6 +2096,7 @@ class OpenNoteGameTripSavedProfileEvaluator(OpenNoteEventTrioEvaluator):
         foreground_ok = (
             "opennote" in str(ui.get("foreground_app") or "").casefold()
             or foreground_bundle_id in {item.casefold() for item in bundle_ids}
+            or bool(ui.get("accessibility_app_name"))
         )
         self._add_check(
             metadata,

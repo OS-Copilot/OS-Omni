@@ -1,0 +1,1157 @@
+{
+  "users": [
+    {
+      "id": "user-83f120ec6929",
+      "name": "Dana Driver",
+      "email": "dash@example.com",
+      "phone": "",
+      "role": "driver",
+      "isVerified": true
+    },
+    {
+      "id": "user-663320e24496",
+      "name": "Jordan Driver",
+      "email": "jordan.driver26@example.com",
+      "phone": "",
+      "role": "driver",
+      "isVerified": true
+    },
+    {
+      "id": "user-4ea5ef08eae6",
+      "name": "Lucas Lin",
+      "email": "lucas@example.com",
+      "phone": "",
+      "role": "rider",
+      "isVerified": true
+    },
+    {
+      "id": "user-4fca406967b4",
+      "name": "Lin Rider",
+      "email": "rider@example.com",
+      "phone": "",
+      "role": "rider",
+      "isVerified": true
+    }
+  ],
+  "profiles": {
+    "user-83f120ec6929": {
+      "id": "driver-0ef10ffb5953",
+      "userId": "user-83f120ec6929",
+      "user": {
+        "id": "user-83f120ec6929",
+        "name": "Dana Driver",
+        "email": "dash@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "licenseNumber": "D-2048",
+      "vehicleMake": "Toyota",
+      "vehicleModel": "Camry",
+      "vehicleYear": "2022",
+      "licensePlate": "DRV-204",
+      "vehicleColor": "Blue",
+      "verificationStatus": "approved",
+      "driverStatus": "offline",
+      "currentLatitude": 37.4477,
+      "currentLongitude": -122.1619,
+      "averageRating": 5,
+      "totalTrips": 0,
+      "documents": [],
+      "documentSummary": {}
+    },
+    "user-663320e24496": {
+      "id": "driver-f51455837223",
+      "userId": "user-663320e24496",
+      "user": {
+        "id": "user-663320e24496",
+        "name": "Jordan Driver",
+        "email": "jordan.driver26@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "licenseNumber": "CA-DL-59302",
+      "vehicleMake": "Honda",
+      "vehicleModel": "Accord",
+      "vehicleYear": "2025",
+      "licensePlate": "DRV 5930",
+      "vehicleColor": "Silver",
+      "verificationStatus": "approved",
+      "driverStatus": "online",
+      "currentLatitude": 37.4477,
+      "currentLongitude": -122.1619,
+      "averageRating": 5,
+      "totalTrips": 0,
+      "documents": [],
+      "documentSummary": {}
+    }
+  },
+  "tokens": {
+    "d33cbf3e24ee44e087036b044efa002d": "user-663320e24496"
+  },
+  "selectedUserId": "user-663320e24496",
+  "rides": [
+    {
+      "id": "ride-d5b54e8199d9",
+      "status": "driver_arriving",
+      "pickupAddress": "University Avenue, Palo Alto, CA",
+      "pickupLatitude": 37.4477,
+      "pickupLongitude": -122.1619,
+      "destinationAddress": "Stanford University",
+      "destinationLatitude": 37.4275,
+      "destinationLongitude": -122.1697,
+      "rider": {
+        "id": "user-4ea5ef08eae6",
+        "name": "Lucas Lin",
+        "email": "lucas@example.com",
+        "phone": "",
+        "role": "rider",
+        "isVerified": true
+      },
+      "messages": [
+        {
+          "id": "msg-2ca34a96d08a",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "I am on my way.",
+          "createdAt": "2026-10-09T10:48:41.547967+00:00"
+        },
+        {
+          "id": "msg-324bcf559df2",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please meet at the pickup pin.",
+          "createdAt": "2026-10-09T10:48:45.857327+00:00"
+        },
+        {
+          "id": "msg-e256f377aa59",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Blue car near pin",
+          "createdAt": "2026-10-09T10:48:57.296916+00:00"
+        },
+        {
+          "id": "msg-dce087466a57",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Arriving in 2 minArriving in 2 min",
+          "createdAt": "2026-10-09T10:49:19.483848+00:00"
+        },
+        {
+          "id": "msg-a9954688f158",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:49:26.528050+00:00"
+        },
+        {
+          "id": "msg-f4c853984642",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:49:35.013976+00:00"
+        },
+        {
+          "id": "msg-311cb5d744ce",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:49:41.995899+00:00"
+        },
+        {
+          "id": "msg-39a79001bf5b",
+          "rideId": "ride-d5b54e8199d9",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:49:54.423339+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "status": "accepted",
+          "at": "2026-10-09T10:48:30.254373+00:00",
+          "label": "accepted"
+        },
+        {
+          "status": "driver_arriving",
+          "at": "2026-10-09T10:51:15.414320+00:00",
+          "label": "driver_arriving"
+        }
+      ],
+      "estimatedFare": 15,
+      "driver": {
+        "id": "user-663320e24496",
+        "name": "Jordan Driver",
+        "email": "jordan.driver26@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "driverProfile": {
+        "id": "driver-f51455837223",
+        "userId": "user-663320e24496",
+        "user": {
+          "id": "user-663320e24496",
+          "name": "Jordan Driver",
+          "email": "jordan.driver26@example.com",
+          "phone": "",
+          "role": "driver",
+          "isVerified": true
+        },
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver",
+        "verificationStatus": "approved",
+        "driverStatus": "online",
+        "currentLatitude": 37.4477,
+        "currentLongitude": -122.1619,
+        "averageRating": 5,
+        "totalTrips": 0,
+        "documents": [],
+        "documentSummary": {}
+      }
+    },
+    {
+      "id": "ride-70909e35d5e2",
+      "status": "driver_arriving",
+      "pickupAddress": "University Avenue, Palo Alto, CA",
+      "pickupLatitude": 37.4477,
+      "pickupLongitude": -122.1619,
+      "destinationAddress": "Stanford University",
+      "destinationLatitude": 37.4275,
+      "destinationLongitude": -122.1697,
+      "rider": {
+        "id": "user-4ea5ef08eae6",
+        "name": "Lucas Lin",
+        "email": "lucas@example.com",
+        "phone": "",
+        "role": "rider",
+        "isVerified": true
+      },
+      "messages": [
+        {
+          "id": "msg-348d595eb482",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "I am on my way.",
+          "createdAt": "2026-10-09T10:51:38.039812+00:00"
+        },
+        {
+          "id": "msg-bd555b32d333",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please meet at the pickup pin.",
+          "createdAt": "2026-10-09T10:51:41.880778+00:00"
+        },
+        {
+          "id": "msg-be177e7f2344",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Blue car near pin",
+          "createdAt": "2026-10-09T10:51:52.668913+00:00"
+        },
+        {
+          "id": "msg-5fe3bde43b3c",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Arriving in 2 min",
+          "createdAt": "2026-10-09T10:52:17.863908+00:00"
+        },
+        {
+          "id": "msg-70d4dbd810e5",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:52:28.362053+00:00"
+        },
+        {
+          "id": "msg-54f5f983a409",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Gate side pickup",
+          "createdAt": "2026-10-09T10:52:35.600951+00:00"
+        },
+        {
+          "id": "msg-897e4f44bcec",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Gate side pickup",
+          "createdAt": "2026-10-09T10:52:45.983310+00:00"
+        },
+        {
+          "id": "msg-85600015e59b",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Hazard lights on",
+          "createdAt": "2026-10-09T10:52:57.512010+00:00"
+        },
+        {
+          "id": "msg-8012a0d16a2d",
+          "rideId": "ride-70909e35d5e2",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Hazard lights oni",
+          "createdAt": "2026-10-09T10:53:39.757449+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "status": "accepted",
+          "at": "2026-10-09T10:51:26.491064+00:00",
+          "label": "accepted"
+        },
+        {
+          "status": "driver_arriving",
+          "at": "2026-10-09T10:54:02.715287+00:00",
+          "label": "driver_arriving"
+        }
+      ],
+      "estimatedFare": 15,
+      "driver": {
+        "id": "user-663320e24496",
+        "name": "Jordan Driver",
+        "email": "jordan.driver26@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "driverProfile": {
+        "id": "driver-f51455837223",
+        "userId": "user-663320e24496",
+        "user": {
+          "id": "user-663320e24496",
+          "name": "Jordan Driver",
+          "email": "jordan.driver26@example.com",
+          "phone": "",
+          "role": "driver",
+          "isVerified": true
+        },
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver",
+        "verificationStatus": "approved",
+        "driverStatus": "online",
+        "currentLatitude": 37.4477,
+        "currentLongitude": -122.1619,
+        "averageRating": 5,
+        "totalTrips": 0,
+        "documents": [],
+        "documentSummary": {}
+      }
+    },
+    {
+      "id": "ride-3161b2227282",
+      "status": "driver_arriving",
+      "pickupAddress": "University Avenue, Palo Alto, CA",
+      "pickupLatitude": 37.4477,
+      "pickupLongitude": -122.1619,
+      "destinationAddress": "Stanford University",
+      "destinationLatitude": 37.4275,
+      "destinationLongitude": -122.1697,
+      "rider": {
+        "id": "user-4ea5ef08eae6",
+        "name": "Lucas Lin",
+        "email": "lucas@example.com",
+        "phone": "",
+        "role": "rider",
+        "isVerified": true
+      },
+      "messages": [
+        {
+          "id": "msg-27da577a29b8",
+          "rideId": "ride-3161b2227282",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "I am on my way.",
+          "createdAt": "2026-10-09T10:54:24.619075+00:00"
+        },
+        {
+          "id": "msg-7503dad4312c",
+          "rideId": "ride-3161b2227282",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please meet at the pickup pin.",
+          "createdAt": "2026-10-09T10:54:29.134949+00:00"
+        },
+        {
+          "id": "msg-ff551410caca",
+          "rideId": "ride-3161b2227282",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Blue car near pin",
+          "createdAt": "2026-10-09T10:54:39.227386+00:00"
+        },
+        {
+          "id": "msg-7ad1e95831d1",
+          "rideId": "ride-3161b2227282",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please meet at the pickup pin.",
+          "createdAt": "2026-10-09T10:55:06.296458+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "status": "accepted",
+          "at": "2026-10-09T10:54:13.905444+00:00",
+          "label": "accepted"
+        },
+        {
+          "status": "driver_arriving",
+          "at": "2026-10-09T10:55:23.628642+00:00",
+          "label": "driver_arriving"
+        }
+      ],
+      "estimatedFare": 15,
+      "driver": {
+        "id": "user-663320e24496",
+        "name": "Jordan Driver",
+        "email": "jordan.driver26@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "driverProfile": {
+        "id": "driver-f51455837223",
+        "userId": "user-663320e24496",
+        "user": {
+          "id": "user-663320e24496",
+          "name": "Jordan Driver",
+          "email": "jordan.driver26@example.com",
+          "phone": "",
+          "role": "driver",
+          "isVerified": true
+        },
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver",
+        "verificationStatus": "approved",
+        "driverStatus": "online",
+        "currentLatitude": 37.4477,
+        "currentLongitude": -122.1619,
+        "averageRating": 5,
+        "totalTrips": 0,
+        "documents": [],
+        "documentSummary": {}
+      }
+    },
+    {
+      "id": "ride-195f91d37e0c",
+      "status": "accepted",
+      "pickupAddress": "University Avenue, Palo Alto, CA",
+      "pickupLatitude": 37.4477,
+      "pickupLongitude": -122.1619,
+      "destinationAddress": "Stanford University",
+      "destinationLatitude": 37.4275,
+      "destinationLongitude": -122.1697,
+      "rider": {
+        "id": "user-4ea5ef08eae6",
+        "name": "Lucas Lin",
+        "email": "lucas@example.com",
+        "phone": "",
+        "role": "rider",
+        "isVerified": true
+      },
+      "messages": [
+        {
+          "id": "msg-fd5d1cf22a8e",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "I am on my way.",
+          "createdAt": "2026-10-09T10:55:44.994336+00:00"
+        },
+        {
+          "id": "msg-40efa0aa8a7f",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please meet at the pickup pin.",
+          "createdAt": "2026-10-09T10:55:49.460078+00:00"
+        },
+        {
+          "id": "msg-c63e325224e2",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Blue car near pin",
+          "createdAt": "2026-10-09T10:55:59.898201+00:00"
+        },
+        {
+          "id": "msg-49213a3ba4c7",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Arriving in 2 minArriving in 2 minArriving in 2 min",
+          "createdAt": "2026-10-09T10:56:33.431591+00:00"
+        },
+        {
+          "id": "msg-7a75ce24d0a8",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "Please be ready",
+          "createdAt": "2026-10-09T10:56:43.775702+00:00"
+        },
+        {
+          "id": "msg-a717c89b177c",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "yGate side pickup",
+          "createdAt": "2026-10-09T10:56:51.879789+00:00"
+        },
+        {
+          "id": "msg-b0f225591bb4",
+          "rideId": "ride-195f91d37e0c",
+          "senderId": "user-663320e24496",
+          "senderRole": "driver",
+          "senderName": "Jordan Driver",
+          "body": "yGate side pickup",
+          "createdAt": "2026-10-09T10:57:01.752782+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "status": "accepted",
+          "at": "2026-10-09T10:55:34.694898+00:00",
+          "label": "accepted"
+        }
+      ],
+      "estimatedFare": 15,
+      "driver": {
+        "id": "user-663320e24496",
+        "name": "Jordan Driver",
+        "email": "jordan.driver26@example.com",
+        "phone": "",
+        "role": "driver",
+        "isVerified": true
+      },
+      "driverProfile": {
+        "id": "driver-f51455837223",
+        "userId": "user-663320e24496",
+        "user": {
+          "id": "user-663320e24496",
+          "name": "Jordan Driver",
+          "email": "jordan.driver26@example.com",
+          "phone": "",
+          "role": "driver",
+          "isVerified": true
+        },
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver",
+        "verificationStatus": "approved",
+        "driverStatus": "online",
+        "currentLatitude": 37.4477,
+        "currentLongitude": -122.1619,
+        "averageRating": 5,
+        "totalTrips": 0,
+        "documents": [],
+        "documentSummary": {}
+      }
+    }
+  ],
+  "documents": [
+    {
+      "id": "document-7d3c59d3c3ac",
+      "driverId": "driver-f51455837223",
+      "userId": "user-663320e24496",
+      "status": "pending",
+      "createdAt": "2026-10-09T10:47:52.613251+00:00",
+      "type": "insurance",
+      "identifier": "INS-5930-CA",
+      "label": "Insurance",
+      "expiresAt": "2029-03-31"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "ticket-payments",
+      "userId": "user-83f120ec6929",
+      "category": "Payments",
+      "message": "Payment question",
+      "status": "open",
+      "createdAt": "2026-10-09T10:39:01.536395+00:00",
+      "updatedAt": "2026-10-09T10:39:01.536395+00:00",
+      "replies": []
+    }
+  ],
+  "payments": [
+    {
+      "id": "card-default",
+      "type": "card",
+      "brand": "Visa",
+      "last4": "4242",
+      "label": "Visa 4242",
+      "isDefault": false
+    },
+    {
+      "id": "credits",
+      "type": "wallet",
+      "brand": "OpenDriver",
+      "last4": "",
+      "label": "OpenDriver credits",
+      "isDefault": true
+    }
+  ],
+  "savedPlaces": [],
+  "coupons": [
+    {
+      "id": "safe10",
+      "code": "SAFE10",
+      "title": "Safety discount",
+      "discountPercent": 10
+    }
+  ],
+  "refunds": [],
+  "invoices": [],
+  "payouts": [],
+  "events": [
+    {
+      "method": "POST",
+      "path": "/dev/reset",
+      "body": {},
+      "at": "2026-10-09T10:39:01.536395+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "body": {
+        "email": "jordan.driver26@example.com",
+        "password": "Test12345!",
+        "role": "driver"
+      },
+      "at": "2026-10-09T10:41:47.056358+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/profile",
+      "body": {
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver"
+      },
+      "at": "2026-10-09T10:46:14.428331+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/profile",
+      "body": {
+        "licenseNumber": "CA-DL-59302",
+        "vehicleMake": "Honda",
+        "vehicleModel": "Accord",
+        "vehicleYear": "2025",
+        "licensePlate": "DRV 5930",
+        "vehicleColor": "Silver"
+      },
+      "at": "2026-10-09T10:46:18.165084+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/documents",
+      "body": {
+        "type": "insurance",
+        "identifier": "INS-5930-CA",
+        "label": "Insurance",
+        "expiresAt": "2029-03-31"
+      },
+      "at": "2026-10-09T10:47:52.613251+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/status",
+      "body": {
+        "driverStatus": "online"
+      },
+      "at": "2026-10-09T10:48:12.654373+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/incoming-ride",
+      "body": {},
+      "at": "2026-10-09T10:48:18.400871+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4275,
+        "endLongitude": -122.1697,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:48:18.802386+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/rides/ride-d5b54e8199d9/accept",
+      "body": {},
+      "at": "2026-10-09T10:48:30.254373+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:48:30.542540+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "I am on my way."
+      },
+      "at": "2026-10-09T10:48:41.547967+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Please meet at the pickup pin."
+      },
+      "at": "2026-10-09T10:48:45.857327+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Blue car near pin"
+      },
+      "at": "2026-10-09T10:48:57.296916+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Arriving in 2 minArriving in 2 min"
+      },
+      "at": "2026-10-09T10:49:19.483848+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:49:26.528050+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:49:35.013976+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:49:41.995899+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-d5b54e8199d9/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:49:54.423339+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:51:06.687101+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/rides/ride-d5b54e8199d9/status",
+      "body": {
+        "status": "driver_arriving"
+      },
+      "at": "2026-10-09T10:51:15.414320+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/incoming-ride",
+      "body": {},
+      "at": "2026-10-09T10:51:21.128678+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4275,
+        "endLongitude": -122.1697,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:51:21.308378+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/rides/ride-70909e35d5e2/accept",
+      "body": {},
+      "at": "2026-10-09T10:51:26.491064+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:51:26.678772+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "I am on my way."
+      },
+      "at": "2026-10-09T10:51:38.039812+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Please meet at the pickup pin."
+      },
+      "at": "2026-10-09T10:51:41.880778+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Blue car near pin"
+      },
+      "at": "2026-10-09T10:51:52.668913+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Arriving in 2 min"
+      },
+      "at": "2026-10-09T10:52:17.863908+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:52:28.362053+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Gate side pickup"
+      },
+      "at": "2026-10-09T10:52:35.600951+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Gate side pickup"
+      },
+      "at": "2026-10-09T10:52:45.983310+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Hazard lights on"
+      },
+      "at": "2026-10-09T10:52:57.512010+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-70909e35d5e2/messages",
+      "body": {
+        "message": "Hazard lights oni"
+      },
+      "at": "2026-10-09T10:53:39.757449+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:53:58.225206+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/rides/ride-70909e35d5e2/status",
+      "body": {
+        "status": "driver_arriving"
+      },
+      "at": "2026-10-09T10:54:02.715287+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/incoming-ride",
+      "body": {},
+      "at": "2026-10-09T10:54:08.602495+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4275,
+        "endLongitude": -122.1697,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:54:08.789034+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/rides/ride-3161b2227282/accept",
+      "body": {},
+      "at": "2026-10-09T10:54:13.905444+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:54:14.085729+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-3161b2227282/messages",
+      "body": {
+        "message": "I am on my way."
+      },
+      "at": "2026-10-09T10:54:24.619075+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-3161b2227282/messages",
+      "body": {
+        "message": "Please meet at the pickup pin."
+      },
+      "at": "2026-10-09T10:54:29.134949+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-3161b2227282/messages",
+      "body": {
+        "message": "Blue car near pin"
+      },
+      "at": "2026-10-09T10:54:39.227386+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-3161b2227282/messages",
+      "body": {
+        "message": "Please meet at the pickup pin."
+      },
+      "at": "2026-10-09T10:55:06.296458+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:55:19.465069+00:00"
+    },
+    {
+      "method": "PATCH",
+      "path": "/driver/rides/ride-3161b2227282/status",
+      "body": {
+        "status": "driver_arriving"
+      },
+      "at": "2026-10-09T10:55:23.628642+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/incoming-ride",
+      "body": {},
+      "at": "2026-10-09T10:55:29.242691+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4275,
+        "endLongitude": -122.1697,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:55:29.419248+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/driver/rides/ride-195f91d37e0c/accept",
+      "body": {},
+      "at": "2026-10-09T10:55:34.694898+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/route/driving",
+      "body": {
+        "startLatitude": 37.4477,
+        "startLongitude": -122.1619,
+        "endLatitude": 37.4477,
+        "endLongitude": -122.1619,
+        "waypoints": []
+      },
+      "at": "2026-10-09T10:55:34.924723+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "I am on my way."
+      },
+      "at": "2026-10-09T10:55:44.994336+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "Please meet at the pickup pin."
+      },
+      "at": "2026-10-09T10:55:49.460078+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "Blue car near pin"
+      },
+      "at": "2026-10-09T10:55:59.898201+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "Arriving in 2 minArriving in 2 minArriving in 2 min"
+      },
+      "at": "2026-10-09T10:56:33.431591+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "Please be ready"
+      },
+      "at": "2026-10-09T10:56:43.775702+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "yGate side pickup"
+      },
+      "at": "2026-10-09T10:56:51.879789+00:00"
+    },
+    {
+      "method": "POST",
+      "path": "/rides/ride-195f91d37e0c/messages",
+      "body": {
+        "message": "yGate side pickup"
+      },
+      "at": "2026-10-09T10:57:01.752782+00:00"
+    }
+  ]
+}

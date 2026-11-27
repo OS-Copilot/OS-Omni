@@ -4,8 +4,10 @@
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import inspect
+import io
 import json
 import re
 from pathlib import Path
@@ -25,29 +27,70 @@ RULESET_SPEC = {
     "slide2": {"text": "Metrics", "chart_alt": "qa70 chart", "chart_animation": "fade", "chart_front": True},
     "slide3": {
         "layout": "comparison",
+        # The shape and its duplicate are the #FFD7C8 shapes added to the slide after its Comparison
+        # layout placeholders, whatever their size (the brief names only the fill).
+        "shape_identity": "added after the layout placeholders; any size",
         "shape_fill": "#ffd7c8",
         "shape_count": 2,
         "copies_identical": True,
         "second_moved_right": True,
+        # "moved to the right-side comparison area": the Comparison layout's right box (OpenSlide's
+        # makeSlide places it at 520,136 360x270 on every slide size). The right-hand copy's centre
+        # must lie inside it.
+        "right_comparison_area": {"x": 520, "y": 136, "w": 360, "h": 270},
     },
     "slide4": {
         "table_count": 1,
         "table_front": True,
-        "table_bounds": {"x": 0, "y": 140, "w": 954, "h": 281},
-        "note_sequence": ["qa70 speaker note", "Decision owners locked for Friday review"],
+        # "resized so the decision matrix fills the slide's content area": slide 4 keeps the
+        # template's Comparison layout, whose content area is the union of its two comparison
+        # boxes (80,136 360x270 and 520,136 360x270) below the title (bottom edge y=100) on the
+        # 960x540 slide. The table must cover that area and stay on the slide below the title,
+        # within a drag tolerance; the reference completion was {x:0, y:140, w:954, h:281}.
+        "table_fills_content_area": {
+            "content_area": {"x": 80, "y": 136, "w": 800, "h": 270},
+            "title_bottom": 100,
+            "slide": {"w": 960, "h": 540},
+            "tolerance": 20,
+        },
+        # The brief asks slide 4's notes field for "qa70 speaker note" and for "Decision owners locked
+        # for Friday review" and states no order between them: each must be in the notes, in a recorded
+        # generation or in the final notes (LevelDB compaction may drop an intermediate generation), and
+        # the final notes hold at least one of them.
+        "notes": ["qa70 speaker note", "Decision owners locked for Friday review"],
+        "note_evidence": "each_in_history_or_final_notes_any_order",
+        # Both comments, each exactly once; the brief states no order between them.
         "comments": ["qa70 comment", "quarterly decision matrix owner review"],
+        "comments_order": "any",
     },
     "automatic_process": {
         "chart_front": ["Front 将图表置于前方"],
         "shape_copy_paste_move": ["Copy 按钮复制当前形状", "Paste 按钮粘贴形状副本", "拖拽到右侧对比区域"],
         "slide_show": [["Rehearse", "From Start"], "Next 按钮", "Next 按钮", "Close 按钮退出放映"],
         "table_front_resize": ["Front 按钮把表格置于前方", "拖拽右下角控制点放大表格"],
+        # OpenSlide keeps no record of a slide show (Rehearse only sets a status text and the presenter
+        # index is not saved), so the rehearsal is read from the run: the presenter overlay seen in the
+        # step screenshots, and the pyautogui inputs sent while it was open, classified on its own
+        # Previous / Next / Close buttons or keys.
+        "slide_show_evidence": {
+            "presenter_background": "#111827",
+            "presenter_bar": "#0b1020",
+            "bar_buttons": ["previous", "next", "close"],
+            "advance_keys": ["right", "pagedown", "space"],
+            "back_keys": ["left", "pageup"],
+            "close_keys": ["esc", "escape"],
+            "opened": "a screenshot shows the presenter after the step that opened it",
+            "from_start": "opened by F5, or by a click the step names as From Start / Present / the beginning",
+            "advanced": "inputs move the presenter from slide 1 to slide 3 or later before it is closed",
+            "on_screen": "a presenter screenshot taken after an advance, when there is one, differs from the first",
+            "closed": "Close or Escape, and the next screenshot shows the editor",
+        },
     },
 }
 _COMPUTED_RULESET_SHA256 = hashlib.sha256(
     json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 ).hexdigest()
-RULESET_SHA256 = "00c754b53b8cae31537b9975956ed5ce27832526180d4747ec413a6225fff261"
+RULESET_SHA256 = "8f32b17a0f4fb81ab5c207a7d378b9d314d42ddd2f64d473b48e711a08bfd6e1"
 if _COMPUTED_RULESET_SHA256 != RULESET_SHA256:
     raise RuntimeError("OpenSlide ruleset digest constant is stale")
 STEP_GROUPS = {
@@ -69,7 +112,36 @@ def _objects(slide: Mapping[str, Any], kind: str | None = None) -> list[Mapping[
 
 
 def _texts(slide: Mapping[str, Any]) -> list[str]:
-    return [str(obj.get("text") or "") for obj in _objects(slide, "text")]
+    return [str(obj.get("text") or "").strip() for obj in _objects(slide, "text")]
+
+
+def _task_shapes(slide: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """The #FFD7C8 shapes added to the slide (not the Comparison layout's own boxes), any size."""
+    fill = RULESET_SPEC["slide3"]["shape_fill"]
+    return [
+        obj for obj in reader.added_objects(slide, "shape")
+        if str((obj.get("style") or {}).get("fill") or "").lower() == fill
+    ]
+
+
+def _covers_content_area(bounds: Mapping[str, Any], spec: Mapping[str, Any]) -> bool:
+    try:
+        x, y, w, h = (float(bounds[key]) for key in ("x", "y", "w", "h"))
+    except (KeyError, TypeError, ValueError):
+        return False
+    area, slide, tolerance = spec["content_area"], spec["slide"], float(spec["tolerance"])
+    covers = (
+        x <= area["x"] + tolerance
+        and y <= area["y"] + tolerance
+        and x + w >= area["x"] + area["w"] - tolerance
+        and y + h >= area["y"] + area["h"] - tolerance
+    )
+    on_slide = (
+        y >= spec["title_bottom"] - tolerance
+        and x + w <= slide["w"] + tolerance
+        and y + h <= slide["h"] + tolerance
+    )
+    return covers and on_slide
 
 
 def _slide4_values(versions: list[Mapping[str, Any]], field: str) -> list[Any]:
@@ -86,7 +158,278 @@ def _slide4_values(versions: list[Mapping[str, Any]], field: str) -> list[Any]:
     return values
 
 
-def _collect_trajectory_process(context: Mapping[str, Any]) -> dict[str, Any]:
+_SHOW = RULESET_SPEC["automatic_process"]["slide_show_evidence"]
+_KEY_ALIASES = {" ": "space", "pgdn": "pagedown", "pgup": "pageup", "escape": "esc"}
+_FROM_START_WORDS = re.compile(
+    r"from[ -]start|from the (?:beginning|start|first slide|top)|\bbeginning\b|\bfirst slide\b|\bslide 1\b|"
+    r"\bf5\b|\bpresent button\b|\bclick(?:ing)? (?:the )?['\"“]?present\b",
+    re.IGNORECASE,
+)
+_CURRENT_CONTROL = re.compile(
+    r"\b(?:click|press|use|choose|select)(?:ing|s)? (?:on )?(?:the )?['\"“]?current\b|from (?:the )?current slide",
+    re.IGNORECASE,
+)
+_THUMB = 4  # presenter frames are kept at 1/4 scale to compare slides
+
+
+def _rgb(value: str) -> tuple[int, int, int]:
+    return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+
+
+def _screen(source: Any) -> Any:
+    """``(presenter layout or None, 1/4-scale frame or None)`` for a screenshot, or None when unreadable."""
+    try:
+        import numpy
+        from PIL import Image
+
+        image = Image.open(io.BytesIO(source) if isinstance(source, (bytes, bytearray)) else source).convert("RGB")
+        frame = numpy.asarray(image.reduce(_THUMB), dtype=numpy.int16)
+    except Exception:
+        return None
+    if _presenter_bar(frame, 3) is None:
+        return (None, None)
+    return (_presenter(numpy.asarray(image, dtype=numpy.int16)), frame)
+
+
+def _presenter_bar(pixels: Any, min_rows: int) -> tuple[int, int] | None:
+    """The rows of the presenter's bar when the overlay fills the screen, else None.
+
+    The overlay fills the page with #111827 and has a full-width #0b1020 bar.
+    """
+    import numpy
+
+    def near(color: str) -> Any:
+        return numpy.abs(pixels - numpy.array(_rgb(color), dtype=numpy.int16)).max(axis=2) <= 3
+
+    if pixels.ndim != 3 or near(_SHOW["presenter_background"]).mean() < 0.2:
+        return None
+    bar_rows = numpy.flatnonzero(near(_SHOW["presenter_bar"]).mean(axis=1) >= 0.5)
+    if len(bar_rows) < max(min_rows, int(0.02 * pixels.shape[0])):
+        return None
+    return int(bar_rows.min()), int(bar_rows.max())
+
+
+def _presenter(pixels: Any) -> dict[str, Any] | None:
+    """Where the OpenSlide presenter overlay is on a full-size screenshot, or None when it is not shown.
+
+    Its bar holds the Previous / Next / Close buttons (white boxes, left to right).
+    """
+    import numpy
+
+    bar = _presenter_bar(pixels, 12)
+    if bar is None:
+        return None
+    top, bottom = bar
+    white = (pixels[top:bottom + 1] >= 235).all(axis=2)
+    rows_with_buttons: list[int] = []
+    boxes: list[tuple[int, int]] = []
+    for offset, row in enumerate(white):
+        edges = numpy.diff(numpy.concatenate(([0], row.astype(numpy.int8), [0])))
+        runs = [(int(a), int(b) - 1) for a, b in zip(numpy.flatnonzero(edges == 1), numpy.flatnonzero(edges == -1)) if b - a >= 12]
+        if len(runs) == len(_SHOW["bar_buttons"]):
+            rows_with_buttons.append(top + offset)
+            if sum(b - a for a, b in runs) > sum(b - a for a, b in boxes):
+                boxes = runs
+    buttons: dict[str, list[int]] = {}
+    if boxes:
+        y0, y1 = min(rows_with_buttons), max(rows_with_buttons)
+        buttons = {name: [a, y0, b, y1] for name, (a, b) in zip(_SHOW["bar_buttons"], boxes)}
+    return {"bar": [top, bottom], "buttons": buttons}
+
+
+def _frame_changed(first: Any, later: Any, bar_top: int) -> bool:
+    """True when two presenter frames show different slides (the area above the bar differs)."""
+    import numpy
+
+    cut = max(1, bar_top // _THUMB)
+    a, b = first[:cut], later[:cut]
+    if a.shape != b.shape:
+        return True
+    return float((numpy.abs(a - b).max(axis=2) > 40).mean()) >= 0.005
+
+
+def _literal(node: ast.AST) -> Any:
+    try:
+        return ast.literal_eval(node)
+    except Exception:
+        return None
+
+
+def _inputs(code: str) -> list[tuple[str, Any]]:
+    """The pyautogui inputs of one step, in order: ("click", (x, y) or None) or ("key", name)."""
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return []
+    events: list[tuple[str, Any]] = []
+    position: list[Any] = [None]
+
+    def key(name: Any) -> tuple[str, str]:
+        text = str(name).lower()
+        return ("key", _KEY_ALIASES.get(text, text))
+
+    def call(node: ast.Call) -> None:
+        func = node.func
+        name = func.attr if isinstance(func, ast.Attribute) else func.id if isinstance(func, ast.Name) else ""
+        args = [_literal(item) for item in node.args]
+        kwargs = {item.arg: _literal(item.value) for item in node.keywords if item.arg}
+        if name in ("moveTo", "click", "leftClick", "doubleClick", "tripleClick"):
+            x, y = kwargs.get("x"), kwargs.get("y")
+            if len(args) >= 2:
+                x, y = args[0], args[1]
+            elif args and isinstance(args[0], (tuple, list)) and len(args[0]) == 2:
+                x, y = args[0]
+            if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+                position[0] = (float(x), float(y))
+            if name != "moveTo":
+                count = kwargs["clicks"] if isinstance(kwargs.get("clicks"), int) else {"doubleClick": 2, "tripleClick": 3}.get(name, 1)
+                events.extend([("click", position[0])] * max(0, count))
+        elif name in ("press", "keyDown"):
+            names = args[0] if args else kwargs.get("keys")
+            names = [names] if isinstance(names, str) else list(names or [])
+            presses = kwargs["presses"] if isinstance(kwargs.get("presses"), int) else 1
+            for _ in range(max(0, presses)):
+                events.extend(key(item) for item in names)
+        elif name == "hotkey":
+            events.append(("key", "+".join(key(item)[1] for item in args)))
+        elif name in ("write", "typewrite"):
+            text = args[0] if args else kwargs.get("message")
+            events.extend(key(item) for item in (list(text) if isinstance(text, str) else list(text or [])))
+
+    def block(statements: list[ast.stmt]) -> None:
+        for statement in statements:
+            if isinstance(statement, ast.For):
+                repeat = 1
+                if isinstance(statement.iter, ast.Call) and getattr(statement.iter.func, "id", "") == "range":
+                    bounds = [_literal(item) for item in statement.iter.args]
+                    if bounds and all(isinstance(value, int) for value in bounds):
+                        repeat = len(range(*bounds))
+                for _ in range(min(repeat, 50)):
+                    block(statement.body)
+            elif isinstance(statement, (ast.If, ast.While, ast.With, ast.Try)):
+                block(list(getattr(statement, "body", [])) + list(getattr(statement, "orelse", [])))
+            else:
+                calls = [node for node in ast.walk(statement) if isinstance(node, ast.Call)]
+                for node in sorted(calls, key=lambda item: (item.lineno, item.col_offset)):
+                    call(node)
+
+    block(tree.body)
+    return events
+
+
+def _button(layout: Mapping[str, Any] | None, point: Any) -> str | None:
+    if not layout or not point:
+        return None
+    x, y = point
+    for name, (x0, y0, x1, y1) in (layout.get("buttons") or {}).items():
+        if x0 - 3 <= x <= x1 + 3 and y0 - 3 <= y <= y1 + 3:
+            return name
+    return None
+
+
+def _step_code(row: Mapping[str, Any]) -> str:
+    if (row.get("action_execution") or {}).get("status") != "SUCCESS":
+        return ""
+    return str(((row.get("action_parse") or {}).get("action") or {}).get("code") or "")
+
+
+def _slide_show_sessions(rows: list[dict[str, Any]], run_dir: Path, final_shot: Any, slide_count: int) -> dict[str, Any]:
+    """Every presenter session the run's screenshots show, and what the inputs sent to it did."""
+    rows = sorted(rows, key=lambda row: int(row.get("step_index") or 0))
+    if final_shot is None and (run_dir / "screenshots" / "final.png").is_file():
+        final_shot = run_dir / "screenshots" / "final.png"
+    # screens[i] is the screen before step i (screens[len(rows)] the final one): None when it could
+    # not be read, else (presenter layout or None, 1/4-scale frame when the presenter is shown).
+    screens: list[Any] = []
+    for row in rows + [None]:
+        if row is None:
+            source = final_shot
+        else:
+            relative = str((row.get("observation") or {}).get("screenshot_path") or "")
+            path = Path(relative) if Path(relative).is_absolute() else run_dir / relative
+            source = path if relative and path.is_file() else None
+        screens.append(_screen(source) if source is not None else None)
+
+    def shown(index: int) -> bool:
+        return screens[index] is not None and screens[index][0] is not None
+
+    def editor(index: int) -> bool:
+        return screens[index] is not None and screens[index][0] is None
+
+    sessions: list[dict[str, Any]] = []
+    for opener, row in enumerate(rows):
+        if not (editor(opener) and shown(opener + 1)):
+            continue
+        events = _inputs(_step_code(row))
+        starts = [index for index, (kind, value) in enumerate(events) if kind == "click" or value in ("f5", "shift+f5")]
+        if not starts:
+            continue
+        opening = events[starts[-1]]
+        if opening[1] in ("f5", "shift+f5"):
+            from_start = opening[1] == "f5"
+        else:
+            reflection = str(row.get("llm_response") or "")
+            from_start = bool(_FROM_START_WORDS.search(reflection)) and not _CURRENT_CONTROL.search(reflection)
+        session: dict[str, Any] = {
+            "opened_by_step": int(row.get("step_index") or 0),
+            "from_start": from_start,
+            "furthest_slide": 1,
+            "inputs": [],
+            "presenter_screenshots": [int(rows[opener + 1].get("step_index") or 0) if opener + 1 < len(rows) else "final"],
+            "advance_seen_on_screen": None,
+            "closed_by_step": None,
+        }
+        first_frame = screens[opener + 1][1]
+        layout = screens[opener + 1][0]
+        slide = 1
+        changed: list[bool] = []
+        # Keys after the opening input in the same step reach the presenter; clicks there are not
+        # classified because no screenshot shows the overlay under them yet.
+        pending = [(opener, [event for event in events[starts[-1] + 1:] if event[0] == "key"])]
+        step = opener + 1
+        while step < len(rows) and shown(step):
+            pending.append((step, _inputs(_step_code(rows[step]))))
+            step += 1
+        for index, step_events in pending:
+            if index > opener and screens[index][0].get("buttons"):
+                layout = screens[index][0]
+            if index > opener + 1:
+                session["presenter_screenshots"].append(int(rows[index].get("step_index") or 0))
+                if slide != 1:
+                    changed.append(_frame_changed(first_frame, screens[index][1], layout["bar"][0]))
+            closed = False
+            for kind, value in step_events:
+                action = _button(layout, value) if kind == "click" else value
+                if action == "next" or action in _SHOW["advance_keys"]:
+                    slide = min(slide_count, slide + 1)
+                elif action == "previous" or action in _SHOW["back_keys"]:
+                    slide = max(1, slide - 1)
+                elif action == "close" or action in _SHOW["close_keys"]:
+                    closed = True
+                else:
+                    continue
+                session["inputs"].append({"step": int(rows[index].get("step_index") or 0), "input": action})
+                session["furthest_slide"] = max(session["furthest_slide"], slide)
+                if closed:
+                    break
+            if closed and editor(index + 1):
+                session["closed_by_step"] = int(rows[index].get("step_index") or 0)
+                break
+            if not shown(index + 1):
+                break  # the presenter went away without Close / Escape, or the screen is unknown
+        session["advance_seen_on_screen"] = any(changed) if changed else None
+        session["passed"] = bool(
+            session["from_start"]
+            and session["furthest_slide"] >= 3
+            and session["advance_seen_on_screen"] is not False
+            and session["closed_by_step"] is not None
+        )
+        sessions.append(session)
+    unread = [int(row.get("step_index") or 0) for row, screen in zip(rows, screens) if screen is None]
+    return {"sessions": sessions, "steps_without_screenshot": unread}
+
+
+def _collect_trajectory_process(context: Mapping[str, Any], slide_count: int = 4) -> dict[str, Any]:
     run_dir = str(context.get("run_dir") or "").strip()
     path = Path(run_dir) / "trajectory.jsonl" if run_dir else None
     if path is None or not path.is_file():
@@ -110,53 +453,27 @@ def _collect_trajectory_process(context: Mapping[str, Any]) -> dict[str, Any]:
                 continue
             if isinstance(row, dict):
                 rows.append(row)
+    task_ids = [str(row.get("task_id") or "") for row in rows]
 
-    successful: list[tuple[int, str]] = []
-    task_ids: list[str] = []
-    for row in rows:
-        task_ids.append(str(row.get("task_id") or ""))
-        execution = row.get("action_execution") or {}
-        if execution.get("status") != "SUCCESS":
-            continue
-        action_parse = row.get("action_parse") or {}
-        action = action_parse.get("action") or {}
-        haystack = "\n".join((str(row.get("llm_response") or ""), str(action.get("code") or "")))
-        successful.append((int(row.get("step_index") or 0), haystack))
-
-    # Chart/table front and the shape copy are verified from the saved deck; only
-    # the rehearsal leaves no state.  Match the action sequence, in any language
-    # the model reasons in, instead of the reference annotator's Chinese phrases.
-    requirements = {
-        "slideshow.rehearse_navigation": (
-            [
-                r"rehears",
-                r"\bnext\b|press\('(?:right|down|space|pagedown|enter)'\)",
-                r"\bnext\b|press\('(?:right|down|space|pagedown|enter)'\)",
-                r"\bclose\b|\bexit\b|end show|press\('esc'\)",
-            ],
-            list(range(54, 60)),
-        ),
-    }
-    checks: list[dict[str, Any]] = []
-    for check_id, (tokens, mapped_steps) in requirements.items():
-        cursor = -1
-        matched: list[int] = []
-        for token in tokens:
-            match = next(((index, step) for index, (step, text) in enumerate(successful) if index > cursor and re.search(token, text, re.IGNORECASE)), None)
-            if match is None:
-                break
-            cursor, step = match
-            matched.append(step)
-        checks.append({
-            "check_id": check_id,
-            "value_contract_id": "openslide.qa70.automatic_process",
-            "match_mode": "CURRENT_SESSION_EVENT_SEQUENCE",
-            "basis": "TRAJECTORY_SUCCESSFUL_ACTION_SEQUENCE",
-            "mapped_steps": mapped_steps,
-            "expected": list(tokens),
-            "actual": {"trajectory_step_indices": matched},
-            "passed": len(matched) == len(tokens),
-        })
+    # Chart/table front and the shape copy are verified from the saved deck; only the rehearsal
+    # leaves no state. It is read from the presenter overlay in the step screenshots and the
+    # inputs sent to it, not from words in the model's reasoning.
+    final = context.get("final_observation")
+    final_shot = final.get("screenshot_data") if isinstance(final, Mapping) else getattr(final, "screenshot_data", None)
+    try:
+        evidence = _slide_show_sessions(rows, Path(run_dir), final_shot, max(1, slide_count))
+    except Exception as exc:  # unreadable screenshots fail the check, they do not stop the evaluation
+        evidence = {"sessions": [], "error": f"{type(exc).__name__}: {exc}"}
+    checks = [{
+        "check_id": "slideshow.rehearse_navigation",
+        "value_contract_id": "openslide.qa70.automatic_process",
+        "match_mode": "CURRENT_SESSION_EVENT_SEQUENCE",
+        "basis": "TRAJECTORY_SCREENSHOTS_AND_INPUTS",
+        "mapped_steps": list(range(54, 60)),
+        "expected": {name: _SHOW[name] for name in ("opened", "from_start", "advanced", "on_screen", "closed")},
+        "actual": evidence,
+        "passed": any(session.get("passed") for session in evidence.get("sessions", [])),
+    }]
     return {
         "available": True,
         "path": str(path),
@@ -195,6 +512,8 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
     if len(slides) >= 4:
         slide1_texts = _texts(slides[0])
         add("slide1.title", "openslide.qa70.deck", "QA70 Review", slide1_texts, "QA70 Review" in slide1_texts, [7, 8, 9, 10], "TEXT_EXACT")
+        slide2_texts = _texts(slides[1])
+        add("slide2.title", "openslide.qa70.deck", RULESET_SPEC["slide2"]["text"], slide2_texts, RULESET_SPEC["slide2"]["text"] in slide2_texts, [11, 12, 13, 14], "TEXT_EXACT")
 
         charts = _objects(slides[1], "chart")
         chart_actual = [{"alt": chart.get("alt"), "animation": chart.get("animation")} for chart in charts]
@@ -205,23 +524,27 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         slide2_max_z = max((float(obj.get("z") or 0) for obj in slide2_objects), default=0)
         add("slide2.chart_front", "openslide.qa70.deck", True, {"chart_z": chart_z, "max_z": slide2_max_z}, len(charts) == 1 and float(chart_z or 0) == slide2_max_z, [15, 16, 17, 18, 19])
 
-        shapes = [
-            obj for obj in _objects(slides[2], "shape")
-            if str((obj.get("style") or {}).get("fill") or "").lower() == "#ffd7c8"
-            and obj.get("w") == 260 and obj.get("h") == 140
-        ]
+        add("slide3.layout", "openslide.qa70.shape_process", RULESET_SPEC["slide3"]["layout"], slides[2].get("layout"), slides[2].get("layout") == RULESET_SPEC["slide3"]["layout"], [32, 33])
+        shapes = _task_shapes(slides[2])
         shape_counts: list[int] = []
         for deck in versions:
             deck_slides = list(deck.get("slides") or [])
             if len(deck_slides) < 3:
                 continue
-            shape_counts.append(sum(
-                1 for obj in _objects(deck_slides[2], "shape")
-                if str((obj.get("style") or {}).get("fill") or "").lower() == "#ffd7c8"
-                and obj.get("w") == 260 and obj.get("h") == 140
-            ))
+            shape_counts.append(len(_task_shapes(deck_slides[2])))
         xs = sorted(float(obj.get("x") or 0) for obj in shapes)
         moved_right = len(xs) == 2 and xs[1] > xs[0]
+        area = RULESET_SPEC["slide3"]["right_comparison_area"]
+        right_shape = max(shapes, key=lambda obj: float(obj.get("x") or 0)) if len(shapes) == 2 else None
+        centre = None
+        if right_shape is not None:
+            try:
+                centre = [float(right_shape["x"]) + float(right_shape["w"]) / 2, float(right_shape["y"]) + float(right_shape["h"]) / 2]
+            except (KeyError, TypeError, ValueError):
+                centre = None
+        in_right_area = centre is not None and (
+            area["x"] <= centre[0] <= area["x"] + area["w"] and area["y"] <= centre[1] <= area["y"] + area["h"]
+        )
         signatures = [
             {
                 "type": obj.get("type"), "w": obj.get("w"), "h": obj.get("h"),
@@ -234,9 +557,10 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         add(
             "slide3.copy_paste_move",
             "openslide.qa70.shape_process",
-            {"count": 2, "copies_identical": True, "second_moved_right": True},
-            {"count": len(shapes), "history_counts": shape_counts, "copies_identical": copies_identical, "x": xs},
-            len(shapes) == 2 and copies_identical and moved_right,
+            {"count": 2, "copies_identical": True, "second_moved_right": True, "right_copy_centre_in": area},
+            {"count": len(shapes), "history_counts": shape_counts, "copies_identical": copies_identical, "x": xs,
+             "right_copy_centre": centre},
+            len(shapes) == 2 and copies_identical and moved_right and in_right_area,
             list(range(32, 43)),
             "OBJECT_EXACT",
             "LOGICALLY_NECESSARY_COMPOUND",
@@ -245,8 +569,9 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         tables = _objects(slides[3], "table")
         add("slide4.table", "openslide.qa70.final_review", 1, len(tables), len(tables) == 1, list(range(60, 67)))
         table = tables[0] if len(tables) == 1 else {}
-        expected_bounds = RULESET_SPEC["slide4"]["table_bounds"]
+        expected_bounds = RULESET_SPEC["slide4"]["table_fills_content_area"]
         actual_bounds = {key: table.get(key) for key in ("x", "y", "w", "h")} if table else {}
+        fills_content_area = _covers_content_area(actual_bounds, expected_bounds)
         slide4_max_z = max((float(obj.get("z") or 0) for obj in _objects(slides[3])), default=0)
         table_front = bool(table) and float(table.get("z") or 0) == slide4_max_z
         add(
@@ -254,29 +579,39 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
             "openslide.qa70.final_review",
             {"front": True, "bounds": expected_bounds},
             {"front": table_front, "bounds": actual_bounds, "table_z": table.get("z"), "max_z": slide4_max_z},
-            len(tables) == 1 and table_front and actual_bounds == expected_bounds,
+            len(tables) == 1 and table_front and fills_content_area,
             list(range(60, 67)),
             "OBJECT_EXACT",
         )
 
         note_history = _slide4_values(versions, "notes")
-        expected_notes = RULESET_SPEC["slide4"]["note_sequence"]
-        first_note = next((index for index, value in enumerate(note_history) if value == expected_notes[0]), None)
-        second_note = next((index for index, value in enumerate(note_history) if expected_notes[1] in str(value or "")), None)
-        notes_passed = first_note is not None and second_note is not None and first_note < second_note
-        add("slide4.notes_sequence", "openslide.qa70.final_review", expected_notes, note_history, notes_passed, [48, 49, 50, 71, 72], "ORDERED_EXACT")
+        expected_notes = RULESET_SPEC["slide4"]["notes"]
+        final_notes = str(slides[3].get("notes") or "")
+        evidenced = {
+            text: text in final_notes or any(text in str(value or "") for value in note_history)
+            for text in expected_notes
+        }
+        final_holds = [text for text in expected_notes if text in final_notes]
+        add(
+            "slide4.notes",
+            "openslide.qa70.final_review",
+            {"notes": expected_notes, "evidence": RULESET_SPEC["slide4"]["note_evidence"]},
+            {"history": note_history, "evidenced": evidenced, "final_notes_hold": final_holds},
+            all(evidenced.values()) and bool(final_holds),
+            [48, 49, 50, 71, 72],
+            "SET_CONTAINS",
+        )
 
         comments = [str(row.get("text") or "") for row in slides[3].get("comments", []) if isinstance(row, Mapping)]
-        chronological_comments = list(reversed(comments))
         expected_comments = RULESET_SPEC["slide4"]["comments"]
         add(
             "slide4.comments",
             "openslide.qa70.final_review",
             expected_comments,
-            {"stored_newest_first": comments, "chronological": chronological_comments},
-            chronological_comments == expected_comments,
+            {"stored_newest_first": comments},
+            sorted(comments) == sorted(expected_comments),
             [51, 52, 53, 67, 68, 69, 70],
-            "ORDERED_EXACT",
+            "SET_EXACT",
         )
 
     failures = [check["check_id"] for check in checks if not check["passed"]]
@@ -302,14 +637,15 @@ class OpenSlideQa70Review199367Evaluator(BaseEvaluator):
         if expected_ruleset and expected_ruleset != RULESET_SHA256:
             return EvalResult(status=EvalStatus.ERROR, message="ruleset digest mismatch")
         source = Path(inspect.getfile(reader)).read_text(encoding="utf-8")
-        script = source + "\n_h=read_history(" + json.dumps(profile) + ")\n_v=deck_versions(_h," + json.dumps(FINAL_TITLE) + ")\nprint(json.dumps({'target_versions':_v,'final_title_count':sum(1 for d in (_h['versions'][-1]['decks'] if _h['versions'] else []) if d.get('title')==" + json.dumps(FINAL_TITLE) + "),'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))\n"
+        # The deck is followed by its id (generations before the title was set count too).
+        script = source + "\n_h=read_history(" + json.dumps(profile) + ")\n_v,_n=final_deck_versions(_h," + json.dumps(FINAL_TITLE) + ")\nprint(json.dumps({'target_versions':_v,'final_title_count':_n,'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))\n"
         try:
             raw = controller.run_python_script(script, timeout=int(params.get("timeout", 60)))
             observed = json.loads(raw.get("stdout") or raw.get("output") or "")
         except Exception as exc:
             return EvalResult(status=EvalStatus.ERROR, message=f"OpenSlide state read failed: {exc}")
         verdict = evaluate_observed(observed)
-        process_evidence = _collect_trajectory_process(context)
+        process_evidence = _collect_trajectory_process(context, len(verdict["latest_deck"].get("slides") or []) or 4)
         if process_evidence.get("available"):
             verdict["checks"].extend(process_evidence["checks"])
             if process_evidence.get("parse_errors"):

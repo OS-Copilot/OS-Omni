@@ -1,0 +1,11 @@
+{
+  "version": "author-routes-v1",
+  "reason": "Four explicit missing navigation snapshots; author authorized original-idea reconstruction after1-2 recovery attempts",
+  "source": "author offline route planner; original tasks archived docs/windows/legacy-route-tasks",
+  "compatibility": "synthetic map and exact ordered origin/destination/mode/departure history; not live maps",
+  "syntax_validation": "PASS",
+  "host_http_validation": "pending: host Flask unavailable; guest runtime has Flask, perform real guest preflight after DS queue",
+  "formal_results_reused": false,
+  "guest_preflight": "PASS: real route UI and empty-state negative checks, see rebuilt-real-preflight.json in evidence archive",
+  "formal_retests": "four valid model FAIL results"
+}

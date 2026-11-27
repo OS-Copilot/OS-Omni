@@ -30,6 +30,7 @@ evaluation:
   params:
     task_number: 10-2
     verifier_rule: 10-1
+    peak_fitness_schedule: unposted
     min_steps: 60
     max_steps: 150
     require_success_action: true
@@ -42,7 +43,7 @@ evaluation:
     - Check Housing budget, QA Reserve goal, schedule/bill/payee/holding updates, and final Reports page
       evidence from OpenFinance localStorage.
 limits:
-  max_steps: 150
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

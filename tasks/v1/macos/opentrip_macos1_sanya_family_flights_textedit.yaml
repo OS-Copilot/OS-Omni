@@ -92,10 +92,6 @@ evaluation:
       flight_from: SYX
       flight_to: SHA
       flight_date: '2026-06-16'
-      cabin: economy
-      traveler_id: traveler-maya
-      traveler_name: Maya Chen
-      traveler_document_type: Passport
       baggage_add_on_label_contains: 15kg
       payment_id: card
       payment_label: Bank Card
@@ -152,7 +148,7 @@ evaluation:
     - TextEdit
     - 文本编辑
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenTrip
@@ -196,10 +192,9 @@ metadata:
       from 2026-06-14 through 2026-06-16 with Bank Card, note "Helpful staff stay", and phone 13900004101.
     - A distinct Confirmed first-card SHA-to-SYX Business booking exists for Maya Chen on 2026-06-14 with
       32kg baggage, WeChat Pay, and phone 13900004102.
-    - A distinct Confirmed first-card SYX-to-SHA booking exists for Maya Chen on 2026-06-16 with 15kg
-      baggage, Bank Card, and phone 13900004103. The return flight keeps the form default Cabin (Economy)
-      because the Search page reload resets the flight form and the instruction does not change Cabin
-      for the return; this was verified in the macOS1 trajectory of the sibling roundtrip task.
+    - A distinct Confirmed first-card SYX-to-SHA booking exists on 2026-06-16 with 15kg baggage, Bank
+      Card, and phone 13900004103. The brief names no traveler or cabin for the return, so neither is
+      graded (the checkout form defaults to the first saved traveler, Lucas Lin, and Cabin Economy).
     - Ordered benchmark events prove login, the four-guest Top rated hotel search/detail/submission, the
       Business outbound search/detail/submission, and the Lowest price return search/detail/submission.
     - macOS1 guest file ~/Desktop/Sanya-Jun14.txt is UTF-8 plain text with exactly the three required

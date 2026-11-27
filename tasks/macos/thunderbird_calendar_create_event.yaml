@@ -1,0 +1,24 @@
+task_id: macos.thunderbird.calendar.create_event
+platform: macos
+instruction: |
+  Open Thunderbird and switch to the Calendar view. Create a new event called "Team Meeting" scheduled for tomorrow at 2:00 PM, lasting 1 hour. Save the event.
+init:
+  initializer_id: initializers.macos.thunderbird_profile:ThunderbirdProfileInitializer
+  params:
+    open_calendar: true
+    wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.thunderbird_calendar:ThunderbirdCalendarEvaluator
+  params:
+    required_titles:
+    - Team Meeting
+    event_expectations:
+      Team Meeting:
+        relative_day: tomorrow
+        start_time: '14:00'
+        duration_minutes: 60
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy

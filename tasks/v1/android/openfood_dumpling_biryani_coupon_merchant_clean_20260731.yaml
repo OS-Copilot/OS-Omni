@@ -37,7 +37,8 @@ evaluation:
   params:
     app_package: com.killt.openfood
     local_state_key: openfood-static-state-v1
-    require_clean_initializer_baseline: true
+    # The v1 initializer never writes openfood_baseline.json (only local_eval/baselines.py:38 did), so a full v1 run must not require it.
+    require_clean_initializer_baseline: false
     db_paths:
     - apps/OpenFood/OpenFood_Server/prisma/dev.db
     - apps/OpenFood/OpenFood_android/OpenFood_Files/prisma/dev.db
@@ -126,7 +127,7 @@ evaluation:
     - The evaluator is read-only and does not click, type, scroll, submit, restore snapshots, run the
       initializer, or mutate Android/app/server state.
 limits:
-  max_steps: 210
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

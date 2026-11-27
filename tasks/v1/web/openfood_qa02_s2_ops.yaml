@@ -36,15 +36,15 @@ evaluation:
     save_coupon_code: SAVE15
     additional_coupon_codes:
     - SAVE15
-    expected_filters:
-      q: Pancake
-      cuisine: All
-      sort: recommended
+    ignored_check_names:
+    - restaurant_filters_set
     support_subject: qa02
     support_order_id: OF-2009
     support_message: qa02 ops
     pita_source_order_id: OF-2009
+    pita_restaurant_id: r74
     pita_reorder_min_total_qty: 2
+    pita_reorder_expected_status: Delivered
     expected_sold_out_menu_item_ids:
     - m1
     - m2
@@ -60,8 +60,6 @@ evaluation:
     - r3
     strict_courier_checks: false
     manual_final_ui_checks:
-    - The latest SAVE15 reorder/u0027s Advance status button must be clicked twice; this may require trajectory/UI
-      review if the static OpenFood local-storage state does not persist status-click history.
     - The final UI should be the Orders history page after creating the qa02 support ticket; final page
       and scroll position are manual UI evidence, not durable business-state evidence.
     - Static snap_2 merchant ids are expected to map Dumpling Room to r1/m1-m3, Santana Row Banh Mi Market
@@ -69,8 +67,8 @@ evaluation:
     - If Golden Curry Garden and Pancake Social item ids are not exposed in snap_2 metadata, their submitted
       orders are verified by durable WELCOME12 coupon notes and quantity patterns.
 limits:
-  max_steps: 520
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: openfood
   app_name: OpenFood
@@ -94,18 +92,19 @@ metadata:
     Golden Curry Garden and Pancake Social WELCOME12 checkouts, SAVE15 wallet claim, OF-2009 Pita reorder
     checkout, status advancement, qa02 support ticket creation, and final return to Orders./n
   verifier_rules:
-    data_source_priority: Chromium Local Storage LevelDB openfood-static-state-v1 first; final Orders
-      page and Advance status click history are auxiliary manual UI/trajectory evidence.
+    data_source_priority: Chromium Local Storage LevelDB openfood-static-state-v1 first; the final Orders
+      page is auxiliary manual UI/trajectory evidence.
     coupons: claimedCoupons must include SAVE15.
-    filters: Final persisted Restaurants search/cuisine/sort state must show Pancake, All, recommended.
+    filters: The instruction does not ask for a Restaurants search, cuisine, or sort, so the persisted
+      filters are not checked.
     orders: createdOrders must contain at least three created orders, including two WELCOME12 orders matching
       the Golden three-item [1,2,2] and Pancake two-item [2,2] quantity patterns, plus one SAVE15 reorder
-      from OF-2009 with total quantity at least 2.
+      from OF-2009 (restaurant r74, Pita Market Downtown 39 Buffalo NY) with total quantity at least 2.
     support: A support ticket with subject qa02, order OF-2009, and body qa02 ops must exist.
     merchant: restaurantOpen must mark r1, r2, and r3 false, and menuAvailability must mark m1, m2, m3,
       m11, m12, m13, m21, and m22 false.
-    status: Advance status is a process click and is recorded for manual trajectory review when local
-      storage does not persist click history.
+    status: Each Advance status click persists the next status in orderStatus (Preparing, Out for delivery,
+      Delivered), so orderStatus for that SAVE15 reorder must be Delivered after the two clicks.
     snapshot_assumptions: snap_2 contains the specified restaurants, menu items, OF-2009 order, WELCOME12/SAVE15
       coupons, order status controls, signed-in customer state, and static merchant id mapping.
     non_assumptions: The evaluator does not require exact final scroll offset, browser URL, visible card

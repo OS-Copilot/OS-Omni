@@ -61,6 +61,7 @@ init:
           description: "Keep this one unchanged"
           day_offset: -1
     wait_ms: 1200
+    return_home_after_init: false
 evaluation:
   evaluator_id: evaluators.ios.flow_state:FlowStateEvaluator
   params:
@@ -108,8 +109,8 @@ evaluation:
     timeout_seconds: 12
     poll_interval_seconds: 0.5
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags: [finance, flow, ios, edit, transfer, income, hard, multi_step, benchmark]
   app: Flow

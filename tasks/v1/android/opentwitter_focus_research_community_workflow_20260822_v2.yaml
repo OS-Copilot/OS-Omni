@@ -101,9 +101,15 @@ evaluation:
       reply_text: Clips linked today
       like: true
       bookmark: true
+    stated_order:
+    - quote: 'two new posts must be published in sequence: first, the exact text “Focus review ready”, and immediately after, the exact text “Research plan set.”'
+      immediately: true
+      chain:
+      - 'post:Focus review ready'
+      - 'post:Research plan set.'
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - android

@@ -209,7 +209,19 @@ class OpenTwitterAlexLaunchAuditEvaluator(BaseEvaluator):
 
         final_post = created_posts_by_text.get(str(params.get("final_post_text") or "Launch trail closed"))
         expected_sequence = self._build_expected_event_sequence(params, final_post)
-        sequence_result = self._match_ordered_events(events, expected_sequence)
+        # Some shipped builds persist the edited profile but never record
+        # profile_updated (the save is rejected after name/bio are written).
+        # The stored profile is the durable evidence for that step.
+        persisted_profile = (
+            current_user
+            if current_user.get("handle") == expected_handle and current_user.get("bio") == expected_bio
+            else None
+        )
+        sequence_result = self._match_ordered_events(
+            events,
+            expected_sequence,
+            persisted_profile=persisted_profile,
+        )
         metadata["diagnostics"].append(
             {
                 "diagnostic_id": "ordered_business_events",
@@ -223,6 +235,18 @@ class OpenTwitterAlexLaunchAuditEvaluator(BaseEvaluator):
                 ),
             }
         )
+
+        # The ordered ledger above is diagnostic, but a search the brief itself
+        # asks for ("found via the query ...", "by searching for ...", "the
+        # Explore search area must yield ... result sets for the queries ...")
+        # is a deliverable: each named query must have run at least once, at any
+        # position and any number of times.
+        if bool(params.get("require_search_queries", False)):
+            self._check_required_searches(
+                metadata,
+                events,
+                [str(item) for item in params.get("expected_search_queries") or []],
+            )
 
         final_observation = context.get("final_observation")
         observed_ui = self._observation_summary(final_observation)
@@ -381,6 +405,36 @@ raise SystemExit(2)
         return sequence
 
     @staticmethod
+    def _normalize_query(value: Any) -> str:
+        text = str(value or "").strip().strip("\"'\u201c\u201d\u2018\u2019").strip()
+        return " ".join(text.split()).casefold()
+
+    @classmethod
+    def _check_required_searches(
+        cls,
+        metadata: dict[str, Any],
+        events: list[Any],
+        queries: list[str],
+    ) -> None:
+        observed = [
+            cls._normalize_query(event.get("query"))
+            for event in events
+            if isinstance(event, Mapping)
+            and event.get("type") == "timeline_view"
+            and str(event.get("query") or "").strip()
+        ]
+        for query in queries:
+            count = observed.count(cls._normalize_query(query))
+            cls._check(
+                metadata,
+                f"search_query_{query}",
+                {"type": "timeline_view", "query": query, "min_count": 1},
+                {"count": count},
+                count >= 1,
+                f"The brief's search for {query!r} was never run",
+            )
+
+    @staticmethod
     def _event_matches(event: Mapping[str, Any], expected: Mapping[str, Any]) -> bool:
         for key, expected_value in expected.items():
             if expected_value is None:
@@ -399,10 +453,14 @@ raise SystemExit(2)
         cls,
         events: list[Any],
         expected_sequence: list[dict[str, Any]],
+        *,
+        persisted_profile: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         cursor = 0
         matched: list[dict[str, Any]] = []
+        from_state: list[dict[str, Any]] = []
         for expected in expected_sequence:
+            start = cursor
             found = None
             while cursor < len(events):
                 candidate = events[cursor]
@@ -410,6 +468,22 @@ raise SystemExit(2)
                 if isinstance(candidate, Mapping) and cls._event_matches(candidate, expected):
                     found = dict(candidate)
                     break
+            if (
+                found is None
+                and expected.get("type") == "profile_updated"
+                and isinstance(persisted_profile, Mapping)
+                and cls._event_matches(persisted_profile, {k: v for k, v in expected.items() if k != "type"})
+            ):
+                # No event was recorded, but the stored profile carries exactly the
+                # requested values; keep matching later events from the same point.
+                cursor = start
+                found = {
+                    "type": "profile_updated",
+                    "evidence": "persisted_profile_state",
+                    "displayName": persisted_profile.get("displayName"),
+                    "bio": persisted_profile.get("bio"),
+                }
+                from_state.append(dict(expected))
             if found is None:
                 return {
                     "passed": False,
@@ -417,6 +491,7 @@ raise SystemExit(2)
                     "required_count": len(expected_sequence),
                     "missing_expected_event": expected,
                     "matched_events": matched,
+                    "satisfied_by_persisted_state": from_state,
                 }
             matched.append(found)
         return {
@@ -424,6 +499,7 @@ raise SystemExit(2)
             "matched_count": len(matched),
             "required_count": len(expected_sequence),
             "matched_events": matched,
+            "satisfied_by_persisted_state": from_state,
         }
 
     @staticmethod

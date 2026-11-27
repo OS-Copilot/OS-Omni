@@ -178,10 +178,10 @@ class PhotosInitializer(BaseInitializer):
                 width = len(pixels[0]) // 3
                 x0, y0 = max(0, x0), max(0, y0)
                 x1, y1 = min(width, x1), min(height, y1)
+                span = bytes(rgb) * max(0, x1 - x0)
+                start, end = x0 * 3, x1 * 3
                 for y in range(y0, y1):
-                    row = pixels[y]
-                    for x in range(x0, x1):
-                        row[x*3:x*3+3] = rgb
+                    pixels[y][start:end] = span
 
             def draw_text(pixels, text, x, y, scale, rgb):
                 cursor = x
@@ -270,10 +270,19 @@ class PhotosInitializer(BaseInitializer):
             PY
 
             /usr/bin/open -b com.apple.Photos || true
-            sleep 8
-            {cls._applescript_click_buttons(["Get Started", "开始使用", "Continue", "继续"])}
+            sleep 3
+            if [ ! -f "$HOME/Pictures/Photos Library.photoslibrary/database/Photos.sqlite" ]; then
+              {cls._create_default_library_script()}
+              for attempt in $(seq 1 60); do
+                [ -f "$HOME/Pictures/Photos Library.photoslibrary/database/Photos.sqlite" ] && break
+                sleep 1
+              done
+            fi
+            if [ ! -f "$HOME/Pictures/Photos Library.photoslibrary/database/Photos.sqlite" ]; then
+              echo "Photos did not create the default library at ~/Pictures/Photos Library.photoslibrary" >&2
+              exit 1
+            fi
             sleep 2
-
             if [ "$DISMISS_PROMPTS" -eq 1 ]; then
               {cls._prompt_dismiss_script()}
             fi
@@ -307,6 +316,46 @@ class PhotosInitializer(BaseInitializer):
         return "\n".join([prefix, python_block, suffix])
 
     @staticmethod
+    def _create_default_library_script() -> str:
+        """Create the deterministic default library on a clean first launch.
+
+        Photos opens a "Choose Library" window when its default library is
+        absent. The previous initializer only tried to click "Get Started",
+        which is disabled behind that window and left the SQLite database
+        missing. Create New opens a save sheet; explicitly setting its name
+        keeps the library at the path used by the evaluator.
+        """
+
+        return dedent(
+            r'''
+            osascript <<'APPLESCRIPT'
+            tell application "Photos" to activate
+            delay 1
+            tell application "System Events"
+              tell process "Photos"
+                set frontmost to true
+                set didClick to false
+                repeat with buttonName in {"Create New...", "Create New…", "Create New"}
+                  try
+                    if exists button (buttonName as text) of front window then
+                      click button (buttonName as text) of front window
+                      set didClick to true
+                      exit repeat
+                    end if
+                  end try
+                end repeat
+                if didClick is false then error "Photos Choose Library window has no Create New button"
+              end tell
+              delay 1
+              keystroke "a" using {command down}
+              keystroke "Photos Library"
+              key code 36
+            end tell
+            APPLESCRIPT
+            '''
+        ).strip()
+
+    @staticmethod
     def _asset_dir_shell_value(asset_dir: str) -> str:
         normalized = str(asset_dir or PhotosInitializer.DEFAULT_ASSET_DIR).strip()
         if normalized == "~":
@@ -316,59 +365,6 @@ class PhotosInitializer(BaseInitializer):
         return shlex.quote(normalized)
 
     @staticmethod
-    def _applescript_click_buttons(labels: list[str]) -> str:
-        labels_literal = "{" + ", ".join(json.dumps(label, ensure_ascii=False) for label in labels) + "}"
-        return dedent(
-            f"""
-            osascript <<'APPLESCRIPT' >/dev/null 2>&1 || true
-            on clickWalk(e, targetName, depth)
-              if depth > 12 then return false
-              tell application "System Events"
-                set roleName to ""
-                set titleName to ""
-                set descName to ""
-                set valueName to ""
-                try
-                  set roleName to role of e
-                end try
-                try
-                  set titleName to title of e
-                end try
-                try
-                  set descName to description of e
-                end try
-                try
-                  set valueName to value of e as text
-                end try
-                if (roleName is "AXButton" or roleName is "AXCheckBox" or roleName is "AXMenuItem") and (titleName is targetName or descName is targetName or valueName is targetName) then
-                  click e
-                  return true
-                end if
-                try
-                  repeat with k in UI elements of e
-                    if my clickWalk(k, targetName, depth + 1) then return true
-                  end repeat
-                end try
-              end tell
-              return false
-            end clickWalk
-
-            tell application "System Events"
-              repeat with targetName in {labels_literal}
-                repeat with p in application processes
-                  try
-                    repeat with w in windows of p
-                      if my clickWalk(w, targetName as text, 0) then delay 0.5
-                    end repeat
-                  end try
-                end repeat
-              end repeat
-            end tell
-            APPLESCRIPT
-            """
-        ).strip()
-
-    @staticmethod
     def _prompt_dismiss_script() -> str:
         return dedent(
             """
@@ -376,8 +372,8 @@ class PhotosInitializer(BaseInitializer):
             tell application "System Events"
               set promptButtons to {"Allow", "允许", "OK", "好", "Not Now", "以后", "稍后", "Continue", "继续"}
               repeat 8 times
-                repeat with p in application processes
-                  repeat with w in windows of p
+                try
+                  repeat with w in windows of process "Photos"
                     repeat with buttonName in promptButtons
                       try
                         if exists button (buttonName as text) of w then
@@ -387,7 +383,7 @@ class PhotosInitializer(BaseInitializer):
                       end try
                     end repeat
                   end repeat
-                end repeat
+                end try
                 delay 0.25
               end repeat
             end tell

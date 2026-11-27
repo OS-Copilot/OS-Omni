@@ -15,7 +15,10 @@ Evidence read at judgement time:
 * the final macOS accessibility observation (``foreground_app`` /
   ``foreground_window``).
 
-Booking order is matched as an ordered subsequence of the recorded events.
+The benchmark event ledger is matched as an ordered subsequence and kept as
+diagnostic metadata; it only gates the verdict when a task explicitly opts in
+with ``require_benchmark_event_sequence`` (default off), because the English
+brief fixes the deliverables, not the navigation order that produced them.
 
 Offline hook
 ------------
@@ -151,7 +154,8 @@ class OpenTripTextEditEvaluator(BaseEvaluator):
             )
         return EvalResult(
             EvalStatus.PASS,
-            "OpenTrip bookings, event sequence, final TextEdit UI, and guest text file passed",
+            "OpenTrip bookings, final TextEdit UI, and guest text file passed "
+            "(benchmark event order is diagnostic unless required)",
             metadata,
         )
 
@@ -402,7 +406,20 @@ print(json.dumps({{"port": port, "http_status": http_status, "api": api, "api_er
         sequence_ok, sequence_checks = self._match_event_sequence(
             events, list(params.get("benchmark_event_sequence") or [])
         )
-        if not sequence_ok:
+        # The four macOS OpenTrip textedit task YAMLs script this ledger as a
+        # search -> view -> action trace, but the English brief only fixes the
+        # session, the three bookings, the guest text file and the final
+        # foreground (scan.CSV macos rows MAC-046/049/051/053, issue_class
+        # step_gate).  A correct final state reached in another navigation order
+        # must not fail, so the ordered subsequence is diagnostic unless the
+        # task explicitly opts in via params["require_benchmark_event_sequence"].
+        require_sequence = bool(params.get("require_benchmark_event_sequence", False))
+        sequence_diagnostic = {
+            "required": require_sequence,
+            "matched": sequence_ok,
+            "checks": sequence_checks,
+        }
+        if require_sequence and not sequence_ok:
             failures.append("ordered OpenTrip benchmark event sequence does not match")
 
         passed = not failures
@@ -416,15 +433,23 @@ print(json.dumps({{"port": port, "http_status": http_status, "api": api, "api_er
                 "benchmark": evidence.get("benchmark"),
                 "booking_checks": booking_checks,
                 "benchmark_sequence_checks": sequence_checks,
+                "benchmark_sequence_diagnostic": sequence_diagnostic,
                 "session_observed": session_observed,
             },
         }
         metadata["observed"]["opentrip"] = observed
+        expected_summary = (
+            "OpenTrip session, bookings, baggage, text-file deliverables and "
+            "required ordered benchmark events all match"
+            if require_sequence
+            else "OpenTrip session, bookings, baggage and text-file deliverables "
+            "match; benchmark event order is diagnostic only"
+        )
         self._record(
             metadata,
             "opentrip_final_state",
             passed,
-            "OpenTrip session, bookings, and ordered benchmark events all match",
+            expected_summary,
             {"status": observed["status"], "message": observed["message"]},
             f"OpenTrip checks failed: {message}",
         )

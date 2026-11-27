@@ -922,7 +922,8 @@ class MailyInstruction34StateEvaluator(BaseEvaluator):
             raise RuntimeError(
                 f"unable to resolve installed Maily app container: {app_path_proc.stderr.strip()}"
             )
-        app_path = Path(app_path_proc.stdout.strip())
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        app_path = remap_simulator_container_path(app_path_proc.stdout.strip(), udid)
         with (app_path / "Info.plist").open("rb") as handle:
             info = plistlib.load(handle)
         executable_name = str(info.get("CFBundleExecutable") or "").strip()

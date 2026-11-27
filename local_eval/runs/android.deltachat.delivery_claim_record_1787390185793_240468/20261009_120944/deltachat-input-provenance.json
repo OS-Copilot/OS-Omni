@@ -1,0 +1,16 @@
+{
+  "original_initializer": "evaluators.cua_review.initializers.android.deltachat_delivery_claim_record_1787350552275_228752:DeltaChatDeliveryClaimRecord1787350552275228752Initializer",
+  "source_input_repair": true,
+  "reconstructed_media": {
+    "provenance": "Generated reconstruction with built-in imagegen; not original benchmark photos",
+    "media_index_verified": true,
+    "photos": [
+      {
+        "scene": "delivery_livingroom",
+        "path": "/sdcard/Pictures/OSOmniInputs/source_01.png",
+        "sha256": "1a9a99b04f169b988adebc7c295b1339af9a2282fe952211752e02dc9f363c89"
+      }
+    ]
+  },
+  "initial_foreground_repair": "Markor; instruction begins with its red new-note button"
+}

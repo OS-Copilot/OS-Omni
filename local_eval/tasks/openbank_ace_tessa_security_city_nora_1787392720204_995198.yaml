@@ -1,0 +1,352 @@
+task_id: android.openbank.ace_tessa_security_city_nora_1787392720204_995198
+platform: android
+instruction: '1. 点击底部导航栏的“Activity”。
+
+  2. 点击“Search merchant or description”输入框。
+
+  3. 输入“Ace Hardware”。
+
+  4. 点击“Search”。
+
+  5. 点击“Ace Hardware”结果行的“Details”。
+
+  6. 点击“Reason”选择控件。
+
+  7. 点击“Canceled or returned item”。
+
+  8. 点击处于关闭状态的“I contacted the merchant”开关。
+
+  9. 点击争议表单的“Details”输入框。
+
+  10. 输入“Return for rebate”。
+
+  11. 点击“Submit dispute”。
+
+  12. 点击底部导航栏的“Statements”。
+
+  13. 点击“Rainy Day Savings •••9140”。
+
+  14. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+  15. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。
+
+  16. 点击底部导航栏的“Transfers”。
+
+  17. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Tessa Quinn 收款人。
+
+  18. 点击“Name”输入框。
+
+  19. 输入“Tessa Quinn”。
+
+  20. 点击“Nickname”输入框。
+
+  21. 输入“Lighting fund”。
+
+  22. 点击“Bank”输入框。
+
+  23. 输入“OpenBank”。
+
+  24. 点击“Routing number”输入框。
+
+  25. 输入“064000020”。
+
+  26. 点击“Account number”输入框。
+
+  27. 输入“7359041826”。
+
+  28. 点击“Save recipient”。
+
+  29. 点击底部导航栏的“Transfers”。
+
+  30. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Dana Cole 的 Audit fee 转账。
+
+  31. 点击“To”选择控件。
+
+  32. 点击“Tessa Quinn”。
+
+  33. 点击“Memo”输入框。
+
+  34. 输入“Audit fee”。
+
+  35. 点击“Date”选择控件。
+
+  36. 点击“July 30, 2026”。
+
+  37. 点击“Amount”输入框。
+
+  38. 输入“1.35”。
+
+  39. 点击“From”选择控件。
+
+  40. 点击“Everyday Checking ••••2381”。
+
+  41. 点击“Submit transfer”。
+
+  42. 点击底部导航栏的“Security”。
+
+  43. 点击“Upcoming bill”行的“Mark Read”。
+
+  44. 在 Security 提醒表单区域向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒。
+
+  45. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+  46. 点击该大额提醒表单底部的“Save”。
+
+  47. 在 Security 提醒表单区域向上滑动，直到“New sign-in from macOS”提醒行可见，以便后续将该提醒设置为已读。
+
+  48. 点击“New sign-in from macOS”行的“Mark Read”。
+
+  49. 在 Security 页面向下滑动，直到“Card controls”区域可见，以便后续设置 Everyday Checking debit card
+  为锁定状态。
+
+  50. 点击处于“Unlocked”状态的“Everyday Checking debit card”行内“Lock”，将该卡设置为锁定状态。
+
+  51. 点击底部导航栏的“Pay & transfer”。
+
+  52. 打开“Biller”下拉列表。
+
+  53. 选择“City Utilities”。
+
+  54. 打开“From”下拉列表。
+
+  55. 选择“Everyday Checking ••••2381”。
+
+  56. 点击“Amount”输入框。
+
+  57. 在框内输入“68.24”。
+
+  58. 点击“Date”控件。
+
+  59. 选择“2026-06-06”。
+
+  60. 点击“Memo”输入框。
+
+  61. 在框内输入“68.24”。
+
+  62. 点击“Schedule”。
+
+  63. 在 Transfers 页面向下滑动，直到“Add recipient”表单可见，以便后续创建 Nora Vale 收款人。
+
+  64. 点击“Name”输入框。
+
+  65. 输入“Nora Vale”。
+
+  66. 点击“Nickname”输入框。
+
+  67. 输入“Cloud backup”。
+
+  68. 点击“Bank”输入框。
+
+  69. 输入“OpenBank”。
+
+  70. 点击“Routing number”输入框。
+
+  71. 输入“084000026”。
+
+  72. 点击“Account number”输入框。
+
+  73. 输入“2517964308”。
+
+  74. 点击“Save recipient”。
+
+  '
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openbank
+    snapshot_name: sn2
+    source_initializer: evaluators.cua_review.initializers.android.android_openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Initializer
+evaluation:
+  evaluator_id: local_eval.openbank_evaluator:InstalledOpenBankEvaluator
+  params:
+    app_package: com.killt.openbank
+    local_state_key: openbank.localState.v7
+    expected_ruleset_sha256: e683bc43ef4b55d7061277b2522671fc3d0457faa6ebd6005e67f71e260fdd01
+    source_state_mode: fresh_clone_verified
+    source_evaluator: evaluators.android.openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Evaluator
+limits:
+  max_steps: 180
+  step_timeout_seconds: 120
+metadata:
+  app: OpenBank
+  app_name: OpenBank
+  app_bundle_id: com.killt.openbank
+  required_packages_any:
+  - com.killt.openbank
+  android_vm_profile: quail5
+  avd_name: quail5
+  snapshot_name: sn2
+  source_state_mode: fresh_clone_verified
+  instruction_sha256: 6d1bb5e6e921907f180064b5d80c86c6609778452faa6660a51d4ca0d607fb48
+  evaluator_ruleset_sha256: e683bc43ef4b55d7061277b2522671fc3d0457faa6ebd6005e67f71e260fdd01
+  verifier_rules:
+    matching: exact_case_sensitive_typed_values_and_cardinality
+    event_order: exact_relevant_event_projection_no_extras
+    step_coverage: exact_1_through_74
+    human_automatic_evaluator_identity: exact_same_source_class_ruleset_checkpoints
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openbank/Android/android.openbank.ace_tessa_security_city_nora_1787392720204_995198
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 7dd28ef4a2c99c16c6574c7c884038c05948d52f07adbdd60d010c7ea9459e96
+    source_instruction: '1. 点击底部导航栏的“Activity”。
+
+      2. 点击“Search merchant or description”输入框。
+
+      3. 输入“Ace Hardware”。
+
+      4. 点击“Search”。
+
+      5. 点击“Ace Hardware”结果行的“Details”。
+
+      6. 点击“Reason”选择控件。
+
+      7. 点击“Canceled or returned item”。
+
+      8. 点击处于关闭状态的“I contacted the merchant”开关。
+
+      9. 点击争议表单的“Details”输入框。
+
+      10. 输入“Return for rebate”。
+
+      11. 点击“Submit dispute”。
+
+      12. 点击底部导航栏的“Statements”。
+
+      13. 点击“Rainy Day Savings •••9140”。
+
+      14. 在 Rainy Day Savings 对账单页面向下滑动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+      15. 点击处于“Paper”状态的“Go paperless”，保存 Rainy Day Savings 的无纸化设置。
+
+      16. 点击底部导航栏的“Transfers”。
+
+      17. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Tessa Quinn 收款人。
+
+      18. 点击“Name”输入框。
+
+      19. 输入“Tessa Quinn”。
+
+      20. 点击“Nickname”输入框。
+
+      21. 输入“Lighting fund”。
+
+      22. 点击“Bank”输入框。
+
+      23. 输入“OpenBank”。
+
+      24. 点击“Routing number”输入框。
+
+      25. 输入“064000020”。
+
+      26. 点击“Account number”输入框。
+
+      27. 输入“7359041826”。
+
+      28. 点击“Save recipient”。
+
+      29. 点击底部导航栏的“Transfers”。
+
+      30. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Dana Cole 的 Audit fee 转账。
+
+      31. 点击“To”选择控件。
+
+      32. 点击“Tessa Quinn”。
+
+      33. 点击“Memo”输入框。
+
+      34. 输入“Audit fee”。
+
+      35. 点击“Date”选择控件。
+
+      36. 点击“July 30, 2026”。
+
+      37. 点击“Amount”输入框。
+
+      38. 输入“1.35”。
+
+      39. 点击“From”选择控件。
+
+      40. 点击“Everyday Checking ••••2381”。
+
+      41. 点击“Submit transfer”。
+
+      42. 点击底部导航栏的“Security”。
+
+      43. 点击“Upcoming bill”行的“Mark Read”。
+
+      44. 在 Security 提醒表单区域向下滑动，直到“Large purchase”表单可见，以便后续保存大额消费提醒。
+
+      45. 点击“Large purchase”表单内处于开启状态的“Push”开关。
+
+      46. 点击该大额提醒表单底部的“Save”。
+
+      47. 在 Security 提醒表单区域向上滑动，直到“New sign-in from macOS”提醒行可见，以便后续将该提醒设置为已读。
+
+      48. 点击“New sign-in from macOS”行的“Mark Read”。
+
+      49. 在 Security 页面向下滑动，直到“Card controls”区域可见，以便后续设置 Everyday Checking debit card
+      为锁定状态。
+
+      50. 点击处于“Unlocked”状态的“Everyday Checking debit card”行内“Lock”，将该卡设置为锁定状态。
+
+      51. 点击底部导航栏的“Pay & transfer”。
+
+      52. 打开“Biller”下拉列表。
+
+      53. 选择“City Utilities”。
+
+      54. 打开“From”下拉列表。
+
+      55. 选择“Everyday Checking ••••2381”。
+
+      56. 点击“Amount”输入框。
+
+      57. 在框内输入“68.24”。
+
+      58. 点击“Date”控件。
+
+      59. 选择“2026-06-06”。
+
+      60. 点击“Memo”输入框。
+
+      61. 在框内输入“68.24”。
+
+      62. 点击“Schedule”。
+
+      63. 在 Transfers 页面向下滑动，直到“Add recipient”表单可见，以便后续创建 Nora Vale 收款人。
+
+      64. 点击“Name”输入框。
+
+      65. 输入“Nora Vale”。
+
+      66. 点击“Nickname”输入框。
+
+      67. 输入“Cloud backup”。
+
+      68. 点击“Bank”输入框。
+
+      69. 输入“OpenBank”。
+
+      70. 点击“Routing number”输入框。
+
+      71. 输入“084000026”。
+
+      72. 点击“Account number”输入框。
+
+      73. 输入“2517964308”。
+
+      74. 点击“Save recipient”。
+
+      '
+    release_path: benchmark/tasks/openbank/Android/android.openbank.ace_tessa_security_city_nora_1787392720204_995198
+    original_evaluator_id: evaluators.android.android_openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Evaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.android_openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Initializer
+  local_repair:
+    source_task: tasks/v1/android/openbank_ace_tessa_security_city_nora_1787392720204_995198.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

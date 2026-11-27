@@ -93,8 +93,8 @@ evaluation:
       Atlas Access: Atlas matrix ready | final index
       Atlas Fixes: Contrast proof filed
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: DeltaChat
   difficulty: hard

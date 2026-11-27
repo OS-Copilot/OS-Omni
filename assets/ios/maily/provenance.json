@@ -1,0 +1,88 @@
+{
+  "copied": {
+    "file:Shipping Notes.md": "assets/ios/maily/Shipping Notes.md",
+    "file:Sprint Review Draft.md": "assets/ios/maily/Sprint Review Draft.md",
+    "file:Team Contacts.md": "assets/ios/maily/Team Contacts.md",
+    "photo:3a3fda010a1c08174c0866c1135194eabcbdd38fc4278f451186af72f90043d1": "assets/ios/maily/photo_1_3a3fda010a1c.jpg",
+    "photo:8b1c7cf4f3639b62f811cddcfce0471b8d2ae240dd14ddeae0a8fc647bf23815": "assets/ios/maily/photo_2_8b1c7cf4f363.jpg",
+    "photo:97d5ae0cb9f81db777d09af3240980ba588d7a551902e1662bef1d54bb5522fd": "assets/ios/maily/photo_3_97d5ae0cb9f8.jpg",
+    "photo:a61cd4fbf7687f24fe4024cf3459c838267fe33cce6bb95106148f0e8c8ec963": "assets/ios/maily/photo_4_a61cd4fbf768.jpg",
+    "photo:b6237067e7ca26eb618ca8f8d4cb7b09bb931ac8c2e5cdf2928146bbd9c5ad91": "assets/ios/maily/photo_5_b6237067e7ca.jpg",
+    "photo:b7eba2f33fb661b273a5a7b311fe220efd925dddd4536e2175332e3d06d04faf": "assets/ios/maily/photo_6_b7eba2f33fb6.jpg"
+  },
+  "created_at_utc": "2026-10-11T17:07:51.624059+00:00",
+  "files": {
+    "Shipping Notes.md": {
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Containers/Data/Application/0ABFC004-359C-45C6-BE86-D9BD36318C3F/Documents/Shipping Notes.md",
+      "sha256": "36e924648e96f5608e189c92d30f19b2780438730b44b5d975d96fffa8c35b60",
+      "size": 26,
+      "verified": true
+    },
+    "Sprint Review Draft.md": {
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Containers/Data/Application/0ABFC004-359C-45C6-BE86-D9BD36318C3F/Documents/Sprint Review Draft.md",
+      "sha256": "a0869ffd08ca7775b3e0125272e89ae2559ecae652e413e24e319e921b52c891",
+      "size": 88,
+      "verified": true
+    },
+    "Team Contacts.md": {
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Containers/Data/Application/0ABFC004-359C-45C6-BE86-D9BD36318C3F/Documents/Team Contacts.md",
+      "sha256": "8015c51c4036b70ac1231b0bc6f38d43231039eac3ea7bfc6a0ccc9bec52565e",
+      "size": 17,
+      "verified": true
+    }
+  },
+  "hash_basis": "original evaluator constants in evaluators/ios/maily_instruction_3_[123].py",
+  "method": "exact-filename match for FSNotes files; SHA-256 match over JPEG candidates for photos",
+  "photos": [
+    {
+      "label": "blue electric guitar close-up",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0076.JPG",
+      "sha256": "3a3fda010a1c08174c0866c1135194eabcbdd38fc4278f451186af72f90043d1",
+      "size": 204951,
+      "task": "ios.maily.instruction_3_2",
+      "verified": true
+    },
+    {
+      "label": "two people holding orange boxes",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0071.JPG",
+      "sha256": "8b1c7cf4f3639b62f811cddcfce0471b8d2ae240dd14ddeae0a8fc647bf23815",
+      "size": 128875,
+      "task": "ios.maily.instruction_3_3",
+      "verified": true
+    },
+    {
+      "label": "people cooking around table",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0073.JPG",
+      "sha256": "a61cd4fbf7687f24fe4024cf3459c838267fe33cce6bb95106148f0e8c8ec963",
+      "size": 202799,
+      "task": "ios.maily.instruction_3_3",
+      "verified": true
+    },
+    {
+      "label": "uniformed person holding gun, IMG_0080.JPG",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0080.JPG",
+      "sha256": "97d5ae0cb9f81db777d09af3240980ba588d7a551902e1662bef1d54bb5522fd",
+      "size": 123771,
+      "task": "ios.maily.instruction_3_1",
+      "verified": true
+    },
+    {
+      "label": "airport-entrance group selfie",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0082.JPG",
+      "sha256": "b7eba2f33fb661b273a5a7b311fe220efd925dddd4536e2175332e3d06d04faf",
+      "size": 180983,
+      "task": "ios.maily.instruction_3_3",
+      "verified": true
+    },
+    {
+      "label": "clown, white face / red nose / green hair",
+      "path": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data/Media/DCIM/100APPLE/IMG_0086.JPG",
+      "sha256": "b6237067e7ca26eb618ca8f8d4cb7b09bb931ac8c2e5cdf2928146bbd9c5ad91",
+      "size": 108939,
+      "task": "ios.maily.instruction_3_2",
+      "verified": true
+    }
+  ],
+  "source": "/Users/zhuhan/Library/Developer/CoreSimulator/Devices/1FFEDFEA-4953-46C8-BD71-E6FE12066A17/data",
+  "source_note": "Caller-selected official simulator archive / data-container tree. This script only reads the caller-provided tree; actual filesystem extraction from official app containers is handled by root."
+}

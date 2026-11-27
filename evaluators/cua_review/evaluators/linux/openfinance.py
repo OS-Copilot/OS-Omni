@@ -162,6 +162,22 @@ class OpenFinanceEvaluator(BaseEvaluator):
             schedule = by(schedules, "payee", payee)
             return None if schedule is None else _text(schedule.get("nextDate"))
 
+        def schedule_posted(payee: str, first_due: str) -> list[str]:
+            # Post now adds a transaction dated the schedule's next date, which only moves forward.
+            return [
+                _text(row.get("date"))
+                for row in transactions
+                if _text(row.get("payee")).lower() == payee.lower() and _text(row.get("date")) >= first_due
+            ]
+
+        def record_peak_fitness() -> None:
+            # "skipped" (default): Skip advanced the next date; "unposted": nothing was posted from the schedule.
+            if _text(params.get("peak_fitness_schedule") or "skipped").lower() == "unposted":
+                posted = schedule_posted("Peak Fitness", "2026-07-17")
+                record("schedule.Peak Fitness unposted", by(schedules, "payee", "Peak Fitness") is not None and not posted, posted)
+            else:
+                record("schedule.Peak Fitness skipped", schedule_next("Peak Fitness") not in (None, "", "2026-07-17"), schedule_next("Peak Fitness"))
+
         def bill_state(payee: str) -> Any:
             bill = by(bills, "payee", payee)
             if bill is None:
@@ -185,11 +201,16 @@ class OpenFinanceEvaluator(BaseEvaluator):
                 for row in transactions
             )
 
+        # Saving a transaction applies the rules, so the seeded "market" rule may rename the QA Market payee.
+        market_payees = params.get("market_transaction_payees") or ["QA Market"]
+        market_payees = {_text(name) for name in (market_payees if isinstance(market_payees, (list, tuple)) else [market_payees])}
+
         def market_transaction(reconciled: bool) -> Any:
             for row in transactions:
-                if _text(row.get("payee")) != "QA Market":
+                if _text(row.get("payee")) not in market_payees:
                     continue
                 observed = {
+                    "payee": _text(row.get("payee")),
                     "date": _text(row.get("date")),
                     "amount": _number(row.get("amount")),
                     "accountId": _text(row.get("accountId")),
@@ -239,7 +260,7 @@ class OpenFinanceEvaluator(BaseEvaluator):
             record("transaction.QA Coffee", coffee_transaction() is not None, coffee_transaction())
             record("budget.Housing", has_allocation("Housing", 2250), budget_value("Housing"))
             record("goal.QA Reserve", goal_target("QA Reserve", 900) == 900, goal_target("QA Reserve", 900))
-            record("schedule.Peak Fitness skipped", schedule_next("Peak Fitness") not in (None, "", "2026-07-17"), schedule_next("Peak Fitness"))
+            record_peak_fitness()
             record("schedule.Northwind Payroll posted", posted_payroll(), None)
             record("bill.Fiberlane Internet", bill_state("Fiberlane Internet") is not None and bill_state("Fiberlane Internet")["amount"] == 84, bill_state("Fiberlane Internet"))
             record("bill.Travel Rewards Card paid", bool(bill_state("Travel Rewards Card") and bill_state("Travel Rewards Card")["paidMonth"]), bill_state("Travel Rewards Card"))
@@ -258,7 +279,7 @@ class OpenFinanceEvaluator(BaseEvaluator):
             record("budget.Groceries", has_allocation("Groceries", 540), budget_value("Groceries"))
             record("budget.Transportation", has_allocation("Transportation", 310), budget_value("Transportation"))
             record("goal.QA Reserve", goal_target("QA Reserve", 900) == 900, goal_target("QA Reserve", 900))
-            record("schedule.Peak Fitness skipped", schedule_next("Peak Fitness") not in (None, "", "2026-07-17"), schedule_next("Peak Fitness"))
+            record_peak_fitness()
             record("schedule.Northwind Payroll posted", posted_payroll(), None)
         elif task == "10-4":
             record("transaction.QA Market", market_transaction(True) is not None, market_transaction(True))

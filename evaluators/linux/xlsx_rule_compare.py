@@ -9,6 +9,7 @@ from numbers import Number
 from typing import Any, Callable, Mapping, Union, cast, Tuple, List
 
 from openpyxl import Workbook
+from openpyxl.cell.cell import MergedCell
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
@@ -37,6 +38,39 @@ def _match_value_to_rule(value: Any, rule: dict) -> bool:
     elif method == "ne":
         return value != ref
     return False
+
+
+def _match_dimension_to_rule(value: Any, rule: dict) -> bool:
+    """Match a row height / column width, allowing the rule's optional absolute ``tolerance``.
+
+    LibreOffice keeps row heights and column widths in its own units and the GUI rounds the
+    entered value to the dialog's precision (e.g. "24pt" is stored as 0.84 cm and saved as
+    ht="23.8"), so a saved xlsx rarely holds the exact figure the brief names. ``tolerance``
+    only widens ``eq``/``ne``; without it the comparison is the plain rule match.
+    """
+    tolerance = rule.get("tolerance")
+    method = rule.get("method", "eq")
+    if tolerance is None or method not in ("eq", "ne"):
+        return _match_value_to_rule(value, rule)
+    try:
+        close = value is not None and abs(float(value) - float(rule.get("ref"))) <= float(tolerance)
+    except (TypeError, ValueError):
+        close = False
+    return close if method == "eq" else not close
+
+
+def _merge_anchor(ws: Worksheet, coordinate: str) -> Any:
+    """Return the cell whose format a coordinate shows: itself, or its merge range's top-left cell.
+
+    A cell covered by a merged range (B1 in A1:B1) has no format of its own once saved; the
+    merged cell is displayed with the anchor's font, fill and alignment.
+    """
+    cell = ws[coordinate]
+    if isinstance(cell, MergedCell):
+        for merged in ws.merged_cells.ranges:
+            if cell.coordinate in merged:
+                return ws.cell(merged.min_row, merged.min_col)
+    return cell
 
 
 def _freeze_compare_key(sheet: Worksheet) -> Tuple[Any, ...]:
@@ -189,7 +223,7 @@ def compare_xlsx_rules(
                 break
             row_idx = int(r.get("row", 1) or 1)
             height = sheet.row_dimensions[row_idx].height
-            metric = _match_value_to_rule(height, r)
+            metric = _match_dimension_to_rule(height, r)
             logger.debug(
                 "Assertion: row_height(%s)=%.3f %s %s - %s",
                 row_idx,
@@ -207,7 +241,7 @@ def compare_xlsx_rules(
                 break
             column = str(r.get("column") or "A").strip().upper()
             width = sheet.column_dimensions[column].width
-            metric = _match_value_to_rule(width, r)
+            metric = _match_dimension_to_rule(width, r)
             logger.debug(
                 "Assertion: column_width(%s)=%.3f %s %s - %s",
                 column,
@@ -221,7 +255,6 @@ def compare_xlsx_rules(
         elif r["type"] == "sheet_data":
             # Compare sheet data
             from openpyxl import load_workbook
-            import pandas as pd
             sheet1_wb = load_workbook(file1_path, data_only=True)
             sheet2_wb = load_workbook(file2_path, data_only=True)
 
@@ -328,7 +361,8 @@ def compare_xlsx_rules(
                 return wb.worksheets[0]
 
             ws = resolve_sheet(sheet1_wb, idx)
-            cell = ws[coordinate]
+            # A coordinate covered by a merged range is shown with the anchor cell's format.
+            cell = _merge_anchor(ws, coordinate)
 
             metric = True
             props = r.get("props", {})

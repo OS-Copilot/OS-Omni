@@ -31,6 +31,10 @@ TITLE = "Launch Gate 0728"
 NOTE_NAMES = (
     "Launch Gate 0728 Launch gate.markdown",
 )
+# Delta Chat core: Param::Forwarded is stored as ``a=<non-zero>`` in msgs.param;
+# ContactId::SELF is 1.
+FORWARDED_PARAM_KEY = "a"
+DC_CONTACT_ID_SELF = 1
 
 SOURCE_SPECS: tuple[dict[str, Any], ...] = (
     {
@@ -157,8 +161,11 @@ CHECKPOINT_SPECS: tuple[dict[str, Any], ...] = (
 )
 
 RULESET_SPEC: dict[str, Any] = {
-    "schema_version": "2.0",
+    "schema_version": "2.1",
     "task_id": TASK_ID,
+    "supersedes_ruleset_sha256": "e25e6ed3a0274424173024e3e9c74b3862d04914f76e2616c7b5c4f87327d3da",
+    "revision_basis": "instructions authoritative; Saved Messages holds exactly two Markdown attachments (readiness v1 plus final v2) and one forwarded Bob Ops message in v1 < v2 < forward order",
+    "title_handling": "creation title is app-managed and stripped only via the explicit TITLE prefixes before content comparison; all other bytes are strict",
     "minimum_message_id": DEFAULT_MINIMUM_MESSAGE_ID,
     "baseline_max_timestamp": DEFAULT_BASELINE_MAX_TIMESTAMP,
     "sent_state": DEFAULT_SENT_STATE,
@@ -510,9 +517,7 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             row for row in new_saved_rows
             if int(row["type"]) == 10
             and any(
-                str(row["txt"]) == str(source["txt"])
-                and int(row["from_id"]) == int(source["from_id"])
-                and int(row["timestamp_sent"] or 0) == int(source["timestamp_sent"] or 0)
+                cls._is_forward_of(row, source)
                 for source in bob_forward_sources
             )
         ]
@@ -527,9 +532,13 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             forward_ok,
             steps=list(range(74, 80)),
             dimension="source_process",
-            expected="exactly one post-baseline Saved Messages row preserves Bob sender, full text, and original sent timestamp",
+            expected=(
+                "exactly one post-baseline Saved Messages text row with Bob's full text that is a forward: "
+                "either the source-preserving copy (Bob sender and original sent timestamp) or an "
+                "outgoing message carrying Delta Chat's Forwarded param"
+            ),
             observed=[cls._message_summary(row) for row in forwarded_rows],
-            failure_reason="the required Bob Ops forward is missing, ambiguous, or not source-preserving",
+            failure_reason="the required Bob Ops forward is missing, ambiguous, or not a forward of the source",
         ))
 
         ordered_rows = [
@@ -542,12 +551,13 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
         ids = [int(row["id"]) for row in ordered_rows]
         timestamps = [int(row["timestamp"] or 0) for row in ordered_rows]
         exactly_three_outputs = len(new_saved_rows) == 3
+        timestamps_sorted = timestamps == sorted(timestamps)
+        timestamps_distinct = len(set(timestamps)) == 3
         order_ok = (
             len(ordered_rows) == 3
             and ids == sorted(ids)
             and len(set(ids)) == 3
-            and timestamps == sorted(timestamps)
-            and len(set(timestamps)) == 3
+            and timestamps_sorted
             and exactly_three_outputs
         )
         checks.append(cls._check(
@@ -555,10 +565,11 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             order_ok,
             steps=[25, 73, 79],
             dimension="source_process",
-            expected="exactly readiness v1 < final v2 < Bob forward by both message id and current-session timestamp",
+            expected="exactly readiness v1 < final v2 < Bob forward by distinct message id and non-decreasing current-session timestamp (equal timestamps are a non-blocking diagnostic)",
             observed={
                 "ordered_ids": ids,
                 "ordered_timestamps": timestamps,
+                "timestamps_distinct_diagnostic": timestamps_distinct,
                 "all_post_baseline_saved_ids": [int(row["id"]) for row in new_saved_rows],
             },
             failure_reason="Saved Messages outputs are extra, missing, duplicated, or in the wrong business order",
@@ -747,6 +758,29 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             normalized = normalized[len(TITLE) + 1:]
         return normalized.split("\n") if normalized else []
 
+    @classmethod
+    def _is_forward_of(cls, row: Mapping[str, Any], source: Mapping[str, Any]) -> bool:
+        """True when ``row`` is Delta Chat's forward of ``source`` into Saved Messages.
+
+        The benchmark build turns Forward -> Saved Messages into a source-preserving
+        copy (original sender and sent timestamp; seen in the reviewed run). Builds
+        without that path write a new outgoing message from SELF (contact id 1) with
+        the Forwarded param (``a``) set. A retyped message has neither, so it fails.
+        """
+        if str(row["txt"]) != str(source["txt"]):
+            return False
+        if (
+            int(row["from_id"]) == int(source["from_id"])
+            and int(row["timestamp_sent"] or 0) == int(source["timestamp_sent"] or 0)
+        ):
+            return True
+        forwarded_flag = cls._param_value(row["param"], FORWARDED_PARAM_KEY).strip()
+        return (
+            int(row["from_id"]) == DC_CONTACT_ID_SELF
+            and forwarded_flag.lstrip("-").isdigit()
+            and int(forwarded_flag) != 0
+        )
+
     @staticmethod
     def _row_by_id(rows: Sequence[sqlite3.Row], message_id: int) -> sqlite3.Row | None:
         return next((row for row in rows if int(row["id"]) == message_id), None)
@@ -776,7 +810,8 @@ class DeltaChatLaunchChecklistStateEvaluator(BaseEvaluator):
             timeout=30,
         )
         if proc.returncode == 0 and proc.stdout.strip():
-            root = Path(proc.stdout.strip()).resolve()
+            from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+            root = remap_simulator_container_path(proc.stdout.strip(), udid)
         else:
             container = _find_app_data_container_by_metadata(udid=udid, bundle_id=bundle_id)
             if container is None:

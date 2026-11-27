@@ -8,6 +8,53 @@ from typing import Any, Mapping
 from core.init import BaseInitializer, InitResult, InitStatus
 from initializers.linux.cua_review import run_guest
 
+APP_JS = "/home/user/Applications/opensheet_web/public/app.js"
+
+# OpenSheet commits a grid cell on focusout from the cell's textContent, which is the rendered
+# display value: clicking a formula cell and then anything else replaced =SUM(B2:E2) with its
+# result, and clicking a cell formatted as Number with one decimal stored 80 as "80.0". A cell
+# is now committed on focusout only after its text was edited (an input event), so a typed edit
+# still commits on Enter, Tab or clicking away; the formula bar is unchanged.
+EDIT_COMMIT_PATCH = r"""python3 - <<'PY'
+import json, pathlib
+path = pathlib.Path(json.loads(__APP_JS__))
+source = path.read_text()
+old = (
+    '    elements.sheetGrid.addEventListener("focusout", (event) => {\n'
+    '      const cell = event.target.closest(".sheet-cell");\n'
+    '      if (!cell) return;\n'
+    '      commitCell(cell.dataset.address, cell.textContent);\n'
+    '    });'
+)
+new = (
+    '    elements.sheetGrid.addEventListener("input", (event) => {\n'
+    '      const cell = event.target.closest(".sheet-cell");\n'
+    '      if (cell) cell.dataset.edited = "1";\n'
+    '    });\n'
+    '    elements.sheetGrid.addEventListener("focusout", (event) => {\n'
+    '      const cell = event.target.closest(".sheet-cell");\n'
+    '      if (!cell || cell.dataset.edited !== "1") return;\n'
+    '      commitCell(cell.dataset.address, cell.textContent);\n'
+    '    });'
+)
+if new in source:
+    print("already patched")
+elif source.count(old) == 1:
+    path.write_text(source.replace(old, new))
+    print("patched")
+else:
+    raise SystemExit("OpenSheet focusout handler not found in %s" % path)
+PY
+"""
+
+
+def patch_edit_commit(controller: Any, app_js: str = APP_JS) -> str:
+    """Apply EDIT_COMMIT_PATCH in the guest; returns "patched" or "already patched"."""
+
+    script = EDIT_COMMIT_PATCH.replace("__APP_JS__", repr(json.dumps(app_js)))
+    result = run_guest(controller, script, timeout=30)
+    return str(result.get("output") or result.get("stdout") or "").strip()
+
 
 class OpenSheetEnvironmentInitializer(BaseInitializer):
     def initialize(self, context: Mapping[str, Any]) -> InitResult:
@@ -37,10 +84,11 @@ if missing_terms:
 PY""" % payload
         try:
             run_guest(controller, script, timeout=30)
+            patch = patch_edit_commit(controller)
         except Exception as exc:
             return InitResult(InitStatus.ERROR, f"OpenSheet environment validation failed: {exc}")
         return InitResult(
             InitStatus.PASS,
             "OpenSheet launcher and app files are present in the snapshot",
-            {"snapshot_display_name": str(params.get("snapshot_display_name") or "")},
+            {"snapshot_display_name": str(params.get("snapshot_display_name") or ""), "edit_commit_patch": patch},
         )

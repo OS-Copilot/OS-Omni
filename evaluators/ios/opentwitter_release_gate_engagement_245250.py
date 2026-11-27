@@ -11,6 +11,7 @@ from typing import Any, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.opentwitter_store import DEFAULT_BUNDLE_ID, OpenTwitterStore
+from evaluators.ios.brief_event_order import multiset_diff, order_violations
 
 
 TASK_ID = "ios.opentwitter.release_gate_engagement_245250"
@@ -39,7 +40,7 @@ STEP_GROUPS = {
 CHECKPOINT_SPECS = tuple(
     {"name": f"{name}_exact", "steps": steps}
     for name, steps in STEP_GROUPS.items()
-) + ({"name": "durable_event_order_exact", "steps": list(range(1, 78))},)
+) + ({"name": "durable_events_and_required_order", "steps": list(range(1, 78))},)
 
 CREATED_POSTS = {
     "release gate": "deploy note",
@@ -109,7 +110,20 @@ RULESET_SPEC = {
         "notifications_all_read": True,
         "engagement_sets": "exact",
     },
-    "event_projection": "exact_order_for_instruction_required_business_events",
+    "event_projection": "multiset_of_instruction_required_business_events",
+    # The brief lists each post's engagements in different orders; that is an
+    # enumeration, not a sequence. The only stated order: "Publish three new
+    # posts ... and engage with six specific posts ..., then mark all
+    # notifications as read" / "upon completion". Logically, a created post
+    # exists before it is engaged. "The first/second/third new post" are labels.
+    "required_event_order": {
+        "notifications_marked_read": "after every other required business event",
+        "created_post_engagements": "after that post's post_created",
+    },
+    "duplicate_policy": (
+        "notifications_marked_read is idempotent and only the last one counts; every "
+        "other required business event exactly once"
+    ),
     "normalization": "none",
 }
 RULESET_SHA256 = hashlib.sha256(
@@ -148,7 +162,7 @@ def _check(
         "name": name,
         "value_contract_id": value_contract_id,
         "steps": list(steps),
-        "match_mode": "ORDERED_EXACT" if "order" in name else "SCALAR_EXACT",
+        "match_mode": "MULTISET_WITH_REQUIRED_ORDER" if "order" in name else "SCALAR_EXACT",
         "expected": expected,
         "actual": actual,
         "observed": actual,
@@ -256,6 +270,36 @@ def _expected_events() -> list[tuple[Any, ...]]:
         ("comment_created", "p-1005", "launch checks clear"),
         ("post_repost_toggled", "p-1005", True),
         ("notifications_marked_read",),
+    ]
+
+
+_MARK_ALL_READ = ("notifications_marked_read",)
+
+
+def _required_order_pairs() -> list[tuple[tuple[Any, ...], tuple[Any, ...]]]:
+    expected = _expected_events()
+    pairs = [(item, _MARK_ALL_READ) for item in expected if item != _MARK_ALL_READ]
+    for text in CREATED_POSTS:
+        created = ("post_created", text)
+        pairs.extend(
+            (created, item)
+            for item in expected
+            if item[0] != "post_created" and len(item) > 1 and item[1] == text
+        )
+    return pairs
+
+
+def _business_projection(
+    events: Sequence[Mapping[str, Any]],
+    dynamic_ids: Mapping[str, str],
+) -> list[tuple[Any, ...]]:
+    """Required business events; repeated mark-all-read collapses to the last one."""
+    projected = [item for event in events if (item := _project_event(event, dynamic_ids)) is not None]
+    marks = [index for index, item in enumerate(projected) if item == _MARK_ALL_READ]
+    return [
+        item
+        for index, item in enumerate(projected)
+        if item != _MARK_ALL_READ or index == marks[-1]
     ]
 
 
@@ -382,16 +426,26 @@ class OpenTwitterReleaseGateEngagement245250Evaluator(BaseEvaluator):
         ))
 
         events = _rows(state.get("evaluationEvents"))
-        projected = [item for event in events if (item := _project_event(event, dynamic_ids)) is not None]
+        projected = _business_projection(events, dynamic_ids)
         expected_projection = _expected_events()
+        missing, extra = multiset_diff(expected_projection, projected)
+        violations = order_violations(projected, _required_order_pairs())
         checks.append(_check(
-            name="durable_event_order_exact",
-            value_contract_id="events.required_durable_order",
+            name="durable_events_and_required_order",
+            value_contract_id="events.required_durable_set_and_stated_order",
             steps=list(range(1, 78)),
-            expected=[list(item) for item in expected_projection],
-            actual=[list(item) for item in projected],
+            expected={
+                "events": [list(item) for item in expected_projection],
+                "required_order": RULESET_SPEC["required_event_order"],
+            },
+            actual={
+                "events": [list(item) for item in projected],
+                "missing": [list(item) for item in missing],
+                "extra": [list(item) for item in extra],
+                "order_violations": [[list(before), list(after)] for before, after in violations],
+            },
             evidence={"events": events},
-            passed=projected == expected_projection,
+            passed=not missing and not extra and not violations,
         ))
 
         failures = [check["name"] for check in checks if not check["passed"]]

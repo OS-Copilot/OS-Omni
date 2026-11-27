@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "purpose": "Replacement task input attachments for the two macOS DeltaChat workflows.",
+  "provenance": "Reconstructed by the benchmark authoring workflow because the original macOS1 baseline assets were absent. Contents preserve the operations-handoff and design-review intent; evaluators require the filenames, ordered self-sent attachments, and text/plain MIME type, not specific document prose.",
+  "files": {
+    "Round1_Ops.txt": {
+      "sha256": "847d8712f12d97004372d63f0a972d09bced5444bc17a9f2ddecfc33335fce02",
+      "bytes": 372,
+      "mime_type": "text/plain"
+    },
+    "Round2_Design.txt": {
+      "sha256": "27bb9473322308fbbfd512ae38095f1179413b5ddc0fa57e1925749dad4c89ff",
+      "bytes": 451,
+      "mime_type": "text/plain"
+    }
+  }
+}

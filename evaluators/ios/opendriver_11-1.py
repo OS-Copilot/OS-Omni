@@ -71,7 +71,25 @@ REFUND_TARGETS = (
 )
 REFUND_EXPECTATION = {"reason": "Fare review", "status": "requested"}
 TICKET_CREATE_EXPECTATION = {"message": "Blue umbrella", "status": "open"}
-TICKET_REPLY_MESSAGE = "Following up on this ticket.Rear seat"
+#: The brief asks for "a reply with the text Rear seat".  The rider reply
+#: dialog pre-fills its field with ``TICKET_REPLY_PREFILL`` (rider_screens.dart
+#: SupportReplyDialog) and the app sends ``message.trim()``, so a faithful reply
+#: is either exactly "Rear seat" (prefill replaced) or the prefill with
+#: "Rear seat" added after it (the recorded reference run's value, kept as
+#: ``TICKET_REPLY_MESSAGE``).  Any other reply text still fails.
+TICKET_REPLY_TEXT = "Rear seat"
+TICKET_REPLY_PREFILL = "Following up on this ticket."
+TICKET_REPLY_MESSAGE = TICKET_REPLY_PREFILL + TICKET_REPLY_TEXT
+
+
+def _is_rear_seat_reply(message: Any) -> bool:
+    text = _text(message)
+    if text == TICKET_REPLY_TEXT:
+        return True
+    return (
+        text.startswith(TICKET_REPLY_PREFILL)
+        and text[len(TICKET_REPLY_PREFILL):].strip() == TICKET_REPLY_TEXT
+    )
 
 #: Check-level field name -> storage field name in the document.
 RIDE_FIELDS = {
@@ -98,7 +116,13 @@ TICKET_FIELDS = {
 ACCOUNT_FIELDS = {"id": "id", "email": "email", "role": "role"}
 
 #: A route ride is stored with an ``id``; refunds and tickets name it explicitly.
-FIELD_ALIASES = {"ride_id": "id"}
+FIELD_ALIASES = {
+    "ride_id": "id",
+    # Historical seed rides use the API schema's address field names. Keep
+    # the human-readable check keys while resolving them to persisted fields.
+    "pickup": "pickupAddress",
+    "destination": "destinationAddress",
+}
 
 _RIDE_IDENTITY = ("id", "tier", "status", "destination", "paymentMethod", "waypoints", "createdAt")
 
@@ -176,6 +200,61 @@ def _text(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     return str(value).strip()
+
+
+#: The vendored backend persists a ride in its storage schema, not this module's
+#: check-level schema: the tier is the tier *id* string stored under ``rideTier``
+#: (never ``tier``; see services/opendriver_backend/backend/src/database/seed.js
+#: :1408 and services/opendriver_backend/backend/src/server.js:3035 -- the seed's
+#: Green rides store ``rideTier: "green"``), waypoints are objects carrying the
+#: stop ``address`` next to ids and coordinates (server.js:1040-1046, 1060-1069),
+#: and an address may arrive as an object.  Normalize a read-only copy of the
+#: record before the exact ride match; every compared value stays exact.
+RIDE_TIER_FIELDS = ("tier", "rideTier")
+RIDE_TIER_ID_FIELDS = ("id", "name", "label", "title")
+RIDE_TEXT_FIELDS = ("name", "label", "address", "full_text", "flatten_text")
+
+
+def _text_value(value: Any) -> str:
+    """Return the text of a persisted place/tier value, resolving objects."""
+    if isinstance(value, Mapping):
+        for name in RIDE_TEXT_FIELDS:
+            text = _text(value.get(name))
+            if text:
+                return text
+        return ""
+    return _text(value)
+
+
+def _normalize_ride(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a read-only copy of *record* in this module's ride check schema."""
+    normalized = dict(record)
+    ride_tier = next(
+        (
+            normalized.get(name)
+            for name in RIDE_TIER_FIELDS
+            if _text(normalized.get(name))
+        ),
+        None,
+    )
+    if isinstance(ride_tier, Mapping):
+        ride_tier = next(
+            (
+                ride_tier.get(name)
+                for name in RIDE_TIER_ID_FIELDS
+                if _text(ride_tier.get(name))
+            ),
+            "",
+        )
+    if ride_tier is not None:
+        normalized["tier"] = _text(ride_tier)
+    for name in ("destination", "destinationAddress", "destination_address"):
+        if isinstance(normalized.get(name), Mapping):
+            normalized[name] = _text_value(normalized[name])
+    waypoints = normalized.get("waypoints")
+    if isinstance(waypoints, (list, tuple)):
+        normalized["waypoints"] = [_text_value(waypoint) for waypoint in waypoints]
+    return normalized
 
 
 def _record_matches(
@@ -399,7 +478,15 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
         spec: Mapping[str, Any],
         label: str,
     ) -> Mapping[str, Any] | None:
-        matches = [ride for ride in rides if _record_matches(ride, spec)]
+        # The backend stores rideTier/waypoint objects (see _normalize_ride);
+        # match the exact spec against a normalized read-only copy, keeping the
+        # original records for the evidence fields below.
+        normalized_rides = [_normalize_ride(ride) for ride in rides]
+        matches = [
+            ride
+            for ride, normalized in zip(rides, normalized_rides)
+            if _record_matches(normalized, spec)
+        ]
         chosen = matches[0] if len(matches) == 1 else None
         expected = _expected_fields(spec, RIDE_FIELDS)
         actual = {
@@ -482,13 +569,13 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             actual = {
                 "match_count": len(matches),
                 "ride_id": cls._record_id(chosen) if chosen else None,
-                "pickup": chosen.get("pickup") if chosen else None,
-                "destination": chosen.get("destination") if chosen else None,
+                "pickup": _field_value(chosen, "pickup") if chosen else None,
+                "destination": _field_value(chosen, "destination") if chosen else None,
                 "matches": [
                     {
                         "ride_id": ride.get("id"),
-                        "pickup": ride.get("pickup"),
-                        "destination": ride.get("destination"),
+                        "pickup": _field_value(ride, "pickup"),
+                        "destination": _field_value(ride, "destination"),
                     }
                     for ride in matches[:3]
                 ],
@@ -563,7 +650,7 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             replies = ticket.get("replies")
             reply_list = replies if isinstance(replies, list) else []
             if any(
-                isinstance(reply, Mapping) and _text(reply.get("message")) == TICKET_REPLY_MESSAGE
+                isinstance(reply, Mapping) and _is_rear_seat_reply(reply.get("message"))
                 for reply in reply_list
             ):
                 qualified.append(ticket)
@@ -573,7 +660,9 @@ class OpenDriverRiderWalletCancellationRefundEvaluator(BaseEvaluator):
             passed=passed,
             expected={
                 **TICKET_CREATE_EXPECTATION,
-                "reply_message": TICKET_REPLY_MESSAGE,
+                "reply_message": TICKET_REPLY_TEXT,
+                "accepted_reply_messages": [TICKET_REPLY_TEXT, TICKET_REPLY_MESSAGE],
+                "prefill_separator": "optional whitespace after the app's reply prefill",
             },
             actual={
                 "match_count": len(qualified),
@@ -685,4 +774,6 @@ __all__ = [
     "TASK_ID",
     "TICKET_CREATE_EXPECTATION",
     "TICKET_REPLY_MESSAGE",
+    "TICKET_REPLY_PREFILL",
+    "TICKET_REPLY_TEXT",
 ]

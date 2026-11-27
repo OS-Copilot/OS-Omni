@@ -383,8 +383,24 @@ class OpenTripHotelVoucherBookingEvaluator(BaseEvaluator):
             return error
 
         checks: list[dict[str, Any]] = []
-        booking, matches = self._find_booking(state, expected)
-        checks.append(check("target_stay_booking_unique", matches == 1, 1, matches))
+        # The instruction books this stay once ("the resulting Confirmed order")
+        # and ends on the latest order for the resort; the app cannot cancel or
+        # delete a booking, so a second booking of the same stay stays a
+        # failure.  The latest matching booking -- the order the final screen
+        # shows -- is still compared field by field, so the report says what it
+        # holds instead of skipping every field check.
+        candidates = self._matching_bookings(state, expected)
+        matches = len(candidates)
+        booking = self._latest_booking(candidates)
+        unique_check = check("target_stay_booking_unique", matches == 1, 1, matches)
+        if matches > 1:
+            unique_check["failure_reason"] = (
+                f"{matches} bookings match this hotel, room and dates; the task books it once"
+            )
+            unique_check["matching_booking_ids"] = [item.get("id") for item in candidates]
+        elif matches == 0:
+            unique_check["failure_reason"] = "no booking matches this hotel, room and dates"
+        checks.append(unique_check)
         if booking is not None:
             checks.extend(self._compare_booking(booking, expected))
 
@@ -416,7 +432,11 @@ class OpenTripHotelVoucherBookingEvaluator(BaseEvaluator):
             require_codes,
             pass_message="OpenTrip stay booking and voucher wallet match the requested outcome",
             fail_message="OpenTrip stay booking and voucher wallet do not match the requested outcome",
-            extra={"booking": self._summarize(booking), "wallet": dict(wallet)},
+            extra={
+                "booking": self._summarize(booking),
+                "matching_bookings": [self._summarize(item) for item in candidates],
+                "wallet": dict(wallet),
+            },
         )
 
     # --------------------------------------------------------- comparison
@@ -496,9 +516,17 @@ class OpenTripHotelVoucherBookingEvaluator(BaseEvaluator):
         cls, state: Mapping[str, Any], expected: Mapping[str, Any]
     ) -> tuple[Mapping[str, Any] | None, int]:
         """Return the single stay booking matching the requested identity."""
+        found = cls._matching_bookings(state, expected)
+        return (found[0] if len(found) == 1 else None), len(found)
+
+    @staticmethod
+    def _matching_bookings(
+        state: Mapping[str, Any], expected: Mapping[str, Any]
+    ) -> list[Mapping[str, Any]]:
+        """Return every stay booking matching the requested hotel, room and dates."""
         bookings = state.get("bookings")
         if not isinstance(bookings, list):
-            return None, 0
+            return []
         found: list[Mapping[str, Any]] = []
         for raw in bookings:
             if not isinstance(raw, Mapping):
@@ -512,7 +540,25 @@ class OpenTripHotelVoucherBookingEvaluator(BaseEvaluator):
                 and str(item.get("checkOut") or "") == str(expected.get("check_out") or "")
             ):
                 found.append(raw)
-        return (found[0] if len(found) == 1 else None), len(found)
+        return found
+
+    @staticmethod
+    def _latest_booking(
+        candidates: list[Mapping[str, Any]],
+    ) -> Mapping[str, Any] | None:
+        """Return the most recently created booking among *candidates*.
+
+        The app prepends new bookings and stamps ``createdAt`` (ISO-8601), so the
+        newest stamp wins and, between equal or missing stamps, the earlier list
+        position does.
+        """
+        if not candidates:
+            return None
+        ranked = sorted(
+            enumerate(candidates),
+            key=lambda pair: (str(pair[1].get("createdAt") or ""), -pair[0]),
+        )
+        return ranked[-1][1]
 
     @classmethod
     def _compare_booking(

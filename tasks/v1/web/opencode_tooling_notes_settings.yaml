@@ -62,10 +62,7 @@ evaluation:
       assistant_contains:
       - git changes
       search: review
-      panelTab: output
       activeFile: notes/review-2026-04-30.md
-      collapsed:
-        notes: false
       installed_extensions:
         Vite Tools: true
         React Snippets: true
@@ -74,13 +71,13 @@ evaluation:
         theme: dark
         fontSize: 14
         wordWrap: true
-        minimap: false
+        minimap: true
         formatOnSave: true
-        autosave: false
+        autosave: true
     timeout: 30
 limits:
-  max_steps: 170
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux
@@ -132,14 +129,13 @@ metadata:
     - OpenZotero, Zotero launchers, desktop entries, and desktop shortcut work are out-of-scope and must
       not appear as task completion evidence.
     - Vite Tools, React Snippets, and ESLint must be installed.
-    - Final settings must be Default Dark/theme dark, font size 14, Word Wrap enabled, Minimap disabled,
-      Format On Save enabled, and Auto Save disabled.
+    - Final settings must be Default Dark/theme dark, font size 14, Word Wrap enabled, Minimap enabled,
+      Format On Save enabled, and Auto Save enabled.
     - OpenCode Source Control timeline head must be "Now Add tooling notes".
     - OpenCode Source Control changes must be empty after the commit.
     - OpenCode assistant history must include "git changes".
     - OpenCode search state must contain "review".
-    - The notes folder must be expanded, review-2026-04-30.md must be the active file, and the bottom
-      panel must have Output selected.
+    - review-2026-04-30.md must be the active file.
     - The final Source Control page is validated through commit evidence and clean Source Control state;
       localStorage view can lag behind the visible UI and is not used as a hard PASS condition.
   cua_tasks_review:

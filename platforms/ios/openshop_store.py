@@ -5,13 +5,18 @@ from __future__ import annotations
 import json
 import shutil
 import sqlite3
+import struct
 import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from platforms.ios.runtime_env.simulator_manager import get_app_data_container_path, run_cmd
+from platforms.ios.runtime_env.simulator_manager import (
+    get_app_container_path,
+    get_app_data_container_path,
+    run_cmd,
+)
 
 
 DEFAULT_BUNDLE_ID = "com.killt.openshop"
@@ -80,6 +85,7 @@ class OpenShopStore:
         udid: str,
         *,
         bundle_id: str = DEFAULT_BUNDLE_ID,
+        local_state_key: str = LOCAL_STATE_KEY,
     ) -> "OpenShopStore":
         data_container = Path(get_app_data_container_path(udid, bundle_id)).expanduser().resolve()
         db_path = cls._find_localstorage_db_path(data_container)
@@ -89,6 +95,7 @@ class OpenShopStore:
             bundle_id=bundle_id,
             data_container_path=data_container,
             seed_data_path=seed_data_path,
+            local_state_key=local_state_key,
         )
 
     @classmethod
@@ -166,8 +173,16 @@ class OpenShopStore:
         cart_items: Sequence[OpenShopCartItemSpec] | Sequence[Mapping[str, Any]] | None = None,
     ) -> dict[str, Any]:
         fresh_state = self.build_fresh_state(login_session=login_session)
-        fresh_state["cart"] = self.build_cart_entries(cart_items or [])
+        cart = self.build_cart_entries(cart_items or [])
+        fresh_state["cart"] = cart
         fresh_state["orders"] = []
+        session = fresh_state.get("session")
+        user = session.get("user") if isinstance(session, Mapping) else None
+        users = fresh_state.get("users")
+        if isinstance(user, Mapping) and isinstance(users, dict):
+            account_state = users.get(str(user.get("phone") or ""))
+            if isinstance(account_state, dict):
+                account_state["cart"] = json.loads(json.dumps(cart, ensure_ascii=False))
         self.write_state(fresh_state)
         return fresh_state
 
@@ -180,11 +195,45 @@ class OpenShopStore:
             account_name = str(benchmark_account.get("name") or "").strip()
             account_phone = str(benchmark_account.get("phone") or "").strip()
 
+        raw_accounts = seed.get("accounts") if isinstance(seed, dict) else None
+        accounts = [
+            account for account in raw_accounts if isinstance(account, Mapping)
+        ] if isinstance(raw_accounts, list) else []
+        if not accounts and isinstance(benchmark_account, Mapping):
+            accounts = [benchmark_account]
+
+        users: dict[str, dict[str, Any]] = {}
+        for account in accounts:
+            phone = str(account.get("phone") or "").strip()
+            if not phone:
+                continue
+            addresses = account.get("addresses")
+            payment_methods = account.get("paymentMethods")
+            orders = account.get("orders")
+            users[phone] = {
+                "addresses": json.loads(json.dumps(
+                    addresses if isinstance(addresses, list) else seed.get("addresses", []),
+                    ensure_ascii=False,
+                )),
+                "paymentMethods": json.loads(json.dumps(
+                    payment_methods if isinstance(payment_methods, list) else seed.get("paymentMethods", []),
+                    ensure_ascii=False,
+                )),
+                "cart": [],
+                "orders": json.loads(json.dumps(orders if isinstance(orders, list) else [], ensure_ascii=False)),
+            }
+
+        active_account = next(
+            (account for account in accounts if str(account.get("phone") or "").strip() == account_phone),
+            benchmark_account if isinstance(benchmark_account, Mapping) else {},
+        )
+
         return {
             "session": {
                 "loggedIn": bool(login_session),
                 "user": (
                     {
+                        "id": str(active_account.get("id") or account_phone),
                         "name": account_name,
                         "phone": account_phone,
                     }
@@ -192,6 +241,7 @@ class OpenShopStore:
                     else None
                 ),
             },
+            "users": users,
             "addresses": self._clone_seed_list("addresses"),
             "paymentMethods": self._clone_seed_list("paymentMethods"),
             "cart": [],
@@ -452,27 +502,38 @@ class OpenShopStore:
 
     @staticmethod
     def _find_localstorage_db_path(data_container_path: Path) -> Path:
-        search_roots = [
-            data_container_path / "Library" / "WebKit",
-            data_container_path / "Library" / "Caches",
-        ]
-        candidates: list[Path] = []
-        for root in search_roots:
-            if not root.exists():
-                continue
-            candidates.extend(sorted(root.rglob("localstorage.sqlite3")))
-        if not candidates:
-            raise FileNotFoundError(f"Could not find OpenShop localstorage.sqlite3 under {data_container_path}")
-        return candidates[0].resolve()
+        origin_root = (
+            data_container_path
+            / "Library"
+            / "WebKit"
+            / DEFAULT_BUNDLE_ID
+            / "WebsiteData"
+            / "Default"
+        )
+        origin_files = sorted(origin_root.glob("*/*/origin"))
+        active = [path for path in origin_files if OpenShopStore._origin_is_exact(path.read_bytes())]
+        if len(active) != 1:
+            raise FileNotFoundError(
+                "expected exactly one capacitor://localhost WebKit origin for "
+                f"OpenShop under {origin_root}, observed {len(active)}"
+            )
+        db_path = active[0].parent / "LocalStorage" / "localstorage.sqlite3"
+        if not db_path.is_file():
+            raise FileNotFoundError(f"OpenShop localStorage database is missing: {db_path}")
+        return db_path.resolve()
+
+    @staticmethod
+    def _origin_is_exact(payload: bytes) -> bool:
+        """Match the WebKit origin record used by the packaged Capacitor app."""
+        def component(value: bytes) -> bytes:
+            return struct.pack("<I", len(value)) + b"\x01" + value
+
+        record = component(b"capacitor") + component(b"localhost") + b"\x00"
+        return payload == record + record
 
     @staticmethod
     def _resolve_seed_data_path_from_bundle(udid: str, bundle_id: str) -> Path:
-        proc = run_cmd(
-            ["xcrun", "simctl", "get_app_container", str(udid), str(bundle_id), "app"],
-            check=True,
-            timeout=60,
-        )
-        app_container = Path(proc.stdout.strip()).expanduser().resolve()
+        app_container = get_app_container_path(str(udid), str(bundle_id), "app")
         seed_data_path = app_container / "public" / "seed-data.js"
         if not seed_data_path.exists():
             raise FileNotFoundError(f"OpenShop seed-data.js not found in app bundle: {seed_data_path}")

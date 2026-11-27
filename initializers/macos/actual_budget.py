@@ -81,6 +81,95 @@ class ActualBudgetInitializer(BaseInitializer):
             )
 
         try:
+            try:
+                controller.launch_app(app_name)
+            except Exception:
+                # LaunchServices can return transient -609 immediately after
+                # a previous Actual process was closed by the reset script.
+                # Retry once through `open`, then require a live process before
+                # continuing with any UI setup.
+                retry = controller.run_bash_script(
+                    f"open -a {json.dumps(app_name)} >/dev/null 2>&1",
+                    timeout=20,
+                )
+                retry_status = str(retry.get("status") or "").lower()
+                retry_code = retry.get("returncode")
+                if retry_status in {"error", "failed", "fail"} or (
+                    isinstance(retry_code, int) and retry_code != 0
+                ):
+                    raise RuntimeError(
+                        f"retry failed after launch error: "
+                        f"{retry.get('error') or retry.get('output') or retry}"
+                    )
+                time.sleep(1.0)
+                process_check = controller.run_bash_script(
+                    f"pgrep -x {json.dumps(app_name)} >/dev/null",
+                    timeout=10,
+                )
+                if process_check.get("returncode") != 0:
+                    raise RuntimeError("Actual did not start after LaunchServices retry")
+            time.sleep(max(wait_ms, 1000) / 1000.0)
+            controller.run_bash_script(
+                dedent(
+                    f"""
+                    open -a {json.dumps(app_name)} >/dev/null 2>&1 || true
+                    osascript -e 'tell application "{app_name}" to activate' >/dev/null 2>&1 || true
+                    """
+                ).strip(),
+                timeout=20,
+            )
+            controller.run_bash_script(
+                self._build_window_arrange_script(app_name=app_name),
+                timeout=20,
+            )
+            time.sleep(0.8)
+            # Some bundled Actual snapshots are no longer compatible with the
+            # installed app version.  In that case the app opens its first-run
+            # wizard and clears ``lastBudget`` even though the restored global
+            # store initially contained it.  Detect the live state after launch
+            # and bootstrap only when a budget is actually missing.
+            has_budget_result = controller.run_python_script(
+                self._build_has_last_budget_script(state_root=state_root),
+                timeout=30,
+            )
+            has_budget_payload = json.loads(
+                has_budget_result.get("stdout") or has_budget_result.get("output") or "{}"
+            )
+            if has_budget_payload.get("has_last_budget") is not True:
+                self._bootstrap_blank_budget(controller, state_root=state_root)
+                # Never let an unhandled first-run wizard leak into the model
+                # episode.  A successful click is not sufficient evidence;
+                # Actual must persist a real local budget first.
+                has_budget_result = controller.run_python_script(
+                    self._build_has_last_budget_script(state_root=state_root),
+                    timeout=30,
+                )
+                has_budget_payload = json.loads(
+                    has_budget_result.get("stdout") or has_budget_result.get("output") or "{}"
+                )
+                if has_budget_payload.get("has_last_budget") is not True:
+                    raise RuntimeError(
+                        "Start fresh did not create a budget after clicking the visible button"
+                    )
+            if start_route or open_new_transaction:
+                self._position_starting_view(
+                    controller,
+                    start_route=start_route,
+                    open_new_transaction=open_new_transaction,
+                )
+        except Exception as exc:
+            return InitResult(
+                status=InitStatus.ERROR,
+                message=f"Actual launch/bootstrap failed: {exc}",
+                metadata={
+                    "reset_result": result,
+                    "used_template_restore": used_template_restore,
+                },
+            )
+
+        # Seed payees only after the live app has a budget and populated
+        # ``lastBudget`` (either from a compatible template or first-run UI).
+        try:
             seed_result = controller.run_python_script(
                 self._build_seed_payees_script(
                     document_root=document_root,
@@ -102,42 +191,6 @@ class ActualBudgetInitializer(BaseInitializer):
                 status=InitStatus.ERROR,
                 message=str(seed_payload.get("message") or "Actual payee seed failed"),
                 metadata={"reset_result": result, "seed": seed_payload, "used_template_restore": used_template_restore},
-            )
-
-        try:
-            controller.launch_app(app_name)
-            time.sleep(max(wait_ms, 1000) / 1000.0)
-            controller.run_bash_script(
-                dedent(
-                    f"""
-                    open -a {json.dumps(app_name)} >/dev/null 2>&1 || true
-                    osascript -e 'tell application "{app_name}" to activate' >/dev/null 2>&1 || true
-                    """
-                ).strip(),
-                timeout=20,
-            )
-            controller.run_bash_script(
-                self._build_window_arrange_script(app_name=app_name),
-                timeout=20,
-            )
-            time.sleep(0.8)
-            if not used_template_restore:
-                self._bootstrap_blank_budget(controller)
-            if start_route or open_new_transaction:
-                self._position_starting_view(
-                    controller,
-                    start_route=start_route,
-                    open_new_transaction=open_new_transaction,
-                )
-        except Exception as exc:
-            return InitResult(
-                status=InitStatus.ERROR,
-                message=f"Actual launch/bootstrap failed: {exc}",
-                metadata={
-                    "reset_result": result,
-                    "seed": seed_payload,
-                    "used_template_restore": used_template_restore,
-                },
             )
 
         verify_script = self._build_verify_script(document_root=document_root, state_root=state_root)
@@ -199,6 +252,9 @@ class ActualBudgetInitializer(BaseInitializer):
                 f"REMOTE_GLOBAL_STORE={json.dumps(remote_global_store)}",
                 "pkill -x Actual >/dev/null 2>&1 || true",
                 "pkill -x Safari >/dev/null 2>&1 || true",
+                # A previously skipped Photos task may leave an uncloseable
+                # first-run library modal above this app on the reused VM.
+                "pkill -x Photos >/dev/null 2>&1 || true",
                 'rm -rf "$DOCUMENT_ROOT"',
                 'rm -rf "$STATE_ROOT"',
                 'mkdir -p "$DOCUMENT_ROOT"',
@@ -209,22 +265,41 @@ class ActualBudgetInitializer(BaseInitializer):
         )
         return controller.run_bash_script(script, timeout=timeout)
 
-    def _bootstrap_blank_budget(self, controller: Any) -> None:
-        # UI-only fallback when the blank-budget template asset is unavailable.
-        sequence = [
-            {"type": "keyboard", "action": "tab", "count": 1},
-            {"type": "keyboard", "action": "tab", "count": 4},
-            {"type": "keyboard", "action": "tab", "modifiers": ["shift"], "count": 1},
-            {"type": "keyboard", "action": "enter", "count": 1},
-            {"type": "keyboard", "action": "tab", "count": 1},
-            {"type": "keyboard", "action": "tab", "count": 5},
-            {"type": "keyboard", "action": "tab", "modifiers": ["shift"], "count": 1},
-            {"type": "keyboard", "action": "enter", "count": 1},
+    def _bootstrap_blank_budget(self, controller: Any, *, state_root: str) -> None:
+        # Actual's first-use page moves its button when the app is fullscreen:
+        # in a 1500px window it is around x=996, while in fullscreen it is
+        # around x=1166 on a 1920px display. Derive the click from the live AX
+        # window geometry instead of assuming one window mode.
+        observation = controller.observe(include_ui_tree=True, include_screenshot_data=False)
+        actual_windows = [
+            node for node in observation.ui_nodes
+            if node.get("type") == "AXWindow"
+            and str(node.get("description") or node.get("text") or "").strip() == "Actual"
+            and int(node.get("height") or 0) > 100
         ]
-        for action in sequence:
-            controller.execute_action(action, [])
-            time.sleep(0.8)
-        time.sleep(2.5)
+        if not actual_windows:
+            raise RuntimeError("Actual window geometry unavailable during first-run bootstrap")
+        window = max(actual_windows, key=lambda node: int(node.get("width") or 0) * int(node.get("height") or 0))
+        center_x = int(window.get("x") or 0) + int(window.get("width") or observation.width) // 2
+        start_fresh_x = center_x + 206
+        start_fresh_y = 708
+        controller.execute_action(
+            {"type": "tap", "target": {"x": start_fresh_x, "y": start_fresh_y}},
+            [],
+        )
+        # Poll persisted app state; the screen may animate or create the
+        # budget asynchronously. Fail closed if the wizard remains visible.
+        for _ in range(20):
+            time.sleep(0.5)
+            result = controller.run_python_script(
+                self._build_has_last_budget_script(state_root=state_root), timeout=15
+            )
+            try:
+                payload = json.loads(result.get("stdout") or result.get("output") or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            if payload.get("has_last_budget") is True:
+                return
 
     def _position_starting_view(
         self,
@@ -259,6 +334,16 @@ class ActualBudgetInitializer(BaseInitializer):
 
     @staticmethod
     def _build_reset_script(*, document_root: str, state_root: str) -> str:
+        # Actual 26.4 persists the first-run server choice in global-store.json.
+        # An empty object sends every fresh task back to "Configure your
+        # server", where the old tab-based bootstrap targets the wrong page.
+        # These are the exact local-only settings written by the app after
+        # selecting "Don't use a server"; leave lastBudget absent so each task
+        # still starts without a budget.
+        local_only_store = json.dumps(
+            {"syncServerConfig": None, "server-url": None, "did-bootstrap": True},
+            separators=(",", ":"),
+        )
         return "\n".join(
             [
                 "set -euo pipefail",
@@ -266,11 +351,12 @@ class ActualBudgetInitializer(BaseInitializer):
                 ActualBudgetInitializer._build_expanduser_shell("STATE_ROOT", state_root),
                 "pkill -x Actual >/dev/null 2>&1 || true",
                 "pkill -x Safari >/dev/null 2>&1 || true",
+                "pkill -x Photos >/dev/null 2>&1 || true",
                 'rm -rf "$DOCUMENT_ROOT"',
                 'mkdir -p "$DOCUMENT_ROOT"',
                 'mkdir -p "$STATE_ROOT"',
                 'cat > "$STATE_ROOT/global-store.json" <<\'EOF\'',
-                "{}",
+                local_only_store,
                 "EOF",
             ]
         )
@@ -329,6 +415,24 @@ class ActualBudgetInitializer(BaseInitializer):
                 payload['status'] = 'pass'
                 payload['message'] = 'starter budget ready'
             print(json.dumps(payload, ensure_ascii=False))
+            """
+        ).strip()
+
+    @staticmethod
+    def _build_has_last_budget_script(*, state_root: str) -> str:
+        state_root_json = json.dumps(state_root)
+        return dedent(
+            f"""
+            import json
+            import os
+            from pathlib import Path
+
+            path = Path(os.path.expanduser({state_root_json})) / 'global-store.json'
+            try:
+                store = json.loads(path.read_text(encoding='utf-8'))
+            except Exception:
+                store = {{}}
+            print(json.dumps({{'has_last_budget': bool(str(store.get('lastBudget') or '').strip())}}))
             """
         ).strip()
 

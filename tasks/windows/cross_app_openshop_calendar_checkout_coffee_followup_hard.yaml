@@ -1,0 +1,103 @@
+task_id: windows.cross_app.openshop_calendar_checkout_coffee_followup_hard
+platform: windows
+instruction: 'In OpenShop, you are already signed in and one Mountain Isle Pour-Over Coffee 20 Pack is already in the cart.
+  Complete checkout using the Office address, WeChat Pay, and the exact note "Leave it at the front desk". Submit the order.
+  Then switch to the already-open Thunderbird Calendar window and create these eighteen 30-minute events, saving every event:
+  Bench Coffee Delivery Follow-up for the day after tomorrow at 9:00 AM; Bench Coffee Receipt Audit for tomorrow at 3:15 PM;
+  Bench Coffee Stock Review for three days from now at 11:45 AM; Bench Coffee Packaging Check for four days from now at 10:15
+  AM; Bench Coffee Desk Drop Confirmation for five days from now at 2:00 PM; Bench Coffee Invoice Match Review for six days
+  from now at 4:30 PM; Bench Coffee Pantry Count Update for seven days from now at 9:45 AM; Bench Coffee Vendor Thank-You
+  Draft for eight days from now at 1:15 PM; Bench Coffee Delivery Exception Scan for nine days from now at 3:30 PM; Bench
+  Coffee Budget Sync for ten days from now at 10:00 AM; Bench Coffee Facility Receipt Review for eleven days from now at 11:00
+  AM; Bench Coffee Supply Follow-up Closeout for twelve days from now at 4:00 PM; Bench Coffee Front Desk Pickup Audit for
+  thirteen days from now at 9:30 AM; Bench Coffee Stockroom Label Check for fourteen days from now at 2:30 PM; Bench Coffee
+  Order Retention for fifteen days from now at 10:45 AM; Bench Coffee Team Brew Inventory for sixteen days from now at 1:45
+  PM; Bench Coffee Vendor Receipt Archive for seventeen days from now at 3:00 PM; and Bench Coffee Final Closeout for eighteen
+  days from now at 4:45 PM. Also create these hard-plus verification files so the final state is a multi-artifact handoff
+  bundle: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_handoff.tsv
+  with exactly this content: ''task_id\tlinux_peer\tstatus\nwindows.cross_app.openshop_calendar_checkout_coffee_followup_hard\tlinux.cross_app.thunderbird_calendar_checkout_coffee_followup_hard\thard-plus-ready\napp\tthunderbird_calendar
+  + openshop\tevaluator-checked''; C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_dependency_index.txt
+  with exactly this content: ''primary_task=windows.cross_app.openshop_calendar_checkout_coffee_followup_hard\nlinux_peer=linux.cross_app.thunderbird_calendar_checkout_coffee_followup_hard\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
+  C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_review_matrix.csv
+  with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
+  Use OpenShop and Thunderbird Calendar for the app workflow; create required hard-plus verification files directly at the
+  specified paths using the available automation/runtime file-writing method, not Notepad or another text editor.'
+init:
+  initializer_id: initializers.windows.cross_app:ShoppingCalendarInitializer
+  params:
+    openshop:
+      login:
+        phone: '13800138000'
+        password: spring2026
+      cart_items:
+      - productId: p1005
+        quantity: 1
+        selectedSpec: 20 sachets
+      final_wait_ms: 1200
+    calendar:
+      wait_ms: 5000
+evaluation:
+  evaluator_id: evaluators.windows.cross_app:CrossAppEvaluator
+  params:
+    check_id: cross_app_openshop_calendar_checkout_coffee_followup_hard
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 60
+    supplemental_checks:
+      files:
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_handoff.tsv
+        exact_text: "task_id\tlinux_peer\tstatus\nwindows.cross_app.openshop_calendar_checkout_coffee_followup_hard\tlinux.cross_app.thunderbird_calendar_checkout_coffee_followup_hard\t\
+          hard-plus-ready\napp\tthunderbird_calendar + openshop\tevaluator-checked"
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_dependency_index.txt
+        exact_text: 'primary_task=windows.cross_app.openshop_calendar_checkout_coffee_followup_hard
+
+          linux_peer=linux.cross_app.thunderbird_calendar_checkout_coffee_followup_hard
+
+          difficulty=hard-plus
+
+          requires_multi_artifact_handoff=true
+
+          oracle_receipt=hard_plus_oracle_receipt.txt'
+      - path: C:\Users\User\Documents\helloworld_hard_plus\windows_cross_app_openshop_calendar_checkout_coffee_followup_hard\hard_plus_review_matrix.csv
+        exact_text: 'check,owner,status
+
+          linux_alignment,benchmark-ops,ready
+
+          extra_artifacts,benchmark-ops,ready
+
+          oracle_recheck,benchmark-ops,required'
+      powershell:
+      - label: no_notepad_process
+        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
+
+          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
+
+          Write-Output ''NO_NOTEPAD_PROCESS'''
+        stdout_contains: NO_NOTEPAD_PROCESS
+        expected_exit_code: 0
+        timeout: 10
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - cross_app
+  - calendar
+  - shopping
+  - thunderbird
+  - openshop
+  - hard
+  - hard-plus
+  - multi_artifact_handoff
+  - linux_plus
+  app_name: thunderbird_calendar + openshop
+  difficulty: hard
+  human_steps: 108
+  description: Linux-longest-aligned seeded OpenShop checkout followed by an eighteen-event Thunderbird Calendar audit schedule.
+  hardness: hard-evaluable
+  linux_peer: linux.cross_app.thunderbird_calendar_checkout_coffee_followup_hard
+  linux_peer_file: tasks/linux/cross_app_thunderbird_calendar_checkout_coffee_followup_hard.yaml
+  alignment_status: difficulty_equivalent
+  hard_plus_alignment: linux_peer_plus_extra_evaluator_checked_artifacts
+  hard_plus_note: The Linux-aligned core task remains required; extra handoff/audit artifacts are also evaluator checked.
+  oracle_model: windows_oracle

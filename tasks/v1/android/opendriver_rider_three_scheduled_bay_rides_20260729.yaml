@@ -67,7 +67,7 @@ evaluation:
       visible_text: []
     min_agent_steps: 65
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

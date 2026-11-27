@@ -1,0 +1,61 @@
+task_id: windows.actual_budget.full_setup
+platform: windows
+instruction: 'Actual Budget is already open. If no budget file is open yet, create a new local budget called "Bench Household
+  Budget" in the default documents location. Then set up this household budget:
+
+  1. Create ten bank accounts in this order: "Bench Checking" with $5,000, "Bench Savings" with $10,000, "Bench Emergency"
+  with $2,500, "Bench Travel Reserve" with $1,200, "Bench Gift Fund" with $650, "Bench Utilities Escrow" with $900, "Bench
+  Education Reserve" with $1,100, "Bench Medical Reserve" with $1,450, "Bench Auto Fund" with $875, and "Bench Holiday Reserve"
+  with $525.
+
+  2. Create twelve budget categories with these monthly amounts: Housing Reserve $1,500, Pantry Restock $400, Weekend Fun
+  $200, Utilities Buffer $275, Healthcare Buffer $180, School Supplies $150, Pet Care $95, Home Repairs $320, Childcare Buffer
+  $410, Dental Care $260, Auto Maintenance $340, and Holiday Gifts $225.
+
+  3. Add these transactions with exact payees and categories: in Bench Checking, $1,500 to Atlas Property in Housing Reserve,
+  $350 to Corner Market in Pantry Restock, and $84 to Campus Store in School Supplies; in Bench Savings, $125 to Metro Utilities
+  in Utilities Buffer; in Bench Emergency, $90 to City Clinic in Healthcare Buffer; in Bench Travel Reserve, $210 to Rail
+  Depot in Weekend Fun; in Bench Gift Fund, $72 to North Vet in Pet Care; in Bench Utilities Escrow, $188 to Repair Hub in
+  Home Repairs; in Bench Education Reserve, $275 to Bright Tutors in Childcare Buffer; in Bench Medical Reserve, $142 to Smile
+  Clinic in Dental Care; in Bench Auto Fund, $296 to Torque Garage in Auto Maintenance; and in Bench Holiday Reserve, $118
+  to Gift Market in Holiday Gifts.
+
+  4. Record these twelve transfers: $1,000 from Bench Checking to Bench Savings; $250 from Bench Savings to Bench Emergency;
+  $150 from Bench Checking to Bench Gift Fund; $300 from Bench Savings to Bench Utilities Escrow; $225 from Bench Checking
+  to Bench Education Reserve; $180 from Bench Savings to Bench Medical Reserve; $240 from Bench Checking to Bench Auto Fund;
+  $95 from Bench Gift Fund to Bench Holiday Reserve; $60 from Bench Travel Reserve to Bench Holiday Reserve; $130 from Bench
+  Checking to Bench Travel Reserve; $85 from Bench Savings to Bench Gift Fund; and $110 from Bench Medical Reserve to Bench
+  Emergency. Finish only after all accounts, categories, budgets, transactions, and transfers are saved.'
+init:
+  initializer_id: initializers.windows.actual_budget:ActualBudgetInitializer
+evaluation:
+  evaluator_id: evaluators.windows.actual_budget:ActualBudgetEvaluator
+  params:
+    check_id: budget_full_setup
+    stdout_contains: EVAL_RESULT:PASS
+    timeout: 60
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - actual_budget
+  - accounts
+  - categories
+  - transactions
+  - transfer
+  - hard
+  - single_app
+  - evaluator_backed
+  difficulty: hard
+  app_name: actual-budget
+  human_steps: 168
+  description: Build a ten-account household budget with twelve categories, twelve transactions, and twelve transfers in Actual
+    Budget.
+  oracle_task: tasks/windows/oracle/actual_budget_full_setup_oracle.yaml
+  oracle_model: cross_vm_oracle_wait
+  hardness: hard-evaluable
+  evaluation_standard: main evaluator checks accounts, categories, budgets, payees, transactions, and transfer pairs
+  linux_peer: linux.actual_budget.household_budget_setup_hard
+  linux_peer_file: tasks/linux/actual_budget_household_budget_setup_hard.yaml
+  alignment_status: direct

@@ -24,10 +24,11 @@ class OpenShopInitializer(BaseInitializer):
     MODERN_GUEST_ARCHIVE = "/tmp/helloworld_openshop_current.tgz"
     MODERN_GUEST_SERVER = "/tmp/helloworld_openshop_current_server.py"
     SNAPSHOT_GUEST_PUBLIC_DIR = "/home/user/Applications/openshop_web/public"
-    # The snapshot catalog predates the build the v1 tasks were written against: these
-    # products offer only colours there. Restore the default spec the tasks require, at
+    # The snapshot catalog is newer than the build the v1 tasks were written against
+    # (OS-Omni-V2 apps/openshop before 2026-06-08): these products offer only colours or
+    # laptop sizes there (13-inch default). Restore the default spec the tasks require, at
     # the product's base price (the tasks' expected subtotals already use that price).
-    SNAPSHOT_DEFAULT_SPECS = {"p1001": "Bluetooth 5.4", "p1006": "Magnetic mount"}
+    SNAPSHOT_DEFAULT_SPECS = {"p1001": "Bluetooth 5.4", "p1006": "Magnetic mount", "p1004": "15.6-inch fit"}
 
     def initialize(self, context: Mapping[str, Any]) -> InitResult:
         controller = context.get("controller")
@@ -235,14 +236,19 @@ class OpenShopInitializer(BaseInitializer):
                     f"target = Path({self.MODERN_GUEST_APP_DIR!r}) / 'shared' / 'seed-data.json'",
                     "target.parent.mkdir(parents=True, exist_ok=True)",
                     "target.write_text(json.dumps(seed, ensure_ascii=False), encoding='utf-8')",
+                    # The page's own catalog copy (product search) matches the server's.
+                    f"client = Path({self.MODERN_GUEST_APP_DIR!r}) / 'public' / 'seed-data.js'",
+                    "client.write_text(prefix + json.dumps(seed, ensure_ascii=False) + ';\\n', encoding='utf-8')",
                 ]
             )
+            # A copy, so the patches below leave the snapshot's own OpenShop untouched.
             prepare_assets = [
                 f"test -f {snapshot_public}/index.html",
                 f"test -f {snapshot_public}/seed-data.js",
-                f"ln -s {snapshot_public} {guest_dir}/public",
+                f"cp -a {snapshot_public} {guest_dir}/public",
                 f"python3 -c {shlex.quote(seed_conversion)}",
             ]
+        prepare_assets.append(f"python3 -c {shlex.quote(self._order_details_patch_source())}")
         launch_script = "\n".join(
             [
                 "export DISPLAY=${DISPLAY:-:0}",
@@ -266,6 +272,165 @@ class OpenShopInitializer(BaseInitializer):
         self._run(controller, launch_script, timeout=120)
         if launch_browser:
             self._open_current_app_browser(controller, port=port)
+
+    # The v1 order tasks save a review note on an order-details page (orders.html?order=<id>)
+    # that the build they were recorded on had and no current OpenShop build has (orders
+    # there only carry per-item ratings). Rebuild that page in the deployed copy: Place
+    # Order lands on it, each order card links to it, and Save note stores order.reviewNote
+    # through PATCH /api/orders/<id>/review-note (event order_review_note_saved).
+    ORDER_DETAILS_JS = r"""
+async function renderOrderDetails() {
+  const orderId = getQueryParam("order");
+  let data;
+  try {
+    data = await api("/api/orders");
+  } catch (error) {
+    if (error.code === "LOGIN_REQUIRED") {
+      goTo("login.html");
+      return;
+    }
+    throw error;
+  }
+  const list = document.getElementById("orders-list");
+  const order = (data.orders || []).find((entry) => entry.id === orderId);
+  if (!order) {
+    list.innerHTML = `<div class="empty-state">Order ${escapeHtml(orderId)} was not found. <a href="${pageUrl("orders.html")}">Back to Order History</a></div>`;
+    return;
+  }
+  const reviewNote = String(order.reviewNote || "");
+  const lineAmount = (item) => item.lineTotal || getOptionPrice(item.product, item.selectedSpec) * item.quantity;
+  const amountLine = (label, value) => (value === undefined || value === null ? "" :
+    `<div class="summary-line"><span>${label}</span><strong>${money(value)}</strong></div>`);
+  list.innerHTML = `
+    <article class="order-card order-details" data-order-id="${escapeHtml(order.id)}">
+      <div class="summary-line">
+        <strong>Order Details</strong>
+        <span class="badge">${escapeHtml(order.status)}</span>
+      </div>
+      <div class="muted">Order ID: ${escapeHtml(order.id)}</div>
+      <div class="muted">Placed at: ${new Date(order.createdAt).toLocaleString("en-US")}</div>
+      <div class="muted">Ship to: ${escapeHtml(order.address.label)} - ${escapeHtml(order.address.fullAddress)}</div>
+      <div class="muted">Payment: ${escapeHtml(order.payment.label)}</div>
+      <div class="muted">Order Note: ${escapeHtml(order.note || "None")}</div>
+      <div class="order-item-list">
+        ${order.items.map((item) => `
+          <div class="order-item-row">
+            <div class="summary-line">
+              <span>${escapeHtml(item.product.title)} x ${item.quantity}</span>
+              <strong>${money(lineAmount(item))}</strong>
+            </div>
+            <div class="muted">${escapeHtml(item.selectedSpec || "Default option")}</div>
+          </div>
+        `).join("")}
+      </div>
+      ${amountLine("Items", order.subtotal)}
+      ${amountLine("Shipping", order.shipping)}
+      ${order.discount ? `<div class="summary-line"><span>Discount</span><strong>- ${money(order.discount)}</strong></div>` : ""}
+      <div class="summary-line total"><span>Order Total</span><strong>${money(order.total)}</strong></div>
+      <section class="order-review">
+        <div class="order-review-form">
+          <label>
+            <span>Add note</span>
+            <textarea id="order-review-note" rows="3" maxlength="600" aria-label="Add note" placeholder="Add a note to this order">${escapeHtml(reviewNote)}</textarea>
+          </label>
+          <div class="order-review-actions">
+            <button class="primary-btn" type="button" id="save-order-note-btn">Save note</button>
+            <span class="review-status" id="order-note-status">${reviewNote ? `Saved note: ${escapeHtml(reviewNote)}` : "No review note saved yet."}</span>
+          </div>
+        </div>
+      </section>
+      <div><a class="ghost-btn" style="display:inline-block;margin-top:12px;text-decoration:none" href="${pageUrl("orders.html")}">Back to Order History</a></div>
+    </article>
+  `;
+  const button = document.getElementById("save-order-note-btn");
+  const input = document.getElementById("order-review-note");
+  const status = document.getElementById("order-note-status");
+  button.addEventListener("click", async () => {
+    const nextNote = String(input.value || "").trim();
+    if (!nextNote) {
+      status.textContent = "Write a note before saving.";
+      return;
+    }
+    button.setAttribute("disabled", "disabled");
+    status.textContent = "Saving...";
+    try {
+      await api(`/api/orders/${encodeURIComponent(order.id)}/review-note`, {
+        method: "PATCH",
+        body: JSON.stringify({ reviewNote: nextNote })
+      });
+      await renderOrderDetails();
+    } catch (_error) {
+      button.removeAttribute("disabled");
+      status.textContent = "Could not save note.";
+    }
+  });
+}
+
+"""
+
+    # Both v1 order tasks sign in with "the pre-filled password spring2026": on the build they
+    # were recorded on, the login page showed the preset account's password already filled
+    # in. The snapshot page fills only the phone number, so selecting an account (the first
+    # one is selected on load) also fills spring2026 when it is that account's password. A
+    # password the user typed is left alone.
+    LOGIN_PREFILL_JS = r"""
+const OPENSHOP_PREFILLED_PASSWORD = "spring2026";
+
+function prefillLoginPassword(input, account) {
+  if (!input || !account) {
+    return;
+  }
+  const current = String(input.value || "");
+  if (current && current !== OPENSHOP_PREFILLED_PASSWORD) {
+    return;
+  }
+  input.value = passwordMatches(OPENSHOP_PREFILLED_PASSWORD, account) ? OPENSHOP_PREFILLED_PASSWORD : "";
+}
+
+"""
+
+    @classmethod
+    def _order_details_patch_source(cls) -> str:
+        replacements = [
+            (
+                "    selectedAccount = account;\n    phoneInput.value = account.phone;\n",
+                "    selectedAccount = account;\n    phoneInput.value = account.phone;\n"
+                "    prefillLoginPassword(passwordInput, account);\n",
+                1,
+            ),
+            ("async function renderLogin() {", cls.LOGIN_PREFILL_JS.lstrip("\n") + "async function renderLogin() {", 1),
+            (
+                '  } else if (page === "orders") {\n    await renderOrders();\n  }',
+                '  } else if (page === "orders") {\n'
+                '    await (getQueryParam("order") ? renderOrderDetails() : renderOrders());\n  }',
+                1,
+            ),
+            (
+                '        <div class="muted">Payment: ${order.payment.label}</div>\n'
+                '        <div class="order-item-list">',
+                '        <div class="muted">Payment: ${order.payment.label}</div>\n'
+                '        <div><a class="ghost-btn" style="display:inline-block;margin-top:10px;text-decoration:none"'
+                ' href="${pageUrl("orders.html", { order: order.id })}">Order Details</a></div>\n'
+                '        <div class="order-item-list">',
+                1,
+            ),
+            ('goTo("orders.html", { created: ', 'goTo("orders.html", { order: ', 3),
+            ("async function boot() {", cls.ORDER_DETAILS_JS.lstrip("\n") + "async function boot() {", 1),
+        ]
+        return "\n".join(
+            [
+                "import json",
+                "from pathlib import Path",
+                f"path = Path({cls.MODERN_GUEST_APP_DIR!r}) / 'public' / 'app.js'",
+                "source = path.read_text(encoding='utf-8')",
+                f"replacements = json.loads({json.dumps(json.dumps(replacements))})",
+                "for old, new, count in replacements:",
+                "    if source.count(old) != count:",
+                "        raise SystemExit('OpenShop page patch: unexpected app.js: ' + old[:60])",
+                "    source = source.replace(old, new)",
+                "path.write_text(source, encoding='utf-8')",
+            ]
+        )
 
     def _open_current_app_browser(self, controller: Any, *, port: int) -> None:
         browser_script = "\n".join(
@@ -373,23 +538,44 @@ def has_event(event_type, matcher=None):
     return False
 
 
+def round_price(value):
+    return round(float(value or 0) * 100) / 100
+
+
+def option_price(product, selected_spec):
+    # Mirrors getOptionPrice in the app's server.js / public/app.js.
+    try:
+        mapped = float((product.get("optionPrices") or {}).get(selected_spec))
+    except (TypeError, ValueError):
+        mapped = 0
+    return round_price(mapped if mapped > 0 else product.get("price"))
+
+
 def calc_cart_totals():
+    # Same shape as calcCartTotals in the app's server.js: the cart and checkout pages
+    # render unitPrice / lineTotal, which were missing here and showed as $0.
     items = []
     for entry in STATE["cart"]:
         product = find_product(entry.get("productId"))
         if not product:
             continue
+        quantity = int(entry.get("quantity") or 1)
+        selected_spec = entry.get("selectedSpec") or product["specs"][0]
+        unit_price = option_price(product, selected_spec)
         items.append({
             "id": entry["id"],
-            "quantity": int(entry.get("quantity") or 1),
-            "selectedSpec": entry.get("selectedSpec") or product["specs"][0],
+            "quantity": quantity,
+            "selectedSpec": selected_spec,
+            "unitPrice": unit_price,
+            "lineTotal": round_price(unit_price * quantity),
             "product": clone(product),
         })
-    subtotal = sum(float(item["product"]["price"]) * int(item["quantity"]) for item in items)
+    subtotal = round_price(sum(item["lineTotal"] for item in items))
+    item_count = sum(item["quantity"] for item in items)
     shipping = 12 if items else 0
     discount = 30 if subtotal >= 300 else 0
     total = subtotal + shipping - discount
-    return {"items": items, "subtotal": subtotal, "shipping": shipping, "discount": discount, "total": total}
+    return {"items": items, "itemCount": item_count, "subtotal": subtotal, "shipping": shipping, "discount": discount, "total": total}
 
 
 def ensure_logged_in():
@@ -414,6 +600,9 @@ def build_order(address_id, payment_method_id, note):
             "payment": clone(payment),
             "note": str(note or "").strip(),
             "items": clone(totals["items"]),
+            "subtotal": totals["subtotal"],
+            "shipping": totals["shipping"],
+            "discount": totals["discount"],
             "total": totals["total"],
             "status": "Awaiting Shipment",
         },
@@ -715,6 +904,57 @@ def api_orders():
     if blocked:
         return blocked
     return jsonify({"orders": STATE["orders"]})
+
+
+def find_order(order_id):
+    return next((entry for entry in STATE["orders"] if str(entry.get("id")) == str(order_id or "")), None)
+
+
+@app.patch("/api/orders/<order_id>/review-note")
+def api_order_review_note(order_id):
+    blocked = ensure_logged_in()
+    if blocked:
+        return blocked
+    body = request.get_json(silent=True) or {}
+    review_note = str(body.get("reviewNote") or "").strip()[:600]
+    if not review_note:
+        return jsonify({"error": "INVALID_REVIEW_NOTE"}), 400
+    order = find_order(order_id)
+    if not order:
+        return jsonify({"error": "ORDER_NOT_FOUND"}), 404
+    order["reviewNote"] = review_note
+    record_event("order_review_note_saved", {"orderId": order["id"], "reviewNote": review_note})
+    return jsonify({"order": order})
+
+
+@app.patch("/api/orders/<order_id>/items/<item_id>/review")
+def api_order_item_review(order_id, item_id):
+    # The page's per-item "Rate this item" form; mirrors localApi in public/app.js.
+    blocked = ensure_logged_in()
+    if blocked:
+        return blocked
+    body = request.get_json(silent=True) or {}
+    try:
+        rating = int(body.get("rating"))
+    except (TypeError, ValueError):
+        rating = 0
+    review = str(body.get("review") or "").strip()
+    if not 1 <= rating <= 5:
+        return jsonify({"error": "INVALID_REVIEW_RATING"}), 400
+    if not review:
+        return jsonify({"error": "INVALID_REVIEW_TEXT"}), 400
+    order = find_order(order_id)
+    if not order:
+        return jsonify({"error": "ORDER_NOT_FOUND"}), 404
+    item = next((entry for entry in order["items"] if str(entry.get("id")) == str(item_id)), None)
+    if not item:
+        return jsonify({"error": "ORDER_ITEM_NOT_FOUND"}), 404
+    item["review"] = {
+        "rating": rating,
+        "review": review[:600],
+        "reviewedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    return jsonify({"order": order, "item": item})
 
 
 @app.get("/")

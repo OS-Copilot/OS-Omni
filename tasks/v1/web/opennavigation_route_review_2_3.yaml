@@ -161,6 +161,9 @@ init:
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator
   params:
+    # The brief asks for "eight sequential navigation sessions" described first to eighth, so the
+    # sessions must follow that order. It also states that in the first (Stanford, Walk) session
+    # the voice icon is used "before the Overview is viewed".
     ordered: true
     expected_sessions:
     - destination: Stanford University
@@ -168,6 +171,7 @@ evaluation:
       origin: Current location
       overview: true
       voice: true
+      voice_before_overview: true
     - destination: Meta Headquarters
       mode: drive
       origin: Current location
@@ -203,12 +207,13 @@ evaluation:
       origin: Current location
       overview: true
       voice: false
+      final: true
     forbidden_terms:
     - Coffee
     - Hotel
 limits:
-  max_steps: 150
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

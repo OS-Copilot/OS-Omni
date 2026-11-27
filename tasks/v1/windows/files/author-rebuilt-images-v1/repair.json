@@ -1,0 +1,136 @@
+{
+  "version": "author-rebuilt-images-v1",
+  "reason": "All sixteen named source photos missing; repository lookup unsuccessful; user authorized complete idea-preserving reconstruction after1-2 attempts",
+  "validation": [
+    {
+      "set": "set1",
+      "source": 1,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "7a215e872a58f00a449ae92b137d5c2c5ff6e12a7d97b12a4b87e3605492d3c0",
+      "reference_sha256": "bcdceee66b214553593be826bb0060ce634f025eacd1d14475a8b72baba22127"
+    },
+    {
+      "set": "set1",
+      "source": 2,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "f1c4ae197ab643cfadb0469e261f5b454486c49712d365906cecd7d37f20af67",
+      "reference_sha256": "911f95ea9df6dd333e8e31e7156a63b1a829b8a5766729539cdeea1abfc4ca94"
+    },
+    {
+      "set": "set1",
+      "source": 3,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "aaf460efc15deff178ad8c76247d605707d0bc545260ae30c7ff4c16c1a52e7b",
+      "reference_sha256": "287f36f6c94e60b0a5d670865290e14ae32b0cac79e5b8f98df08e05395ff940"
+    },
+    {
+      "set": "set1",
+      "source": 4,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "cc4b44de27d755dd3bdc43dffa379ae35b050e2be02ab7eb395870c0a9b7d0a5",
+      "reference_sha256": "65315a11da07f743233de6eeb296417ca9e081942fbd87bd03fff54e4d2162f5"
+    },
+    {
+      "set": "set2",
+      "source": 1,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "e6315561844ddb3afc79e68f2c435f301d00201a870e50b83b93322104b7b1e6",
+      "reference_sha256": "3f910c87b2f0ba22786641326e0e3eac52643416c25421a9c1deccc08381568c"
+    },
+    {
+      "set": "set2",
+      "source": 2,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "bae160830217e8e8daa5538cf49cd03e8f4adafbc1bb8f932fb16e80ce0f4c1b",
+      "reference_sha256": "5f7091de9149691b0509fafdb13ce0ce77fb63998a82d76036aa11d45760384c"
+    },
+    {
+      "set": "set2",
+      "source": 3,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "21c845142075d4be76d4f1385334959d4caf38933cd01e73fde6ab3522dd4f8e",
+      "reference_sha256": "8cc2b10b7747f10b0b3d9444d2d85e932072eb0496e2af66754b6ef16847e31f"
+    },
+    {
+      "set": "set2",
+      "source": 4,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "d8a9a6e93911594f22a7bfc3352070cbb1dee48ae906763f054d821235a300db",
+      "reference_sha256": "17e984f2c8cebe28fc06f54a53a3909b947aa23f91fb384b1f47a57ab277b3e9"
+    },
+    {
+      "set": "set3",
+      "source": 1,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "f1a8c9ff60c03fb5915b4cdef31465725821ac1a30bc2e2c5b825af0a7a3aa0c",
+      "reference_sha256": "8becd5eb789de177963ab9edc1a9b0aab591b1ea3d840abeaa82e66fcc99297d"
+    },
+    {
+      "set": "set3",
+      "source": 2,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "887de211dd93e81e85cf7bff5066663876cda47bf716fed1bb9107de265129cc",
+      "reference_sha256": "ae7c5c9dbbce829b61a8f3b8972548b2799d8cee9c8323959b192d677e4629b3"
+    },
+    {
+      "set": "set3",
+      "source": 3,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "66e9d61a8a6cc34a2bf08599c2c9e44891553e2662b6e2d751295b9a8bdfb194",
+      "reference_sha256": "fea0ca0c1335929a16599dd7f23e307a3c4b815a45a4daaccd035c1a158bde2d"
+    },
+    {
+      "set": "set3",
+      "source": 4,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "bb3e3b5e96e1e80b7e47ca22d449558a367341ff46490fa8b14373a741d9c529",
+      "reference_sha256": "500702b9fa364ae142abc291d6f027de79142b520acc0c63cb30fa7bfa300112"
+    },
+    {
+      "set": "set4",
+      "source": 1,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "822ba4108317c87dce1e7d5d8f02c037bb71b67124f9f09632681f49934b919c",
+      "reference_sha256": "6e94e220af8c81367ba4161dc045d3c0d2bcf68deeb6495f5d4c955b118be0d5"
+    },
+    {
+      "set": "set4",
+      "source": 2,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "5c255b47856ef232aeee4a92f4b07ec600b7e008f48de69735b24b56eca76005",
+      "reference_sha256": "7412ae7f72b8541630676aec97547f56336c6a888a10c15d5a47c743f2c800f0"
+    },
+    {
+      "set": "set4",
+      "source": 3,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "63c1b275be7f1effb5066226cd2a39100811ff3bfe8f75f06451ca40eb06ebd3",
+      "reference_sha256": "75af15c07c2956c7fadd11f6e42a19efde3911d10bf72ad964472b1e28944136"
+    },
+    {
+      "set": "set4",
+      "source": 4,
+      "positive_pass": true,
+      "wrong_transform_rejected": true,
+      "source_sha256": "b3b404c1177e069c49bc1c459b3495edb981fa5bfab57620d677eaae798bd831",
+      "reference_sha256": "d226811245b178ab8706db6dc07ff44ec78021383d5c531135ab9522a6bea2d7"
+    }
+  ],
+  "formal_ds_results_reused": false,
+  "old_reports_retained": true
+}

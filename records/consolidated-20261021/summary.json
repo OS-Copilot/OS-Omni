@@ -1,0 +1,142 @@
+[
+  {
+    "model": "Kimi-K3(high)",
+    "platform": "Android",
+    "pass": 8,
+    "fail": 13,
+    "untested": 1,
+    "scored": 21,
+    "benchmark_total": 48,
+    "pass_over_all": "8/48"
+  },
+  {
+    "model": "Kimi-K3(high)",
+    "platform": "Web",
+    "pass": 4,
+    "fail": 1,
+    "untested": 0,
+    "scored": 5,
+    "benchmark_total": 48,
+    "pass_over_all": "4/48"
+  },
+  {
+    "model": "Kimi-K3(high)",
+    "platform": "Windows",
+    "pass": 5,
+    "fail": 11,
+    "untested": 3,
+    "scored": 16,
+    "benchmark_total": 48,
+    "pass_over_all": "5/48"
+  },
+  {
+    "model": "Kimi-K3(no thinking)",
+    "platform": "Android",
+    "pass": 2,
+    "fail": 8,
+    "untested": 1,
+    "scored": 10,
+    "benchmark_total": 48,
+    "pass_over_all": "2/48"
+  },
+  {
+    "model": "Kimi-K3(no thinking)",
+    "platform": "Web",
+    "pass": 0,
+    "fail": 2,
+    "untested": 1,
+    "scored": 2,
+    "benchmark_total": 48,
+    "pass_over_all": "0/48"
+  },
+  {
+    "model": "Kimi-K3(no thinking)",
+    "platform": "Windows",
+    "pass": 3,
+    "fail": 5,
+    "untested": 0,
+    "scored": 8,
+    "benchmark_total": 48,
+    "pass_over_all": "3/48"
+  },
+  {
+    "model": "deepseek-flash-1017(high)",
+    "platform": "Android",
+    "pass": 20,
+    "fail": 28,
+    "untested": 0,
+    "scored": 48,
+    "benchmark_total": 48,
+    "pass_over_all": "20/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "Android",
+    "pass": 6,
+    "fail": 9,
+    "untested": 0,
+    "scored": 15,
+    "benchmark_total": 48,
+    "pass_over_all": "6/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "Linux",
+    "pass": 3,
+    "fail": 7,
+    "untested": 0,
+    "scored": 10,
+    "benchmark_total": 48,
+    "pass_over_all": "3/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "Web",
+    "pass": 4,
+    "fail": 31,
+    "untested": 2,
+    "scored": 35,
+    "benchmark_total": 48,
+    "pass_over_all": "4/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "Windows",
+    "pass": 2,
+    "fail": 5,
+    "untested": 4,
+    "scored": 7,
+    "benchmark_total": 48,
+    "pass_over_all": "2/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "iOS",
+    "pass": 1,
+    "fail": 29,
+    "untested": 4,
+    "scored": 30,
+    "benchmark_total": 48,
+    "pass_over_all": "1/48"
+  },
+  {
+    "model": "gpt-5.5(high)",
+    "platform": "macOS",
+    "pass": 6,
+    "fail": 27,
+    "untested": 0,
+    "scored": 33,
+    "benchmark_total": 48,
+    "pass_over_all": "6/48"
+  },
+  {
+    "model": "gpt-5.5(low)",
+    "platform": "Web",
+    "pass": 0,
+    "fail": 3,
+    "untested": 0,
+    "scored": 3,
+    "benchmark_total": 48,
+    "pass_over_all": "0/48"
+  }
+]

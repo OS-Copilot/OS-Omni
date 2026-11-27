@@ -19,8 +19,8 @@ evaluation:
     timeout: 90
     expected_ruleset_sha256: 0d7e8ecdd12c5a450dadda51a8904029d9486ed7fda6e211ee3e7c1dd836100b
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app: OpenPhotoEdit
   app_name: OpenPhotoEdit
@@ -32,8 +32,10 @@ metadata:
   source_state_mode: human_completed_eval_only
   instruction_sha256: da8c5ee08f57f23b70e5706bc65184adf484fb23c7b65f1c0deb11b1a810af8a
   ruleset_sha256: 30d4770a2be547a46505473e94caa5c8bde1f5274d9a108a69b3ad74c1aedd47
-  evaluation_standard: Exact source hashes, unique PNG exports, multidimensional source-bound image forensics,
-    RGB-marker mask preservation, and exact final second-image UI controls.
+  evaluation_standard: Exact source hashes, unique PNG exports, multidimensional source-bound image forensics
+    (ranges calibrated by running the instructed recipes in the app on the published source photos), RGB-marker
+    mask preservation and square-interior colour fidelity. The final second-image UI controls are recorded
+    but not graded, since the brief does not say which image or brush to end on.
   task_version: '1.1'
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review

@@ -1,0 +1,142 @@
+{
+  "profile_id": "electric_guitar_portrait_21",
+  "group": "guitar",
+  "source": "portrait_21.jpg",
+  "recipe": [
+    [
+      "HSL",
+      "Blue",
+      "Hue",
+      -4
+    ],
+    [
+      "HSL",
+      "Blue",
+      "Saturation",
+      18
+    ],
+    [
+      "HSL",
+      "Blue",
+      "Luminance",
+      -6
+    ],
+    [
+      "HSL",
+      "Cyan",
+      "Luminance",
+      5
+    ],
+    [
+      "Edit",
+      "Exposure",
+      4
+    ],
+    [
+      "Edit",
+      "Contrast",
+      15
+    ],
+    [
+      "Edit",
+      "Brightness",
+      6
+    ],
+    [
+      "Edit",
+      "Temperature",
+      -3
+    ],
+    [
+      "Landscape",
+      "Structure",
+      20
+    ],
+    [
+      "Landscape",
+      "HDR",
+      8
+    ],
+    [
+      "Filters",
+      "Clean",
+      18
+    ],
+    [
+      "Edit",
+      "Saturation",
+      7
+    ]
+  ],
+  "expected_median_rgb": {
+    "red": [
+      229,
+      40,
+      41
+    ],
+    "green": [
+      35,
+      224,
+      34
+    ],
+    "blue": [
+      3,
+      12,
+      229
+    ]
+  },
+  "repeat_median_rgb": {
+    "red": [
+      229,
+      40,
+      41
+    ],
+    "green": [
+      35,
+      224,
+      34
+    ],
+    "blue": [
+      3,
+      12,
+      229
+    ]
+  },
+  "unedited_median_rgb": {
+    "red": [
+      190,
+      40,
+      41
+    ],
+    "green": [
+      40,
+      190,
+      39
+    ],
+    "blue": [
+      40,
+      40,
+      190
+    ]
+  },
+  "wrong_exposure_median_rgb": {
+    "red": [
+      255,
+      54,
+      54
+    ],
+    "green": [
+      47,
+      255,
+      47
+    ],
+    "blue": [
+      15,
+      24,
+      253
+    ]
+  },
+  "correct": ".\\local_eval\\benchmark-v2\\references\\electric_guitar_portrait_21\\correct.jpg",
+  "input": ".\\local_eval\\benchmark-v2\\references\\electric_guitar_portrait_21\\input.jpg",
+  "probe_only": true
+}

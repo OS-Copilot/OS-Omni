@@ -13,8 +13,7 @@ instruction: 'In GIMP, open the file "Apple_and_Orange.jpg" from the Downloads f
   with exactly this content: ''primary_task=windows.gimp.apple_and_orange_focus_blur_bw_upside_down\nlinux_peer=linux.gimp.crop_center\ndifficulty=hard-plus\nrequires_multi_artifact_handoff=true\noracle_receipt=hard_plus_oracle_receipt.txt'';
   C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_review_matrix.csv
   with exactly this content: ''check,owner,status\nlinux_alignment,benchmark-ops,ready\nextra_artifacts,benchmark-ops,ready\noracle_recheck,benchmark-ops,required''.
-  Use the target application for the visual work and create required verification files directly at the specified paths using
-  the available automation/runtime file-writing method; do not open Notepad or another text editor.'
+  Use the target application for the visual work and create the required verification files at the specified paths.'
 init:
   initializer_id: initializers.windows.setup:DesktopSetupInitializer
   params:
@@ -106,15 +105,6 @@ evaluation:
           \  exit 1\n}"
         stdout_contains: EVAL_RESULT:PASS
         timeout: 90
-      - label: no_notepad_process
-        script: '$p = Get-Process -Name notepad -ErrorAction SilentlyContinue
-
-          if ($p) { Write-Output ''NOTEPAD_RUNNING''; exit 1 }
-
-          Write-Output ''NO_NOTEPAD_PROCESS'''
-        stdout_contains: NO_NOTEPAD_PROCESS
-        expected_exit_code: 0
-        timeout: 10
       files:
       - path: C:\Users\User\Documents\helloworld_hard_plus\windows_gimp_apple_and_orange_focus_blur_bw_upside_down\hard_plus_handoff.tsv
         exact_text: "task_id\tlinux_peer\tstatus\nwindows.gimp.apple_and_orange_focus_blur_bw_upside_down\tlinux.gimp.crop_center\t\
@@ -138,8 +128,8 @@ evaluation:
 
           oracle_recheck,benchmark-ops,required'
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - gimp

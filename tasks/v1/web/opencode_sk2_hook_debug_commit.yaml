@@ -91,6 +91,9 @@ evaluation:
       from pathlib import Path
       from typing import Any
 
+      # The evaluator puts Chrome's LevelDB reader (replay_history, ...) in place of the next line.
+      # @osomni:local_storage_reader
+
       storage_key = "opencode.workspace.v1"
       expected_commit_message = "Tune hook debug"
       useforecast_path = "src/hooks/useForecast.js"
@@ -156,23 +159,42 @@ evaluation:
           for leveldb_dir in leveldb_dirs:
               if not leveldb_dir.exists():
                   continue
-              for path in leveldb_dir.iterdir():
+              found: list[dict[str, Any]] = []
+              if "replay_history" in globals():
+                  # Every stored generation, oldest first, read through the LevelDB format: a raw byte
+                  # scan misses log records split across 32 KiB blocks and compressed table blocks.
                   try:
-                      if not path.is_file():
-                          continue
-                      if path.stat().st_size <= 0 or path.stat().st_size > 20_000_000:
-                          continue
-                      if path.suffix.lower() not in {"", ".log", ".ldb"}:
-                          continue
-                      data = path.read_bytes()
-                      if storage_key.encode("utf-8") not in data:
-                          continue
-                      text = data.decode("utf-8", errors="ignore").replace("\x00", "")
-                      for value in extract_json_objects(text, storage_key):
-                          if isinstance(value.get("files"), dict):
-                              states.append({"path": str(path), "mtime": path.stat().st_mtime, "state": value})
+                      newest = max((path.stat().st_mtime for path in leveldb_dir.iterdir() if path.is_file()), default=0.0)
+                      for version in replay_history(str(leveldb_dir), storage_key)["versions"]:
+                          try:
+                              value = json.loads(version.get("text") or "")
+                          except ValueError:
+                              continue
+                          if isinstance(value, dict) and isinstance(value.get("files"), dict):
+                              found.append({"path": version.get("source"), "mtime": newest, "state": value})
                   except Exception:
-                      continue
+                      found = []
+              if not found:
+                  for path in leveldb_dir.iterdir():
+                      try:
+                          if not path.is_file():
+                              continue
+                          if path.stat().st_size <= 0 or path.stat().st_size > 20_000_000:
+                              continue
+                          if path.suffix.lower() not in {"", ".log", ".ldb"}:
+                              continue
+                          data = path.read_bytes()
+                          if storage_key.encode("utf-8") not in data:
+                              continue
+                          text = data.decode("utf-8", errors="ignore").replace("\x00", "")
+                          for value in extract_json_objects(text, storage_key):
+                              if isinstance(value.get("files"), dict):
+                                  found.append({"path": str(path), "mtime": path.stat().st_mtime, "state": value})
+                      except Exception:
+                          continue
+              states.extend(found)
+          for order, item in enumerate(states):
+              item["order"] = order
           return states
 
       def file_content(files: Any, rel_path: str) -> str:
@@ -187,7 +209,7 @@ evaluation:
 
       state_candidates = load_opencode_states()
 
-      def score_candidate(item: dict[str, Any]) -> tuple[int, float]:
+      def score_candidate(item: dict[str, Any]) -> tuple[int, float, int]:
           state = item.get("state") or {}
           files = state.get("files") if isinstance(state.get("files"), dict) else {}
           useforecast = file_content(files, useforecast_path)
@@ -204,7 +226,8 @@ evaluation:
           score += 25 if any(str(item) == "Now " + expected_commit_message for item in timeline) else 0
           score += 10 if not any(isinstance(change, dict) and change.get("path") in {useforecast_path, api_path} for change in changes) else 0
           score += 5 if any("npm run lint" in str(line) for line in terminal) else 0
-          return score, float(item.get("mtime") or 0)
+          # Among equally complete states the newest one is graded.
+          return score, float(item.get("mtime") or 0), int(item.get("order") or 0)
 
       selected = max(state_candidates, key=score_candidate, default=None)
       state = selected.get("state") if selected else {}
@@ -297,8 +320,8 @@ evaluation:
       raise SystemExit(0 if not failures else 1)
       PY
 limits:
-  max_steps: 140
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

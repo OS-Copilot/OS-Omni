@@ -618,13 +618,16 @@ def check_initial_fail_evidence(
         )
 
 
-def _run_cmd(argv: List[str], timeout: int = 20) -> Tuple[bool, str]:
+def _run_cmd(
+    argv: List[str], timeout: int = 20, env: Optional[Dict[str, str]] = None
+) -> Tuple[bool, str]:
     try:
         proc = subprocess.run(
             argv,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             timeout=timeout,
+            env=env,
         )
         return proc.returncode == 0, proc.stdout.decode(errors="replace")
     except Exception as exc:
@@ -721,11 +724,13 @@ def preflight_evidence(
                 return {"passed": False, "platform": platform, "checks": checks,
                         "detail": f"TART_HOME does not exist: {home}"}
             checks["tart_home"] = str(home)
-            ok, listed = _run_cmd(["tart", "list"])
+            tart_env = os.environ.copy()
+            tart_env["TART_HOME"] = str(home)
+            ok, listed = _run_cmd(["tart", "list"], env=tart_env)
             if ok and base_vm in listed:
                 checks["base_vm"] = base_vm
-            elif (home / base_vm).exists():
-                checks["base_vm"] = str(home / base_vm)
+            elif (home / "vms" / base_vm).is_dir() or (home / base_vm).exists():
+                checks["base_vm"] = str(home / "vms" / base_vm)
             else:
                 return {"passed": False, "platform": platform, "checks": checks,
                         "detail": f"tart base VM not found: {base_vm!r}"}
@@ -1463,6 +1468,25 @@ def _load_committed_runtime_defaults(platform: str) -> Dict[str, Any]:
     }
 
 
+def _resolve_tart_vm_ip(vm_name: str, tart_home: Optional[str] = None) -> str:
+    """Resolve the active Tart guest address for single-VM runs."""
+    env = os.environ.copy()
+    if tart_home:
+        env["TART_HOME"] = str(tart_home)
+    try:
+        result = subprocess.run(
+            ["tart", "ip", vm_name], env=env, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, text=True, timeout=30, check=False,
+        )
+    except Exception as exc:
+        raise QueueError(f"cannot resolve IP for Tart VM {vm_name}: {exc}") from exc
+    address = result.stdout.strip().splitlines()[-1].strip() if result.stdout.strip() else ""
+    if result.returncode != 0 or not re.fullmatch(r"(?:\d{1,3}\.){3}\d{1,3}", address):
+        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        raise QueueError(f"cannot resolve IP for Tart VM {vm_name}: {detail}")
+    return address
+
+
 def default_runner(
     entry: Dict[str, Any],
     task_dir: Path,
@@ -1528,6 +1552,13 @@ def default_runner(
         from platforms.macos.host.runners.benchmark import run_benchmark_command
 
         defaults = _load_committed_runtime_defaults("macos")
+        if os.environ.get("MACOS_SKIP_VM_CLONE", "").strip().lower() in {
+            "1", "true", "yes", "on"
+        }:
+            defaults["vm_ip"] = _resolve_tart_vm_ip(
+                macos_base_vm_name or defaults["base_vm_name"],
+                macos_storage_dir or defaults.get("tart_home"),
+            )
         args = Namespace(
             task_file=task_file,
             execution_file=None,
@@ -1578,6 +1609,7 @@ def run_queue(
     runner: Optional[RunnerFn] = None,
     preflight_fn: Optional[PreflightFn] = None,
     task_ids: Optional[List[str]] = None,
+    batch_until_environment_error: bool = False,
 ) -> Dict[str, Any]:
     """Execute the serial queue. Returns a summary dict.
 
@@ -1591,11 +1623,9 @@ def run_queue(
     ``task_ids`` selects a subset of the full inventory for execution;
     the queue still records all manifest tasks. ``None`` runs everything.
 
-    Pause rules (all require an explicit ``--resume-after-audit`` plus an
-    audit-approval file to continue; there is no timer-based release):
-    - FAIL or ERROR pauses the whole queue for main-agent audit.
-    - every 3rd new completion pauses for link audit. The counter counts new
-      completions only; reuse never resets or advances it.
+    By default FAIL/ERROR and every 3rd completion pause for audit. Batch mode
+    continues past completed PASS/FAIL records (which remain audit-pending),
+    but still pauses on environment exclusions and execution errors.
     """
     gate = read_gate(gate_path, platform, manifest_path)
     check = (preflight_fn or preflight_check)(
@@ -1636,6 +1666,7 @@ def run_queue(
             manifest_path=manifest_path,
             runner=runner,
             task_ids=task_ids,
+            batch_until_environment_error=batch_until_environment_error,
         )
     finally:
         if release_on_exit:
@@ -1657,6 +1688,7 @@ def _run_queue_locked(
     manifest_path: str | Path,
     runner: Optional[RunnerFn],
     task_ids: Optional[List[str]] = None,
+    batch_until_environment_error: bool = False,
 ) -> Dict[str, Any]:
     queue, resumed = init_or_resume_queue(
         platform=platform, results_root=results_root, manifest_path=manifest_path
@@ -1720,6 +1752,7 @@ def _run_queue_locked(
         "reused": 0,
         "skipped_confirmed": 0,
         "retested_excluded": 0,
+        "awaiting_audit": 0,
         "completed_since_audit": int(queue.get("completed_since_audit", 0)),
         "paused": False,
         "paused_reason": None,
@@ -1747,6 +1780,13 @@ def _run_queue_locked(
             save_queue(queue_path, queue)
             continue
         verdict = read_verdict(task_dir)
+        if batch_until_environment_error and verdict is not None and str(verdict.get("status", "")) in (
+            "PASS", "FAIL"
+        ) and verdict.get("audit_pending") is True:
+            entry["status"] = "pending_audit" if verdict["status"] == "PASS" else "failed_pending_audit"
+            summary["awaiting_audit"] += 1
+            save_queue(queue_path, queue)
+            continue
         if (
             verdict is not None
             and str(verdict.get("status", "")).strip() == RETESTABLE_STATUS
@@ -1813,8 +1853,13 @@ def _run_queue_locked(
                        "audit_pending": True, **expected},
             )
             entry["status"] = "pending"
+            queue["paused_reason"] = (
+                f"task {entry['task_id']} environment exclusion; paused for audit"
+            )
             save_queue(queue_path, queue)
-            continue
+            summary["paused"] = True
+            summary["paused_reason"] = queue["paused_reason"]
+            break
         if status == "PASS":
             # Unaudited PASS is never reusable: valid stays False until an
             # explicit audit confirms it.
@@ -1830,7 +1875,8 @@ def _run_queue_locked(
             queue["completed_since_audit"] = int(queue.get("completed_since_audit", 0)) + 1
             summary["completed_since_audit"] = queue["completed_since_audit"]
             save_queue(queue_path, queue)
-            if queue["completed_since_audit"] % AUDIT_PAUSE_EVERY_N_COMPLETIONS == 0:
+            if (not batch_until_environment_error and
+                    queue["completed_since_audit"] % AUDIT_PAUSE_EVERY_N_COMPLETIONS == 0):
                 queue["paused_reason"] = (
                     f"{queue['completed_since_audit']} new completions; "
                     "paused for main-agent link audit"
@@ -1849,6 +1895,10 @@ def _run_queue_locked(
                        "audit_pending": True, **expected},
             )
             entry["status"] = "failed_pending_audit"
+            summary["awaiting_audit"] += 1
+            if batch_until_environment_error:
+                save_queue(queue_path, queue)
+                continue
             queue["paused_reason"] = (
                 f"task {entry['task_id']} FAIL; whole queue paused for main-agent audit"
             )
@@ -1905,6 +1955,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                         help="explicitly resume a paused queue after main-agent audit")
     parser.add_argument("--audit-approval-file", type=str, default=None,
                         help="explicit audit-approval JSON required to resume")
+    parser.add_argument("--batch-until-environment-error", action="store_true",
+                        help="continue serially past PASS/FAIL outcomes; pause only for environment exclusions/errors")
     return parser
 
 
@@ -1955,6 +2007,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             macos_storage_dir=args.macos_storage_dir,
             manifest_path=args.manifest,
             task_ids=args.task_ids,
+            batch_until_environment_error=args.batch_until_environment_error,
         )
     except (GateError, QueueError) as exc:
         print(f"refused: {exc}", file=sys.stderr)

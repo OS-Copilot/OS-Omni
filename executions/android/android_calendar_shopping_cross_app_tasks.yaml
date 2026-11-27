@@ -1,0 +1,11 @@
+tasks:
+  - tasks/android/cross_app_calendar_shopping_add_calendar_item_easy.yaml
+  - tasks/android/cross_app_calendar_shopping_office_order_followup_hard.yaml
+  - tasks/android/cross_app_calendar_shopping_home_delivery_reminder_hard.yaml
+models:
+  - free_codesonline_gpt5_4_responses
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: Android Calendar+Shopping cross-app task pack with one easy task and two hard tasks

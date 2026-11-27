@@ -1,0 +1,90 @@
+task_id: ios.maily.forward_delete_and_send_launch_notice
+platform: ios
+instruction: >
+  In Maily, open the email with subject "Bench Launch Packet" and forward it to
+  benchops@example.test. Then go back to the inbox and delete the emails with subjects
+  "Bench Launch Packet Draft" and "Bench Launch Packet Working Notes". After that, compose a new email to benchrecv@example.test with
+  subject "Bench Launch Packet Routed" and body
+  "The final launch packet was forwarded to Bench Ops and the outdated draft was deleted."
+  Leave the email "Bench Launch Packet Receipt" unchanged.
+init:
+  initializer_id: initializers.ios.greenmail_seed_open_app:GreenMailSeedOpenAppInitializer
+  params:
+    bundle_id: de.enough.maily
+    api_base_url: "http://127.0.0.1:8081"
+    purge_greenmail: true
+    seed_messages:
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchsender@example.test"
+        subject: "Bench Launch Packet"
+        body: "launch_packet_ready_91A"
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchsender@example.test"
+        subject: "Bench Launch Packet Draft"
+        body: "launch_packet_old_draft_remove_me"
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchsender@example.test"
+        subject: "Bench Launch Packet Working Notes"
+        body: "launch_packet_working_notes_remove_me"
+      - sender_email: "benchrecv@example.test"
+        sender_password: "benchpass"
+        recipient_email: "benchsender@example.test"
+        subject: "Bench Launch Packet Receipt"
+        body: "launch_packet_receipt_keep_me"
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.maily_multi_step_workflow:MailyMultiStepWorkflowEvaluator
+  params:
+    delete_params:
+      - api_base_url: "http://127.0.0.1:8081"
+        recipient_email: "benchsender@example.test"
+        mailbox: "INBOX"
+        target_subject: "Bench Launch Packet Draft"
+        decoy_subjects:
+          - "Bench Launch Packet"
+          - "Bench Launch Packet Receipt"
+        timeout_seconds: 15
+        poll_interval_seconds: 1
+      - api_base_url: "http://127.0.0.1:8081"
+        recipient_email: "benchsender@example.test"
+        mailbox: "INBOX"
+        target_subject: "Bench Launch Packet Working Notes"
+        decoy_subjects:
+          - "Bench Launch Packet"
+          - "Bench Launch Packet Receipt"
+        timeout_seconds: 15
+        poll_interval_seconds: 1
+    forward_params:
+      api_base_url: "http://127.0.0.1:8081"
+      sender_email: "benchsender@example.test"
+      recipient_email: "benchops@example.test"
+      required_body_fragment: "launch_packet_ready_91A"
+      mailbox: "INBOX"
+      timeout_seconds: 20
+      poll_interval_seconds: 1
+    send_params:
+      api_base_url: "http://127.0.0.1:8081"
+      sender_email: "benchsender@example.test"
+      recipient_email: "benchrecv@example.test"
+      subject: "Bench Launch Packet Routed"
+      body: "The final launch packet was forwarded to Bench Ops and the outdated draft was deleted."
+      mailbox: "INBOX"
+      timeout_seconds: 20
+      poll_interval_seconds: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [email, maily, greenmail, communication, forward, delete, compose, hard, benchmark]
+  app: Maily
+  app_bundle_id: de.enough.maily
+  description: >
+    Complete a long Maily workflow by forwarding one seeded email, deleting two outdated mailbox
+    items, and composing a final routing notice.
+  prerequisites:
+    - "Maily is installed on the simulator."
+    - "The benchsender@example.test account is already configured in Maily."
+    - "GreenMail is running on the host and reachable at http://127.0.0.1:8081."

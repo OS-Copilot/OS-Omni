@@ -21,6 +21,19 @@ ALL_TRACKS = (*TRACKS, "cross_device")
 CROSS_DEVICE_SCREENS = {"linux_android": "linux", "windows_android": "windows"}
 
 
+def test_authoritative_tracks_use_touchstone_selection_without_cross_vm_alternative() -> None:
+    catalog = json.loads((REPO_ROOT / "tasks/catalog.json").read_text())
+    assert catalog["track_authority"] == {
+        **{track: "BaoZhuhan/os-omni" for track in ("android", "ios", "macos", "windows")},
+        **{track: "Touchstone-AI-Lab/OS-Omni" for track in ("linux", "web", "cross_device")},
+    }
+    upstream = json.loads((REPO_ROOT / "integrations/touchstone/upstream-v1-manifest.json").read_text())
+    assert MANIFEST == upstream
+    assert catalog["task_count"] == len(MANIFEST["tasks"]) == 300
+    assert not (REPO_ROOT / "executions/v1/cross_vm.yaml").exists()
+    assert not list((REPO_ROOT / "tasks/cross_vm").rglob("*.yaml"))
+
+
 def test_v1_has_300_unique_tasks_in_balanced_tracks_plus_cross_device() -> None:
     entries = MANIFEST["tasks"]
     assert MANIFEST["release"] == "v1"
@@ -111,7 +124,7 @@ def test_execution_configs_reference_retained_tasks_and_cover_v1() -> None:
     known = {entry["task_path"] for entry in MANIFEST["tasks"]}
     known.update(MANIFEST["supporting"]["cross_vm_stages"])
     known.update(MANIFEST["oracle_tasks"])
-    for path in (REPO_ROOT / "executions").rglob("*.yaml"):
+    for path in (REPO_ROOT / "executions" / "v1").rglob("*.yaml"):
         spec = load_execution_spec(path)
         assert all(task.relative_to(REPO_ROOT).as_posix() in known for task in spec.task_paths), path
     for track in ALL_TRACKS:

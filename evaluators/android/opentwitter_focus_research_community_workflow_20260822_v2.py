@@ -13,6 +13,7 @@ from evaluators.cua_review.platforms.android.opentwitter_support import (
     DEFAULT_APP_PACKAGE,
     DEFAULT_LOCAL_STATE_KEY,
     OpenTwitterAndroidStore,
+    stated_order_check,
 )
 
 
@@ -71,6 +72,8 @@ class OpenTwitterAttributableWorkflowEvaluator(BaseEvaluator):
 
         checks: list[dict[str, Any]] = []
         matched_ids: dict[str, Any] = {}
+        # Business objects the instruction orders, by label (see stated_order_check).
+        order_anchors: dict[str, dict[str, Any] | None] = {}
         checks.append(self._check(
             "logged_in_account",
             bool(session.get("loggedIn")) and observed_handle == expected_handle,
@@ -160,6 +163,9 @@ class OpenTwitterAttributableWorkflowEvaluator(BaseEvaluator):
             if post_id:
                 dynamic_post_ids[text] = post_id
                 matched_ids[f"post:{text}"] = post_id
+            order_anchors[f"post:{text}"] = (
+                {"at": post.get("createdAt"), "id": post_id} if post_id and event is not None else None
+            )
             for action, state_set, event_type in (
                 ("like", liked, "post_like_toggled"),
                 ("bookmark", bookmarked, "post_bookmark_toggled"),
@@ -203,9 +209,13 @@ class OpenTwitterAttributableWorkflowEvaluator(BaseEvaluator):
 
         message_specs = [item for item in (params.get("messages") or []) if isinstance(item, Mapping)]
         messages = [message for message in (social.get("messages") or []) if isinstance(message, Mapping)]
+        spec_handles = [str(item.get("handle") or "").strip() for item in message_specs]
         for spec in message_specs:
             handle = str(spec.get("handle") or "").strip()
             text = str(spec.get("text") or "")
+            # A recipient who gets two messages has one check (and one matched id) per message.
+            unique_handle = spec_handles.count(handle) == 1
+            message_key = handle if unique_handle else f"{handle}_{self._slug(text)}"
             matches = [
                 message for message in messages
                 if bool(message.get("outbound"))
@@ -217,14 +227,19 @@ class OpenTwitterAttributableWorkflowEvaluator(BaseEvaluator):
             event = self._latest_event(
                 attributable_events, "message_sent", {"handle": handle, "text": text}
             )
+            message_ok = len(matches) == 1 and bool(message_id) and event is not None
             checks.append(self._check(
-                f"exact_message_{handle}", len(matches) == 1 and bool(message_id) and event is not None,
+                f"exact_message_{message_key}", message_ok,
                 {"count": 1, "handle": handle, "text": text, "outbound": True, "event": True},
                 {"count": len(matches), "message_id": message_id or None, "event": event},
                 [message_id] if message_id else [],
             ))
             if message_id:
-                matched_ids[f"message:{handle}"] = message_id
+                matched_ids[f"message:{message_key}"] = message_id
+            anchor = {"at": message.get("createdAt"), "id": message_id} if message_ok and message else None
+            order_anchors[f"message:{handle}:{text}"] = anchor
+            if unique_handle:
+                order_anchors[f"message:{handle}"] = anchor
 
         notifications = [item for item in (social.get("notifications") or []) if isinstance(item, Mapping)]
         unread_ids = [str(item.get("id") or "") for item in notifications if not bool(item.get("read"))]
@@ -241,6 +256,25 @@ class OpenTwitterAttributableWorkflowEvaluator(BaseEvaluator):
             {"notification_count": len(notifications), "unread_ids": unread_ids, "event": read_all_event},
             [str(read_all_event.get("seq"))] if read_all_event else [],
         ))
+
+        # Only the orders the English instruction states are judged (two posts
+        # "in this order" / "in sequence: first ... immediately after ...",
+        # messages "followed by" one another).  The order of the other actions
+        # is free: one of each business action is required above, and browsing
+        # (trends, timelines opened) is never graded.
+        if params.get("stated_order"):
+            own_posts = [
+                {"at": post.get("createdAt"), "id": str(post.get("id") or "")}
+                for post in posts
+                if str(post.get("authorHandle") or "") == expected_handle
+            ]
+            order_ok, order_expected, order_observed = stated_order_check(
+                params.get("stated_order"), order_anchors, {"post": own_posts}
+            )
+            checks.append(self._check(
+                "instruction_stated_order", order_ok, order_expected, order_observed,
+                [str(row.get("after_id") or "") for row in order_observed["violations"]],
+            ))
 
         failures = [
             {

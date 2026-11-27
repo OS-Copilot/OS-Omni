@@ -1,0 +1,72 @@
+# Android OS-Omni DeepSeek Flash 重建环境评测最终报告
+
+48题均已结束。有效重建任务46题：7 PASS、39 FAIL，通过率15.22%。另2题因环境校准无法复现排除；原始跑分为7 PASS、41 FAIL，不能把41项全部归因于模型。
+
+配置：DeepSeek Flash，reasoning_effort=none，每题最多180步，保留原先较小上限。未代替DS执行正式题目。每题原始报告、轨迹、截图保留在下表路径。
+
+## 最终环境审计
+
+OpenPhoto guitar独立冷启动预检PASS，未编辑baseline FAIL。一次性精确GUI探针逐项验证Blue Hue-4/Saturation18/Luminance-6、Cyan Luminance5、Exposure4、Contrast15、Brightness6、Temperature-3、Structure20、HDR8、Clean18、Saturation7，真实导出960x1280 JPG。红254/0/0、绿0/255/1、蓝0/8/251；参考红248/28/28、绿20/244/23、蓝0/8/247，最大差28，超过原容差12。证据：monitor-audits/20261009_1744-guitar-driver/exact-calibration-result.json、exact-electric-export.jpg及probe-setting*.xml。
+
+Guitar不能按参考像素有效评分。Cooking也缺少原始校准输入，使用同一重建条带，另缺户外照片原始版本，保守排除；未声称已对Cooking全部精确参数做设备验证。两题模型确有参数/选图偏差，但无法用当前原始RGB评分分离模型和环境因素。未改容差、未反推输入像素迎合参考答案；恢复有效测试需原始校准照片或原始快照。Clown和Coastal均未导出任何图，存在与校准无关的明确任务未完成证据，保留失败。
+
+Driver已修复requested offer错误充当active ride、隐藏Accept的问题。正反例和真实设备Accept按钮通过后自动重测；最终180步FAIL，已接单、资料/文档通过，消息6/9，无到达状态。最后一次无QEMU崩溃，计模型未完成。之前受污染及模拟器崩溃尝试排除并保留证据。银行Details无响应说法已通过真实按钮坐标/事件核查反驳，不能仅信模型描述。
+
+## 可比性及修复范围
+
+这不是原作者快照环境的复现成绩。缺原始AVD快照、部分后端和初始态；重建后端/initializer及判题接口兼容映射见README.md、FAILURE-AUDIT.md及各task provenance。已处理登录、数据种子、消息和订单业务接口、导航持久化、路径引号、模拟器GPU与新鲜截图保护。OpenPhoto/最后Driver使用host GPU，原APK不变。原业务要求保留；兼容修复版与原始判分列仍保留。
+
+原生Compose图片应用的通用WebView end-state采集不支持，原始只读文件/UI判题证据另行保留，不能把该采集错误误当判题错误。图片独立探针不计入DS轨迹或成绩。
+
+## 逐题结果
+
+|任务|原始结果|最终分类|步数|报告|
+|---|---|---|---:|---|
+|android.deltachat.bot_evidence_device_location_684193|FAIL|model_failure_in_reconstructed_environment|138|.\local_eval\runs\android.deltachat.bot_evidence_device_location_684193\20261009_114829\result.json|
+|android.deltachat.delivery_claim_record_1787390185793_240468|FAIL|model_failure_in_reconstructed_environment|14|.\local_eval\runs\android.deltachat.delivery_claim_record_1787390185793_240468\20261009_120944\result.json|
+|android.deltachat.mobility_safety_actual_input_1787395000000_739204|FAIL|model_failure_in_reconstructed_environment|164|.\local_eval\runs\android.deltachat.mobility_safety_actual_input_1787395000000_739204\20261009_121707\result.json|
+|android.deltachat.release_control_room_1787364494557_711349|FAIL|model_failure_in_reconstructed_environment|130|.\local_eval\runs\android.deltachat.release_control_room_1787364494557_711349\20261009_124056\result.json|
+|android.deltachat.river_park_action_team_1787372393006_488939|FAIL|model_failure_in_reconstructed_environment|103|.\local_eval\runs\android.deltachat.river_park_action_team_1787372393006_488939\20261009_130207\result.json|
+|android.openbank.ace_dispute_paperless_security_lena_marco_1787394510087_195225|FAIL|model_failure_in_reconstructed_environment|58|.\local_eval\runs\android.openbank.ace_dispute_paperless_security_lena_marco_1787394510087_195225\20261008_163042\result.json|
+|android.openbank.ace_tessa_security_city_nora_1787392720204_995198|FAIL|model_failure_in_reconstructed_environment|19|.\local_eval\runs\android.openbank.ace_tessa_security_city_nora_1787392720204_995198\20261008_172328\result.json|
+|android.openbank.card_rebate_dispute_1787391981468_550137|FAIL|model_failure_in_reconstructed_environment|108|.\local_eval\runs\android.openbank.card_rebate_dispute_1787391981468_550137\20261008_184951\result.json|
+|android.openbank.city_rainy_lena_marco_security_1787396657268_013944|FAIL|model_failure_in_reconstructed_environment|140|.\local_eval\runs\android.openbank.city_rainy_lena_marco_security_1787396657268_013944\20261008_193315\result.json|
+|android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878|FAIL|model_failure_in_reconstructed_environment|133|.\local_eval\runs\android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878\20261008_195142\result.json|
+|android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252|FAIL|model_failure_in_reconstructed_environment|94|.\local_eval\runs\android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252\20261008_181934\result.json|
+|android.opendriver.driver_workspace_support_ticket_final|PASS|model_pass|94|.\local_eval\runs\android.opendriver.driver_workspace_support_ticket_final\20261009_075736\result.json|
+|android.opendriver.rider_full_service_logout|FAIL|model_failure_in_reconstructed_environment|68|.\local_eval\runs\android.opendriver.rider_full_service_logout\20261009_081237\result.json|
+|android.opendriver.rider_three_scheduled_bay_rides_20260729|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opendriver.rider_three_scheduled_bay_rides_20260729\20261009_092137\result.json|
+|android.opendriver.seeded_driver_profile_document_arrival_5930_20260729|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opendriver.seeded_driver_profile_document_arrival_5930_20260729\20261009_183449\result.json|
+|android.openfood.dumpling_biryani_coupon_merchant_clean_20260731|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.openfood.dumpling_biryani_coupon_merchant_clean_20260731\20261009_040636\result.json|
+|android.openfood.poke_sushi_wallet_merchant_clean_20260729|FAIL|model_failure_in_reconstructed_environment|78|.\local_eval\runs\android.openfood.poke_sushi_wallet_merchant_clean_20260729\20261009_050848\result.json|
+|android.openfood.smokehouse_espresso_feast20_merchant_clean_20260801|FAIL|model_failure_in_reconstructed_environment|128|.\local_eval\runs\android.openfood.smokehouse_espresso_feast20_merchant_clean_20260801\20261009_052511\result.json|
+|android.openfood.smokehouse_pizza_merchant_ops_clean_20260729|FAIL|model_failure_in_reconstructed_environment|141|.\local_eval\runs\android.openfood.smokehouse_pizza_merchant_ops_clean_20260729\20261009_054615\result.json|
+|android.opennavigation.meta_campus_transit_records_20260803|PASS|model_pass|91|.\local_eval\runs\android.opennavigation.meta_campus_transit_records_20260803\20261009_062700\result.json|
+|android.opennavigation.saved_routes_incidents_records_20260801|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opennavigation.saved_routes_incidents_records_20260801\20261009_064549\result.json|
+|android.opennavigation.silicon_station_campus_records_20260803|PASS|model_pass|138|.\local_eval\runs\android.opennavigation.silicon_station_campus_records_20260803\20261009_073821\result.json|
+|android.opennote.city_food_469121|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opennote.city_food_469121\20261008_200759\result.json|
+|android.opennote.fashion_trip_970990|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opennote.fashion_trip_970990\20261008_203739\result.json|
+|android.opennote.film_beauty_573866|FAIL|model_failure_in_reconstructed_environment|173|.\local_eval\runs\android.opennote.film_beauty_573866\20261008_210825\result.json|
+|android.opennote.fitness_mind_940880|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.opennote.fitness_mind_940880\20261008_213501\result.json|
+|android.opennote.gaming_home_461774|FAIL|model_failure_in_reconstructed_environment|90|.\local_eval\runs\android.opennote.gaming_home_461774\20261008_220419\result.json|
+|android.opennote.style_home_477136|FAIL|model_failure_in_reconstructed_environment|77|.\local_eval\runs\android.opennote.style_home_477136\20261008_222609\result.json|
+|android.openphoto.clown_dual_calibrated_export_20260804|FAIL|model_failure_in_reconstructed_environment|145|.\local_eval\runs\android.openphoto.clown_dual_calibrated_export_20260804\20261009_145513\result.json|
+|android.openphoto.coastal_dual_calibrated_export_20260803|FAIL|model_failure_in_reconstructed_environment|180|.\local_eval\runs\android.openphoto.coastal_dual_calibrated_export_20260803\20261009_152932\result.json|
+|android.openphoto.cooking_dual_calibrated_export_20260804|FAIL|environment_calibration_unavailable|175|.\local_eval\runs\android.openphoto.cooking_dual_calibrated_export_20260804\20261009_160830\result.json|
+|android.openphoto.guitar_dual_calibrated_export_20260804|FAIL|environment_calibration_unavailable|148|.\local_eval\runs\android.openphoto.guitar_dual_calibrated_export_20260804\20261009_165901\result.json|
+|android.openshop.beauty_care_checkout_review_20260821|FAIL|model_failure_in_reconstructed_environment|100|.\local_eval\runs\android.openshop.beauty_care_checkout_review_20260821\20261009_003756\result.json|
+|android.openshop.commute_summary_order_review|FAIL|model_failure_in_reconstructed_environment|95|.\local_eval\runs\android.openshop.commute_summary_order_review\20261009_005546\result.json|
+|android.openshop.family_weekend_checkout_20260821|FAIL|model_failure_in_reconstructed_environment|100|.\local_eval\runs\android.openshop.family_weekend_checkout_20260821\20261009_011336\result.json|
+|android.openshop.garage_setup_checkout_backpack_review_20260821|FAIL|model_failure_in_reconstructed_environment|96|.\local_eval\runs\android.openshop.garage_setup_checkout_backpack_review_20260821\20261009_013200\result.json|
+|android.openshop.gift_trip_bundle_checkout_document_review_20260821|FAIL|model_failure_in_reconstructed_environment|178|.\local_eval\runs\android.openshop.gift_trip_bundle_checkout_document_review_20260821\20261009_015028\result.json|
+|android.openshop.home_refresh_2026_alipay_checkout|FAIL|model_failure_in_reconstructed_environment|100|.\local_eval\runs\android.openshop.home_refresh_2026_alipay_checkout\20261009_021710\result.json|
+|android.opentrip.flight_voucher_baggage_booking|PASS|model_pass|52|.\local_eval\runs\android.opentrip.flight_voucher_baggage_booking\20261009_023558\result.json|
+|android.opentrip.hotel_voucher_family_suite_booking|FAIL|model_failure_in_reconstructed_environment|112|.\local_eval\runs\android.opentrip.hotel_voucher_family_suite_booking\20261009_024838\result.json|
+|android.opentrip.seed_hotel_review_wallet_audit|PASS|model_pass|55|.\local_eval\runs\android.opentrip.seed_hotel_review_wallet_audit\20261009_031007\result.schema-corrected.json|
+|android.opentrip.seed_orders_reschedule|PASS|model_pass|64|.\local_eval\runs\android.opentrip.seed_orders_reschedule\20261009_033746\result.schema-corrected.json|
+|android.opentwitter.01_release_review_coordination|FAIL|model_failure_in_reconstructed_environment|47|.\local_eval\runs\android.opentwitter.01_release_review_coordination\20261008_224720\result.json|
+|android.opentwitter.03_research_search_coordination|FAIL|model_failure_in_reconstructed_environment|22|.\local_eval\runs\android.opentwitter.03_research_search_coordination\20261008_225653\result.json|
+|android.opentwitter.04_mobile_incident_frontend_audit|FAIL|model_failure_in_reconstructed_environment|32|.\local_eval\runs\android.opentwitter.04_mobile_incident_frontend_audit\20261008_230535\result.json|
+|android.opentwitter.05_security_billing_api_audit|PASS|model_pass|121|.\local_eval\runs\android.opentwitter.05_security_billing_api_audit\20261008_231613\result.json|
+|android.opentwitter.changelog_follow_audit_workflow_20260822|FAIL|model_failure_in_reconstructed_environment|100|.\local_eval\runs\android.opentwitter.changelog_follow_audit_workflow_20260822\20261008_233451\result.json|
+|android.opentwitter.focus_research_community_workflow_20260822_v2|FAIL|model_failure_in_reconstructed_environment|96|.\local_eval\runs\android.opentwitter.focus_research_community_workflow_20260822_v2\20261008_235241\result.json|

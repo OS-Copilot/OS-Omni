@@ -631,6 +631,9 @@ def _launch_app_command(app_name: str) -> None:
     if not app_name:
         raise ValueError("app_name is required")
     target = _resolve_launch_target(app_name)
+    # A missing absolute path would only raise an asynchronous "cannot find" dialog, so fail the request instead.
+    if ":\\" in target and not os.path.exists(target):
+        raise FileNotFoundError(f"launch target does not exist: {target}")
     # Use Windows start command for launching apps
     subprocess.Popen(
         ["cmd", "/c", "start", "", target],
@@ -715,6 +718,10 @@ def _resolve_launch_target(app_name: str) -> str:
             r"%LOCALAPPDATA%\Programs\OpenShop\openshop.exe",
             r"C:\Program Files\OpenShop\OpenShop.exe",
             r"C:\Program Files\OpenShop\openshop.exe",
+        ],
+        "opentwitter": [
+            r"C:\OS-Omni\Apps\OpenTwitter\opentwitter.exe",
+            r"%USERPROFILE%\Desktop\OpenTwitter.lnk",
         ],
         "gimp": [r"C:\Program Files\GIMP 2\bin\gimp-2.10.exe"],
         "gimp-2.10": [r"C:\Program Files\GIMP 2\bin\gimp-2.10.exe"],

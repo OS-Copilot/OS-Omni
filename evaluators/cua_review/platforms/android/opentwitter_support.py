@@ -17,6 +17,7 @@ did nothing.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Mapping
 
 from evaluators.cua_review.platforms.android.webview_devtools import WebViewDevTools
@@ -143,9 +144,97 @@ class OpenTwitterAndroidStore:
         return [item for item in value if isinstance(item, Mapping)] if isinstance(value, list) else []
 
 
+def _instant(raw: Any) -> datetime | None:
+    """Parse an ISO-8601 time as the app stores it (``...Z``), or ``None``."""
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+
+
+def stated_order_check(
+    groups: Any,
+    anchors: Mapping[str, Mapping[str, Any] | None],
+    others: Mapping[str, list[Mapping[str, Any]]] | None = None,
+) -> tuple[bool, list[dict[str, Any]], dict[str, Any]]:
+    """Judge only the orders a task's English instruction states.
+
+    ``groups`` is the task's ``stated_order`` parameter: a list of
+    ``{"quote": ..., "chain": [step, step, ...], "immediately": bool}`` where a
+    step is one anchor label or a list of labels.  Every anchor of a step must
+    come strictly before every anchor of the next step; nothing else about the
+    order of the run is judged.  ``immediately`` (a brief's "immediately
+    after") additionally requires that no other object of the same kind
+    (the label's prefix before ``:``) was created between two single-label
+    steps; ``others`` supplies those objects per kind.
+
+    ``anchors`` maps a label to ``{"at": <ISO time>, "id": <object id>}`` for
+    the uniquely matched business object, or to ``None`` when the object was
+    not found exactly once (its own existence check reports why); an
+    unresolved anchor fails the order it takes part in.
+
+    Returns ``(passed, expected, observed)`` for the caller's check record.
+    """
+    expected: list[dict[str, Any]] = []
+    pairs: list[dict[str, Any]] = []
+    violations: list[dict[str, Any]] = []
+    unresolved: list[str] = []
+    for group in groups if isinstance(groups, list) else []:
+        if not isinstance(group, Mapping):
+            continue
+        steps = [
+            [str(item) for item in step] if isinstance(step, (list, tuple)) else [str(step)]
+            for step in (group.get("chain") or [])
+        ]
+        immediately = bool(group.get("immediately"))
+        expected.append({"quote": group.get("quote"), "chain": steps, "immediately": immediately})
+        for before_step, after_step in zip(steps, steps[1:]):
+            for before in before_step:
+                for after in after_step:
+                    first, second = anchors.get(before), anchors.get(after)
+                    first_at = _instant((first or {}).get("at"))
+                    second_at = _instant((second or {}).get("at"))
+                    row: dict[str, Any] = {
+                        "before": before,
+                        "after": after,
+                        "before_at": (first or {}).get("at"),
+                        "after_at": (second or {}).get("at"),
+                        "before_id": (first or {}).get("id"),
+                        "after_id": (second or {}).get("id"),
+                    }
+                    if first_at is None or second_at is None:
+                        unresolved.extend(label for label, at in ((before, first_at), (after, second_at)) if at is None)
+                        row["in_order"] = None
+                    else:
+                        row["in_order"] = first_at < second_at
+                        if not row["in_order"]:
+                            violations.append(row)
+                        elif immediately and len(before_step) == 1 and len(after_step) == 1:
+                            kind = after.split(":", 1)[0]
+                            between = [
+                                item.get("id")
+                                for item in (others or {}).get(kind, [])
+                                if item.get("id") not in (row["before_id"], row["after_id"])
+                                and (at := _instant(item.get("at"))) is not None
+                                and first_at < at < second_at
+                            ]
+                            if between:
+                                row["created_between"] = between
+                                violations.append(row)
+                    pairs.append(row)
+    unresolved = list(dict.fromkeys(unresolved))
+    observed = {"pairs": pairs, "violations": violations, "unresolved": unresolved}
+    return not violations and not unresolved, expected, observed
+
+
 __all__ = [
     "DEFAULT_APP_PACKAGE",
     "DEFAULT_LOCAL_STATE_KEY",
     "LOCAL_STATE_KEY_PATTERN",
     "OpenTwitterAndroidStore",
+    "stated_order_check",
 ]

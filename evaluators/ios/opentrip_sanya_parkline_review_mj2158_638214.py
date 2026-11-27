@@ -15,9 +15,15 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.ios.brief_event_order import single_record_transitions as _single_record_transitions
+from evaluators.cua_review.initializers.ios.opentrip_seed_state import _seeded_state
+from evaluators.cua_review.platforms.ios.webview_state import (
+    local_storage_history,
+    read_window_seed,
+)
 
 
 TASK_ID = "ios.opentrip.sanya_parkline_review_mj2158_638214"
@@ -244,11 +250,23 @@ RULESET_SPEC = {
     "data_step_fields": DATA_STEP_FIELDS,
     "step_groups": STEP_GROUPS,
     "checkpoint_specs": CHECKPOINT_SPECS,
-    "strict_transition_order": [
-        "hotel_booking_exact",
-        "hotel_review_exact",
-        "flight_booking_exact",
-    ],
+    # "Create a hotel booking, a review submission, and a flight booking" is an
+    # enumeration; the brief states no order between them.
+    "business_transitions": {
+        "records": [
+            "hotel_booking_exact",
+            "hotel_review_exact",
+            "flight_booking_exact",
+        ],
+        "rule": (
+            "each target record lands exactly once in its own committed WAL state, in any "
+            "order; no regression, extra, duplicate, or corrected target data; the last "
+            "commit holds all three"
+        ),
+        "required_order": [],
+        "timestamp_integrity": "a booking first committed later carries a later createdAt",
+    },
+    "list_storage": "new bookings newest-first by createdAt, ahead of the four seed bookings",
     "dynamic_ids": {
         "pattern": "OT followed by exactly 13 decimal digits",
         "epoch_equals_created_at": True,
@@ -265,7 +283,7 @@ RULESET_SPEC = {
         "comparison": "canonical SHA-256 of complete booking after removing only id and createdAt",
         "hotel_fingerprint": EXPECTED_HOTEL_FINGERPRINT,
         "flight_fingerprint": EXPECTED_FLIGHT_FINGERPRINT,
-        "extra_duplicate_corrected_or_out_of_order_data": "FAIL",
+        "extra_duplicate_or_corrected_data": "FAIL",
     },
     "final_ui": "not asserted because the instruction has no final-stay UI requirement",
     "non_persisted_steps": (
@@ -277,7 +295,7 @@ RULESET_SHA256 = _canonical_json_sha256(RULESET_SPEC)
 
 
 class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
-    """Verify the exact hotel, review, flight objects and committed order."""
+    """Verify the exact hotel, review, and flight objects, each committed once in any order."""
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -325,6 +343,8 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 self._read_state_snapshot_and_history(
                     db_path=db_path,
                     local_state_key=LOCAL_STATE_KEY,
+                    canonical_base=self._canonical_base_state(app_binding),
+                    is_baseline=None,
                 )
             )
         except Exception as exc:
@@ -388,7 +408,10 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 ["source_or_process"],
                 baseline_hash == EXPECTED_BASE_STATE_SHA256,
                 EXPECTED_BASE_STATE_SHA256,
-                baseline_hash,
+                {
+                    "state_sha256": baseline_hash,
+                    "baseline_source": (database_evidence or {}).get("baseline_source", "main_database_file"),
+                },
                 "baseline state hash does not match the exact four-booking clean source",
             )
         )
@@ -458,11 +481,17 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
 
         final_ids = cls._booking_ids(state)
-        expected_ids = [
-            final_facts["flight"].get("id"),
-            final_facts["hotel"].get("id"),
-            *SEED_BOOKING_IDS,
+        # The app prepends each new booking, so the two new ones lead the list
+        # newest-first; which of them was booked first is not graded.
+        newest_first = [
+            fact.get("id")
+            for fact in sorted(
+                (final_facts["flight"], final_facts["hotel"]),
+                key=lambda fact: fact.get("timestamp") or datetime.min.replace(tzinfo=timezone.utc),
+                reverse=True,
+            )
         ]
+        expected_ids = [*newest_first, *SEED_BOOKING_IDS]
         cardinality_pass = bool(
             len(final_facts["dynamic"]) == 2
             and final_facts["dynamic_type_counts"] == {"flight": 1, "hotel": 1}
@@ -478,7 +507,7 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 {
                     "dynamic_count": 2,
                     "dynamic_types": {"flight": 1, "hotel": 1},
-                    "booking_order": ["new_flight", "new_hotel", *SEED_BOOKING_IDS],
+                    "booking_order": ["newer_new_booking", "older_new_booking", *SEED_BOOKING_IDS],
                 },
                 {
                     "dynamic_count": len(final_facts["dynamic"]),
@@ -490,26 +519,18 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
         )
 
-        hotel_time = final_facts["hotel"].get("timestamp")
-        flight_time = final_facts["flight"].get("timestamp")
-        timeline_pass = bool(hotel_time and flight_time and hotel_time < flight_time)
-        checks.append(
-            cls._check(
-                "dynamic_identifier_and_timestamp_order_exact",
-                [30, 70],
-                ["source_or_process", "relationship"],
-                timeline_pass,
-                "hotel id epoch == hotel.createdAt < flight id epoch == flight.createdAt",
-                [cls._iso(hotel_time), cls._iso(flight_time)],
-            )
-        )
-
         transaction_check, transition_evidence = cls._evaluate_transaction_history(
             commit_states,
             base_state=base_state,
             window_start=window_start,
             window_end=window_end,
             allowed_review_dates=allowed_review_dates,
+            history_truncated=bool((database_evidence or {}).get("history_truncated_by_checkpoint")),
+            record_times=(
+                final_facts["hotel"].get("timestamp"),
+                None,
+                final_facts["flight"].get("timestamp"),
+            ),
         )
         checks.append(transaction_check)
 
@@ -593,9 +614,14 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenTrip exact hotel, review, flight, and committed order all match",
+            message="OpenTrip exact hotel, review, and flight, each committed once, all match",
             metadata=metadata,
         )
+
+    @staticmethod
+    def _is_clean_baseline(state: Mapping[str, Any]) -> bool:
+        """Logical-content test for the clean seed (canonical JSON, not file bytes)."""
+        return _canonical_json_sha256(state) == EXPECTED_BASE_STATE_SHA256
 
     @classmethod
     def _target_facts(
@@ -712,13 +738,21 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         elif not isinstance(observed, Mapping):
             reasons.append("review object is missing")
         else:
-            if dict(observed) != REVIEW_EXPECTED:
+            # The app stamps review.date at submission time, so the date cannot
+            # be pinned to the manual-recording date embedded in REVIEW_EXPECTED.
+            # Normalize only the date for the exact comparisons below; its causal
+            # window is enforced separately and every other review field (plus
+            # the booking hash and review list/count shape) is still exact.
+            # Evidence: scan.CSV row IOS-001.
+            observed_date = observed.get("date")
+            expected_review = {**REVIEW_EXPECTED, "date": observed_date}
+            if dict(observed) != expected_review:
                 reasons.append("review object does not exactly match all expected fields")
-            if observed.get("date") not in allowed_review_dates:
+            if observed_date not in allowed_review_dates:
                 reasons.append("review.date is outside the causal window UTC dates")
 
             expected_booking = copy.deepcopy(dict(base_booking))
-            expected_booking["review"] = copy.deepcopy(REVIEW_EXPECTED)
+            expected_booking["review"] = copy.deepcopy(expected_review)
             expected_item = expected_booking.get("item")
             if not isinstance(expected_item, dict):
                 reasons.append("baseline review booking item is invalid")
@@ -727,7 +761,7 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 if not isinstance(reviews, list):
                     reasons.append("baseline item.reviews is invalid")
                 else:
-                    expected_item["reviews"] = [copy.deepcopy(REVIEW_EXPECTED), *reviews]
+                    expected_item["reviews"] = [copy.deepcopy(expected_review), *reviews]
                 review_count = expected_item.get("reviewCount")
                 if not isinstance(review_count, int):
                     reasons.append("baseline item.reviewCount is invalid")
@@ -751,15 +785,11 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         window_start: datetime,
         window_end: datetime,
         allowed_review_dates: set[str],
+        history_truncated: bool = False,
+        record_times: Sequence[datetime | None] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         reasons: list[str] = []
-        expected_flags = (
-            (True, False, False),
-            (True, True, False),
-            (True, True, True),
-        )
-        first_commit: list[int | None] = [None, None, None]
         for index, state in enumerate(commit_states, start=1):
             facts = cls._target_facts(
                 state,
@@ -769,9 +799,6 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 allowed_review_dates=allowed_review_dates,
             )
             flags = tuple(bool(value) for value in facts["flags"])
-            for position, value in enumerate(flags):
-                if value and first_commit[position] is None:
-                    first_commit[position] = index
             rows.append(
                 {
                     "commit": index,
@@ -783,31 +810,35 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             if facts["anomalies"]:
                 reasons.append(f"commit {index} contains unexpected target data: {facts['anomalies']}")
 
-        if len(rows) != 3:
-            reasons.append(f"expected exactly 3 committed WAL states, observed {len(rows)}")
-        if tuple(tuple(row["flags"]) for row in rows) != expected_flags:
-            reasons.append("WAL flags are not exact hotel -> review -> flight transitions")
-        if first_commit != [1, 2, 3]:
-            reasons.append("first committed appearances are not hotel=1, review=2, flight=3")
+        # Each record lands once, in its own commit, in any order (the brief
+        # states none); a checkpoint may fold the first commits together.
+        transition_reasons, transition_first = _single_record_transitions(
+            [row["flags"] for row in rows],
+            history_truncated=history_truncated,
+            allow_idle_commits=False,
+            record_times=record_times,
+        )
+        reasons.extend(transition_reasons)
+        first_commit: list[int | None] = transition_first or [None, None, None]
 
         evidence = {
+            "history_truncated_by_checkpoint": bool(history_truncated),
             "commit_count": len(rows),
             "first_target_commits": {
                 "hotel_booking_exact": first_commit[0],
                 "hotel_review_exact": first_commit[1],
                 "flight_booking_exact": first_commit[2],
             },
-            "expected_flags": [list(row) for row in expected_flags],
             "commits": rows,
             "failure_reasons": reasons,
         }
         return (
             cls._check(
-                "wal_transaction_order_exact",
+                "durable_events_and_required_order",
                 [30, 36, 70],
                 ["source_or_process", "relationship"],
                 not reasons,
-                RULESET_SPEC["strict_transition_order"],
+                RULESET_SPEC["business_transitions"],
                 evidence,
                 "; ".join(reasons),
             ),
@@ -839,8 +870,8 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
             names = list(direct[step])
             if primary not in names:
                 names.append(primary)
-            if "wal_transaction_order_exact" not in names:
-                names.append("wal_transaction_order_exact")
+            if "durable_events_and_required_order" not in names:
+                names.append("durable_events_and_required_order")
             relevant = [by_name[name] for name in names if name in by_name]
             data_step = step in DATA_STEPS
             coverage.append(
@@ -1006,7 +1037,8 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         )
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container {kind} failed: {proc.stderr.strip()}")
-        path = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        path = remap_simulator_container_path(proc.stdout.strip(), udid)
         if not path.exists():
             raise FileNotFoundError(f"simctl {kind} container does not exist: {path}")
         return path
@@ -1025,20 +1057,35 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         *,
         db_path: Path,
         local_state_key: str,
+        canonical_base: Mapping[str, Any] | None = None,
+        is_baseline: Callable[[Mapping[str, Any]], bool] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
         if not db_path.is_file():
             raise FileNotFoundError(f"localStorage database not found: {db_path}")
-        with tempfile.TemporaryDirectory(prefix="opentrip-234497-verifier-") as temporary:
+        baseline_test = is_baseline or cls._is_clean_baseline
+        with tempfile.TemporaryDirectory(prefix="opentrip-638214-verifier-") as temporary:
             snapshot = Path(temporary) / "localstorage.sqlite3"
             copied_sidecars, stable_stats = cls._copy_consistent_sqlite_set(db_path, snapshot)
+            # Current state: SQLite's own view (main file plus committed WAL frames).
             final_state = cls._read_local_state(snapshot, local_state_key, include_wal=True)
-            base_state = cls._read_local_state(snapshot, local_state_key, include_wal=False)
-            wal_path = Path(f"{snapshot}-wal")
-            commit_states = (
-                cls._replay_wal_commits(snapshot, wal_path, local_state_key)
-                if wal_path.is_file() and wal_path.stat().st_size > 32
-                else []
+            # History: the main file and each committed WAL state, compared by
+            # logical content.  A checkpoint during the episode may already have
+            # copied early commits into the main file, so it is not assumed to
+            # still hold the clean pre-episode state.
+            history = local_storage_history(
+                snapshot,
+                read_state=lambda path: cls._read_local_state(path, local_state_key, include_wal=False),
+                is_baseline=baseline_test,
             )
+            base_state = history["baseline"]
+            baseline_source = history["evidence"]["baseline_source"]
+            if base_state is None:
+                # The clean baseline was folded into later commits; judge against
+                # the canonical seed the initializer writes and verifies instead.
+                base_state = dict(canonical_base or {})
+                baseline_source = (
+                    "canonical_seed_from_app_bundle" if canonical_base else "unavailable"
+                )
             evidence = {
                 "quick_check": "ok",
                 "snapshot_read": True,
@@ -1048,10 +1095,21 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
                 "source_stats": stable_stats,
                 "local_state_key": local_state_key,
                 "source_database_sha256": cls._file_sha256(db_path),
-                "wal_commit_count": len(commit_states),
                 "host_temp_only": True,
+                **history["evidence"],
+                "baseline_source": baseline_source,
             }
-        return final_state, base_state, commit_states, evidence
+        return final_state, base_state, history["history"], evidence
+
+    @staticmethod
+    def _canonical_base_state(app_binding: Mapping[str, Any]) -> dict[str, Any] | None:
+        """The clean seed the initializer writes, rebuilt from the bound app bundle."""
+        try:
+            application = list(app_binding.get("applications") or [])[0]
+            seed_path = Path(str(application["app_container"])) / "public" / "seed-data.js"
+            return _seeded_state(read_window_seed(seed_path, "opentripSeed"))
+        except Exception:  # noqa: BLE001 - only needed after a checkpoint; reported then
+            return None
 
     @classmethod
     def _copy_consistent_sqlite_set(
@@ -1105,88 +1163,6 @@ class OpenTripSanyaParklineReviewMj2158638214Evaluator(BaseEvaluator):
         if len(rows) != 1:
             raise RuntimeError(f"expected one localStorage row for {key!r}, observed {len(rows)}")
         return cls._decode_state(rows[0][0])
-
-    @classmethod
-    def _replay_wal_commits(
-        cls,
-        base_db: Path,
-        wal_path: Path,
-        key: str,
-    ) -> list[dict[str, Any]]:
-        payload = wal_path.read_bytes()
-        if len(payload) < 32:
-            return []
-        magic, version, page_size, _sequence, salt1, salt2, header_c1, header_c2 = struct.unpack(
-            ">8I", payload[:32]
-        )
-        if magic not in {0x377F0682, 0x377F0683}:
-            raise RuntimeError(f"invalid WAL magic: {magic:#x}")
-        if version != 3007000:
-            raise RuntimeError(f"unsupported WAL version: {version}")
-        if page_size == 1:
-            page_size = 65536
-        if page_size < 512 or page_size > 65536 or page_size & (page_size - 1):
-            raise RuntimeError(f"invalid WAL page size: {page_size}")
-        checksum_byte_order = "little" if magic == 0x377F0682 else "big"
-        calculated_header = cls._wal_checksum(
-            payload[:24],
-            byte_order=checksum_byte_order,
-        )
-        if calculated_header != (header_c1, header_c2):
-            raise RuntimeError("WAL header checksum mismatch")
-        frame_size = 24 + page_size
-        if (len(payload) - 32) % frame_size:
-            raise RuntimeError("WAL contains a partial frame")
-
-        replay = base_db.parent / "wal-replay.sqlite3"
-        shutil.copy2(base_db, replay)
-        states: list[dict[str, Any]] = []
-        rolling_checksum = calculated_header
-        with replay.open("r+b") as handle:
-            for offset in range(32, len(payload), frame_size):
-                page_no, db_size, frame_salt1, frame_salt2, frame_c1, frame_c2 = struct.unpack(
-                    ">6I", payload[offset : offset + 24]
-                )
-                if page_no <= 0:
-                    raise RuntimeError(f"invalid WAL page number at offset {offset}")
-                if (frame_salt1, frame_salt2) != (salt1, salt2):
-                    raise RuntimeError(f"WAL salt mismatch at offset {offset}")
-                page = payload[offset + 24 : offset + frame_size]
-                rolling_checksum = cls._wal_checksum(
-                    payload[offset : offset + 8] + page,
-                    byte_order=checksum_byte_order,
-                    seed=rolling_checksum,
-                )
-                if rolling_checksum != (frame_c1, frame_c2):
-                    raise RuntimeError(f"WAL frame checksum mismatch at offset {offset}")
-                handle.seek((page_no - 1) * page_size)
-                handle.write(page)
-                if db_size:
-                    handle.truncate(db_size * page_size)
-                    handle.flush()
-                    states.append(cls._read_local_state(replay, key, include_wal=False))
-        return states
-
-    @staticmethod
-    def _wal_checksum(
-        payload: bytes,
-        *,
-        byte_order: str,
-        seed: tuple[int, int] = (0, 0),
-    ) -> tuple[int, int]:
-        """Return SQLite's rolling WAL checksum for an 8-byte-aligned payload."""
-
-        if len(payload) % 8:
-            raise RuntimeError("WAL checksum input is not aligned to eight bytes")
-        if byte_order not in {"little", "big"}:
-            raise ValueError(f"unsupported WAL checksum byte order: {byte_order}")
-        s0, s1 = seed
-        for offset in range(0, len(payload), 8):
-            word0 = int.from_bytes(payload[offset : offset + 4], byte_order)
-            word1 = int.from_bytes(payload[offset + 4 : offset + 8], byte_order)
-            s0 = (s0 + word0 + s1) & 0xFFFFFFFF
-            s1 = (s1 + word1 + s0) & 0xFFFFFFFF
-        return s0, s1
 
     @staticmethod
     def _decode_state(raw: Any) -> dict[str, Any]:

@@ -133,7 +133,7 @@ evaluation:
     - Send reply
     expected_ruleset_sha256: 7c95f6e26c3463b89a694a940b463eea4882b4becf6b8916a6d08e8a0b28a1d3
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

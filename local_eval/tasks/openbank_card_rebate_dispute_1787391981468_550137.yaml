@@ -1,0 +1,353 @@
+task_id: android.openbank.card_rebate_dispute_1787391981468_550137
+platform: android
+instruction: '1. 点击底部导航栏的“Activity”。
+
+  2. 点击“Search merchant or description”输入框。
+
+  3. 输入“Ace Hardware”。
+
+  4. 点击“Search”。
+
+  5. 点击“Ace Hardware”结果行的“Details”。
+
+  6. 点击“Reason”选择控件。
+
+  7. 点击“Canceled or returned item”。
+
+  8. 点击处于关闭状态的“I contacted the merchant”开关。
+
+  9. 点击争议表单的“Details”输入框。
+
+  10. 输入“Return for rebate”。
+
+  11. 点击“Submit dispute”。
+
+  12. 点击底部导航栏的“Transfers”。
+
+  13. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Mira Song 收款人。
+
+  14. 点击“Account number”输入框。
+
+  15. 输入“8163057294”。
+
+  16. 点击“Name”输入框。
+
+  17. 输入“Mira song”。
+
+  18. 点击“Routing number”输入框。
+
+  19. 输入“071000013”。
+
+  20. 点击“Nickname”输入框。
+
+  21. 输入“Card rebate”。
+
+  22. 点击“Bank”输入框。
+
+  23. 输入“OpenBank”。
+
+  24. 点击“Save recipient”。
+
+  25. 在 Transfers 页面向上滚动，直到“Add recipient”表单可见，以便后续创建 Dana Cole 收款人。
+
+  26. 点击“Bank”输入框。
+
+  27. 输入“OpenBank”。
+
+  28. 点击“Account number”输入框。
+
+  29. 输入“3479206185”。
+
+  30. 点击“Nickname”输入框。
+
+  31. 输入“Audit fee”。
+
+  32. 点击“Routing number”输入框。
+
+  33. 输入“091000019”。
+
+  34. 点击“Name”输入框。
+
+  35. 输入“Dana Cole”。
+
+  36. 点击“Save recipient”。
+
+  37. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Mira Song 的 Card rebate 转账。
+
+  38. 点击“Amount”输入框。
+
+  39. 输入“2.75”。
+
+  40. 点击“Memo”输入框。
+
+  41. 输入“Card rebate”。
+
+  42. 点击“To”选择控件。
+
+  43. 点击“Mira Song”。
+
+  44. 点击“Date”选择控件。
+
+  45. 点击“June 29, 2026”。
+
+  46. 点击“From”选择控件。
+
+  47. 点击“Everyday Checking ••••2381”。
+
+  48. 点击“Submit transfer”。
+
+  49. 点击底部导航栏的“Statements”。
+
+  50. 点击“Rainy Day Savings ••••9140”。
+
+  51. 在 Rainy Day Savings 对账单页面向下滚动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+  52. 点击处于“Paper”状态的“Go paperless”。
+
+  53. 点击底部导航栏的“Transfers”。
+
+  54. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Dana Cole 的 Audit fee 转账。
+
+  55. 点击“To”选择控件。
+
+  56. 点击“Dana Cole”。
+
+  57. 点击“Memo”输入框。
+
+  58. 输入“Audit fee”。
+
+  59. 点击“Date”选择控件。
+
+  60. 点击“June 30, 2026”。
+
+  61. 点击“Amount”输入框。
+
+  62. 输入“1.35”。
+
+  63. 点击“From”选择控件。
+
+  64. 点击“Everyday Checking ••••2381”。
+
+  65. 点击“Submit transfer”。
+
+  66. 点击底部导航栏的“Security”。
+
+  67. 在 Security 页面向下滚动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+  68. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+  69. 点击该提醒表单底部的“Save”。
+
+  70. 在 Security 页面向上滚动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+  71. 点击“Upcoming bill”行的“Mark Read”。
+
+  72. 在 Security 页面向下滚动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+  73. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+  74. 点击该提醒表单底部的“Save”。
+
+  75. 点击处于“Unlocked”状态的“Everyday Checking debit card”行内“Lock”，将该卡设置为锁定状态。
+
+  '
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openbank
+    snapshot_name: sn2
+    source_initializer: evaluators.cua_review.initializers.android.android_openbank_card_rebate_dispute_1787391981468_550137:AndroidOpenBankCardRebateDispute1787391981468550137Initializer
+evaluation:
+  evaluator_id: local_eval.openbank_evaluator:InstalledOpenBankEvaluator
+  params:
+    app_package: com.killt.openbank
+    local_state_key: openbank.localState.v7
+    expected_ruleset_sha256: 3a6f01e1c60ef77cf10007f4fb032d9679ba3b0ed1148e2abf0e8c8373a34671
+    source_state_mode: fresh_clone_verified
+    source_evaluator: evaluators.android.openbank_card_rebate_dispute_1787391981468_550137:AndroidOpenBankCardRebateDispute1787391981468550137Evaluator
+limits:
+  max_steps: 180
+  step_timeout_seconds: 120
+metadata:
+  app: OpenBank
+  app_name: OpenBank
+  app_bundle_id: com.killt.openbank
+  required_packages_any:
+  - com.killt.openbank
+  android_vm_profile: quail3
+  avd_name: quail3
+  snapshot_name: sn2
+  source_state_mode: human_completed_eval_only
+  instruction_sha256: bb55f8219268e69a18413d041cd3cc9f34f610d391af4999afab93b44e7b0722
+  evaluator_ruleset_sha256: 3a6f01e1c60ef77cf10007f4fb032d9679ba3b0ed1148e2abf0e8c8373a34671
+  verifier_rules:
+    matching: exact_case_sensitive_typed_values_and_cardinality
+    event_order: exact_relevant_event_projection_no_extras
+    step_coverage: exact_1_through_75
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openbank/Android/android.openbank.card_rebate_dispute_1787391981468_550137
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: 85001c1049ca356565a7f1d7ab3f5a267bd9d9e93fe3c414e0c7f732fb797d93
+    source_instruction: '1. 点击底部导航栏的“Activity”。
+
+      2. 点击“Search merchant or description”输入框。
+
+      3. 输入“Ace Hardware”。
+
+      4. 点击“Search”。
+
+      5. 点击“Ace Hardware”结果行的“Details”。
+
+      6. 点击“Reason”选择控件。
+
+      7. 点击“Canceled or returned item”。
+
+      8. 点击处于关闭状态的“I contacted the merchant”开关。
+
+      9. 点击争议表单的“Details”输入框。
+
+      10. 输入“Return for rebate”。
+
+      11. 点击“Submit dispute”。
+
+      12. 点击底部导航栏的“Transfers”。
+
+      13. 在 Transfers 页面向下滚动，直到“Add recipient”表单可见，以便后续创建 Mira Song 收款人。
+
+      14. 点击“Account number”输入框。
+
+      15. 输入“8163057294”。
+
+      16. 点击“Name”输入框。
+
+      17. 输入“Mira song”。
+
+      18. 点击“Routing number”输入框。
+
+      19. 输入“071000013”。
+
+      20. 点击“Nickname”输入框。
+
+      21. 输入“Card rebate”。
+
+      22. 点击“Bank”输入框。
+
+      23. 输入“OpenBank”。
+
+      24. 点击“Save recipient”。
+
+      25. 在 Transfers 页面向上滚动，直到“Add recipient”表单可见，以便后续创建 Dana Cole 收款人。
+
+      26. 点击“Bank”输入框。
+
+      27. 输入“OpenBank”。
+
+      28. 点击“Account number”输入框。
+
+      29. 输入“3479206185”。
+
+      30. 点击“Nickname”输入框。
+
+      31. 输入“Audit fee”。
+
+      32. 点击“Routing number”输入框。
+
+      33. 输入“091000019”。
+
+      34. 点击“Name”输入框。
+
+      35. 输入“Dana Cole”。
+
+      36. 点击“Save recipient”。
+
+      37. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Mira Song 的 Card rebate 转账。
+
+      38. 点击“Amount”输入框。
+
+      39. 输入“2.75”。
+
+      40. 点击“Memo”输入框。
+
+      41. 输入“Card rebate”。
+
+      42. 点击“To”选择控件。
+
+      43. 点击“Mira Song”。
+
+      44. 点击“Date”选择控件。
+
+      45. 点击“June 29, 2026”。
+
+      46. 点击“From”选择控件。
+
+      47. 点击“Everyday Checking ••••2381”。
+
+      48. 点击“Submit transfer”。
+
+      49. 点击底部导航栏的“Statements”。
+
+      50. 点击“Rainy Day Savings ••••9140”。
+
+      51. 在 Rainy Day Savings 对账单页面向下滚动，直到“Paper delivery”区域可见，以便后续保存无纸化设置。
+
+      52. 点击处于“Paper”状态的“Go paperless”。
+
+      53. 点击底部导航栏的“Transfers”。
+
+      54. 在 Transfers 页面向下滚动，直到“New Transfer”表单可见，以便后续提交 Dana Cole 的 Audit fee 转账。
+
+      55. 点击“To”选择控件。
+
+      56. 点击“Dana Cole”。
+
+      57. 点击“Memo”输入框。
+
+      58. 输入“Audit fee”。
+
+      59. 点击“Date”选择控件。
+
+      60. 点击“June 30, 2026”。
+
+      61. 点击“Amount”输入框。
+
+      62. 输入“1.35”。
+
+      63. 点击“From”选择控件。
+
+      64. 点击“Everyday Checking ••••2381”。
+
+      65. 点击“Submit transfer”。
+
+      66. 点击底部导航栏的“Security”。
+
+      67. 在 Security 页面向下滚动，直到“Payment due”表单可见，以便后续保存到期付款短信提醒。
+
+      68. 点击“Payment due”表单内处于关闭状态的“Text”开关。
+
+      69. 点击该提醒表单底部的“Save”。
+
+      70. 在 Security 页面向上滚动，直到“Upcoming bill”提醒行可见，以便后续将该提醒设置为已读。
+
+      71. 点击“Upcoming bill”行的“Mark Read”。
+
+      72. 在 Security 页面向下滚动，直到“Low balance”表单可见，以便后续保存低余额短信提醒。
+
+      73. 点击“Low balance”表单内处于关闭状态的“Text”开关。
+
+      74. 点击该提醒表单底部的“Save”。
+
+      75. 点击处于“Unlocked”状态的“Everyday Checking debit card”行内“Lock”，将该卡设置为锁定状态。
+
+      '
+    release_path: benchmark/tasks/openbank/Android/android.openbank.card_rebate_dispute_1787391981468_550137
+    original_evaluator_id: evaluators.android.android_openbank_card_rebate_dispute_1787391981468_550137:AndroidOpenBankCardRebateDispute1787391981468550137Evaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.android_openbank_card_rebate_dispute_1787391981468_550137:AndroidOpenBankCardRebateDispute1787391981468550137Initializer
+  local_repair:
+    source_task: tasks/v1/android/openbank_card_rebate_dispute_1787391981468_550137.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

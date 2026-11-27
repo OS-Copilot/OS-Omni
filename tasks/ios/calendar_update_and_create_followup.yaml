@@ -1,0 +1,69 @@
+task_id: ios.calendar.update_and_create_followup
+platform: ios
+instruction: "In Calendar, open today's event Bench Volunteer Briefing and edit it so the title becomes Bench Volunteer Briefing Updated, the time becomes 18:15-19:00, and the location becomes Cedar Room. Then create a new event for tomorrow titled Bench Volunteer Debrief from 09:30-10:00 at Cedar Room. Leave the other existing events unchanged."
+init:
+  initializer_id: initializers.ios.calendar_seed_open_app:CalendarSeedOpenAppInitializer
+  params:
+    bundle_id: com.apple.mobilecal
+    purge_all_events: true
+    purge_summaries:
+      - "Bench Volunteer Briefing"
+      - "Bench Volunteer Briefing Updated"
+      - "Bench Volunteer Debrief"
+      - "Bench Pharmacy Run"
+      - "Bench Evening Walk"
+    seed_events:
+      - summary: "Bench Volunteer Briefing"
+        day_offset: 0
+        start_time: "17:00"
+        end_time: "17:45"
+        location: "Birch Room"
+      - summary: "Bench Pharmacy Run"
+        day_offset: 0
+        start_time: "18:10"
+        end_time: "18:30"
+        location: "Market Street"
+      - summary: "Bench Evening Walk"
+        day_offset: 0
+        start_time: "20:00"
+        end_time: "20:30"
+        location: "Riverside"
+    wait_ms: 1500
+evaluation:
+  evaluator_id: evaluators.ios.calendar_event_state:CalendarEventStateEvaluator
+  params:
+    present_events:
+      - summary: "Bench Volunteer Briefing Updated"
+        day_offset: 0
+        start_time: "18:15"
+        end_time: "19:00"
+        location: "Cedar Room"
+      - summary: "Bench Volunteer Debrief"
+        day_offset: 1
+        start_time: "09:30"
+        end_time: "10:00"
+        location: "Cedar Room"
+      - summary: "Bench Pharmacy Run"
+        day_offset: 0
+        start_time: "18:10"
+        end_time: "18:30"
+        location: "Market Street"
+      - summary: "Bench Evening Walk"
+        day_offset: 0
+        start_time: "20:00"
+        end_time: "20:30"
+        location: "Riverside"
+    absent_summaries:
+      - "Bench Volunteer Briefing"
+    timeout_seconds: 10
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [calendar, ios, native, productivity, multi_step, hard, benchmark]
+  app: Calendar
+  app_bundle_id: com.apple.mobilecal
+  description: "Update one existing Calendar event and create a follow-up event for tomorrow."
+  prerequisites:
+    - "The iOS Calendar app is available in the simulator."

@@ -4,7 +4,7 @@ platform: windows
 instruction: Create five confirmed bookings in OpenTrip, ending with all five visible in the user’s booking
   list. The first booking is a flight from Shanghai (SHA) to Sanya (SYX) for 2026-06-12 on the Eastern
   Star ES6821 flight, signed in with pre-filled credentials, with the traveler set to Maya Chen · Passport,
-  the cabin set to Economy, the payment method set to Bank Card, and the Note field containing exactly
+  the cabin set to Business, the payment method set to Bank Card, and the Note field containing exactly
   V2sanyaSalesA. The second booking is a hotel in Beijing at the Beijing Jade Pavilion Boutique Stay,
   with the Deluxe Twin Room selected, the payment method set to WeChat Pay, and the Note field containing
   exactly V2BeijingTwinA. The third booking is a flight from Shanghai (PVG) to Chongqing (CKG) for 2026-06-01
@@ -21,6 +21,11 @@ init:
     app_name: OpenTrip
     port: 4330
     expected_logged_in: false
+    required_inventory:
+      - {type: flight, id: f2008, fields: {flightNo: ES8139, from: PVG, to: CKG, date: '2026-06-01'}}
+      - {type: flight, id: f1001, fields: {flightNo: ES6821, from: SHA, to: SYX, date: '2026-06-12'}}
+      - {type: hotel, id: h4887, fields: {name: 'Chengdu Jade Pavilion Boutique Stay'}}
+      - {type: hotel, id: h4879, fields: {name: 'Beijing Jade Pavilion Boutique Stay'}}
     expected_snapshot_display_name: s1
     final_wait_ms: 1800
     expected_seed:
@@ -49,7 +54,7 @@ evaluation:
       flight_from: SHA
       flight_to: SYX
       flight_date: '2026-06-12'
-      cabin: business
+      cabin: business  # the instruction asks for Business (aligned with upstream main)
       traveler_id: traveler-maya
       traveler_name: Maya Chen
       traveler_document_type: Passport
@@ -198,7 +203,7 @@ evaluation:
       required_regexes:
       - OT\d+
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence, find_dispute_route
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -108,7 +109,7 @@ CHECKPOINTS = {'openbank.task03.dispute_elm': {'steps': [1, 2, 3, 4, 5, 6, 7, 8,
                                               74,
                                               75,
                                               76],
-                                    'checks': ['ORDERED_EXACT']}}
+                                    'checks': ['PAIRWISE_PRECEDENCE']}}
 RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
  'source_state_mode': 'human_completed_eval_only',
  'disputes': [{'query': 'Elm Street',
@@ -148,8 +149,7 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
                'routingNumber': '021000021',
                'accountNumber': '8642073159',
                'mask': '3159'},
- 'transfer': {'id': 'transfer-1787670532170',
-              'fromAccountId': 'savings-9140',
+ 'transfer': {'fromAccountId': 'savings-9140',
               'recipientName': 'Caleb Wong',
               'amount': 149.75,
               'scheduledDate': '2026-06-06',
@@ -254,8 +254,11 @@ RULESET_SPEC = {'task_id': 'windows.openbank.task03_702660',
                                                               74,
                                                               75,
                                                               76],
-                                                    'checks': ['ORDERED_EXACT']}}}
-RULESET_SHA256 = 'ec1492ca27dd4204213465843e54591bcfe7669d6113a6538cf99a0dc980b9e7'
+                                                    'checks': ['PAIRWISE_PRECEDENCE']}}}
+RULESET_SPEC["event_route_policy"] = "search < detail < submit; subsequent inspection does not erase a completed route"
+RULESET_SPEC["transfer_identity_policy"] = "unique exact business object; bind generated ID to its submission event"
+RULESET_SPEC["order_policy"] = {'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order', 'stated': [], 'necessary': [['recipient_caleb', 'transfer_caleb']], 'necessary_reason': 'a transfer needs its recipient saved first'}
+RULESET_SHA256 = '2d1fca66dc86a026f8eb36f22783ed69e60917085f693d0becc38cdac209e1af'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = "evaluators.windows.openbank_task03_702660:OpenBankTask03702660Evaluator"
 
@@ -270,6 +273,9 @@ STEP_GROUPS = {
     "recipient_caleb": list(range(62, 69)),
     "transfer_caleb": list(range(69, 77)),
 }
+#: Business actions in the order this evaluator collects their events.
+ORDER_NAMES = list(STEP_GROUPS)
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task03.dispute_elm", "steps": STEP_GROUPS["dispute_elm"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["disputes"][0]},
     {"value_contract_id": "openbank.task03.dispute_rei", "steps": STEP_GROUPS["dispute_rei"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["disputes"][1]},
@@ -280,7 +286,7 @@ CHECKPOINT_SPECS = [
     {"value_contract_id": "openbank.task03.bill_northstar_7", "steps": STEP_GROUPS["bill_northstar_7"], "match_mode": "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["bill_payments"][2]},
     {"value_contract_id": "openbank.task03.recipient_caleb", "steps": STEP_GROUPS["recipient_caleb"], "match_mode": "UNIQUE_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["recipient"]},
     {"value_contract_id": "openbank.task03.transfer_caleb", "steps": STEP_GROUPS["transfer_caleb"], "match_mode": "EXACT_ID_OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", "expected": RULESET_SPEC["transfer"]},
-    {"value_contract_id": "openbank.task03.business_order", "steps": list(range(1, 77)), "match_mode": "ORDERED_EXACT", "expected": ["dispute_elm", "dispute_rei", "dispute_parking", "dispute_cloudbox", "bill_northstar_65", "bill_rewards_350", "bill_northstar_7", "recipient_caleb", "transfer_caleb"]},
+    {"value_contract_id": "openbank.task03.business_order", "steps": list(range(1, 77)), "match_mode": "PAIRWISE_PRECEDENCE", "expected": ORDER_PAIRS},
 ]
 
 
@@ -337,12 +343,7 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
         for index, expected in enumerate(RULESET_SPEC["disputes"]):
             object_matches = [row for row in disputes if row.get("merchant") == expected["merchant"] and row.get("reason") == expected["reason"] and row.get("contactedMerchant") is True and row.get("details") == expected["details"] and row.get("status") == "Submitted"]
             target = object_matches[0] if len(object_matches) == 1 else None
-            search_events = [row for row in events if row.get("type") == "transactions_viewed" and row.get("q") == expected["query"] and int(row.get("total", 0)) > 0]
-            detail_events = [row for row in events if target and row.get("type") == "transaction_details_viewed" and row.get("transactionId") == target.get("transactionId")]
-            submit_events = [row for row in events if target and row.get("type") == "transaction_dispute_submitted" and row.get("disputeId") == target.get("id") and row.get("transactionId") == target.get("transactionId") and row.get("reason") == expected["reason"]]
-            search = search_events[-1] if search_events else None
-            detail = next((row for row in detail_events if search and int(row.get("seq", -1)) > int(search.get("seq", -1))), None)
-            submit = next((row for row in submit_events if detail and int(row.get("seq", -1)) > int(detail.get("seq", -1))), None)
+            search, detail, submit = find_dispute_route(events, target, expected)
             passed = len(object_matches) == 1 and search is not None and detail is not None and submit is not None
             checks.append(cls._check(CHECKPOINT_SPECS[index], passed, {"object_count": len(object_matches), "search": _summary(search or {}), "detail": _summary(detail or {}), "submit": _summary(submit or {}), "object": target or object_matches}))
             ordered_events.append(submit)
@@ -367,16 +368,16 @@ class OpenBankTask03702660Evaluator(BaseEvaluator):
 
         transfer_expected = RULESET_SPEC["transfer"]
         transfers = _items(state, "transfers")
-        transfer_matches = [row for row in transfers if recipient and row.get("id") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_expected.items())]
+        transfer_matches = [row for row in transfers if recipient and str(row.get("id") or "").startswith("transfer-") and row.get("recipientId") == recipient.get("id") and all((_number(row.get(key)) == value if key == "amount" else row.get(key) == value) for key, value in transfer_expected.items())]
         transfer = transfer_matches[0] if len(transfer_matches) == 1 else None
-        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer_expected["id"] and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
+        transfer_event_matches = [row for row in events if transfer and row.get("type") == "transfer_scheduled" and row.get("transferId") == transfer.get("id") and row.get("recipientId") == recipient.get("id") and row.get("fromAccountId") == transfer_expected["fromAccountId"] and _number(row.get("amount")) == transfer_expected["amount"] and row.get("scheduledDate") == transfer_expected["scheduledDate"] and row.get("memo") == transfer_expected["memo"]]
         transfer_event = transfer_event_matches[0] if len(transfer_event_matches) == 1 else None
         checks.append(cls._check(CHECKPOINT_SPECS[8], transfer is not None and transfer_event is not None, {"object_count": len(transfer_matches), "object": transfer or transfer_matches, "event": _summary(transfer_event or {})}))
         ordered_events.append(transfer_event)
 
-        order_actual = [_summary(row or {}) for row in ordered_events]
-        order_passed = all(ordered_events) and all(int(left.get("seq", -1)) < int(right.get("seq", -1)) for left, right in zip(ordered_events, ordered_events[1:]))
-        checks.append(cls._check(CHECKPOINT_SPECS[9], bool(order_passed), order_actual))
+        # Only the stated and logically necessary orders (RULESET_SPEC["order_policy"]).
+        order_passed, order_actual = check_precedence(dict(zip(ORDER_NAMES, ordered_events)), ORDER_PAIRS)
+        checks.append(cls._check(CHECKPOINT_SPECS[9], order_passed, order_actual))
         foreground_passed = foreground_app.casefold() in {"openbank", "openbank.exe"} and "openbank" in foreground_window.casefold()
         checks.append({"name": "foreground_openbank", "value_contract_id": "openbank.task03.foreground", "instruction_steps": list(range(1, 77)), "match_mode": "FINAL_UI_APP_EXACT", "expected": {"app": "openbank.exe", "window": "OpenBank"}, "actual": {"app": foreground_app, "window": foreground_window}, "passed": foreground_passed})
 

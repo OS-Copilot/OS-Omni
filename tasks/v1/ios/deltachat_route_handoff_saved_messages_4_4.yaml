@@ -4,7 +4,7 @@ platform: ios
 instruction: |-
   Create a Markdown note in FSNotes titled “Handoff Log 0728” that interleaves typed text with pasted content from specific Delta Chat conversations, and share two distinct versions of this note to Delta Chat’s “Saved Messages”. The initial version of the note must consist of exactly seven lines: the header line “# Handoff log”, the line “Route handoff”, the exact content of the historical message from Mei Chen containing the string “route_final_blue_1740”, the line “Owner Mei”, the exact content of the historical message from Nora QA containing the string “nav_bar_search_token_nora_2606”, the line “Receiver Nora”, and the concluding line “Status offered”. This seven-line version must be shared to “Saved Messages” as an attachment named “Handoff Log 0728.markdown”.
 
-  The final version of the note must expand upon the initial seven lines by appending the line “Design packet”, the exact content of the historical message from Alice Design containing the string “design_search_anchor_alice_avatar”, the line “Sender Alice”, the line “Ops receipt”, the exact content of the historical message from Bob Ops containing the string “ops_launch_green_2026”, the line “Receiver Bob”, the line “Closure logged”, the line “Monitor Bob”, the line “Escalation Mei”, the line “Status accepted”, and the line “Archive local”. This final note must contain exactly 17 lines in total, with each line separated by a single line feed character and no trailing newline at the end of the file. This updated 17-line version must also be shared to “Saved Messages” as an attachment named “Handoff Log 0728.markdown”, resulting in two attachments in “Saved Messages” where the second attachment is byte-identical to the final state of the FSNotes file.
+  The final version of the note must expand upon the initial seven lines by appending the line “Design packet”, the exact content of the historical message from Alice Design containing the string “design_search_anchor_alice_avatar”, the line “Sender Alice”, the line “Ops receipt”, the exact content of the historical message from Bob Ops containing the string “ops_launch_green_2026”, the line “Receiver Bob”, the line “Closure logged”, the line “Monitor Bob”, the line “Escalation Mei”, the line “Status accepted”, and the line “Archive local”. This final note must contain exactly 18 lines in total, with each line separated by a single line feed character and no trailing newline at the end of the file. This updated 18-line version must also be shared to “Saved Messages” as an attachment named “Handoff Log 0728.markdown”, resulting in two attachments in “Saved Messages” where the second attachment is byte-identical to the final state of the FSNotes file.
 init:
   initializer_id: initializers.ios.open_app:OpenAppInitializer
   params:
@@ -19,10 +19,10 @@ evaluation:
     minimum_message_id: 535
     baseline_max_timestamp: 1783563283
     sent_state: 26
-    expected_ruleset_sha256: 4dd7f27a4bd97fd7c09dbd38e7accc51ee8c9a3355c0c7a2f4bad284792e38dd
+    expected_ruleset_sha256: a905872d830af45ba1961945b5e1b26436cf629d7ebb3f1e42f2665492bdb133
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -35,23 +35,24 @@ metadata:
   app: Delta Chat
   app_bundle_id: chat.delta
   ios_device_profile: iphone17-1
-  instruction_sha256: 388d8eec388ffbbc3758f8a6bb296aeaa9c839ef5b729f69ec9b2609534f632e
+  instruction_sha256: 417d91cc34d7026d2914bcb2037eeb2da22d228869d25c5c7bcea4869d2ac26b
   description: Delta Chat and FSNotes Handoff Log workflow verified from identical read-only business-state
     rules.
   prerequisites:
   - Evaluate only the retained iphone17-1 current simulator after the human run.
   - Delta Chat and FSNotes retain the completed state; the stable source simulator remains untouched.
   verifier_rules:
-    ruleset_sha256: 4dd7f27a4bd97fd7c09dbd38e7accc51ee8c9a3355c0c7a2f4bad284792e38dd
+    ruleset_sha256: a905872d830af45ba1961945b5e1b26436cf629d7ebb3f1e42f2665492bdb133
     fairness:
     - Human eval-only and AI full execution invoke this evaluator with identical parameters and ruleset.
     - Manual recording, agent trajectory, screenshots, and human-only event logs are not PASS evidence.
     final_business_evidence:
     - Saved Messages has exactly two task attachments newer than baseline message ID 534, both named Handoff
       Log 0728.markdown.
-    - The first attachment is the exact eight-line shared revision ending at Status offered.
-    - The second attachment and final FSNotes file are byte-identical exact 19-line final revisions.
-    - The v1 and v2 rows are ordered by distinct message IDs and timestamps; v1 is the exact prefix of
+    - The first attachment is the exact seven-line shared revision ending at Status offered.
+    - The second attachment and final FSNotes file are byte-identical exact 18-line final revisions.
+    - The v1 and v2 rows are ordered by distinct message IDs and non-decreasing timestamps (equal
+      timestamps are a non-blocking diagnostic); v1 is the exact prefix of
       the larger, hash-distinct v2.
     - All four copied source lines uniquely match complete baseline messages from Mei, Nora, Alice, and
       Bob in instruction order.
@@ -155,3 +156,5 @@ metadata:
     release_path: benchmark/tasks/deltachat/IOS/ios.deltachat.route_handoff_saved_messages_4_4
     original_evaluator_id: evaluators.ios.deltachat_route_handoff_saved_messages_4_4_evaluator:DeltaChatRouteHandoffStateEvaluator
     evaluator_source: benchmark
+    instruction_authority_note: English instruction is authoritative over the historical trace; ruleset 2.1
+      repairs the final count 17 to 18 and keeps the instructed Nora-source-before-Receiver-Nora order.

@@ -1,0 +1,445 @@
+{
+  "task_id": "android.opennavigation.saved_routes_incidents_records_20260801",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T06:49:05.329895+08:00",
+  "ended_at": "2026-10-09T07:08:04.955431+08:00",
+  "steps_taken": 180,
+  "latency_ms": 1139625.536,
+  "episode_result": {
+    "status": "FAIL",
+    "terminal_reason": "fail_max_steps",
+    "execution_message": "Exceeded max steps (180)",
+    "execution_valid": true,
+    "message": "OpenNavigation Records final evidence is incomplete"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.opennavigation",
+      "source_initializer": "evaluators.cua_review.initializers.android.opennavigation_records:OpenNavigationRecordsBaselineInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenNavigation Records final evidence is incomplete",
+    "metadata": {
+      "app_package": "com.killt.opennavigation",
+      "checks": {
+        "package_installed": true,
+        "foreground_is_opennavigation": true,
+        "records_page_visible": false,
+        "expected_visible_texts_present": false,
+        "route_record_count": false,
+        "incident_record_count": false,
+        "forbidden_texts_absent": true
+      },
+      "failures": [
+        "records_page_visible",
+        "expected_visible_texts_present",
+        "route_record_count",
+        "incident_record_count"
+      ],
+      "focus_lines": [
+        "mCurrentFocus=Window{bff5d90 u0 com.killt.opennavigation/com.killt.opennavigation.MainActivity}",
+        "mFocusedApp=ActivityRecord{196ff7c u0 com.killt.opennavigation/.MainActivity} t2019}"
+      ],
+      "package_output": "package:/data/app/~~jCynuU_-pRT1cajuC9gt1Q==/com.killt.opennavigation-Eilb7KcgAeli1gaFn3-zPA==/base.apk",
+      "expected_visible_text_hits": {
+        "Saved routes": false,
+        "Incident reports": false,
+        "CampusShuttle": false,
+        "OfficeLoop": true,
+        "Hazard": false,
+        "LaneBlocked": false,
+        "Transit delay": false,
+        "PlatformClosed": false
+      },
+      "forbidden_text_hits": {
+        "No saved routes": false,
+        "No incident reports": false
+      },
+      "route_record_evidence": [
+        {
+          "required_texts": [
+            "CampusShuttle",
+            "Transit",
+            "Stanford University"
+          ],
+          "matches": [],
+          "passed": false
+        },
+        {
+          "required_texts": [
+            "OfficeLoop",
+            "Drive",
+            "Meta Headquarters"
+          ],
+          "matches": [],
+          "passed": false
+        }
+      ],
+      "incident_record_evidence": [
+        {
+          "required_texts": [
+            "Hazard",
+            "LaneBlocked",
+            "OfficeLoop"
+          ],
+          "matches": [],
+          "passed": false
+        },
+        {
+          "required_texts": [
+            "Transit delay",
+            "PlatformClosed",
+            "CampusShuttle"
+          ],
+          "matches": [],
+          "passed": false
+        }
+      ],
+      "observed_texts": [
+        "OpenNavigation",
+        "OpenNavigation map",
+        "Current location",
+        "Meta Headquarters",
+        "OpenNavigation",
+        "☰",
+        "♡ Saved",
+        "↺ Recent",
+        "▤ Records",
+        "▧ Layers",
+        "Meta Headquarters",
+        "⌕",
+        "◆",
+        "Showing saved places.",
+        "OfficeLoop",
+        "Save route",
+        "♡ Stanford University 450 Jane Stanford Way, Stanford, CA university",
+        "Current",
+        "Map zoom",
+        "+",
+        "−",
+        "Route saved."
+      ],
+      "ui_text_excerpt": "OpenNavigation\nOpenNavigation map\nCurrent location\nMeta Headquarters\nOpenNavigation\n☰\n♡ Saved\n↺ Recent\n▤ Records\n▧ Layers\nMeta Headquarters\n⌕\n◆\nShowing saved places.\nOfficeLoop\nSave route\n♡ Stanford University 450 Jane Stanford Way, Stanford, CA university\nCurrent\nMap zoom\n+\n−\nRoute saved.",
+      "trajectory": {
+        "trajectory_path": ".\\local_eval\\runs\\android.opennavigation.saved_routes_incidents_records_20260801\\20261009_064549\\trajectory.jsonl",
+        "trajectory_available": true,
+        "agent_step_count": 180,
+        "parse_errors": []
+      },
+      "verifier_rules": {
+        "primary_data_source": "Final Android uiautomator dump from current Records view",
+        "target_objects": "Two saved route records and two incident report records",
+        "anti_false_positive": "Each route/report must contain the user-specified unique name/note plus mode/type and endpoint/route association; initializer fails if those strings exist in the snapshot baseline."
+      }
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opennavigation:id/action_bar_root",
+        "resource-id": "com.killt.opennavigation:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opennavigation:id/webview",
+        "resource-id": "com.killt.opennavigation:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opennavigation",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

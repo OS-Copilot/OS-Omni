@@ -113,12 +113,14 @@ Stop-AppProcesses -Names @(
 )
 
 Write-Host "Resetting common app user state..."
+# DeltaChat accounts, databases, attachments, and UI profile are snapshot seed data.
+# Preserve both profile roots; restoring the VM snapshot resets task mutations.
+# Deleting these roots after snapshot restore destroys the required starting state.
 $appStatePaths = @(
     "$env:APPDATA\Blender Foundation\Blender\2.79",
     "$env:APPDATA\Code\User\globalStorage",
     "$env:APPDATA\Code\User\History",
     "$env:APPDATA\Code\User\workspaceStorage",
-    "$env:APPDATA\DeltaChat",
     "$env:APPDATA\draw.io",
     "$env:APPDATA\GIMP",
     "$env:APPDATA\Mozilla",
@@ -134,7 +136,6 @@ $appStatePaths = @(
     "$env:LOCALAPPDATA\Code\Crashpad",
     "$env:LOCALAPPDATA\Code\GPUCache",
     "$env:LOCALAPPDATA\Code\logs",
-    "$env:LOCALAPPDATA\DeltaChat",
     "$env:LOCALAPPDATA\draw.io",
     "$env:LOCALAPPDATA\GIMP",
     "$env:LOCALAPPDATA\Google\Chrome\User Data",

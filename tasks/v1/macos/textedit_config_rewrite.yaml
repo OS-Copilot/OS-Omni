@@ -89,7 +89,7 @@ evaluation:
     actual_path: /Users/bench/Downloads/app.ini
     expected_path: files/textedit/config_rewrite/expected/app.ini
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard

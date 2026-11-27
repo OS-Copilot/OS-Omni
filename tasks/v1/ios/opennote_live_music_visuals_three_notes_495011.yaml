@@ -6,14 +6,14 @@ instruction: Update the OpenNote profile and publish three specific notes while 
   changes must be saved. Three new notes must be published, each categorized as Fashion. The first note,
   titled `Blue Green Guitar`, must contain the body text `Log blue green body\nNote stage colors\nGuide
   stage styling`, be located at `Riverside backstage`, and tagged with `Guitar blue green`; its cover
-  image must be the thumbnail in the fourth row on the left side of the Photo Library showing a close-up
-  of a blue-green electric guitar. The second note, titled `Live Music Visuals`, must contain the body
+  image must show a close-up of a blue-green electric guitar in the Photo Library. The second note,
+  titled `Live Music Visuals`, must contain the body
   text `Link guitar oalette\nPlan side portraits\nUnify media layout`, be located at `Media interview
   zone`, and tagged with `live music visuals`; this note must use the text cover option rather than an
   image. The third note, titled `Curly Musician Photo`, must contain the body text `Log curly silhouette\nMatch
   blue green set\nUse for media cover`, be located at `Riverside side stage`, and tagged with `musician
-  curly stage`; its cover image must be the thumbnail in the second row on the left side of the Photo
-  Library showing a young man with curly hair. Additionally, the user @drew_49 must be followed and the
+  curly stage`; its cover image must show a young man with curly hair in the Photo Library. Additionally,
+  the user @drew_49 must be followed and the
   note titled `Secondhand coat notes from tiny bedroom` must be liked. The note titled `Rain jacket I
   tried after the rain stopped` from the Fashion category must be both liked and saved.
 init:
@@ -24,7 +24,7 @@ init:
     expected_logged_in_user: lina
     require_logged_in: true
     login_if_missing: false
-    wait_ms: 1200
+    wait_ms: 6000
     bootstrap_wait_ms: 1200
     require_prelaunch_baseline: true
     return_home_after_init: false
@@ -38,13 +38,13 @@ evaluation:
     ios_device_profile: iphone17-3
     manual_window_start: '2026-08-04T16:55:28+08:00'
     manual_window_end: '2026-08-04T17:03:05.435+08:00'
-    expected_instruction_sha256: 22a04bfc7bbf968d200d7c5d14cac7ee152c6f189c14018afb6ff14eca500038
-    expected_ruleset_sha256: 6554628990486844e7efccc0f505e4503de228d55d9214a533938d45811e3e1e
+    expected_instruction_sha256: c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac
+    expected_ruleset_sha256: 4553c2852e748008d7e8e3624e1f49ab27a72c3c8428df45763b95452dfb8fdf
     evaluation_session_id: opennote-human-495011
     requires_ui_observation: false
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - opennote
@@ -66,15 +66,18 @@ metadata:
     status: approved
     recording_filename: 2026-08-04_16-55-27.mp4
   verifier_rules:
-    instruction_sha256: 22a04bfc7bbf968d200d7c5d14cac7ee152c6f189c14018afb6ff14eca500038
-    ruleset_sha256: 23fe415a9380881b2cdb4be04733d3fd1e717397736d98eb3d826e686c1139e0
+    instruction_sha256: c81cabaa174ebda805db6b85042c60897b26cea2646f4e7cce44359a18597aac
+    ruleset_sha256: 4553c2852e748008d7e8e3624e1f49ab27a72c3c8428df45763b95452dfb8fdf
     matching: case-sensitive exact values, ordered tags, LF body text, exact cover/build hashes, unique
-      objects, manual seq 34-52, and automatic baseline-relative causal suffix
+      objects, and each requested business event (three note_created, the drew_49 follow, the two likes,
+      the save, the profile update) exactly once in the manual or baseline-relative window with no other
+      business event; browsing is not counted and no order is required (the brief states none)
     manual_causal_window:
       start: '2026-08-04T16:55:28+08:00'
       end: '2026-08-04T17:03:05.435+08:00'
     automatic_causal_window: initializer.metadata.baseline_max_event_seq
   description: Strict read-only evaluator task for the approved 75-step OpenNote live-music workflow.
+  evaluation_revision: "2026-10-11: Replaced incorrect Photo Library row/column positions with image-content descriptions. Independent Photos-library ordering and exact file hashes confirm the same intended guitar (IMG_0076.JPG) and curly-haired musician (IMG_0074.JPG); verifier image hashes remain unchanged."
   prerequisites:
   - OpenNote is installed and Lina is logged in.
   - Manual eval-only reads retained iphone17-3 state without initializer, Appium, app launch, or GUI action.

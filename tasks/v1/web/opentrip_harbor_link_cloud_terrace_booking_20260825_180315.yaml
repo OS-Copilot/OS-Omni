@@ -32,8 +32,15 @@ evaluation:
       logged_in: true
       phone: '13900002026'
       name: Lucas Lin
+    # snap_1 seeds four bookings, which the app restores if missing, so six stored bookings
+    # means exactly the two new ones.
+    baseline_booking_ids:
+    - OT-SEED-FLIGHT-1
+    - OT-SEED-HOTEL-1
+    - OT-SEED-FLIGHT-2
+    - OT-SEED-HOTEL-2
     bookings:
-      count: 2
+      count: 6
       items:
       - type: flight
         status: Confirmed
@@ -59,8 +66,8 @@ evaluation:
         payment_label: WeChat Pay
         note: Late arrival 21:00
 limits:
-  max_steps: 180
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

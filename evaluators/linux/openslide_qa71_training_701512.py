@@ -18,7 +18,15 @@ KNOWN_BOLD_CENTER_BUG = {
         {"bold": False, "fontSize": 32, "align": "center", "known_app_bug": "center_resets_bold"},
     ],
 }
-RULESET_SPEC = {"task_id": TASK_ID, "source_state_mode": "human_completed_eval_only", "deck": {"title": FINAL_TITLE, "theme": "sunrise", "slides": 5, "transition": "push"}, "slide1_text": "QA71 Training", "slide2": {"layout": "section", "inserted_text": "Text box", "inserted_text_style": KNOWN_BOLD_CENTER_BUG, "table": {"alt": "qa71 agenda table", "animation": "appear"}}, "slide3": {"line_count": 2, "copy_paste": True, "notes": "qa71 trainer note", "comments": ["qa71 training comment"], "knowledge_check_style": KNOWN_BOLD_CENTER_BUG}}
+# The brief asks slide 2 for "a text box with bold, 32-point, center-aligned text": any text box the agent
+# added to the slide (whatever text it holds and however it is sized), not the Section Header layout's own
+# title placeholder. The comment may sit on any slide ("the presentation must include a comment").
+INSERTED_TEXT_BOX = "text object added to slide 2 after its Section Header layout placeholders; any text, any size"
+# "The third slide must contain two lines, with the second line positioned in the lower half": the final
+# slide holds two lines, one below the other. How they were made (drawn twice or copied and pasted) is not
+# graded; the deck history and the clone comparison are kept as evidence only.
+SLIDE3_LINES = "two line objects, one lower than the other; creation process not graded"
+RULESET_SPEC = {"task_id": TASK_ID, "source_state_mode": "human_completed_eval_only", "deck": {"title": FINAL_TITLE, "theme": "sunrise", "slides": 5, "transition": "push", "comment": "qa71 training comment"}, "slide1_text": "QA71 Training", "slide2": {"layout": "section", "inserted_text_box": INSERTED_TEXT_BOX, "inserted_text_style": KNOWN_BOLD_CENTER_BUG, "table": {"alt": "qa71 agenda table", "animation": "appear"}}, "slide3": {"line_count": 2, "lines": SLIDE3_LINES, "notes": "qa71 trainer note", "knowledge_check_text": "Knowledge Check", "knowledge_check_style": KNOWN_BOLD_CENTER_BUG}}
 RULESET_SHA256 = hashlib.sha256(json.dumps(RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 STEP_GROUPS = {"template_and_title": list(range(1, 13)), "section_and_table": list(range(13, 37)), "lines_and_review": list(range(37, 61)), "knowledge_and_final_title": list(range(61, 75))}
 CHECKPOINT_SPECS = [{"value_contract_id": "openslide.qa71.deck", "steps": list(range(1, 75)), "match_mode": "OBJECT_EXACT", "expected": RULESET_SPEC["deck"]}, {"value_contract_id": "openslide.qa71.section", "steps": list(range(13, 37)), "match_mode": "OBJECT_EXACT", "expected": RULESET_SPEC["slide2"]}, {"value_contract_id": "openslide.qa71.copy_and_knowledge", "steps": list(range(37, 75)), "match_mode": "CURRENT_SESSION_EVENT_SEQUENCE", "expected": RULESET_SPEC["slide3"]}]
@@ -41,6 +49,16 @@ def _style_history(versions: list[Mapping[str, Any]], slide_index: int, object_i
                 if not rows or rows[-1] != state:
                     rows.append(state)
     return rows
+
+def _style_candidates(versions: list[Mapping[str, Any]], slide_index: int, objects: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for o in objects:
+        style = {k: _style(o).get(k) for k in ("bold", "fontSize", "align")}
+        history = _style_history(versions, slide_index, str(o.get("id") or ""))
+        ok, basis = _bold_center_verdict(style, history)
+        rows.append({"id": o.get("id"), "text": o.get("text"), "h": o.get("h"), "style": style, "history": history, "passed": ok, "bold_evidence": basis})
+    return rows
+
 
 def _bold_center_verdict(style: Mapping[str, Any], history: list[Mapping[str, Any]]) -> tuple[bool, str]:
     size_and_center = style.get("fontSize") == 32 and style.get("align") == "center"
@@ -66,11 +84,8 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         add("slide1.title","openslide.qa71.deck","QA71 Training",_texts(slides[0]),"QA71 Training" in _texts(slides[0]),list(range(8,12)),"CONTAINS_EXACT")
         add("slide2.layout","openslide.qa71.section","section",slides[1].get("layout"),slides[1].get("layout")=="section",[16,17])
         tables=_objects(slides[1],"table"); add("slide2.table","openslide.qa71.section",RULESET_SPEC["slide2"]["table"],[{"alt":o.get("alt"),"animation":o.get("animation")} for o in tables],len(tables)==1 and tables[0].get("alt")=="qa71 agenda table" and tables[0].get("animation")=="appear",list(range(26,37)),"OBJECT_EXACT")
-        inserted=[o for o in _objects(slides[1],"text") if o.get("text")==RULESET_SPEC["slide2"]["inserted_text"] and o.get("h")==90]
-        styles=[{k:_style(o).get(k) for k in ("bold","fontSize","align")} for o in inserted]
-        inserted_history=_style_history(versions,1,str(inserted[0].get("id") or "")) if len(inserted)==1 else []
-        inserted_ok, inserted_basis=_bold_center_verdict(styles[0],inserted_history) if len(inserted)==1 else (False,"inserted_text_object_not_unique")
-        add("slide2.inserted_text_style","openslide.qa71.section",RULESET_SPEC["slide2"]["inserted_text_style"],{"styles":styles,"history":inserted_history,"bold_evidence":inserted_basis},len(inserted)==1 and inserted_ok,list(range(18,26)),"KNOWN_BUG_EVENT_AND_FINAL_STATE")
+        inserted=_style_candidates(versions,1,reader.added_objects(slides[1],"text"))
+        add("slide2.inserted_text_style","openslide.qa71.section",{"text_box":INSERTED_TEXT_BOX,"style":RULESET_SPEC["slide2"]["inserted_text_style"]},{"count":len(inserted),"candidates":inserted},any(row["passed"] for row in inserted),list(range(18,26)),"KNOWN_BUG_EVENT_AND_FINAL_STATE")
         lines=_objects(slides[2],"line"); counts=[]
         for d in versions:
             ds=list(d.get("slides") or []); counts.append(len(_objects(ds[2],"line")) if len(ds)>=3 else 0)
@@ -80,17 +95,23 @@ def evaluate_observed(observed: Mapping[str, Any]) -> dict[str, Any]:
         structural_clone=len(lines)==2 and all(lines[0].get(k)==lines[1].get(k) for k in clone_fields)
         distinct_layers=len(lines)==2 and lines[0].get("id")!=lines[1].get("id") and lines[0].get("z")!=lines[1].get("z")
         history_or_compacted_clone=staged or (structural_clone and distinct_layers)
-        add("slide3.copy_paste_lines","openslide.qa71.copy_and_knowledge",{"count":2,"history":"1_then_2_when_retained","structural_clone":True,"distinct_layers":True,"second_lower":True},{"count":len(lines),"history_counts":counts,"structural_clone":structural_clone,"distinct_layers":distinct_layers,"ys":[o.get("y") for o in lines]},len(lines)==2 and history_or_compacted_clone and lower,list(range(37,46)),"EVENT_HISTORY_OR_COMPACTED_DURABLE_CLONE_STATE")
-        comments=[str(c.get("text") or "") for c in slides[2].get("comments",[]) if isinstance(c,Mapping)]
+        add("slide3.copy_paste_lines","openslide.qa71.copy_and_knowledge",{"count":2,"second_lower":True,"lines":SLIDE3_LINES},{"count":len(lines),"history_counts":counts,"staged_history":staged,"structural_clone":structural_clone,"distinct_layers":distinct_layers,"copy_evidence":history_or_compacted_clone,"ys":[o.get("y") for o in lines]},len(lines)==2 and lower,list(range(37,46)),"FINAL_STATE")
+        comments=[{"slide":index+1,"text":str(c.get("text") or "").strip()} for index,s in enumerate(slides) for c in (s.get("comments") or []) if isinstance(c,Mapping)]
         add("slide3.notes","openslide.qa71.copy_and_knowledge","qa71 trainer note",slides[2].get("notes"),slides[2].get("notes")=="qa71 trainer note",[49,50,51])
-        add("slide3.comments","openslide.qa71.copy_and_knowledge",["qa71 training comment"],comments,comments==["qa71 training comment"],[52,53,54],"ORDERED_EXACT")
-        kc=[o for o in _objects(slides[2],"text") if o.get("text")=="Knowledge Check"]
-        kcstyles=[{k:_style(o).get(k) for k in ("bold","fontSize","align")} for o in kc]
-        kc_history=_style_history(versions,2,str(kc[0].get("id") or "")) if len(kc)==1 else []
-        kc_ok, kc_basis=_bold_center_verdict(kcstyles[0],kc_history) if len(kc)==1 else (False,"knowledge_check_object_not_unique")
-        add("slide3.knowledge_check","openslide.qa71.copy_and_knowledge",{"count":1,"style":RULESET_SPEC["slide3"]["knowledge_check_style"]},{"count":len(kc),"styles":kcstyles,"history":kc_history,"bold_evidence":kc_basis},len(kc)==1 and kc_ok,list(range(62,72)),"KNOWN_BUG_EVENT_AND_FINAL_STATE")
+        add("deck.comment","openslide.qa71.copy_and_knowledge",RULESET_SPEC["deck"]["comment"],comments,any(c["text"]==RULESET_SPEC["deck"]["comment"] for c in comments),[52,53,54],"CONTAINS_EXACT")
+        kc=_style_candidates(versions,2,[o for o in _objects(slides[2],"text") if str(o.get("text") or "").strip()==RULESET_SPEC["slide3"]["knowledge_check_text"]])
+        add("slide3.knowledge_check","openslide.qa71.copy_and_knowledge",{"text":RULESET_SPEC["slide3"]["knowledge_check_text"],"style":RULESET_SPEC["slide3"]["knowledge_check_style"]},{"count":len(kc),"candidates":kc},any(row["passed"] for row in kc),list(range(62,72)),"KNOWN_BUG_EVENT_AND_FINAL_STATE")
     failures=[c["check_id"] for c in checks if not c["passed"]]
     return {"status":"PASS" if versions and not failures and not observed.get("errors") else "FAIL","checks":checks,"failures":failures,"source_errors":list(observed.get("errors") or []),"history_sources":observed.get("sources",[]),"history_version_count":len(versions),"latest_deck":latest}
+
+# The deck is followed by its id, so the generations recorded before the final rename (the line copy/paste
+# and the formatting history) count as well.
+_GUEST_TAIL = """
+_h=read_history(__PROFILE__)
+_v,_n=final_deck_versions(_h,__TITLE__)
+print(json.dumps({'target_versions':_v,'final_title_count':_n,'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))
+"""
+
 
 class OpenSlideQa71Training701512Evaluator(BaseEvaluator):
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
@@ -98,7 +119,7 @@ class OpenSlideQa71Training701512Evaluator(BaseEvaluator):
         if controller is None or not hasattr(controller,"run_python_script"): return EvalResult(status=EvalStatus.ERROR,message="controller.run_python_script is required")
         params=dict(context.get("params") or {}); profile=str(params.get("profile_dir") or "/home/user/.config/google-chrome/Default/Local Storage/leveldb")
         source=Path(inspect.getfile(reader)).read_text(encoding="utf-8")
-        script=source+"\n_h=read_history("+json.dumps(profile)+")\n_v=deck_versions(_h,"+json.dumps(FINAL_TITLE)+")\nprint(json.dumps({'target_versions':_v,'final_title_count':sum(1 for d in (_h['versions'][-1]['decks'] if _h['versions'] else []) if d.get('title')=="+json.dumps(FINAL_TITLE)+"),'sources':_h['sources'],'errors':_h['errors']},ensure_ascii=False))\n"
+        script=source+_GUEST_TAIL.replace("__PROFILE__",json.dumps(profile)).replace("__TITLE__",json.dumps(FINAL_TITLE))
         try: raw=controller.run_python_script(script,timeout=int(params.get("timeout",60))); observed=json.loads(raw.get("stdout") or raw.get("output") or "")
         except Exception as exc: return EvalResult(status=EvalStatus.ERROR,message=f"OpenSlide state read failed: {exc}")
         verdict=evaluate_observed(observed); verdict.update({"task_id":TASK_ID,"ruleset_sha256":RULESET_SHA256,"source_state_mode":"human_completed_eval_only","read_only":True,"business_state_mutations":[],"step_groups":STEP_GROUPS,"checkpoint_specs":CHECKPOINT_SPECS})

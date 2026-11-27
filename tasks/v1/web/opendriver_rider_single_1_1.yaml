@@ -6,7 +6,9 @@ instruction: |-
 
   Use the initial ride's `Book another ride` option to request a RideX trip to Stanford Shopping Center with Visa ending in 4242 and the Now departure choice. When the cancellation dialog appears for this second ride, keep the ride rather than confirming cancellation. In History, review the most recent Downtown Palo Alto trip and save its invoice PDF again from the historical receipt. Leave the Ride page active after a final review of the Account Coupons panel, with the rider session still signed in.
 init:
-  initializer_id: initializers.linux.setup:DesktopSetupInitializer
+  # CanvasKit and the Roboto font come from gstatic.com, whose certificates are not yet valid for
+  # the guest clock (Sep 2026): the window stays blank. This initializer serves both locally first.
+  initializer_id: initializers.linux.opendriver:OpenDriverInitializer
   params:
     steps:
     - type: run_bash
@@ -53,8 +55,8 @@ evaluation:
       console.log(JSON.stringify({rideId: target.id, status: target.status, tier: target.rideTier, promo: target.promoCode}, null, 2));
       NODE
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDriver
   task_number: 1-1

@@ -1,0 +1,123 @@
+task_id: windows.openshop.login
+platform: windows
+instruction: 'Open OpenShop and sign in with phone number 13800138000 and password spring2026. After signing in, build a two-item starter cart. First return to the catalog, search "Mountain Isle Pour-Over Coffee", choose Grocery and Price Low to High, open Mountain Isle Pour-Over Coffee 20 Pack, select the 20 sachets option, and add quantity 1. Then return to the catalog, search "Lumen Magnetic Phone Stand", choose Electronics and Price Low to High, open Lumen Magnetic Phone Stand, select the Magnetic mount option, and add quantity 1. Open the cart and perform these quantity changes in order: coffee 2, 1, 3, 1; phone stand 2, 1. Stop only when the signed-in cart contains exactly these two products, each at quantity 1.'
+init:
+  initializer_id: initializers.windows.openshop:OpenShopInitializer
+  params:
+    final_wait_ms: 1800
+evaluation:
+  evaluator_id: evaluators.windows.openshop:OpenShopApiEvaluator
+  params:
+    session:
+      logged_in: true
+      phone: '13800138000'
+    cart:
+      item_count: 2
+      total: 167
+      items:
+      - product_id: p1005
+        quantity: 1
+        selected_spec: 20 sachets
+      - product_id: p1006
+        quantity: 1
+        selected_spec: Magnetic mount
+    benchmark_events:
+    - type: catalog_view
+      match:
+        query: mountain isle pour-over coffee
+        category: Grocery
+        sort: priceAsc
+    - type: cart_item_added
+      match:
+        productId: p1005
+    - type: catalog_view
+      match:
+        query: lumen magnetic phone stand
+        category: Electronics
+        sort: priceAsc
+    - type: cart_item_added
+      match:
+        productId: p1006
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 2
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 1
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 3
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 1
+    - type: cart_quantity_updated
+      match:
+        productId: p1006
+        quantity: 2
+    - type: cart_quantity_updated
+      match:
+        productId: p1006
+        quantity: 1
+    benchmark_event_sequence:
+    - type: catalog_view
+      match:
+        query: mountain isle pour-over coffee
+        category: Grocery
+        sort: priceAsc
+    - type: cart_item_added
+      match:
+        productId: p1005
+    - type: catalog_view
+      match:
+        query: lumen magnetic phone stand
+        category: Electronics
+        sort: priceAsc
+    - type: cart_item_added
+      match:
+        productId: p1006
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 2
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 1
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 3
+    - type: cart_quantity_updated
+      match:
+        productId: p1005
+        quantity: 1
+    - type: cart_quantity_updated
+      match:
+        productId: p1006
+        quantity: 2
+    - type: cart_quantity_updated
+      match:
+        productId: p1006
+        quantity: 1
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - windows
+  - gui
+  - shopping
+  - openshop
+  - login
+  - benchmark
+  - easy
+  difficulty: easy
+  app: OpenShop
+  description: Sign in, locate two products through catalog searches, and complete a short cart quantity review ending with two quantity-one items.
+  linux_peer: linux.openshop.login
+  linux_peer_file: tasks/linux/openshop_login_easy.yaml
+  alignment_status: direct

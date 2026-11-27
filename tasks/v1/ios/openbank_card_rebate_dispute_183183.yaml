@@ -31,11 +31,11 @@ evaluation:
     manual_window_start: '2026-08-03T14:14:16+08:00'
     manual_window_end: '2026-08-03T14:23:31.800000+08:00'
     expected_instruction_sha256: da68e3053418f8b7a84c00af526a504a5a269000aa9d8cba3677668cf2bd17fc
-    expected_ruleset_sha256: 2980e1bad4cc8dfdeaa172beb825e21834384e851d1459ae4691577ebe8cbb9b
+    expected_ruleset_sha256: 5cd2cb77e2833ca660bd7be37b68457b51950853e586d04a89baaa8864f9b4eb
     requires_ui_observation: false
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - openbank
@@ -56,16 +56,18 @@ metadata:
     amendment: Step 17 uses the exact observed value Mira song.
   verifier_rules:
     instruction_sha256: da68e3053418f8b7a84c00af526a504a5a269000aa9d8cba3677668cf2bd17fc
-    ruleset_sha256: 2980e1bad4cc8dfdeaa172beb825e21834384e851d1459ae4691577ebe8cbb9b
+    ruleset_sha256: 5cd2cb77e2833ca660bd7be37b68457b51950853e586d04a89baaa8864f9b4eb
     final_business_evidence:
-    - Exact Ace Hardware source transaction and search/details events.
+    - Exact unchanged Ace Hardware source transaction; Activity searches and details views are browsing
+      and are not counted.
     - Exact submitted dispute including reason, merchant-contact flag, details, and causal event.
     - Exact unique Mira song and Dana Cole recipient records joined to recipient-added events.
     - Exact two scheduled transfers joined to their recipients and transfer events.
     - Exact Rainy Day Savings paperless state with its update timestamp bound to the event.
     - Exact Payment due and Low balance preference objects and save events.
     - Exact Upcoming bill read state and alert-read event.
-    - Exact ordered projection of all task-window data-producing events.
+    - No unexpected business event and only the logically required order (each recipient before its
+      transfer); the brief fixes no other order. Identical alert-setting re-saves count once.
     data_source_priority:
     - OpenBank WebKit localStorage key openbank.localState.v7 is authoritative.
     - Final UI is not required because step 74 ends with a durable save.

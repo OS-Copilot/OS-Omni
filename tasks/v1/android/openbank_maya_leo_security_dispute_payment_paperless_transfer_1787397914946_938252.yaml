@@ -21,9 +21,9 @@ init:
 evaluation:
   evaluator_id: evaluators.android.openbank_maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252:AndroidOpenBankMayaLeoSecurityDisputePaymentPaperlessTransfer1787397914946938252Evaluator
   params:
-    expected_ruleset_sha256: dda0eca80e9b69e547d9a8658cff798c5a71b57f37d455aa00bb6382e95364c0
+    expected_ruleset_sha256: c6ec5073d24b5955ee7295a9689a6b9f6bb29a45ee46b7ee183c2511012c6328
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenBank
@@ -38,7 +38,7 @@ metadata:
   instruction_sha256: 1d67bb9883c97c51be368a584ae7da2586685189a1d326fea04cf8c4f3f7e439
   evaluator_ruleset_required: true
   human_eval_only_compatible: true
-  evaluator_ruleset_sha256: dda0eca80e9b69e547d9a8658cff798c5a71b57f37d455aa00bb6382e95364c0
+  evaluator_ruleset_sha256: c6ec5073d24b5955ee7295a9689a6b9f6bb29a45ee46b7ee183c2511012c6328
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review
     artifact_path: openbank/Android/android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252

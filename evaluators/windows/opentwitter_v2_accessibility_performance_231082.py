@@ -9,6 +9,8 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows import opentwitter_explore as explore
+from evaluators.windows.openbank_events import check_precedence
 
 
 # BEGIN OSOMNI_PORTABLE_BINDING
@@ -25,13 +27,13 @@ CHECKPOINTS = {'opentwitter.accessibility.login': {'steps': [1, 2, 3, 4, 5],
  'opentwitter.accessibility.post_pilot': {'steps': [15, 16, 17],
                                           'checks': ['UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT']},
  'opentwitter.accessibility.trend_security_reviews': {'steps': [18, 19, 20, 21, 22, 23],
-                                                      'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                      'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.accessibility.trend_frontend_performance': {'steps': [24, 25, 26, 27, 28, 29],
-                                                          'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                          'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.accessibility.trend_ai_assistant_rollout': {'steps': [30, 31, 32, 33, 34, 35],
-                                                          'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                          'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.accessibility.trend_mobile_release_candidate': {'steps': [36, 37, 38, 39, 40, 41],
-                                                              'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT']},
+                                                              'checks': ['QUERY_FIRST_POST_THREE_ACTIONS_EXACT']},
  'opentwitter.accessibility.message_hana': {'steps': [42, 43, 44, 45, 46, 47, 48],
                                             'checks': ['UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT']},
  'opentwitter.accessibility.message_caleblee133': {'steps': [49, 50, 51, 52, 53, 54],
@@ -63,7 +65,19 @@ RULESET_SPEC = {'task_id': 'windows.opentwitter.v2_accessibility_performance_231
               {'handle': 'theo', 'text': 'API notes are ready'}],
  'profile': {'handle': 'alex', 'displayName': 'Alex Access', 'bio': 'Focus metrics ready'},
  'notifications_all_read': True}
-RULESET_SHA256 = 'd951e4c429382e88eaff9d114f48712d6a32cd8b54895ed8b233ebebccbabe27'
+RULESET_SPEC["order_policy"] = {
+    'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order',
+    'stated': [['login', 'post_1'],
+               ['post_1', 'post_2'], ['post_2', 'post_3'], ['post_3', 'post_4'],
+               ['stream_1', 'stream_2'], ['stream_2', 'stream_3'], ['stream_3', 'stream_4'],
+               ['message_1', 'message_2'], ['message_2', 'message_3'], ['message_3', 'message_4']],
+    'stated_basis': '"Sign in ..., then publish four consecutive posts ... in the exact order"; "open the topic streams ... in that specific order"; "Send four direct messages ... in the following order"',
+    'stream_order': 'some Explore view of each stream follows a view of the previous one; reopening a stream or opening one early does not matter',
+    'necessary': [],
+    'necessary_basis': 'sign-in before account actions: only events after the sign-in count; a stream post is engaged after a view of that stream',
+    'not_required': 'any order between the posts, streams, messages, notifications and profile; repost/like/save within a stream in any order; no profile view',
+}
+RULESET_SHA256 = '19d5579827ace241fee2fd5c20215d8f501dfa712b498fe7b1f920304f13c3d0'
 # END OSOMNI_PORTABLE_BINDING
 EVALUATOR_ID = (
     "evaluators.windows.opentwitter_v2_accessibility_performance_231082:"
@@ -87,6 +101,8 @@ STEP_GROUPS = {
     "notifications": list(range(67, 69)),
     "profile": list(range(69, 77)),
 }
+#: The business-action orders that gate a run (RULESET_SPEC["order_policy"]).
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
 
 
 def _spec(name: str, expected: Any, mode: str) -> dict[str, Any]:
@@ -104,10 +120,10 @@ CHECKPOINT_SPECS = [
     _spec("post_paint", RULESET_SPEC["posts"][1], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
     _spec("post_draft", RULESET_SPEC["posts"][2], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
     _spec("post_pilot", RULESET_SPEC["posts"][3], "UNIQUE_OBJECT_AND_EVENT_TEXT_EXACT"),
-    _spec("trend_security_reviews", RULESET_SPEC["trend_queries"][0], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_frontend_performance", RULESET_SPEC["trend_queries"][1], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_ai_assistant_rollout", RULESET_SPEC["trend_queries"][2], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
-    _spec("trend_mobile_release_candidate", RULESET_SPEC["trend_queries"][3], "QUERY_FIRST_POST_THREE_ACTIONS_ORDERED_EXACT"),
+    _spec("trend_security_reviews", RULESET_SPEC["trend_queries"][0], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_frontend_performance", RULESET_SPEC["trend_queries"][1], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_ai_assistant_rollout", RULESET_SPEC["trend_queries"][2], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
+    _spec("trend_mobile_release_candidate", RULESET_SPEC["trend_queries"][3], "QUERY_FIRST_POST_THREE_ACTIONS_EXACT"),
     _spec("message_hana", RULESET_SPEC["messages"][0], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("message_caleblee133", RULESET_SPEC["messages"][1], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
     _spec("message_amina", RULESET_SPEC["messages"][2], "UNIQUE_OUTBOUND_OBJECT_AND_EVENT_EXACT"),
@@ -139,20 +155,11 @@ def _summary(row: Mapping[str, Any] | None) -> dict[str, Any]:
     return {key: row.get(key) for key in keys if key in row}
 
 
-def _first_matching_post(posts: list[dict[str, Any]], query: str) -> dict[str, Any] | None:
-    needle = query.strip().casefold()
-    for post in posts:
-        if str(post.get("topic") or "").strip().casefold() == needle:
-            return post
-    for post in posts:
-        author = post.get("author") if isinstance(post.get("author"), Mapping) else {}
-        haystack = " ".join(
-            str(value or "")
-            for value in (post.get("text"), post.get("topic"), author.get("displayName"), author.get("handle"))
-        ).casefold()
-        if needle in haystack:
-            return post
-    return None
+# "The first post" of a stream is the first post the app listed when the stream was opened
+# (evaluators/windows/opentwitter_explore.py).  The restored evaluator took the first post whose
+# topic equalled the query, which the app does not do: its search also matches the text, so the
+# "Mobile" stream lists Alex's Product recap p-alex-2004 ("...the mobile draft restore issue...",
+# 2026-05-24) above Elena's Mobile post p-1016 (2026-05-22).
 
 
 class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
@@ -197,7 +204,7 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
         login = login_events[-1] if login_events else None
         start_seq = _seq(login)
         events = [row for row in all_events if _seq(row) >= start_seq] if login else []
-        event_order: list[tuple[str, int]] = []
+        business_events: dict[str, Mapping[str, Any] | None] = {}
 
         session = state.get("session") if isinstance(state.get("session"), Mapping) else {}
         session_user = session.get("user") if isinstance(session.get("user"), Mapping) else {}
@@ -210,10 +217,9 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
         checks.append(cls._check(CHECKPOINT_SPECS[0], login_passed, {
             "event": _summary(login), "session": {"loggedIn": session.get("loggedIn"), "user": dict(session_user)}
         }))
-        event_order.append(("login", _seq(login)))
+        business_events["login"] = login
 
         posts = _items(state, "posts")
-        post_event_rows: list[dict[str, Any] | None] = []
         for index, expected_text in enumerate(RULESET_SPEC["posts"], start=1):
             matches = [
                 row for row in posts
@@ -235,65 +241,39 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
             checks.append(cls._check(CHECKPOINT_SPECS[index], passed, {
                 "object_count": len(matches), "object": _summary(target), "event": _summary(event)
             }))
-            post_event_rows.append(event)
-            event_order.append((f"post_{index}", _seq(event)))
+            business_events[f"post_{index}"] = event
 
-        active_sets = {
-            "post_repost_toggled": set(str(value) for value in state.get("repostedPostIds", []) if value),
-            "post_like_toggled": set(str(value) for value in state.get("likedPostIds", []) if value),
-            "post_bookmark_toggled": set(str(value) for value in state.get("bookmarkedPostIds", []) if value),
-        }
-        trend_terminal_rows: list[dict[str, Any] | None] = []
+        final_sets = explore.active_sets(state)
         for offset, query in enumerate(RULESET_SPEC["trend_queries"], start=5):
             runtime_query = RULESET_SPEC["trend_runtime_queries"][query]
-            target = _first_matching_post(posts, runtime_query)
-            target_id = str(target.get("id")) if target and target.get("id") else None
-            views = [
-                row for row in events
-                if row.get("type") == "timeline_view"
-                and str(row.get("view") or "").casefold() == "explore"
-                and str(row.get("query") or "").strip().casefold() == runtime_query.casefold()
-            ]
-            chosen_view: dict[str, Any] | None = None
-            chosen_actions: list[dict[str, Any]] = []
-            if target_id:
-                for view in views:
-                    cursor = _seq(view)
-                    actions: list[dict[str, Any]] = []
-                    for action_type in RULESET_SPEC["trend_actions"]:
-                        event = next((
-                            row for row in events
-                            if _seq(row) > cursor
-                            and row.get("type") == action_type
-                            and row.get("postId") == target_id
-                            and row.get("active") is True
-                        ), None)
-                        if event is None:
-                            actions = []
-                            break
-                        actions.append(event)
-                        cursor = _seq(event)
-                    if len(actions) == 3:
-                        chosen_view = view
-                        chosen_actions = actions
-                        break
-            active_final = bool(target_id) and all(target_id in active_sets[action] for action in RULESET_SPEC["trend_actions"])
-            passed = bool(target_id and chosen_view and len(chosen_actions) == 3 and active_final)
-            checks.append(cls._check(CHECKPOINT_SPECS[offset], passed, {
+            engagement = explore.first_post_engagement(
+                posts=posts,
+                all_events=all_events,
+                session_events=events,
+                query=runtime_query,
+                final_sets=final_sets,
+                account_handle=RULESET_SPEC["account"]["handle"],
+            )
+            checks.append(cls._check(CHECKPOINT_SPECS[offset], engagement["passed"], {
                 "query": query,
                 "runtime_query": runtime_query,
-                "matching_post": _summary(target),
-                "matching_view_count": len(views),
-                "view": _summary(chosen_view),
-                "ordered_actions": [_summary(row) for row in chosen_actions],
-                "active_final": active_final,
+                "target_rule": "first post the Explore stream listed at the view (or the first it held before posts the agent published)",
+                "matching_post": engagement["first_post"],
+                "matching_view_count": engagement["matching_view_count"],
+                "view": engagement["view"],
+                "already_active_at_view": engagement.get("already_active_at_view", {}),
+                "actions": engagement["actions"],
+                "missing_actions": engagement["missing_actions"],
+                "active_final": engagement["active_final"],
+                **({"attempts": engagement["attempts"]} if "attempts" in engagement else {}),
             }))
-            terminal = chosen_actions[-1] if chosen_actions else None
-            trend_terminal_rows.append(terminal)
-            event_order.append((f"trend_{offset - 4}", _seq(terminal)))
+        # "open the topic streams ... in that specific order": the views, not the engagements.
+        for number, view in enumerate(explore.stream_views_in_order(
+            events, [RULESET_SPEC["trend_runtime_queries"][query] for query in RULESET_SPEC["trend_queries"]],
+        ), start=1):
+            business_events[f"stream_{number}"] = view
 
         messages = _items(state, "messages")
-        message_event_rows: list[dict[str, Any] | None] = []
         for offset, expected in enumerate(RULESET_SPEC["messages"], start=9):
             objects = [
                 row for row in messages
@@ -313,8 +293,7 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
                 "object_count": len(objects), "object": _summary(objects[0] if len(objects) == 1 else None),
                 "event_count": len(matching_events), "event": _summary(event),
             }))
-            message_event_rows.append(event)
-            event_order.append((f"message_{offset - 8}", _seq(event)))
+            business_events[f"message_{offset - 8}"] = event
 
         notifications = _items(state, "notifications")
         mark_events = [row for row in events if row.get("type") == "notifications_marked_read"]
@@ -326,34 +305,26 @@ class OpenTwitterV2AccessibilityPerformance231082Evaluator(BaseEvaluator):
             "event_count": len(mark_events),
             "first_event": _summary(mark_event),
         }))
-        event_order.append(("notifications", _seq(mark_event)))
+        business_events["notifications"] = mark_event
 
         current_user = state.get("currentUser") if isinstance(state.get("currentUser"), Mapping) else {}
         profile_expected = RULESET_SPEC["profile"]
+        # The saved fields decide; visiting the Profile page is navigation, not a deliverable.
         profile_passed = all(current_user.get(key) == value for key, value in profile_expected.items())
-        profile_views = [
-            row for row in events
-            if row.get("type") == "timeline_view"
-            and row.get("view") == "profile"
-            and row.get("handle") == "alex"
-        ]
-        profile_view = profile_views[-1] if profile_views else None
-        checks.append(cls._check(CHECKPOINT_SPECS[14], profile_passed and profile_view is not None, {
+        checks.append(cls._check(CHECKPOINT_SPECS[14], profile_passed, {
             "current_user": {key: current_user.get(key) for key in profile_expected},
-            "profile_view": _summary(profile_view),
         }))
-        event_order.append(("profile", _seq(profile_view)))
 
-        order_passed = all(seq >= 0 for _, seq in event_order) and all(
-            left[1] < right[1] for left, right in zip(event_order, event_order[1:])
-        )
+        # Only the stated orders (RULESET_SPEC["order_policy"]); the sign-in precedes every
+        # business event counted above because only events after it count.
+        order_passed, order_actual = check_precedence(business_events, ORDER_PAIRS)
         checks.append({
             "name": "opentwitter.accessibility.business_order",
             "value_contract_id": "opentwitter.accessibility.business_order",
             "instruction_steps": list(range(1, 77)),
-            "match_mode": "ORDERED_EXACT",
-            "expected": [name for name, _ in event_order],
-            "actual": [{"name": name, "seq": seq} for name, seq in event_order],
+            "match_mode": "PAIRWISE_PRECEDENCE",
+            "expected": ORDER_PAIRS,
+            "actual": order_actual,
             "passed": order_passed,
         })
 

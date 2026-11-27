@@ -58,12 +58,16 @@ evaluation:
           review:
             rating: 5
             text: Good to share
+            text_variants:
+            - Good to share,
         - product_id: p1004
           quantity: 1
           selected_spec: 14-inch
           review:
             rating: 4
             text: Compact travel bag
+            text_variants:
+            - Compact travel bag.
       by_id:
       - order_id: TBH-LUCAS-20260518-001
         items:
@@ -78,6 +82,31 @@ evaluation:
             rating: 5
             text: Ready for work
     benchmark:
+      required_events:
+      - label: mountain_isle_search_in_grocery
+        type: catalog_view
+        query: mountain isle
+        category: Grocery
+      - label: small_batch_trail_search_in_grocery
+        type: catalog_view
+        query: small batch trail
+        category: Grocery
+      - label: polar_day_search_in_bags
+        type: catalog_view
+        query: polar day
+        category: Bags
+      precedence:
+      - label: initial_coffee_review_replaced
+        before:
+          type: order_item_reviewed
+          order_label: latest_new_order
+          productId: p1005
+          rating: 4
+        after:
+          type: order_item_reviewed
+          order_label: latest_new_order
+          productId: p1005
+          rating: 5
       ordered:
       - type: session_login_success
         phone: '13800138000'
@@ -123,8 +152,8 @@ evaluation:
         productId: p1004
         rating: 5
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   task_version: 2.0.0
   difficulty: hard
@@ -158,16 +187,20 @@ metadata:
     total 310.18, p1005 10 sachets quantity 2, p2048 Family Pack quantity 2, and p1004 14-inch quantity
     1.
   - Steps 40-60 require the latest-order p1005 final rating/text 5 and Great for travel after the intermediate
-    4-star review, p2048 rating/text 5 and Good to share, and p1004 rating/text 4 and Compact travel bag.
+    4-star review, p2048 rating/text 5 and Good to share (or the brief's literal Good to share,), and
+    p1004 rating/text 4 and Compact travel bag (or Compact travel bag.).
   - Steps 61-67 require order TBH-LUCAS-20260518-001 product p1001 to have rating 4 and review text Good.
   - Steps 68-72 require order TBH-LUCAS-20260321-004 product p1004 to have rating 5 and review text Ready
     for work, with OpenShop foreground on the Orders page and the Lucas Lin session still logged in.
   - Read /api/session, /api/cart, /api/orders, and /api/benchmark through the existing guest runtime;
     foreground accessibility observation is auxiliary evidence only.
   - Category/search/product/cart/checkout pages and scroll positions are flow-only states; the durable
-    order, review, session, cart, and ordered benchmark events are final evidence.
-  - Require ordered benchmark events to prove the three cart additions, two quantity changes, checkout,
-    three initial reviews, coffee review update, and both historical review submissions.
+    order, review, session and cart state are final evidence.
+  - The brief's searches are deliverables, so a catalog_view for Mountain Isle and Small Batch Trail in
+    Grocery and for Polar Day in Bags must each occur at least once (any position or count); the brief's
+    "replacing an initial 4 / 5" requires a 4-star p1005 review on the new order before its final 5-star
+    review. The rest of the recorded ledger (cart additions vs quantity steps, review order) is a non-blocking
+    diagnostic.
   - Every evaluator check must report expected state, observed state, pass status, and failure reason;
     the evaluator must not click, type, scroll, submit, launch the app, reset state, or run the initializer.
   cua_tasks_review:

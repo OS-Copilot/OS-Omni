@@ -20,9 +20,17 @@ instruction: Compose and send nine outgoing messages in the current session, pre
   with the subject “FieldTrash0708” to “benchchat@example.test” with the body text “Keep this record.”
   and the subject line must be modified to append the text “ · retain” to the end of the original subject.
 init:
-  initializer_id: evaluators.cua_review.initializers.ios.maily_open_app:MailyOpenAppInitializer
+  initializer_id: initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer
   params:
+    task_id: ios.maily.instruction_3_3
     bundle_id: de.enough.maily
+    sender_password_env: MAILY_BENCH_SENDER_PASSWORD
+    purge_greenmail: true
+    greenmail_reset_confirmed: true
+    verify_seeds: true
+    api_base_url: http://127.0.0.1:8081
+    smtp_host: 127.0.0.1
+    smtp_port: 3025
     snapshot_name: osomni-opendriver-ios-source-fixed-promax
     initial_state_note: Maily must already contain the reviewed Alex Rivera account and Field seed messages.
       This initializer only launches the app.
@@ -37,11 +45,11 @@ evaluation:
     timeout_seconds: 5
     poll_interval_seconds: 1
     bundle_id: de.enough.maily
-    expected_ios_device_profile: iphone17-2
-    expected_ruleset_sha256: 8c691e849cc04f2e0b7643e0762e9b8d71faf5e131e71b2b9ef0e2dfc642c9f4
+    expected_ios_device_type_identifier: com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max
+    expected_ruleset_sha256: c6f515324e3f92ff8dd0576f4539d838225b192ae41f22bad36b7e4850fc6024
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -52,7 +60,7 @@ metadata:
   - benchmark
   app: Maily
   app_bundle_id: de.enough.maily
-  ios_device_profile: iphone17-2
+  ios_device_profile: iPhone-17-Pro-Max
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: ec2d9708c93cdbcd2363332c4104406a7c840a3a2dc4c9bd9aaf6cf0a7e26082
   evaluator_contract:
@@ -171,4 +179,4 @@ metadata:
     release_path: benchmark/tasks/maily/IOS/ios.maily.instruction_3_3
     original_evaluator_id: evaluators.ios.maily_instruction_3_3_evaluator:MailyInstruction33Round9StateEvaluator
     evaluator_source: benchmark
-    original_initializer_id: initializers.ios.maily_open_app:MailyOpenAppInitializer
+    original_initializer_id: initializers.ios.maily_benchmark_seed:MailyBenchmarkSeedInitializer

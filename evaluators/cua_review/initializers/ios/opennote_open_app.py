@@ -9,7 +9,15 @@ the client and gives that surface time to settle.
 
 from __future__ import annotations
 
-from evaluators.cua_review.core.initialization import BaseInitializer
+from evaluators.cua_review.core.initialization import (
+    BaseInitializer,
+    EvalResult,
+    EvalStatus,
+    running_app_pid,
+    wait_until_running,
+)
+from evaluators.cua_review.platforms.ios.opennote_store import OpenNoteStore
+from platforms.ios.runtime_env.simulator_manager import launch_app, terminate_app
 
 
 class OpenNoteOpenAppInitializer(BaseInitializer):
@@ -20,3 +28,49 @@ class OpenNoteOpenAppInitializer(BaseInitializer):
     BUNDLE_ID = "com.killt.opennote"
 
     SETTLE_MS = 1200
+
+    def initialize(self, context):
+        """Launch OpenNote, then anchor evaluation to its persisted event log.
+
+        The imported task's historic wall-clock window cannot include events
+        from a current run. Capturing the event sequence after launch gives
+        the evaluator a deterministic, read-only causal boundary for this run.
+        """
+        result = super().initialize(context)
+        if result.status != EvalStatus.PASS:
+            return result
+        params = {**dict(self.TASK_PARAMS), **dict(context.get("params") or {})}
+        udid = str(params.get("udid") or context.get("udid") or "").strip()
+        bundle_id = str(params.get("bundle_id") or self.BUNDLE_ID).strip()
+        try:
+            state = OpenNoteStore.from_simulator(udid, bundle_id=bundle_id).read_state()
+            events = state.get("evaluationEvents")
+            if not isinstance(events, list):
+                raise ValueError("OpenNote evaluationEvents is not a list")
+            sequences = [
+                event["seq"]
+                for event in events
+                if isinstance(event, dict)
+                and isinstance(event.get("seq"), int)
+                and not isinstance(event.get("seq"), bool)
+            ]
+            result.metadata["baseline_max_event_seq"] = max(sequences, default=-1)
+            result.metadata["source_state_mode"] = "runtime_event_baseline"
+            return result
+        except Exception as exc:
+            return self._result(
+                EvalStatus.ERROR,
+                f"could not establish OpenNote event baseline: {type(exc).__name__}: {exc}",
+                {"udid": udid, "bundle_id": bundle_id},
+            )
+
+    def _launch(self, udid: str, bundle_id: str) -> str:
+        # A previous episode may have left an unsaved editor or keyboard open.
+        # Relaunching the app preserves its durable notes while restoring the
+        # home surface expected at the start of each OpenNote task.
+        existing_pid = running_app_pid(udid, bundle_id)
+        if existing_pid is not None:
+            terminate_app(udid, bundle_id)
+        launch_app(udid, bundle_id)
+        pid = wait_until_running(udid, bundle_id)
+        return f"{bundle_id} restarted at its task entry surface (pid {pid})"

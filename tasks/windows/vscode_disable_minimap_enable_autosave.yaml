@@ -1,0 +1,35 @@
+task_id: windows.vscode.disable_minimap_enable_autosave
+platform: windows
+instruction: In Visual Studio Code, open the user settings JSON and update it so that the editor minimap is disabled and Auto Save is set to afterDelay. Save the settings file and leave VS Code open.
+init:
+  initializer_id: initializers.windows.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_powershell
+      script: "@'\nimport json\nimport pathlib\n\nsettings_path = pathlib.Path(r\"C:\\Users\\User\\AppData\\Roaming\\Code\\User\\settings.json\")\nsettings_path.parent.mkdir(parents=True, exist_ok=True)\ndata = {}\nif settings_path.exists():\n  try:\n    data = json.loads(settings_path.read_text(encoding=\"utf-8\"))\n  except Exception:\n    data = {}\ndata.pop(\"editor.minimap.enabled\", None)\ndata.pop(\"files.autoSave\", None)\nsettings_path.write_text(json.dumps(data, indent=2), encoding=\"utf-8\")\n'@ | py -3 -\n$settingsPath = \"$env:APPDATA\\Code\\User\\settings.json\"\n$codeExe = \"$env:LOCALAPPDATA\\Programs\\Microsoft VS Code\\Code.exe\"\nif (Test-Path $codeExe) {\n  Start-Process -FilePath $codeExe -ArgumentList \"`\"$settingsPath`\"\"\n} else {\n  Start-Process -FilePath \"code\" -ArgumentList \"`\"$settingsPath`\"\"\n}\n\n$deadline = (Get-Date).AddSeconds(30)\ndo {\n  Start-Sleep -Milliseconds 500\n  $codeWindow = Get-Process -Name Code -ErrorAction SilentlyContinue |\n    Where-Object\
+        \ { $_.MainWindowHandle -ne 0 } |\n    Select-Object -First 1\n  if ($codeWindow -and $codeWindow.MainWindowTitle -like \"*settings.json*\") {\n    $shell = New-Object -ComObject WScript.Shell\n    $shell.AppActivate($codeWindow.Id) | Out-Null\n    Start-Sleep -Milliseconds 800\n    exit 0\n  }\n} while ((Get-Date) -lt $deadline)\n\nWrite-Output \"VS Code settings.json window did not become ready\"\nexit 1\n"
+      timeout: 45
+evaluation:
+  evaluator_id: evaluators.windows.vscode:VSCodeEvaluator
+  params:
+    check_id: vscode_disable_minimap_enable_autosave
+    stdout_contains: EVAL_RESULT:PASS
+    artifact_paths:
+    - C:\Users\User\AppData\Roaming\Code\User\settings.json
+    timeout: 30
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - vscode
+  - settings
+  - minimap
+  - autosave
+  - easy
+  difficulty: easy
+  app_name: code
+  estimated_min_steps: 6
+  description: 'Open VS Code user settings JSON, disable the minimap, set Auto Save to afterDelay, save the file, and leave VS Code open.
+
+    '

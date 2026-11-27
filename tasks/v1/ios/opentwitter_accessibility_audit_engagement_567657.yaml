@@ -51,10 +51,10 @@ evaluation:
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-2
     expected_instruction_sha256: b8c5c2226a68faa6465093ae428e3abf36d1dc9460718476ebb1dee80d5d44d6
-    expected_ruleset_sha256: a304d43e2fdb17e966f404e2a187875fd98687f8550a026f8ea4033fbe08a821
+    expected_ruleset_sha256: 2b6a58aff8732c34158f92da46fa2ccaa929b676fedaad9f2cd096cbae3410fc
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios

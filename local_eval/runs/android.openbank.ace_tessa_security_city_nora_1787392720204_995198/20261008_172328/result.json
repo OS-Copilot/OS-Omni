@@ -1,0 +1,1153 @@
+{
+  "task_id": "android.openbank.ace_tessa_security_city_nora_1787392720204_995198",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-08T17:26:27.133160+08:00",
+  "ended_at": "2026-10-08T17:39:35.413227+08:00",
+  "steps_taken": 19,
+  "latency_ms": 788280.067,
+  "episode_result": {
+    "status": "FAIL",
+    "terminal_reason": "fail_llm",
+    "execution_message": "Model declared task infeasible",
+    "execution_valid": true,
+    "message": "OpenBank durable state does not match the requested outcome"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.openbank",
+      "source_initializer": "evaluators.cua_review.initializers.android.android_openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Initializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenBank durable state does not match the requested outcome",
+    "metadata": {
+      "read_only": true,
+      "transaction_reference_compatibility": "Dispute transactionId is joined to the ledger; human labels match exact merchant, description or note. ID links must be unique and dispute cardinality remains exact.",
+      "task_id": "android.openbank.ace_tessa_security_city_nora_1787392720204_995198",
+      "ruleset_sha256": "3ff788085edc538ced39a80a4b9741dd9d72aa3cdc9f587721ab28ca6153e592",
+      "ruleset_spec": {
+        "schema_version": "1.0",
+        "task_id": "android.openbank.ace_tessa_security_city_nora_1787392720204_995198",
+        "platform": "android",
+        "read_only": true,
+        "app_package": "com.killt.openbank",
+        "local_state_key": "openbank.localState.v7",
+        "instruction_sha256": "7dd28ef4a2c99c16c6574c7c884038c05948d52f07adbdd60d010c7ea9459e96",
+        "matching": {
+          "strings": "case-sensitive exact",
+          "money": "exact to the cent",
+          "cardinality": "exactly one matching record",
+          "event_order": "relevant event projection in recorded order"
+        },
+        "expected": {
+          "records": {
+            "tessa_quinn": {
+              "collection": "recipients",
+              "lookup": {
+                "name": "Tessa Quinn"
+              },
+              "required": {
+                "name": "Tessa Quinn",
+                "type": "person",
+                "nickname": "Lighting fund",
+                "bank": "OpenBank",
+                "routingNumber": "064000020",
+                "accountNumber": "7359041826",
+                "favorite": false
+              },
+              "steps": []
+            },
+            "nora_vale": {
+              "collection": "recipients",
+              "lookup": {
+                "name": "Nora Vale"
+              },
+              "required": {
+                "name": "Nora Vale",
+                "type": "person",
+                "nickname": "Cloud backup",
+                "bank": "OpenBank",
+                "routingNumber": "084000026",
+                "accountNumber": "2517964308",
+                "favorite": false
+              },
+              "steps": []
+            },
+            "tessa_quinn_audit_fee": {
+              "collection": "transfers",
+              "lookup": {
+                "recipientName": "Tessa Quinn",
+                "memo": "Audit fee"
+              },
+              "required": {
+                "fromAccountId": "checking-2381",
+                "recipientName": "Tessa Quinn",
+                "amount": "1.35",
+                "memo": "Audit fee",
+                "status": "Scheduled",
+                "scheduledDate": "2026-07-30"
+              },
+              "steps": []
+            },
+            "ace_hardware": {
+              "collection": "disputes",
+              "lookup": {
+                "transactionId": "Ace Hardware"
+              },
+              "required": {
+                "transactionId": "Ace Hardware",
+                "details": "Return for rebate",
+                "contactedMerchant": true,
+                "reason": "Canceled or returned item"
+              },
+              "steps": []
+            },
+            "bill_city_utilities_2026_06_06": {
+              "collection": "billPayments",
+              "lookup": {
+                "billerId": "bill-city-utilities",
+                "scheduledDate": "2026-06-06"
+              },
+              "required": {
+                "billerId": "bill-city-utilities",
+                "billerName": "City Utilities",
+                "fromAccountId": "checking-2381",
+                "amount": "68.24",
+                "scheduledDate": "2026-06-06",
+                "memo": "68.24",
+                "status": "Scheduled"
+              },
+              "steps": []
+            },
+            "savings_9140": {
+              "collection": "paperlessSettings",
+              "lookup": {
+                "accountId": "savings-9140"
+              },
+              "required": {
+                "accountId": "savings-9140",
+                "delivery": "Paperless",
+                "eligible": true
+              },
+              "steps": []
+            },
+            "pref_large_purchase": {
+              "collection": "alertSettings",
+              "lookup": {
+                "id": "pref-large-purchase"
+              },
+              "required": {
+                "id": "pref-large-purchase",
+                "push": false
+              },
+              "steps": []
+            },
+            "alert_2": {
+              "collection": "alerts",
+              "lookup": {
+                "id": "alert-2"
+              },
+              "required": {
+                "id": "alert-2",
+                "read": true
+              },
+              "steps": []
+            },
+            "alert_1": {
+              "collection": "alerts",
+              "lookup": {
+                "id": "alert-1"
+              },
+              "required": {
+                "id": "alert-1",
+                "read": true
+              },
+              "steps": []
+            },
+            "card_debit_2381": {
+              "collection": "cardControls",
+              "lookup": {
+                "id": "card-debit-2381"
+              },
+              "required": {
+                "id": "card-debit-2381",
+                "status": "Locked"
+              },
+              "steps": []
+            }
+          }
+        }
+      },
+      "checks": [
+        {
+          "name": "recipients_tessa_quinn_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "name": "Tessa Quinn",
+            "type": "person",
+            "nickname": "Lighting fund",
+            "bank": "OpenBank",
+            "routingNumber": "064000020",
+            "accountNumber": "7359041826",
+            "favorite": false
+          },
+          "observed": {
+            "match_count": 0,
+            "record": null
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "recipients_nora_vale_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "name": "Nora Vale",
+            "type": "person",
+            "nickname": "Cloud backup",
+            "bank": "OpenBank",
+            "routingNumber": "084000026",
+            "accountNumber": "2517964308",
+            "favorite": false
+          },
+          "observed": {
+            "match_count": 0,
+            "record": null
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "transfers_tessa_quinn_audit_fee_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "fromAccountId": "checking-2381",
+            "recipientName": "Tessa Quinn",
+            "amount": "1.35",
+            "memo": "Audit fee",
+            "status": "Scheduled",
+            "scheduledDate": "2026-07-30"
+          },
+          "observed": {
+            "match_count": 0,
+            "record": null
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "disputes_ace_hardware_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "transactionId": "Ace Hardware",
+            "details": "Return for rebate",
+            "contactedMerchant": true,
+            "reason": "Canceled or returned item"
+          },
+          "observed": {
+            "match_count": 0,
+            "record": null
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "billPayments_bill_city_utilities_2026_06_06_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "billerId": "bill-city-utilities",
+            "billerName": "City Utilities",
+            "fromAccountId": "checking-2381",
+            "amount": "68.24",
+            "scheduledDate": "2026-06-06",
+            "memo": "68.24",
+            "status": "Scheduled"
+          },
+          "observed": {
+            "match_count": 0,
+            "record": null
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "paperlessSettings_savings_9140_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "accountId": "savings-9140",
+            "delivery": "Paperless",
+            "eligible": true
+          },
+          "observed": {
+            "match_count": 1,
+            "record": {
+              "accountId": "savings-9140",
+              "delivery": "Paper",
+              "eligible": true,
+              "updatedAt": "2026-03-10T15:00:00.000Z"
+            }
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "alertSettings_pref_large_purchase_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "id": "pref-large-purchase",
+            "push": false
+          },
+          "observed": {
+            "match_count": 1,
+            "record": {
+              "id": "pref-large-purchase",
+              "accountId": "credit-7712",
+              "name": "Large purchase",
+              "threshold": 100,
+              "enabled": true,
+              "email": true,
+              "sms": true,
+              "push": true
+            }
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "alerts_alert_2_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "id": "alert-2",
+            "read": true
+          },
+          "observed": {
+            "match_count": 1,
+            "record": {
+              "id": "alert-2",
+              "type": "cashflow",
+              "title": "Upcoming bill",
+              "body": "City Utilities is due on June 3.",
+              "createdAt": "2026-05-23T12:10:00.000Z",
+              "read": false
+            }
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "alerts_alert_1_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "id": "alert-1",
+            "read": true
+          },
+          "observed": {
+            "match_count": 1,
+            "record": {
+              "id": "alert-1",
+              "type": "security",
+              "title": "New sign-in from macOS",
+              "body": "A sign-in was recorded from Seattle, WA.",
+              "createdAt": "2026-05-24T18:30:00.000Z",
+              "read": false
+            }
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        },
+        {
+          "name": "cardControls_card_debit_2381_exact",
+          "steps": [],
+          "passed": false,
+          "expected": {
+            "match_count": 1,
+            "id": "card-debit-2381",
+            "status": "Locked"
+          },
+          "observed": {
+            "match_count": 1,
+            "record": {
+              "id": "card-debit-2381",
+              "accountId": "checking-2381",
+              "name": "Everyday Checking debit card",
+              "type": "debit",
+              "mask": "4428",
+              "status": "Unlocked",
+              "digitalWallet": "Apple Pay",
+              "lastChangedAt": "2026-05-18T16:20:00.000Z"
+            }
+          },
+          "evidence": null,
+          "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+        }
+      ],
+      "failures": [
+        "recipients_tessa_quinn_exact",
+        "recipients_nora_vale_exact",
+        "transfers_tessa_quinn_audit_fee_exact",
+        "disputes_ace_hardware_exact",
+        "billPayments_bill_city_utilities_2026_06_06_exact",
+        "paperlessSettings_savings_9140_exact",
+        "alertSettings_pref_large_purchase_exact",
+        "alerts_alert_2_exact",
+        "alerts_alert_1_exact",
+        "cardControls_card_debit_2381_exact"
+      ],
+      "state_summary": {
+        "recipients": 3,
+        "transfers": 0,
+        "transactions": 597,
+        "disputes": 0,
+        "billPayments": 0,
+        "paperlessSettings": 3,
+        "alertSettings": 4,
+        "alerts": 3,
+        "cardControls": 2,
+        "evaluationEvents": 15
+      },
+      "compatibility_repair": {
+        "source_evaluator": "evaluators.android.openbank_ace_tessa_security_city_nora_1787392720204_995198:AndroidOpenBankAceTessaSecurityCityNora1787392720204995198Evaluator",
+        "reason": "Installed APK fixes BUSINESS_DATE at 2026-06-01; later scheduled dates remain Scheduled",
+        "changed_expectations": [
+          {
+            "record": "tessa_quinn_audit_fee",
+            "date": "2026-07-30",
+            "original_status": "Completed",
+            "installed_apk_status": "Scheduled"
+          }
+        ],
+        "original_status": "FAIL",
+        "original_metadata": {
+          "read_only": true,
+          "transaction_reference_compatibility": "Dispute transactionId is joined to the ledger; human labels match exact merchant, description or note. ID links must be unique and dispute cardinality remains exact.",
+          "task_id": "android.openbank.ace_tessa_security_city_nora_1787392720204_995198",
+          "ruleset_sha256": "e683bc43ef4b55d7061277b2522671fc3d0457faa6ebd6005e67f71e260fdd01",
+          "ruleset_spec": {
+            "schema_version": "1.0",
+            "task_id": "android.openbank.ace_tessa_security_city_nora_1787392720204_995198",
+            "platform": "android",
+            "read_only": true,
+            "app_package": "com.killt.openbank",
+            "local_state_key": "openbank.localState.v7",
+            "instruction_sha256": "7dd28ef4a2c99c16c6574c7c884038c05948d52f07adbdd60d010c7ea9459e96",
+            "matching": {
+              "strings": "case-sensitive exact",
+              "money": "exact to the cent",
+              "cardinality": "exactly one matching record",
+              "event_order": "relevant event projection in recorded order"
+            },
+            "expected": {
+              "records": {
+                "tessa_quinn": {
+                  "collection": "recipients",
+                  "lookup": {
+                    "name": "Tessa Quinn"
+                  },
+                  "required": {
+                    "name": "Tessa Quinn",
+                    "type": "person",
+                    "nickname": "Lighting fund",
+                    "bank": "OpenBank",
+                    "routingNumber": "064000020",
+                    "accountNumber": "7359041826",
+                    "favorite": false
+                  },
+                  "steps": []
+                },
+                "nora_vale": {
+                  "collection": "recipients",
+                  "lookup": {
+                    "name": "Nora Vale"
+                  },
+                  "required": {
+                    "name": "Nora Vale",
+                    "type": "person",
+                    "nickname": "Cloud backup",
+                    "bank": "OpenBank",
+                    "routingNumber": "084000026",
+                    "accountNumber": "2517964308",
+                    "favorite": false
+                  },
+                  "steps": []
+                },
+                "tessa_quinn_audit_fee": {
+                  "collection": "transfers",
+                  "lookup": {
+                    "recipientName": "Tessa Quinn",
+                    "memo": "Audit fee"
+                  },
+                  "required": {
+                    "fromAccountId": "checking-2381",
+                    "recipientName": "Tessa Quinn",
+                    "amount": "1.35",
+                    "memo": "Audit fee",
+                    "status": "Completed",
+                    "scheduledDate": "2026-07-30"
+                  },
+                  "steps": []
+                },
+                "ace_hardware": {
+                  "collection": "disputes",
+                  "lookup": {
+                    "transactionId": "Ace Hardware"
+                  },
+                  "required": {
+                    "transactionId": "Ace Hardware",
+                    "details": "Return for rebate",
+                    "contactedMerchant": true,
+                    "reason": "Canceled or returned item"
+                  },
+                  "steps": []
+                },
+                "bill_city_utilities_2026_06_06": {
+                  "collection": "billPayments",
+                  "lookup": {
+                    "billerId": "bill-city-utilities",
+                    "scheduledDate": "2026-06-06"
+                  },
+                  "required": {
+                    "billerId": "bill-city-utilities",
+                    "billerName": "City Utilities",
+                    "fromAccountId": "checking-2381",
+                    "amount": "68.24",
+                    "scheduledDate": "2026-06-06",
+                    "memo": "68.24",
+                    "status": "Scheduled"
+                  },
+                  "steps": []
+                },
+                "savings_9140": {
+                  "collection": "paperlessSettings",
+                  "lookup": {
+                    "accountId": "savings-9140"
+                  },
+                  "required": {
+                    "accountId": "savings-9140",
+                    "delivery": "Paperless",
+                    "eligible": true
+                  },
+                  "steps": []
+                },
+                "pref_large_purchase": {
+                  "collection": "alertSettings",
+                  "lookup": {
+                    "id": "pref-large-purchase"
+                  },
+                  "required": {
+                    "id": "pref-large-purchase",
+                    "push": false
+                  },
+                  "steps": []
+                },
+                "alert_2": {
+                  "collection": "alerts",
+                  "lookup": {
+                    "id": "alert-2"
+                  },
+                  "required": {
+                    "id": "alert-2",
+                    "read": true
+                  },
+                  "steps": []
+                },
+                "alert_1": {
+                  "collection": "alerts",
+                  "lookup": {
+                    "id": "alert-1"
+                  },
+                  "required": {
+                    "id": "alert-1",
+                    "read": true
+                  },
+                  "steps": []
+                },
+                "card_debit_2381": {
+                  "collection": "cardControls",
+                  "lookup": {
+                    "id": "card-debit-2381"
+                  },
+                  "required": {
+                    "id": "card-debit-2381",
+                    "status": "Locked"
+                  },
+                  "steps": []
+                }
+              }
+            }
+          },
+          "checks": [
+            {
+              "name": "recipients_tessa_quinn_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "name": "Tessa Quinn",
+                "type": "person",
+                "nickname": "Lighting fund",
+                "bank": "OpenBank",
+                "routingNumber": "064000020",
+                "accountNumber": "7359041826",
+                "favorite": false
+              },
+              "observed": {
+                "match_count": 0,
+                "record": null
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "recipients_nora_vale_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "name": "Nora Vale",
+                "type": "person",
+                "nickname": "Cloud backup",
+                "bank": "OpenBank",
+                "routingNumber": "084000026",
+                "accountNumber": "2517964308",
+                "favorite": false
+              },
+              "observed": {
+                "match_count": 0,
+                "record": null
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "transfers_tessa_quinn_audit_fee_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "fromAccountId": "checking-2381",
+                "recipientName": "Tessa Quinn",
+                "amount": "1.35",
+                "memo": "Audit fee",
+                "status": "Completed",
+                "scheduledDate": "2026-07-30"
+              },
+              "observed": {
+                "match_count": 0,
+                "record": null
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "disputes_ace_hardware_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "transactionId": "Ace Hardware",
+                "details": "Return for rebate",
+                "contactedMerchant": true,
+                "reason": "Canceled or returned item"
+              },
+              "observed": {
+                "match_count": 0,
+                "record": null
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "billPayments_bill_city_utilities_2026_06_06_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "billerId": "bill-city-utilities",
+                "billerName": "City Utilities",
+                "fromAccountId": "checking-2381",
+                "amount": "68.24",
+                "scheduledDate": "2026-06-06",
+                "memo": "68.24",
+                "status": "Scheduled"
+              },
+              "observed": {
+                "match_count": 0,
+                "record": null
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "paperlessSettings_savings_9140_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "accountId": "savings-9140",
+                "delivery": "Paperless",
+                "eligible": true
+              },
+              "observed": {
+                "match_count": 1,
+                "record": {
+                  "accountId": "savings-9140",
+                  "delivery": "Paper",
+                  "eligible": true,
+                  "updatedAt": "2026-03-10T15:00:00.000Z"
+                }
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "alertSettings_pref_large_purchase_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "id": "pref-large-purchase",
+                "push": false
+              },
+              "observed": {
+                "match_count": 1,
+                "record": {
+                  "id": "pref-large-purchase",
+                  "accountId": "credit-7712",
+                  "name": "Large purchase",
+                  "threshold": 100,
+                  "enabled": true,
+                  "email": true,
+                  "sms": true,
+                  "push": true
+                }
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "alerts_alert_2_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "id": "alert-2",
+                "read": true
+              },
+              "observed": {
+                "match_count": 1,
+                "record": {
+                  "id": "alert-2",
+                  "type": "cashflow",
+                  "title": "Upcoming bill",
+                  "body": "City Utilities is due on June 3.",
+                  "createdAt": "2026-05-23T12:10:00.000Z",
+                  "read": false
+                }
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "alerts_alert_1_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "id": "alert-1",
+                "read": true
+              },
+              "observed": {
+                "match_count": 1,
+                "record": {
+                  "id": "alert-1",
+                  "type": "security",
+                  "title": "New sign-in from macOS",
+                  "body": "A sign-in was recorded from Seattle, WA.",
+                  "createdAt": "2026-05-24T18:30:00.000Z",
+                  "read": false
+                }
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            },
+            {
+              "name": "cardControls_card_debit_2381_exact",
+              "steps": [],
+              "passed": false,
+              "expected": {
+                "match_count": 1,
+                "id": "card-debit-2381",
+                "status": "Locked"
+              },
+              "observed": {
+                "match_count": 1,
+                "record": {
+                  "id": "card-debit-2381",
+                  "accountId": "checking-2381",
+                  "name": "Everyday Checking debit card",
+                  "type": "debit",
+                  "mask": "4428",
+                  "status": "Unlocked",
+                  "digitalWallet": "Apple Pay",
+                  "lastChangedAt": "2026-05-18T16:20:00.000Z"
+                }
+              },
+              "evidence": null,
+              "failure_reason": "exact value, shape, cardinality, or causal-event mismatch"
+            }
+          ],
+          "failures": [
+            "recipients_tessa_quinn_exact",
+            "recipients_nora_vale_exact",
+            "transfers_tessa_quinn_audit_fee_exact",
+            "disputes_ace_hardware_exact",
+            "billPayments_bill_city_utilities_2026_06_06_exact",
+            "paperlessSettings_savings_9140_exact",
+            "alertSettings_pref_large_purchase_exact",
+            "alerts_alert_2_exact",
+            "alerts_alert_1_exact",
+            "cardControls_card_debit_2381_exact"
+          ],
+          "state_summary": {
+            "recipients": 3,
+            "transfers": 0,
+            "transactions": 597,
+            "disputes": 0,
+            "billPayments": 0,
+            "paperlessSettings": 3,
+            "alertSettings": 4,
+            "alerts": 3,
+            "cardControls": 2,
+            "evaluationEvents": 15
+          }
+        }
+      }
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openbank:id/action_bar_root",
+        "resource-id": "com.killt.openbank:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openbank:id/webview",
+        "resource-id": "com.killt.openbank:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openbank",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

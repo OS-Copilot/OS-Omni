@@ -27,11 +27,18 @@ init:
     - n-3005
     - n-3110
     - n-3011
+    # The image's notebook (and the app seed) does not have n-3110 / n-3011 in Lina's saved list,
+    # although the task opens both from My Saved; the initializer saves them before launch.
+    saved_note_ids:
+    - n-3110
+    - n-3011
+    required_notifications:
+    - Felix Sun liked your note
     initial_state_note: The photo2 snapshot must contain OpenNote, an already logged-in Lina Park session,
       no existing desk route log note, source notes n-3332 and n-3005, already saved notes n-3110 and
-      n-3011, and the notification Felix Sun liked your note. The initializer only launches OpenNote and
-      validates this baseline; it does not restore snapshots, create notes, like, save, comment, follow,
-      mark alerts read, or edit the profile.
+      n-3011, and the notification Felix Sun liked your note. The initializer adds n-3110 and n-3011 to
+      Lina's saved notes (the image lacks them), validates this baseline, and launches OpenNote; it does
+      not restore snapshots, create notes, like, comment, follow, mark alerts read, or edit the profile.
 evaluation:
   evaluator_id: evaluators.cua_review.evaluators.linux.opennote:OpenNoteBakeryResumeRouteEvaluator
   params:
@@ -85,8 +92,8 @@ evaluation:
       - Desk route tester
       - desk route log
 limits:
-  max_steps: 190
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux
@@ -129,8 +136,8 @@ metadata:
   - Snapshot photo2 must contain already saved notes n-3110 What changed after I tried three-shot sequence
     and n-3011 Weekend-realistic caption timing for a normal day.
   - Snapshot photo2 must contain the unread notification Felix Sun liked your note for note n-3110.
-  - The initializer does not restore snapshots, log in, create notes, like, save, comment, follow, mark
-    notifications, or edit profile fields.
+  - The initializer saves n-3110 and n-3011 for Lina when the image lacks them; it does not restore snapshots,
+    log in, create notes, like, comment, follow, mark notifications, or edit profile fields.
   verifier_rules:
   - Data-source priority is OpenNote /api/evaluation when available, otherwise Chrome DevTools localStorage
     or LevelDB localStorage.

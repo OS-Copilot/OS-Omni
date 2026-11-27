@@ -21,7 +21,7 @@ init:
   params:
     bundle_id: com.killt.openshop
     local_state_key: openshop.localState.v3
-    wait_ms: 1200
+    wait_ms: 4000
     return_home_after_init: false
     ios_device_profile: iphone17-2
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
@@ -37,15 +37,15 @@ evaluation:
     manual_window_start: '2026-08-03T12:16:24+08:00'
     manual_window_end: '2026-08-03T12:31:40+08:00'
     expected_instruction_sha256: 6b4a0e3928c8a80795a11210eeee90b47f3ee2e0a764eebaaaab181d54a8c02b
-    expected_ruleset_sha256: 7071436564ee3a6feb98c9d8ce97b3fa8622264c4732f18037788a7a75d0edec
+    expected_ruleset_sha256: 47d91d8422229e532ea8a9d931bcb60e6c0b5c9ca1cb72c9b8b9bfc9ccfa194f
     expected_app_js_sha256: 6b610b9585adb61e626c8e36461bd2aebd64870505de31e40edf5a9403791a9b
     expected_seed_data_sha256: 51ec46d3a918193fec4c5a74d06a2f32cc5a5dd6a4c6a2eca100f82186a58178
     expected_password_hash: fnv1a-900f7aee
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-2
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -64,7 +64,7 @@ metadata:
   ios_device_profile: iphone17-2
   source_simulator_name: osomni-opendriver-ios-source-fixed-promax
   instruction_sha256: c5a4a369cfd881da97e7d7e9d1e92b00bb76f0ad88217b49d84dfa3c969c5547
-  evaluator_ruleset_sha256: 7071436564ee3a6feb98c9d8ce97b3fa8622264c4732f18037788a7a75d0edec
+  evaluator_ruleset_sha256: 47d91d8422229e532ea8a9d931bcb60e6c0b5c9ca1cb72c9b8b9bfc9ccfa194f
   recording: 2026-08-03_12-16-24.mp4
   description: OpenShop3 exact authentication, two orders, one review, and strict durable sequence verification.
   prerequisites:
@@ -80,13 +80,15 @@ metadata:
     - Manual eval and automatic full-run evaluation use the same evaluator, ruleset digest, and business
       checkpoints.
     strictness:
-    - The two in-window orders have exact item cardinality, order, ids, titles, categories, specifications,
-      quantities, prices, line totals, addresses, payments, notes, statuses, and totals.
+    - The two in-window orders, matched to the brief's first/second order by content, have exact item
+      cardinality, item sequence (both carts are stated "in this exact sequence"), ids, titles, categories,
+      specifications, quantities, prices, line totals, addresses, payments, notes, statuses, and totals.
     - The one in-window review has exact order and product binding, rating, text, and reviewedAt; the
       other six target products have no review.
-    - All seven cart id epochs, both order id/createdAt epochs, and the review timestamp form one strict
-      causal sequence.
-    - Extra, duplicate, malformed, fuzzy, or out-of-order in-window data fails.
+    - Only the stated orders are checked; each cart's id epochs follow its stated sequence and precede
+      its order, and the review immediately follows the first order (no other cart addition or order
+      placement in between). The two orders may otherwise be placed in either order.
+    - Extra, duplicate, malformed, or fuzzy in-window data fails.
     coverage:
     - Every data-producing or compound-submission step is bound to exact durable evidence; uncovered_data_steps
       must be empty.

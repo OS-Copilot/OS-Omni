@@ -49,6 +49,7 @@ evaluation:
     - Maya checks risk
     - Design signs off
     - Review by EOD
+    resolved_comment_text: Review by EOD
     max_files: 5000
     max_file_size: 12000000
     workflow_markers_minimum: 4
@@ -61,8 +62,9 @@ evaluation:
       checks:
       - The duplicated document is named Launch Review and contains the edited title.
       - The document contains the added Launch line.
-      - Comment creation and resolving Review by EOD are GUI flow steps; comment text is auxiliary evidence
-        only because resolved comments may not persist in exported files.
+      - The comments OK, Reviewing and Review by EOD exist in the document state, and the Review by EOD
+        comment itself is resolved (OpenDoc keeps resolved comments in the document with resolved set;
+        exports do not carry comments, so comments are read from the document state).
       - Action notes exists with Alex owns copy, Maya checks risk, and Design signs off.
       - Plain text and Word exports contain Launch Review evidence.
       - At least four formatting/style markers are present for title styling, heading, highlight, list,
@@ -76,8 +78,8 @@ evaluation:
       - OpenDoc should remain open.
       - The left search box should contain Launch.
 limits:
-  max_steps: 120
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   app_name: OpenDoc
   vm_profile: ubuntu0

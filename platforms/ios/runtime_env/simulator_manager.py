@@ -196,6 +196,18 @@ def open_simulator_app(udid: str):
 
 
 def get_app_data_container_path(udid: str, bundle_id: str) -> str:
+    return str(get_app_container_path(udid, bundle_id, "data"))
+
+
+def get_app_container_path(udid: str, bundle_id: str, kind: str = "data") -> Path:
+    """Resolve an app container under the requested simulator's data root.
+
+    On current CoreSimulator, ``simctl get_app_container`` can report the
+    source simulator's host path when queried for an app installed in a clone.
+    The cloned device still has an independent container with the same
+    container UUID under its own device root. Rebase that stale host path to
+    the requested UDID, and fail closed if the clone-local container is absent.
+    """
     resolved_udid = str(udid or "").strip()
     if not resolved_udid:
         raise ValueError("Simulator UDID is required")
@@ -204,12 +216,53 @@ def get_app_data_container_path(udid: str, bundle_id: str) -> str:
     if not resolved_bundle_id:
         raise ValueError("App bundle_id is required")
 
+    resolved_kind = str(kind or "").strip()
+    if not resolved_kind:
+        raise ValueError("App container kind is required")
+
     proc = run_cmd(
-        ["xcrun", "simctl", "get_app_container", resolved_udid, resolved_bundle_id, "data"],
+        ["xcrun", "simctl", "get_app_container", resolved_udid, resolved_bundle_id, resolved_kind],
         check=True,
         timeout=60,
     )
-    return proc.stdout.strip()
+    raw_path = (proc.stdout or "").strip()
+    if not raw_path:
+        raise RuntimeError(
+            f"simctl returned an empty {resolved_kind} container for {resolved_bundle_id}"
+        )
+    return remap_simulator_container_path(raw_path, resolved_udid)
+
+
+def remap_simulator_container_path(container_path: str | Path, udid: str) -> Path:
+    """Rebase a CoreSimulator container path to the active device, if needed."""
+    resolved_udid = str(udid or "").strip()
+    if not resolved_udid:
+        raise ValueError("Simulator UDID is required")
+
+    path = Path(container_path).expanduser()
+    devices_root = (
+        Path.home() / "Library" / "Developer" / "CoreSimulator" / "Devices"
+    )
+    try:
+        relative = path.relative_to(devices_root)
+    except ValueError:
+        return path.resolve()
+
+    if len(relative.parts) < 3 or relative.parts[1] != "data":
+        return path.resolve()
+
+    reported_udid = relative.parts[0]
+    if reported_udid.lower() == resolved_udid.lower():
+        return path.resolve()
+
+    rebased = devices_root / resolved_udid / "data" / Path(*relative.parts[2:])
+    if not rebased.exists():
+        raise FileNotFoundError(
+            "simctl returned an app container under a different simulator "
+            f"({reported_udid}); the corresponding container is missing from "
+            f"active simulator {resolved_udid}: {rebased}"
+        )
+    return rebased.resolve()
 
 
 def launch_app(udid: str, bundle_id: str):

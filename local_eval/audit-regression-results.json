@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "parser_cases": true,
+    "android.openbank.ace_dispute_paperless_security_lena_marco_1787394510087_195225": {
+      "positive": true,
+      "missing_required_records_negative": true
+    },
+    "android.openbank.ace_tessa_security_city_nora_1787392720204_995198": {
+      "positive": true,
+      "missing_required_records_negative": true
+    },
+    "android.openbank.card_rebate_dispute_1787391981468_550137": {
+      "positive": true,
+      "missing_required_records_negative": true
+    },
+    "calendar_wrong_date_negative": true,
+    "dispute_wrong_text_negative": true,
+    "dispute_duplicate_negative": true,
+    "android.openbank.city_rainy_lena_marco_security_1787396657268_013944": {
+      "positive": true,
+      "missing_required_records_negative": true
+    },
+    "android.openbank.lena_marco_dispute_security_paperless_1787390266564_553878": {
+      "positive": true,
+      "missing_required_records_negative": true
+    },
+    "android.openbank.maya_leo_security_dispute_payment_paperless_transfer_1787397914946_938252": {
+      "positive": true,
+      "missing_required_records_negative": true
+    }
+  },
+  "synthetic_tests_not_model_scores": true
+}

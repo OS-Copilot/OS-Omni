@@ -71,12 +71,32 @@ PY"""
                 actual_content = str(actual.get("content") or "")
                 if "equals" in expected:
                     expected_content = str(expected.get("equals") or "")
-                    assert actual_content == expected_content, f"content mismatch for {rel_path}"
+                    # LNX-055 / LNX-071: the release-packet YAMLs append a seed
+                    # note after a blank line ("Keep this note short." / "Keep
+                    # this note under 2 sentences.") that the brief never asks
+                    # for, so byte equality false-fails a faithful rewrite. Only
+                    # that documented legacy note is optional; the instructed
+                    # core must still match in order and every other `equals`
+                    # expectation stays byte-exact.
+                    expected_text = expected_content.replace("\r\n", "\n").replace("\r", "\n")
+                    expected_core, _, expected_tail = expected_text.partition("\n\n")
+                    if expected_tail.strip().startswith("Keep this note"):
+                        required_core = " ".join(expected_core.split())
+                        actual_text = " ".join(actual_content.split())
+                        # The brief says the file's *first* sentence is the
+                        # instructed text, so it must open the file; what follows
+                        # (the legacy note or nothing) is free.
+                        assert actual_text.startswith(required_core), f"content mismatch for {rel_path}"
+                    else:
+                        assert actual_content == expected_content, f"content mismatch for {rel_path}"
                 if "contains" in expected:
                     needle = str(expected.get("contains") or "")
                     assert needle in actual_content, f"expected {rel_path} to contain {needle!r}"
                 if "json" in expected:
-                    actual_json = json.loads(actual_content)
+                    try:
+                        actual_json = json.loads(actual_content)
+                    except json.JSONDecodeError:
+                        raise AssertionError(f"expected valid JSON in {rel_path}") from None
                     expected_json = expected.get("json")
                     assert actual_json == expected_json, f"JSON mismatch for {rel_path}"
         except AssertionError as exc:

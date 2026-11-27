@@ -64,7 +64,7 @@ evaluation:
     - No saved routes
     - No incident reports
 limits:
-  max_steps: 280
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:

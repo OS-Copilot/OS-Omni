@@ -1,0 +1,61 @@
+task_id: macos.vscodium.nightly_digest_sync
+platform: macos
+instruction: "A VSCodium workspace named nightly_digest is already open. The relevant\
+  \ files\nare already available in the Explorer sidebar, and README.md is the active\n\
+  editor. The workspace also exposes top-level aliases for reminder_formatter.py\n\
+  and release.json, and each alias edits the real underlying file.\n\nRefresh the\
+  \ workspace so the canary digest wording and retry settings agree everywhere:\n\
+  the subject must be `Canary digest ready`, the audience must be `support-canary`,\n\
+  and the retry window must be 15 minutes with a retry limit of 4.\n\nComplete the\
+  \ task with this exact file order:\n1. overwrite README.md with the final markdown\
+  \ below, then save\n2. press Cmd+P, type reminder_formatter.py, press Enter\n3.\
+  \ overwrite reminder_formatter.py with the final Python below, then save\n4. press\
+  \ Cmd+P, type release.json, press Enter\n5. overwrite release.json with the final\
+  \ JSON below, then save\n\nDo not use the command palette and do not edit any other\
+  \ files.\n\nReplace README.md with exactly:\n\n```md\n# Nightly Canary Digest\n\n\
+  ## Tonight\n- Send the canary digest\n- Verify the support-canary aliases\n- Confirm the\
+  \ retry window is 15 minutes\n\n## Before Sign-off\n- Capture the queue snapshot\n\
+  - Tag the canary release notes\n- Archive the final checklist\n```\n\nReplace src/reminder_formatter.py\
+  \ with exactly:\n\n```python\nEMAIL_SUBJECT = \"Canary digest ready\"\nDEFAULT_SIGNOFF\
+  \ = \"Ops Desk\"\nRETRY_WINDOW = \"15 minutes\"\n\n\ndef build_reminder(name: str) -> str:\n\
+  \    return f\"{EMAIL_SUBJECT}\\n{name}, please review the canary handoff packet within {RETRY_WINDOW}.\\n-- {DEFAULT_SIGNOFF}\"\n```\n\nReplace\
+  \ config/release.json with exactly:\n\n```json\n{\n  \"pilotGroup\": \"support-canary\"\
+  ,\n  \"sendDigest\": true,\n  \"retryLimit\": 4,\n  \"retryWindowMinutes\": 15\n}\n```\n"
+init:
+  initializer_id: initializers.macos.vscodium:VSCodiumInitializer
+  params:
+    wait_ms: 6000
+    open_settings_file: false
+    open_workspace: true
+    workspace_root: /Users/bench/Documents/nightly_digest
+    fixture_root: files/vscodium/nightly_digest_sync/start
+    file_aliases:
+    - alias: reminder_formatter.py
+      target: src/reminder_formatter.py
+    - alias: release.json
+      target: config/release.json
+    baseline_settings:
+      breadcrumbs.enabled: false
+      workbench.editor.showTabs: false
+      workbench.list.openMode: singleClick
+      editor.autoIndent: none
+    starter_files:
+    - README.md
+    - reminder_formatter.py
+    - release.json
+    active_file: README.md
+evaluation:
+  evaluator_id: evaluators.macos.vscodium:VSCodiumWorkspaceEvaluator
+  params:
+    workspace_root: /Users/bench/Documents/nightly_digest
+    expected_root: files/vscodium/nightly_digest_sync/expected
+    compare_paths:
+    - README.md
+    - src/reminder_formatter.py
+    - config/release.json
+    - .vscode/settings.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: hard

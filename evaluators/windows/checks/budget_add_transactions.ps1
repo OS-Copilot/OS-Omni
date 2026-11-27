@@ -3,7 +3,9 @@ $script = @'
 import glob, os, shutil, sqlite3, tempfile, sys
 EXPECTED = {'accounts': [('Ops Checking', 3200), ('Emergency Buffer', 8000), ('Travel Envelope', 1200), ('Tax Reserve', 2400), ('Audit Escrow', 900), ('Vendor Holdback', 700), ('Compliance Reserve', 1100), ('Equipment Lease', 1600), ('Payroll Buffer', 4200), ('Legal Reserve', 1300), ('Training Fund', 950), ('Cloud Escrow', 2250)], 'categories': ['Utility Buffer', 'Conference Travel', 'Client Meals', 'SaaS Tools', 'Hardware Refresh', 'Launch Collateral', 'Renewal Fees', 'Security Review', 'Compliance Audit', 'Lease Payments', 'Team Offsite', 'Payroll Fees', 'Legal Filing', 'Staff Training', 'Cloud Hosting'], 'budgets': [('Utility Buffer', 250), ('Conference Travel', 600), ('Client Meals', 180), ('SaaS Tools', 75), ('Hardware Refresh', 350), ('Launch Collateral', 220), ('Renewal Fees', 140), ('Security Review', 260), ('Compliance Audit', 320), ('Lease Payments', 540), ('Team Offsite', 375), ('Payroll Fees', 425), ('Legal Filing', 360), ('Staff Training', 285), ('Cloud Hosting', 490)], 'transactions': [('Ops Checking', 'City Utilities', 'Utility Buffer', 210), ('Ops Checking', 'Skyline Air', 'Conference Travel', 480), ('Ops Checking', 'Harbor Bistro', 'Client Meals', 64.5), ('Ops Checking', 'StackTools', 'SaaS Tools', 75), ('Ops Checking', 'North Desk', 'Hardware Refresh', 315), ('Ops Checking', 'Print Depot', 'Launch Collateral', 129), ('Tax Reserve', 'License Bureau', 'Renewal Fees', 118), ('Vendor Holdback', 'Shield Audit', 'Security Review', 244), ('Compliance Reserve', 'Audit Circle', 'Compliance Audit', 290), ('Equipment Lease', 'LeaseWorks', 'Lease Payments', 515), ('Travel Envelope', 'Summit Venue', 'Team Offsite', 332), ('Payroll Buffer', 'Payroll Bureau', 'Payroll Fees', 390), ('Legal Reserve', 'Legal Desk', 'Legal Filing', 345), ('Training Fund', 'Skill Forge', 'Staff Training', 210), ('Cloud Escrow', 'Cloud Grid', 'Cloud Hosting', 470)], 'transfers': [('Ops Checking', 'Travel Envelope', 300), ('Ops Checking', 'Audit Escrow', 450), ('Tax Reserve', 'Vendor Holdback', 200), ('Ops Checking', 'Compliance Reserve', 275), ('Vendor Holdback', 'Equipment Lease', 180), ('Emergency Buffer', 'Travel Envelope', 125), ('Ops Checking', 'Payroll Buffer', 550), ('Tax Reserve', 'Legal Reserve', 260), ('Emergency Buffer', 'Training Fund', 175), ('Ops Checking', 'Cloud Escrow', 325), ('Compliance Reserve', 'Legal Reserve', 90), ('Payroll Buffer', 'Tax Reserve', 210), ('Cloud Escrow', 'Audit Escrow', 145), ('Legal Reserve', 'Compliance Reserve', 115)]}
 PATHS = [os.path.expandvars(r'%USERPROFILE%\Documents\Actual'), os.path.expandvars(r'%APPDATA%\Actual'), os.path.expandvars(r'%LOCALAPPDATA%\actual'), os.path.expandvars(r'%APPDATA%\actual')]
-def money_candidates(amount): return {int(round(abs(float(amount))*s)) for s in (1,10,100,1000,10000)}
+def money_candidates(amount):
+    # Task params are dollars; Actual stores integer cents (tasks/windows/files/actual/blank-budget-template.zip).
+    return [int(round(abs(float(amount)) * 100))]
 def money_matches(observed, expected):
     try: return abs(int(round(float(observed)))) in money_candidates(expected)
     except Exception: return False
@@ -24,6 +26,30 @@ def tx_rows(cur):
         return qall(cur, "select t.*, a.name account_name, c.name category_name, vp.name payee_name from v_transactions t left join accounts a on a.id=t.account and a.tombstone=0 left join categories c on c.id=t.category and c.tombstone=0 left join v_payees vp on vp.id=t.payee")
     if not table(cur,'transactions'): return []
     return qall(cur, "select t.*, a.name account_name, c.name category_name, p.name payee_name from transactions t left join accounts a on a.id=t.acct and a.tombstone=0 left join categories c on c.id=t.category and c.tombstone=0 left join payees p on p.id=t.description and p.tombstone=0 where t.tombstone=0")
+def has_transfer(rows, source, destination, amount):
+    # Actual links each transaction to the counterpart transaction's ID;
+    # transfer_id is not a group ID shared by both rows.
+    by_id = {text(row.get('id')): row for row in rows if row.get('id')}
+    for outgoing in rows:
+        if lower(outgoing.get('account_name') or outgoing.get('account')) != lower(source):
+            continue
+        counterpart_id = text(outgoing.get('transfer_id') or outgoing.get('transferred_id'))
+        incoming = by_id.get(counterpart_id)
+        if not incoming:
+            continue
+        if text(incoming.get('transfer_id') or incoming.get('transferred_id')) != text(outgoing.get('id')):
+            continue
+        if lower(incoming.get('account_name') or incoming.get('account')) != lower(destination):
+            continue
+        if not money_matches(outgoing.get('amount'), amount) or not money_matches(incoming.get('amount'), amount):
+            continue
+        try:
+            if float(outgoing['amount']) < 0 < float(incoming['amount']):
+                return True
+        except (KeyError, TypeError, ValueError):
+            continue
+    return False
+
 def check(cur):
     failures=[]
     if not table(cur,'accounts') or not table(cur,'transactions'): return ['unsupported Actual schema']
@@ -44,20 +70,9 @@ def check(cur):
     rows=tx_rows(cur)
     for account,payee,cat,amount in EXPECTED['transactions']:
         if not any(lower(r.get('account_name') or r.get('account'))==lower(account) and lower(r.get('payee_name') or r.get('payee') or r.get('description'))==lower(payee) and lower(r.get('category_name') or r.get('category'))==lower(cat) and money_matches(r.get('amount'), amount) for r in rows): failures.append(f'missing transaction: {account} / {payee} / {cat} / {amount}')
-    by_transfer={}
-    for r in rows:
-        tid=text(r.get('transfer_id'))
-        if tid: by_transfer.setdefault(tid,[]).append(r)
     for src,dst,amount in EXPECTED['transfers']:
-        ok=False
-        for pair in by_transfer.values():
-            src_rows=[r for r in pair if lower(r.get('account_name') or r.get('account'))==lower(src) and money_matches(r.get('amount'), amount)]
-            dst_rows=[r for r in pair if lower(r.get('account_name') or r.get('account'))==lower(dst) and money_matches(r.get('amount'), amount)]
-            if src_rows and dst_rows:
-                try:
-                    if any(float(a.get('amount') or 0)*float(b.get('amount') or 0)<0 for a in src_rows for b in dst_rows): ok=True; break
-                except Exception: ok=True; break
-        if not ok: failures.append(f'missing transfer: {src} -> {dst} / {amount}')
+        if not has_transfer(rows, src, dst, amount):
+            failures.append(f'missing transfer: {src} -> {dst} / {amount}')
     return failures
 failures=[]
 for source in find_dbs():

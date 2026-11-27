@@ -21,10 +21,10 @@ evaluation:
     baseline_max_timestamp: 1783563283
     fsnotes_baseline_max_timestamp: 1785223719
     sent_state: 26
-    expected_ruleset_sha256: 015147a2b9cadd45340ecbd96d02bae347cbfeedb5d348db3762b9e286b86a57
+    expected_ruleset_sha256: bf1bc350775ffa020b6a6d4346ed42fe5a0740a623da69c885b9dcc5df57dbb5
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -51,6 +51,8 @@ metadata:
     - Saved Messages contains exactly iOS brief synced, the first note attachment, the second note attachment,
       and the final two-line archive message.
     - The four Saved Messages outputs and cross-app file timestamps prove the instructed business order.
+    - The app-managed creation titles are normalized only via the explicit title prefixes; all other bytes
+      are compared strictly, and cross-app creation/edit/share chronology is a non-blocking diagnostic.
     data_source_priority:
     - Delta Chat dc.db and attachment blobs are authoritative.
     - FSNotes Documents files are authoritative cross-object evidence.
@@ -153,3 +155,5 @@ metadata:
     release_path: benchmark/tasks/deltachat/IOS/ios.deltachat.mobile_qa_brief_saved_messages_4_1
     original_evaluator_id: evaluators.ios.deltachat_mobile_qa_brief_saved_messages_4_1_evaluator:DeltaChatMobileQABriefStateEvaluator
     evaluator_source: benchmark
+    instruction_authority_note: English instruction is authoritative; ruleset 2.1 uses the stated 7/7 content
+      lines with an explicit app-managed title normalizer, and demotes chronology to a diagnostic.

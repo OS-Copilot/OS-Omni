@@ -113,8 +113,8 @@ evaluation:
       - 0.46
       - 0.82
 limits:
-  max_steps: 110
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - linux

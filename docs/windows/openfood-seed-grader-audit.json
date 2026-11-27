@@ -1,0 +1,46 @@
+{
+  "task_id": "windows.openfood.two_orders_support_courier_snapshot1",
+  "verdict": "FAIL",
+  "decisive_valid_checks": [
+    {
+      "id": "created_order_count",
+      "passed": false,
+      "expected": 2,
+      "actual": 0,
+      "source": "localStorage.createdOrders"
+    },
+    {
+      "id": "support_ticket",
+      "passed": false,
+      "expected": {
+        "subject": "Soup quality",
+        "description": "Soup was cold",
+        "status": "OPEN",
+        "customer_id": "lucas",
+        "count": 1
+      },
+      "actual": {
+        "count": 0,
+        "matches": []
+      },
+      "source": "localStorage.tickets"
+    },
+    {
+      "id": "final_filters",
+      "passed": false,
+      "expected": {
+        "q": "dumpling",
+        "cuisine": "Chinese",
+        "sort": "rating"
+      },
+      "actual": {
+        "q": "banh",
+        "cuisine": "Vietnamese",
+        "sort": "eta"
+      },
+      "source": "localStorage.filters"
+    }
+  ],
+  "defective_checks": "Static seed lookup in mutable storage reported missing menu/courier/final restaurant identifiers. These checks are excluded from the failure decision. Original report remains in the archive. Shared seed reader fixed for future evaluation.",
+  "rerun": "No DS rerun needed: zero orders and no required support ticket independently violate business requirements."
+}

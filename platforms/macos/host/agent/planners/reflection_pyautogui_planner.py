@@ -27,21 +27,29 @@ def _normalize_osworld_code(code: str) -> str:
         tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
     except tokenize.TokenError:
         return "\n".join(line.strip() for line in text.splitlines() if line.strip()).strip()
+    except SyntaxError:
+        # e.g. an inconsistent dedent; let the runtime report it as a failed action.
+        return text
 
     segments: list[str] = []
     current_tokens: list[tokenize.TokenInfo] = []
-    for token in tokens:
-        if token.type == tokenize.ENDMARKER:
-            break
-        if token.type == tokenize.OP and token.string == ";":
-            segment = tokenize.untokenize(current_tokens).strip()
-            if segment:
-                segments.append(segment)
-            current_tokens = []
-            continue
-        current_tokens.append(token)
+    try:
+        for token in tokens:
+            if token.type == tokenize.ENDMARKER:
+                break
+            if token.type == tokenize.OP and token.string == ";":
+                segment = tokenize.untokenize(current_tokens).strip()
+                if segment:
+                    segments.append(segment)
+                current_tokens = []
+                continue
+            current_tokens.append(token)
 
-    tail = tokenize.untokenize(current_tokens).strip()
+        tail = tokenize.untokenize(current_tokens).strip()
+    except IndexError:
+        # A ';' inside an indented block leaves a segment with DEDENT but no INDENT
+        # tokens, which untokenize cannot rebuild; the original code runs as-is.
+        return text
     if tail:
         segments.append(tail)
     return "\n".join(segments).strip()

@@ -1,0 +1,151 @@
+{
+  "purpose": "Base photos for the v1 Android OpenPhoto calibrated-export tasks (scan row AND-051). The task initializers draw the calibration patches and push the result; see evaluators/cua_review/platforms/android/openphoto_calibration.py.",
+  "calibration": {
+    "patch_rgb": {
+      "red": [
+        190,
+        40,
+        40
+      ],
+      "green": [
+        40,
+        190,
+        40
+      ],
+      "blue": [
+        40,
+        40,
+        190
+      ]
+    },
+    "patch_padding_px": 8,
+    "encoding": {
+      "format": "JPEG",
+      "quality": 98,
+      "subsampling": "4:4:4"
+    },
+    "reference_build": "Pillow 12.3.0 / libjpeg-turbo 3.1.4.1: cooking and guitar fixtures are byte-identical to local_eval/benchmark-v2/references/<profile_id>/input.jpg, the inputs of the device reference exports."
+  },
+  "files": {
+    "clown_side_face.jpg": {
+      "sha256": "b6237067e7ca26eb618ca8f8d4cb7b09bb931ac8c2e5cdf2928146bbd9c5ad91",
+      "bytes": 108939,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/photo-originals/portrait_30.jpg",
+      "origin": "Emulator snapshot photo portrait_30.jpg (no calibration area).",
+      "shows": "clown-makeup side-face portrait",
+      "task_id": "android.openphoto.clown_dual_calibrated_export_20260804",
+      "profile_id": "clown_side_portrait_17",
+      "installed_as": "/sdcard/Pictures/portrait_17.jpg",
+      "calibrated_fixture_sha256_reference_build": "1d3f1ab4bbc738bc23031690e29f432ecfa0b5b03eb95cb81d026c4cc4d34d69"
+    },
+    "clown_front_face.jpg": {
+      "sha256": "c70ca0ab1b961103079b3ef5fcc520804d2ede1d0660a39d029d375ae0d9760a",
+      "bytes": 112129,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/photo-originals/portrait_28.jpg",
+      "origin": "Emulator snapshot photo portrait_28.jpg (no calibration area).",
+      "shows": "clown-makeup front-face portrait",
+      "task_id": "android.openphoto.clown_dual_calibrated_export_20260804",
+      "profile_id": "clown_front_portrait_16",
+      "installed_as": "/sdcard/Pictures/portrait_16.jpg",
+      "calibrated_fixture_sha256_reference_build": "f4d3487d3475ab9f001f417ef6397f0ee5b21f07d8828e1d1618ae0981dfc54e"
+    },
+    "coast_cliff_standing.jpg": {
+      "sha256": "155842efc58fdec30599c2be0946ca466cfd3e5f44dc040d40a7bf00caf94922",
+      "bytes": 153317,
+      "dimensions": [
+        1280,
+        800
+      ],
+      "copied_from": "local_eval/photo-originals/landscape_18.jpg",
+      "origin": "Emulator snapshot photo landscape_18.jpg (no calibration area).",
+      "shows": "man standing at the cliff edge looking into the distance",
+      "task_id": "android.openphoto.coastal_dual_calibrated_export_20260803",
+      "profile_id": "standing_coast_landscape_18",
+      "installed_as": "/sdcard/Pictures/landscape_18.jpg",
+      "calibrated_fixture_sha256_reference_build": "969b08517e9e0beac7703d774713ef4ecd5979cc9c7ba9ab73ca75d3b76dfee4"
+    },
+    "coast_cliff_seated.jpg": {
+      "sha256": "8ea2c8d59f727635d124a229399bda48a1d62611343bd0c137e4eeb5b61bd878",
+      "bytes": 193650,
+      "dimensions": [
+        1280,
+        800
+      ],
+      "copied_from": "local_eval/photo-originals/landscape_17.jpg",
+      "origin": "Emulator snapshot photo landscape_17.jpg (no calibration area).",
+      "shows": "the same man sitting at the cliff edge",
+      "task_id": "android.openphoto.coastal_dual_calibrated_export_20260803",
+      "profile_id": "seated_coast_landscape_17",
+      "installed_as": "/sdcard/Pictures/landscape_17.jpg",
+      "calibrated_fixture_sha256_reference_build": "6423a74a881a957334dc18c02fe505624047463156be4f45eaa02384f608e2b6"
+    },
+    "indoor_cooking.jpg": {
+      "sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d",
+      "bytes": 755333,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/benchmark-v2/assets/indoor-cooking-v2.jpg",
+      "origin": "Benchmark-author-authorized generated photo (benchmark v2); the snapshot portrait_20.jpg shows a fish-hatchery class, not cooking. Prompt: local_eval/benchmark-v2/assets/generation-prompts.md.",
+      "shows": "indoor cooking: several people preparing food around cookware",
+      "task_id": "android.openphoto.cooking_dual_calibrated_export_20260804",
+      "profile_id": "indoor_cooking_portrait_20",
+      "installed_as": "/sdcard/Pictures/portrait_20.jpg",
+      "calibrated_fixture_sha256_reference_build": "0a34d9283cc5e6146dc9348680fa3b4412dcbfd2bde41ae49dc2e81310e998b4"
+    },
+    "outdoor_cooking.jpg": {
+      "sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d",
+      "bytes": 1052911,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/benchmark-v2/assets/outdoor-cooking-v2.jpg",
+      "origin": "Benchmark-author-authorized generated photo (benchmark v2); the snapshot portrait_16.jpg is not a cooking scene. Prompt: local_eval/benchmark-v2/assets/generation-prompts.md.",
+      "shows": "outdoor cooking: several people around an outdoor cooking area",
+      "task_id": "android.openphoto.cooking_dual_calibrated_export_20260804",
+      "profile_id": "outdoor_cooking_portrait_16",
+      "installed_as": "/sdcard/Pictures/portrait_16.jpg",
+      "calibrated_fixture_sha256_reference_build": "46b3a976b4862a3169c734f07e1b80a0975ac459961113b5a0460da50639e2c7"
+    },
+    "blue_electric_guitar.jpg": {
+      "sha256": "3a3fda010a1c08174c0866c1135194eabcbdd38fc4278f451186af72f90043d1",
+      "bytes": 204951,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/photo-originals/portrait_21.jpg",
+      "origin": "Emulator snapshot photo portrait_21.jpg (no calibration area).",
+      "shows": "blue electric guitar close-up",
+      "task_id": "android.openphoto.guitar_dual_calibrated_export_20260804",
+      "profile_id": "electric_guitar_portrait_21",
+      "installed_as": "/sdcard/Pictures/portrait_21.jpg",
+      "calibrated_fixture_sha256_reference_build": "c83b54499e2d1d98ff2d07f3daa29e0eb3de46e8ddc226b8e25bc652c487d246"
+    },
+    "wood_guitar_red_fabric.jpg": {
+      "sha256": "d1da7952c2d4a1afe2d2c69c63db9ec226ea673943ba5564c368967349bdd597",
+      "bytes": 122501,
+      "dimensions": [
+        960,
+        1280
+      ],
+      "copied_from": "local_eval/photo-originals/portrait_17.jpg",
+      "origin": "Emulator snapshot photo portrait_17.jpg (no calibration area).",
+      "shows": "wood guitar lying on red fabric",
+      "task_id": "android.openphoto.guitar_dual_calibrated_export_20260804",
+      "profile_id": "wood_guitar_portrait_17",
+      "installed_as": "/sdcard/Pictures/portrait_17.jpg",
+      "calibrated_fixture_sha256_reference_build": "3b76e6acaf1a2239b9323f5c175d886dc98a5b7f24ec7d1368d5a18f837bb5a2"
+    }
+  }
+}

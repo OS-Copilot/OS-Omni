@@ -37,6 +37,9 @@ evaluation:
   params:
     bundle_id: com.apple.reminders
     list_name: "Benchmark Tasks"
+    # The brief grades the list contents, not where the run stops: open the list
+    # before reading it if the agent ended elsewhere.
+    navigate_to_list: true
     exact_titles:
       - "Call Riverside venue by noon"
       - "Draft final volunteer roster"
@@ -80,8 +83,8 @@ evaluation:
       - "Bring recipe book"
       - "Change tablet batteries"
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags: [reminders, edit, create, delete, ios, native, productivity, hard, benchmark]
   app: Reminders

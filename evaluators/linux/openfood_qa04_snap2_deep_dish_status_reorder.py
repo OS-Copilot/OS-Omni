@@ -9,6 +9,12 @@ import textwrap
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.cua_review.platforms.linux.local_storage import LOCAL_STORAGE_SOURCE
+
+
+# The guest program below holds this line (alone, unindented) where the LevelDB reader of
+# platforms/linux/local_storage.py (replay_history, read_state, ...) is put.
+LOCAL_STORAGE_READER_LINE = "# @osomni:local_storage_reader"
 
 
 class OpenFoodWorkflowEvaluator(BaseEvaluator):
@@ -55,6 +61,8 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
             import sqlite3
             import sys
             from pathlib import Path
+
+            # @osomni:local_storage_reader
 
             PARAMS = json.loads(__PARAMS_JSON__)
             STORAGE_KEY = "openfood-static-state-v1"
@@ -127,15 +135,43 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
                     index = brace_at + max(end, 1)
                 return objects
 
+            def reader_states(files):
+                # Every stored generation of STORAGE_KEY, oldest first, read through the LevelDB format:
+                # a raw byte scan misses log records split across 32 KiB blocks and compressed tables.
+                declared = PARAMS.get("local_storage_paths") or []
+                if isinstance(declared, str):
+                    declared = [declared]
+                directories = []
+                for item in [Path(str(raw)).expanduser() for raw in declared if raw] + [path.parent for path in files]:
+                    directory = item if item.is_dir() else item.parent
+                    if directory.is_dir() and str(directory) not in directories:
+                        directories.append(str(directory))
+                states = []
+                for directory in directories:
+                    try:
+                        versions = replay_history(directory, STORAGE_KEY)["versions"]
+                    except Exception:
+                        continue
+                    for version in versions:
+                        try:
+                            obj = json.loads(version.get("text") or "")
+                        except ValueError:
+                            continue
+                        if isinstance(obj, dict):
+                            states.append({"path": version.get("source"), "state": obj})
+                return states
+
             def load_latest_state():
                 files = candidate_leveldb_files()
-                states = []
                 diagnostics = {"checked_files": [str(path) for path in files]}
-                for path in files:
-                    data = path.read_bytes()
-                    text = data.decode("utf-8", errors="ignore")
-                    for obj in extract_json_objects(text):
-                        states.append({"path": str(path), "state": obj})
+                states = reader_states(files) if "replay_history" in globals() else []
+                diagnostics["state_reader"] = "leveldb" if states else "raw_scan"
+                if not states:
+                    for path in files:
+                        data = path.read_bytes()
+                        text = data.decode("utf-8", errors="ignore")
+                        for obj in extract_json_objects(text):
+                            states.append({"path": str(path), "state": obj})
                 if not states:
                     diagnostics["hint"] = "No openfood-static-state-v1 JSON objects found in Chromium local storage files."
                     raise RuntimeError("OpenFood static localStorage state not found: " + json.dumps(diagnostics, ensure_ascii=False))
@@ -920,4 +956,5 @@ class OpenFoodWorkflowEvaluator(BaseEvaluator):
             PY
             """
         )
-        return script.replace("__PARAMS_JSON__", repr(encoded))
+        script = script.replace("__PARAMS_JSON__", repr(encoded))
+        return script.replace(LOCAL_STORAGE_READER_LINE, LOCAL_STORAGE_SOURCE, 1)

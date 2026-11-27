@@ -1,0 +1,783 @@
+{
+  "task_id": "android.openshop.commute_summary_order_review",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T00:58:57.779882+08:00",
+  "ended_at": "2026-10-09T01:11:44.982720+08:00",
+  "steps_taken": 95,
+  "latency_ms": 767202.838,
+  "episode_result": {
+    "status": "PASS",
+    "terminal_reason": "success",
+    "execution_message": "Model declared task complete",
+    "execution_valid": true,
+    "message": "OpenShop exact commute-kit order and history review verification failed"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.openshop",
+      "source_initializer": "evaluators.cua_review.initializers.android.openshop:OpenShopV3BaselineInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenShop exact commute-kit order and history review verification failed",
+    "metadata": {
+      "read_only": true,
+      "fallback_used": false,
+      "app_package": "com.killt.openshop",
+      "local_state_key": "openshop.localState.v3",
+      "checks": [
+        {
+          "name": "session_logged_in",
+          "passed": true,
+          "expected": true,
+          "observed": true
+        },
+        {
+          "name": "session_phone_exact",
+          "passed": true,
+          "expected": "13800138000",
+          "observed": "13800138000"
+        },
+        {
+          "name": "final_cart_empty",
+          "passed": true,
+          "expected": 0,
+          "observed": 0
+        },
+        {
+          "name": "unique_order_note_exact",
+          "passed": true,
+          "expected": {
+            "note": "Commute Summary",
+            "match_count": 1
+          },
+          "observed": {
+            "match_count": 1,
+            "matched_order_ids": [
+              "TB1791479466505"
+            ]
+          }
+        },
+        {
+          "name": "order_created_after_marker",
+          "passed": true,
+          "expected": "2026-08-21T00:00:00Z",
+          "observed": "2026-10-08T17:11:06.525Z"
+        },
+        {
+          "name": "shipping_address_id_exact",
+          "passed": true,
+          "expected": "addr-office",
+          "observed": "addr-office"
+        },
+        {
+          "name": "payment_method_id_exact",
+          "passed": true,
+          "expected": "cod",
+          "observed": "cod"
+        },
+        {
+          "name": "order_status_exact",
+          "passed": true,
+          "expected": "Awaiting Shipment",
+          "observed": "Awaiting Shipment"
+        },
+        {
+          "name": "order_total_exact",
+          "passed": true,
+          "expected": 850.56,
+          "observed": 850.56
+        },
+        {
+          "name": "order_item_count_exact",
+          "passed": true,
+          "expected": 6,
+          "observed": 6
+        },
+        {
+          "name": "order_item_exact:p1004",
+          "passed": true,
+          "expected": {
+            "product_id": "p1004",
+            "title": "Polar Day Slim Business Backpack",
+            "quantity": 1,
+            "selected_spec": "16-inch"
+          },
+          "observed": {
+            "product_id": "p1004",
+            "title": "Polar Day Slim Business Backpack",
+            "quantity": 1,
+            "selected_spec": "16-inch"
+          }
+        },
+        {
+          "name": "order_item_exact:p1001",
+          "passed": true,
+          "expected": {
+            "product_id": "p1001",
+            "title": "Verdant Pro Noise-Canceling Headphones",
+            "quantity": 1,
+            "selected_spec": "Rose Gold"
+          },
+          "observed": {
+            "product_id": "p1001",
+            "title": "Verdant Pro Noise-Canceling Headphones",
+            "quantity": 1,
+            "selected_spec": "Rose Gold"
+          }
+        },
+        {
+          "name": "order_item_exact:p1006",
+          "passed": true,
+          "expected": {
+            "product_id": "p1006",
+            "title": "Lumen Magnetic Phone Stand",
+            "quantity": 1,
+            "selected_spec": "Space Gray"
+          },
+          "observed": {
+            "product_id": "p1006",
+            "title": "Lumen Magnetic Phone Stand",
+            "quantity": 1,
+            "selected_spec": "Space Gray"
+          }
+        },
+        {
+          "name": "order_item_exact:p2195",
+          "passed": true,
+          "expected": {
+            "product_id": "p2195",
+            "title": "MotionLab Foldable Water Bottle",
+            "quantity": 1,
+            "selected_spec": "Green"
+          },
+          "observed": {
+            "product_id": "p2195",
+            "title": "MotionLab Foldable Water Bottle",
+            "quantity": 1,
+            "selected_spec": "Green"
+          }
+        },
+        {
+          "name": "order_item_exact:p2003",
+          "passed": true,
+          "expected": {
+            "product_id": "p2003",
+            "title": "Signal Noise-Canceling Smart Band",
+            "quantity": 1,
+            "selected_spec": "Navy"
+          },
+          "observed": {
+            "product_id": "p2003",
+            "title": "Signal Noise-Canceling Smart Band",
+            "quantity": 1,
+            "selected_spec": "Navy"
+          }
+        },
+        {
+          "name": "order_item_exact:p2002",
+          "passed": true,
+          "expected": {
+            "product_id": "p2002",
+            "title": "Cobalt Slim USB-C Hub",
+            "quantity": 1,
+            "selected_spec": "Black"
+          },
+          "observed": {
+            "product_id": "p2002",
+            "title": "Cobalt Slim USB-C Hub",
+            "quantity": 1,
+            "selected_spec": "Black"
+          }
+        },
+        {
+          "name": "review_order_id_unique_exact",
+          "passed": true,
+          "expected": {
+            "order_id": "TBH-LUCAS-20260321-004",
+            "match_count": 1
+          },
+          "observed": {
+            "match_count": 1
+          }
+        },
+        {
+          "name": "review_order_status_exact",
+          "passed": true,
+          "expected": "Delivered",
+          "observed": "Delivered"
+        },
+        {
+          "name": "review_product_id_unique_in_order",
+          "passed": true,
+          "expected": {
+            "product_id": "p1004",
+            "match_count": 1
+          },
+          "observed": {
+            "match_count": 1
+          }
+        },
+        {
+          "name": "review_item_id_exact",
+          "passed": true,
+          "expected": "history-p1004-15-6-inch",
+          "observed": "history-p1004-15-6-inch"
+        },
+        {
+          "name": "review_product_title_exact",
+          "passed": true,
+          "expected": "Polar Day Slim Business Backpack",
+          "observed": "Polar Day Slim Business Backpack"
+        },
+        {
+          "name": "review_item_spec_exact",
+          "passed": true,
+          "expected": "15.6-inch",
+          "observed": "15.6-inch"
+        },
+        {
+          "name": "review_rating_exact",
+          "passed": false,
+          "expected": 4,
+          "observed": null
+        },
+        {
+          "name": "review_text_exact",
+          "passed": false,
+          "expected": "Fits work laptop",
+          "observed": ""
+        },
+        {
+          "name": "review_created_after_marker",
+          "passed": false,
+          "expected": "2026-08-21T00:00:00Z",
+          "observed": ""
+        }
+      ],
+      "failures": [
+        "review_rating_exact",
+        "review_text_exact",
+        "review_created_after_marker"
+      ],
+      "matched_order_id": "TB1791479466505",
+      "matched_order": {
+        "order_id": "TB1791479466505",
+        "created_at": "2026-10-08T17:11:06.525Z",
+        "note": "Commute Summary",
+        "address_id": "addr-office",
+        "payment_method_id": "cod",
+        "status": "Awaiting Shipment",
+        "total": 850.56,
+        "items": [
+          {
+            "item_id": "cart-1791478855927",
+            "product_id": "p1004",
+            "title": "Polar Day Slim Business Backpack",
+            "quantity": 1,
+            "selected_spec": "16-inch"
+          },
+          {
+            "item_id": "cart-1791478903964",
+            "product_id": "p1001",
+            "title": "Verdant Pro Noise-Canceling Headphones",
+            "quantity": 1,
+            "selected_spec": "Rose Gold"
+          },
+          {
+            "item_id": "cart-1791479086768",
+            "product_id": "p1006",
+            "title": "Lumen Magnetic Phone Stand",
+            "quantity": 1,
+            "selected_spec": "Space Gray"
+          },
+          {
+            "item_id": "cart-1791479247844",
+            "product_id": "p2195",
+            "title": "MotionLab Foldable Water Bottle",
+            "quantity": 1,
+            "selected_spec": "Green"
+          },
+          {
+            "item_id": "cart-1791479322127",
+            "product_id": "p2003",
+            "title": "Signal Noise-Canceling Smart Band",
+            "quantity": 1,
+            "selected_spec": "Navy"
+          },
+          {
+            "item_id": "cart-1791479380408",
+            "product_id": "p2002",
+            "title": "Cobalt Slim USB-C Hub",
+            "quantity": 1,
+            "selected_spec": "Black"
+          }
+        ]
+      },
+      "observed_orders": [
+        {
+          "order_id": "TB1791479466505",
+          "created_at": "2026-10-08T17:11:06.525Z",
+          "note": "Commute Summary",
+          "address_id": "addr-office",
+          "payment_method_id": "cod",
+          "status": "Awaiting Shipment",
+          "total": 850.56,
+          "items": [
+            {
+              "item_id": "cart-1791478855927",
+              "product_id": "p1004",
+              "title": "Polar Day Slim Business Backpack",
+              "quantity": 1,
+              "selected_spec": "16-inch"
+            },
+            {
+              "item_id": "cart-1791478903964",
+              "product_id": "p1001",
+              "title": "Verdant Pro Noise-Canceling Headphones",
+              "quantity": 1,
+              "selected_spec": "Rose Gold"
+            },
+            {
+              "item_id": "cart-1791479086768",
+              "product_id": "p1006",
+              "title": "Lumen Magnetic Phone Stand",
+              "quantity": 1,
+              "selected_spec": "Space Gray"
+            },
+            {
+              "item_id": "cart-1791479247844",
+              "product_id": "p2195",
+              "title": "MotionLab Foldable Water Bottle",
+              "quantity": 1,
+              "selected_spec": "Green"
+            },
+            {
+              "item_id": "cart-1791479322127",
+              "product_id": "p2003",
+              "title": "Signal Noise-Canceling Smart Band",
+              "quantity": 1,
+              "selected_spec": "Navy"
+            },
+            {
+              "item_id": "cart-1791479380408",
+              "product_id": "p2002",
+              "title": "Cobalt Slim USB-C Hub",
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          ]
+        },
+        {
+          "order_id": "TBH-LUCAS-20260518-001",
+          "created_at": "2026-05-18T10:22:00.000Z",
+          "note": "Leave at the front desk if nobody answers.",
+          "address_id": "addr-home",
+          "payment_method_id": "alipay",
+          "status": "Delivered",
+          "total": 377.9,
+          "items": [
+            {
+              "item_id": "history-p1001-black",
+              "product_id": "p1001",
+              "title": "Verdant Pro Noise-Canceling Headphones",
+              "quantity": 1,
+              "selected_spec": "Black"
+            },
+            {
+              "item_id": "history-p2001-black",
+              "product_id": "p2001",
+              "title": "Orbit Smart Phone Stand",
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          ]
+        },
+        {
+          "order_id": "TBH-LUCAS-20260429-002",
+          "created_at": "2026-04-29T14:06:00.000Z",
+          "note": "Office delivery during business hours.",
+          "address_id": "addr-office",
+          "payment_method_id": "wechat",
+          "status": "Delivered",
+          "total": 193.9,
+          "items": [
+            {
+              "item_id": "history-p1005-20-sachets",
+              "product_id": "p1005",
+              "title": "Mountain Isle Pour-Over Coffee 20 Pack",
+              "quantity": 2,
+              "selected_spec": "20 sachets"
+            },
+            {
+              "item_id": "history-p2121-black",
+              "product_id": "p2121",
+              "title": "ClearPage Compact Document Folder",
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          ]
+        },
+        {
+          "order_id": "TBH-LUCAS-20260410-003",
+          "created_at": "2026-04-10T08:40:00.000Z",
+          "note": "Please call before delivery.",
+          "address_id": "addr-home",
+          "payment_method_id": "alipay",
+          "status": "Completed",
+          "total": 420,
+          "items": [
+            {
+              "item_id": "history-p1002-medium",
+              "product_id": "p1002",
+              "title": "Mukawa Folding Camping Table and Chair Set",
+              "quantity": 1,
+              "selected_spec": "Medium"
+            }
+          ]
+        },
+        {
+          "order_id": "TBH-LUCAS-20260321-004",
+          "created_at": "2026-03-21T16:35:00.000Z",
+          "note": "Pack items together when possible.",
+          "address_id": "addr-office",
+          "payment_method_id": "cod",
+          "status": "Delivered",
+          "total": 292.75,
+          "items": [
+            {
+              "item_id": "history-p1004-15-6-inch",
+              "product_id": "p1004",
+              "title": "Polar Day Slim Business Backpack",
+              "quantity": 1,
+              "selected_spec": "15.6-inch"
+            },
+            {
+              "item_id": "history-p2010-black",
+              "product_id": "p2010",
+              "title": "Lumen Desk Mini Projector",
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          ]
+        }
+      ],
+      "review_target": {
+        "order_id": "TBH-LUCAS-20260321-004",
+        "product_id": "p1004",
+        "item_id": "history-p1004-15-6-inch"
+      },
+      "matched_review_order_id": "TBH-LUCAS-20260321-004",
+      "matched_review_item_id": "history-p1004-15-6-inch",
+      "observed_review": {}
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openshop:id/action_bar_root",
+        "resource-id": "com.killt.openshop:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openshop:id/webview",
+        "resource-id": "com.killt.openshop:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

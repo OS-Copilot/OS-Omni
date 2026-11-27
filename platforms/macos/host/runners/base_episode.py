@@ -230,9 +230,52 @@ class BaseEpisodeRunner(ABC):
     @staticmethod
     def _build_python_action_prelude(observation: Optional[Any]) -> str:
         prelude_lines = [
-            "import pyautogui, time",
+            "import pyautogui, time, subprocess",
             "pyautogui.PAUSE = 0",
             "pyautogui.FAILSAFE = False",
+            # PyAutoGUI's macOS backend only knows 'command' and silently drops
+            # unknown key names, so hotkey('cmd', 'a') would just type 'a'.
+            "try:",
+            "    __HELLOWORLD_KEY_MAP = pyautogui.platformModule.keyboardMapping",
+            "    for __helloworld_alias, __helloworld_target in (('cmd', 'command'),):",
+            "        if __helloworld_alias not in __HELLOWORLD_KEY_MAP and __helloworld_target in __HELLOWORLD_KEY_MAP:",
+            "            __HELLOWORLD_KEY_MAP[__helloworld_alias] = __HELLOWORLD_KEY_MAP[__helloworld_target]",
+            "        if __helloworld_alias not in pyautogui.KEY_NAMES:",
+            "            pyautogui.KEY_NAMES.append(__helloworld_alias)",
+            "except Exception:",
+            "    pass",
+            # Use System Events' Unicode text injection rather than PyAutoGUI
+            # key names for printable characters. macOS keyboard layouts can
+            # map symbols such as @ to unrelated shortcuts or drop characters.
+            "__HELLOWORLD_ORIGINAL_TYPEWRITE = pyautogui.typewrite",
+            "def __helloworld_unicode_typewrite(message, interval=0.0, **kwargs):",
+            "    if isinstance(message, (list, tuple)):",
+            "        if any(len(str(token)) != 1 for token in message):",
+            "            return __HELLOWORLD_ORIGINAL_TYPEWRITE(message, interval=interval, **kwargs)",
+            "        text = ''.join(str(token) for token in message)",
+            "    else:",
+            "        text = str(message)",
+            "    def send_text_chunk(chunk):",
+            "        if not chunk:",
+            "            return",
+            "        script = 'on run argv\\n tell application \\\"System Events\\\" to keystroke (item 1 of argv)\\nend run'",
+            "        result = subprocess.run(['osascript', '-e', script, '--', chunk], capture_output=True, text=True, timeout=max(15, len(chunk) // 8 + 10))",
+            "        if result.returncode != 0:",
+            "            raise RuntimeError('macOS text injection failed: ' + (result.stderr or result.stdout or 'osascript exited non-zero'))",
+            "    chunk = []",
+            "    for ch in text:",
+            "        key = {'\\n': 'enter', '\\r': 'enter', '\\t': 'tab', '\\b': 'backspace', '\\x1b': 'esc'}.get(ch)",
+            "        if key is None:",
+            "            chunk.append(ch)",
+            "            continue",
+            "        send_text_chunk(''.join(chunk))",
+            "        chunk = []",
+            "        pyautogui.press(key)",
+            "    send_text_chunk(''.join(chunk))",
+            "    if interval and float(interval) > 0:",
+            "        time.sleep(float(interval))",
+            "pyautogui.typewrite = __helloworld_unicode_typewrite",
+            "pyautogui.write = __helloworld_unicode_typewrite",
         ]
 
         screenshot_width = int(getattr(observation, "width", 0) or 0) if observation is not None else 0

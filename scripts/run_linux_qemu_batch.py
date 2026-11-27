@@ -25,7 +25,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from core.specs.loader import load_execution_spec, load_task_spec  # noqa: E402
+from initializers.linux.chrome_popups import suppress_chrome_popups  # noqa: E402
 from platforms.linux.runners.episode import wait_for_runtime_ready  # noqa: E402
+from platforms.linux.runtime_config import load_linux_runtime_config  # noqa: E402
 from platforms.linux.runtime_env.controller import LinuxRuntimeController  # noqa: E402
 from platforms.windows.runners.episode import wait_for_runtime_ready as wait_for_windows_runtime_ready  # noqa: E402
 from platforms.windows.runtime_env.controller import WindowsRuntimeController  # noqa: E402
@@ -222,7 +224,8 @@ def main() -> int:
     parser.add_argument("--llm-exchange-log", action="store_true",
                         help="Save each model request and response to llm_exchange.jsonl, with inline images replaced by digests")
     parser.add_argument("--fix-webpage-launchers", action="store_true",
-                        help="Replace extension-less .desktop entries in ~/Desktop/webpage with HTML redirect pages")
+                        help="Web track: replace extension-less .desktop entries in ~/Desktop/webpage with HTML "
+                             "redirect pages and turn off Chrome's update and save-password pop-ups")
     parser.add_argument("--capture-end-state", action="store_true",
                         help="Archive guest files changed during each task to end_state.tar.gz")
     parser.add_argument("--deepseek-request-audit", action="store_true",
@@ -235,6 +238,12 @@ def main() -> int:
     token = os.environ.get(args.runtime_token_env)
     if not token:
         parser.error(f"Set {args.runtime_token_env} to the guest runtime token")
+    guest_password = None
+    if args.fix_webpage_launchers:
+        try:
+            guest_password = load_linux_runtime_config().vm_guest_password
+        except Exception:
+            guest_password = None
     execution = load_execution_spec(args.execution)
     tasks = [(path, load_task_spec(path)) for path in execution.task_paths]
     if any(task.platform != args.platform for _, task in tasks):
@@ -306,6 +315,8 @@ def main() -> int:
                 if args.fix_webpage_launchers:
                     launchers = controller.run_bash_script(WEBPAGE_LAUNCHER_FIX, timeout=30)
                     row["webpage_launcher_fix"] = (launchers.get("output") or "").strip() or launchers.get("returncode")
+                    popups = suppress_chrome_popups(controller, guest_password)
+                    row["chrome_popup_fix"] = (popups.get("output") or "").strip() or popups.get("returncode")
                 if args.capture_end_state:
                     controller.run_bash_script(f"touch {START_MARKER}", timeout=30)
             command = [

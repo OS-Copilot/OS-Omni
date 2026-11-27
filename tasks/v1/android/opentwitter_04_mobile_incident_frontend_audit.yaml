@@ -70,6 +70,11 @@ evaluation:
       - like
       - repost
       reply_text: Draft issue tracked
+      # The brief puts sentence/list punctuation inside the closing quote
+      # (“Draft issue tracked.”, “Timeline owner set,”), so *_variants hold the
+      # other reading of such texts; each is still compared exactly.
+      reply_text_variants:
+      - Draft issue tracked.
     - id: p-1014
       author_handle: devon
       text: Runbooks age quietly. Add a review date beside the owner name so stale operational guidance
@@ -78,6 +83,8 @@ evaluation:
       - bookmark
       - like
       reply_text: Timeline owner set
+      reply_text_variants:
+      - Timeline owner set,
     - id: p-1007
       author_handle: jamal
       text: 'A tiny frontend win: delaying non-critical chart hydration made the first paint feel instant
@@ -86,6 +93,8 @@ evaluation:
       - like
       - bookmark
       reply_text: Paint timing logged
+      reply_text_variants:
+      - Paint timing logged.
     messages:
     - handle: maya
       text: Mobile gate is clear
@@ -93,90 +102,38 @@ evaluation:
       text: Runbook owner added
     - handle: ben
       text: QA gate reviewed.
+      text_variants:
+      - QA gate reviewed
     - handle: priya
       text: Mobile audit filed.
     created_posts:
     - text: Mobile gate ready.
     - text: Runbook owner set.
+      text_variants:
+      - Runbook owner set
     owner_post_text: Mobile gate ready.
     owner_reply_text: Release owner Elena
+    owner_reply_text_variants:
+    - Release owner Elena,
     owner_post_actions:
     - like
     - bookmark
     final_view: messages
     final_message_handle: priya
     final_visible_text: Mobile audit filed.
-    event_sequence:
-    - type: timeline_view
-      query: Mobile
-    - type: post_like_toggled
-      postId: p-1016
-      active: true
-    - type: post_repost_toggled
-      postId: p-1016
-      active: true
-    - type: reply_button_clicked
-      postId: p-1016
-    - type: comment_created
-      postId: p-1016
-      text: Draft issue tracked
-    - type: timeline_view
-      query: Reliability
-    - type: post_bookmark_toggled
-      postId: p-1014
-      active: true
-    - type: reply_button_clicked
-      postId: p-1014
-    - type: comment_created
-      postId: p-1014
-      text: Timeline owner set
-    - type: post_like_toggled
-      postId: p-1014
-      active: true
-    - type: message_sent
-      handle: maya
-      text: Mobile gate is clear
-    - type: message_sent
-      handle: devon
-      text: Runbook owner added
-    - type: message_sent
-      handle: ben
-      text: QA gate reviewed.
-    - type: post_created
-      text: Mobile gate ready.
-    - type: post_created
-      text: Runbook owner set.
-    - type: timeline_view
-      query: Frontend
-    - type: post_like_toggled
-      postId: p-1007
-      active: true
-    - type: post_bookmark_toggled
-      postId: p-1007
-      active: true
-    - type: reply_button_clicked
-      postId: p-1007
-    - type: comment_created
-      postId: p-1007
-      text: Paint timing logged
-    - type: notifications_marked_read
-    - type: reply_button_clicked
-      owner_post: true
-    - type: comment_created
-      owner_post: true
-      text: Release owner Elena
-    - type: post_like_toggled
-      owner_post: true
-      active: true
-    - type: post_bookmark_toggled
-      owner_post: true
-      active: true
-    - type: message_sent
-      handle: priya
-      text: Mobile audit filed.
+    stated_order:
+    - quote: 'Send the following direct messages in this order: to Maya Patel ...; to Devon Brooks ...; and to Ben Carter ...'
+      chain:
+      - 'message:maya'
+      - 'message:devon'
+      - 'message:ben'
+    - quote: 'Create two new posts on Home in this order: first “Mobile gate ready.” and then “Runbook owner set.”'
+      chain:
+      - 'post:Mobile gate ready.'
+      - 'post:Runbook owner set.'
 limits:
-  max_steps: 150
-  step_timeout_seconds: 150
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   version: 1
   app: OpenTwitter
@@ -199,8 +156,8 @@ metadata:
     target interactions, writes a host-side baseline, and returns to the launcher. It does not restore
     the snapshot or perform checked business actions.
   verifier_rules:
-  - Full runs require the clean host-side initializer baseline and only accept ordered events newer than
-    the baseline sequence.
+  - A recorded initializer baseline, when present, limits the events considered to those newer than it.
+  - Only the orders the English instruction states are graded (instruction_stated_order, from the created objects' times); the order of the other actions is free and browsing events are never required.
   - Seed interactions are bound to exact post IDs, authors, full text, and required active action sets.
   - Replies, messages, and created posts require exact text, exact author or recipient, exactly one match,
     and timestamps after the snapshot time.

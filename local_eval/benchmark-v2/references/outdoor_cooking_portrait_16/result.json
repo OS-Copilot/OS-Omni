@@ -1,0 +1,141 @@
+{
+  "profile_id": "outdoor_cooking_portrait_16",
+  "group": "cooking",
+  "source": "portrait_16.jpg",
+  "recipe": [
+    [
+      "Landscape",
+      "Structure",
+      12
+    ],
+    [
+      "Landscape",
+      "Foliage",
+      8
+    ],
+    [
+      "Landscape",
+      "Sky",
+      6
+    ],
+    [
+      "Landscape",
+      "HDR",
+      10
+    ],
+    [
+      "Edit",
+      "Exposure",
+      6
+    ],
+    [
+      "Edit",
+      "Brightness",
+      5
+    ],
+    [
+      "Edit",
+      "Contrast",
+      8
+    ],
+    [
+      "Edit",
+      "Temperature",
+      6
+    ],
+    [
+      "HSL",
+      "Green",
+      "Saturation",
+      8
+    ],
+    [
+      "HSL",
+      "Green",
+      "Luminance",
+      5
+    ],
+    [
+      "HSL",
+      "Orange",
+      "Luminance",
+      6
+    ],
+    [
+      "Filters",
+      "Clean",
+      14
+    ]
+  ],
+  "expected_median_rgb": {
+    "red": [
+      217,
+      47,
+      47
+    ],
+    "green": [
+      32,
+      224,
+      29
+    ],
+    "blue": [
+      49,
+      47,
+      216
+    ]
+  },
+  "repeat_median_rgb": {
+    "red": [
+      217,
+      47,
+      47
+    ],
+    "green": [
+      32,
+      224,
+      29
+    ],
+    "blue": [
+      49,
+      47,
+      216
+    ]
+  },
+  "unedited_median_rgb": {
+    "red": [
+      190,
+      40,
+      41
+    ],
+    "green": [
+      40,
+      190,
+      39
+    ],
+    "blue": [
+      40,
+      40,
+      190
+    ]
+  },
+  "wrong_exposure_median_rgb": {
+    "red": [
+      255,
+      59,
+      60
+    ],
+    "green": [
+      40,
+      255,
+      38
+    ],
+    "blue": [
+      62,
+      60,
+      255
+    ]
+  },
+  "correct": ".\\local_eval\\benchmark-v2\\references\\outdoor_cooking_portrait_16\\correct.jpg",
+  "input": ".\\local_eval\\benchmark-v2\\references\\outdoor_cooking_portrait_16\\input.jpg",
+  "probe_only": true
+}

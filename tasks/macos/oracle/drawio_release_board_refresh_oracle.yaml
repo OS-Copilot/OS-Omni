@@ -1,0 +1,26 @@
+task_id: macos.oracle.drawio.release_board_refresh
+platform: macos
+instruction: Oracle sanity task for macos.drawio.release_board_refresh. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "set -e\nkillall \"draw.io\" >/dev/null 2>&1 || true\nsleep 1\nfind /Users/bench/Downloads -maxdepth 1 \\( -name '*.drawio' -o -name '.\\$*.drawio.dtmp' -o -name '.\\$*.drawio.bkp' \\) -delete\n"
+    - type: upload_file
+      local_path: ../files/drawio/release_board_refresh/start/release_board_refresh.drawio
+      path: /Users/bench/Downloads/release_board_refresh.drawio
+evaluation:
+  evaluator_id: evaluators.macos.drawio:DrawIODiagramEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/release_board_refresh.drawio
+    expected_path: ../files/drawio/release_board_refresh/expected/release_board_refresh.drawio
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.drawio.release_board_refresh
+  human_steps: 10
+  tags:
+    - oracle
+  difficulty: easy

@@ -8,6 +8,11 @@ from typing import Any, Mapping
 from core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 
 
+def _strip_eof_newlines(text: str) -> str:
+    """Drop the line breaks (LF / CRLF) that end ``text``; nothing else is touched."""
+    return text.rstrip("\r\n")
+
+
 class NotepadqqWorkspaceEvaluator(BaseEvaluator):
     """Validate Notepadqq task outcomes by checking workspace files on disk."""
 
@@ -71,12 +76,39 @@ PY"""
                 actual_content = str(actual.get("content") or "")
                 if "equals" in expected:
                     expected_content = str(expected.get("equals") or "")
-                    assert actual_content == expected_content, f"content mismatch for {rel_path}"
+                    # LNX-055 / LNX-071: the release-packet YAMLs append a seed
+                    # note after a blank line ("Keep this note short." / "Keep
+                    # this note under 2 sentences.") that the brief never asks
+                    # for, so byte equality false-fails a faithful rewrite. Only
+                    # that documented legacy note is optional; the instructed
+                    # core must still match in order and every other `equals`
+                    # expectation stays exact apart from the newlines at EOF.
+                    expected_text = expected_content.replace("\r\n", "\n").replace("\r", "\n")
+                    expected_core, _, expected_tail = expected_text.partition("\n\n")
+                    if expected_tail.strip().startswith("Keep this note"):
+                        required_core = " ".join(expected_core.split())
+                        actual_text = " ".join(actual_content.split())
+                        # The brief says the file's *first* sentence(s) are the
+                        # instructed text, so it must open the file; line breaks
+                        # between the sentences and what follows are free.
+                        assert actual_text.startswith(required_core), f"content mismatch for {rel_path}"
+                    else:
+                        # No brief fixes how many newlines end the file, and Gedit
+                        # (ensure-trailing-newline) adds one on save when the
+                        # buffer already ends in an empty line. Only line breaks
+                        # at EOF are ignored; every other character, including
+                        # spaces and blank lines inside the file, must match.
+                        assert _strip_eof_newlines(actual_content) == _strip_eof_newlines(expected_content), (
+                            f"content mismatch for {rel_path}"
+                        )
                 if "contains" in expected:
                     needle = str(expected.get("contains") or "")
                     assert needle in actual_content, f"expected {rel_path} to contain {needle!r}"
                 if "json" in expected:
-                    actual_json = json.loads(actual_content)
+                    try:
+                        actual_json = json.loads(actual_content)
+                    except json.JSONDecodeError:
+                        raise AssertionError(f"expected valid JSON in {rel_path}") from None
                     expected_json = expected.get("json")
                     assert actual_json == expected_json, f"JSON mismatch for {rel_path}"
         except AssertionError as exc:

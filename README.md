@@ -1,3 +1,18 @@
+# OS-Omni consolidated primary repository
+
+Platform authority: **BaoZhuhan/os-omni for Windows, Android, iOS and macOS;
+Touchstone-AI-Lab/OS-Omni for Linux, Web and Cross-device**.
+
+Start with the [repository guide](docs/REPOSITORY.md),
+[evaluation records](records/README.md), and
+[source provenance](integrations/touchstone/README.md).
+The old Cross-VM workflows have been replaced by Touchstone's 12 single-screen
+Cross-device tasks within the 300-task release. Historical Cross-VM scores are
+not transferred to the replacement tasks.
+
+Android author rebuilt delivery: [complete handover](docs/android/HANDOVER.md).
+Existing Windows, macOS, iOS and Android sources and evidence remain available.
+
 # OS-Omni Live
 
 OS-Omni is a **live cross-platform GUI benchmark** and runtime stack for agent

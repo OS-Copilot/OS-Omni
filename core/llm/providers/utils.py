@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import mimetypes
 import re
@@ -13,7 +14,7 @@ from ..errors import LLMClientError, LLMErrorCode
 from ..types import ImagePart, Message, TextPart, ToolCall, ToolDefinition
 
 
-def image_path_to_data_url(path: str) -> str:
+def image_path_to_data_url(path: str, *, jpeg_quality: Optional[int] = None) -> str:
     """Convert an image file path to a data URL."""
 
     image_path = Path(path)
@@ -23,6 +24,20 @@ def image_path_to_data_url(path: str) -> str:
             "Image file does not exist.",
             details={"path": path},
         )
+
+    if jpeg_quality is not None:
+        from PIL import Image
+
+        if (
+            isinstance(jpeg_quality, bool)
+            or not isinstance(jpeg_quality, int)
+            or not 1 <= jpeg_quality <= 95
+        ):
+            raise ValueError("jpeg_quality must be an integer between 1 and 95")
+        buffer = io.BytesIO()
+        with Image.open(image_path) as image:
+            image.convert('RGB').save(buffer, format='JPEG', quality=jpeg_quality)
+        return 'data:image/jpeg;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
 
     mime_type, _ = mimetypes.guess_type(str(image_path))
     mime_type = mime_type or "image/png"
@@ -46,7 +61,7 @@ def image_path_to_inline_data(path: str) -> Dict[str, str]:
     return {"mimeType": mime_type, "data": data}
 
 
-def messages_to_openai(messages: List[Message]) -> List[Dict[str, Any]]:
+def messages_to_openai(messages: List[Message], *, jpeg_quality: Optional[int] = None) -> List[Dict[str, Any]]:
     """Convert unified messages to OpenAI Chat Completions format."""
 
     converted: List[Dict[str, Any]] = []
@@ -59,11 +74,57 @@ def messages_to_openai(messages: List[Message]) -> List[Dict[str, Any]]:
                 content_parts.append(
                     {
                         "type": "image_url",
-                        "image_url": {"url": image_path_to_data_url(part.path)},
+                        "image_url": {"url": image_path_to_data_url(part.path, jpeg_quality=jpeg_quality)},
                     }
                 )
         converted.append({"role": message.role, "content": content_parts})
     return converted
+
+
+def fold_system_into_first_user(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Move OpenAI-format system messages to the front of the first user message.
+
+    For gateways that silently drop the system role. The system text is kept
+    verbatim and stays ahead of everything else the model sees.
+    """
+
+    system_parts = [part for message in messages if message.get("role") == "system" for part in message["content"]]
+    if not system_parts:
+        return messages
+    folded = [message for message in messages if message.get("role") != "system"]
+    for index, message in enumerate(folded):
+        if message.get("role") == "user":
+            folded[index] = {**message, "content": system_parts + list(message["content"])}
+            return folded
+    return [{"role": "user", "content": system_parts}] + folded
+
+
+def messages_to_anthropic(messages: List[Message]) -> Tuple[Optional[str], List[Dict[str, Any]]]:
+    """Convert unified messages to Anthropic Messages API (system text, messages)."""
+
+    system_texts: List[str] = []
+    converted: List[Dict[str, Any]] = []
+    for message in messages:
+        if message.role == "system":
+            system_texts.extend(part.text for part in message.parts if isinstance(part, TextPart) and part.text)
+            continue
+        content_parts: List[Dict[str, Any]] = []
+        for part in message.parts:
+            if isinstance(part, TextPart):
+                # The Messages API rejects empty text blocks.
+                if part.text:
+                    content_parts.append({"type": "text", "text": part.text})
+            elif isinstance(part, ImagePart):
+                inline = image_path_to_inline_data(part.path)
+                content_parts.append(
+                    {
+                        "type": "image",
+                        "source": {"type": "base64", "media_type": inline["mimeType"], "data": inline["data"]},
+                    }
+                )
+        if content_parts:
+            converted.append({"role": message.role, "content": content_parts})
+    return ("\n\n".join(system_texts) or None), converted
 
 
 def messages_to_responses(messages: List[Message]) -> List[Dict[str, Any]]:
@@ -393,6 +454,77 @@ def parse_responses_tool_calls(output_items: Any) -> List[ToolCall]:
             )
         )
     return tool_calls
+
+
+def aggregate_chat_completion_sse(body: str) -> Optional[Dict[str, Any]]:
+    """Rebuild a chat.completion object from an SSE chat.completion.chunk stream.
+
+    Some OpenAI-compatible gateways answer with a stream even when the request
+    did not ask for one. Returns None when the body is not such a stream.
+    """
+
+    chunks: List[Dict[str, Any]] = []
+    for line in str(body or "").splitlines():
+        line = line.strip()
+        if not line.startswith("data:"):
+            continue
+        data = line[len("data:"):].strip()
+        if not data or data == "[DONE]":
+            continue
+        try:
+            chunk = json.loads(data)
+        except ValueError:
+            return None
+        if isinstance(chunk, dict):
+            chunks.append(chunk)
+    if not chunks or not any(isinstance(chunk.get("choices"), list) for chunk in chunks):
+        return None
+
+    content: List[str] = []
+    reasoning: List[str] = []
+    tool_calls: Dict[int, Dict[str, Any]] = {}
+    finish_reason: Optional[str] = None
+    usage: Optional[Dict[str, Any]] = None
+    for chunk in chunks:
+        if isinstance(chunk.get("usage"), dict):
+            usage = chunk["usage"]
+        for choice in chunk.get("choices") or []:
+            if not isinstance(choice, Mapping):
+                continue
+            if choice.get("finish_reason"):
+                finish_reason = choice["finish_reason"]
+            delta = choice.get("delta") if isinstance(choice.get("delta"), Mapping) else {}
+            if isinstance(delta.get("content"), str):
+                content.append(delta["content"])
+            if isinstance(delta.get("reasoning_content"), str):
+                reasoning.append(delta["reasoning_content"])
+            for raw_call in delta.get("tool_calls") or []:
+                if not isinstance(raw_call, Mapping):
+                    continue
+                call = tool_calls.setdefault(
+                    int(raw_call.get("index") or 0),
+                    {"type": "function", "function": {"name": "", "arguments": ""}},
+                )
+                if raw_call.get("id"):
+                    call["id"] = raw_call["id"]
+                function_obj = raw_call.get("function") if isinstance(raw_call.get("function"), Mapping) else {}
+                call["function"]["name"] += function_obj.get("name") or ""
+                call["function"]["arguments"] += function_obj.get("arguments") or ""
+
+    message: Dict[str, Any] = {"role": "assistant", "content": "".join(content)}
+    if reasoning:
+        message["reasoning_content"] = "".join(reasoning)
+    if tool_calls:
+        message["tool_calls"] = [tool_calls[index] for index in sorted(tool_calls)]
+    first = chunks[0]
+    return {
+        "id": first.get("id"),
+        "object": "chat.completion",
+        "created": first.get("created"),
+        "model": first.get("model"),
+        "choices": [{"index": 0, "message": message, "finish_reason": finish_reason}],
+        "usage": usage,
+    }
 
 
 def extract_openai_text_content(content: Any) -> Optional[str]:

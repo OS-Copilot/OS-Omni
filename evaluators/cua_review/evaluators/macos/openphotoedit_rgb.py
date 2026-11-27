@@ -673,20 +673,21 @@ class OpenPhotoEditRgbEvaluator(BaseEvaluator):
         evidence: Mapping[str, Any],
         filename: str,
     ) -> str | None:
-        """Confirmed digest for ``filename``: task params first, then evidence."""
-        candidates: list[Any] = []
+        """Confirmed *export* digest for ``filename``, from explicit task params only.
+
+        ``evidence["references"][filename]["expected_sha256"]`` is the digest of
+        the reference image that the tolerance comparison uses, NOT of the
+        export; treating it as an export digest forced a genuine re-encoded PNG
+        to be byte-identical to the reference.  It is still verified for
+        reference integrity inside :meth:`_compare_to_reference`.  The runtime
+        evidence carries no top-level ``expected_sha256`` either (the guest
+        script and ``_evidence_from_collected`` put every hash under
+        ``references``), so only ``params["expected_sha256"]`` can request exact
+        SHA matching.  See scan_work/fix_briefs/macos-openphotoedit-export-sha.md.
+        """
         task_hashes = params.get("expected_sha256")
         if isinstance(task_hashes, Mapping):
-            candidates.append(task_hashes.get(filename))
-        evidence_hashes = evidence.get("expected_sha256")
-        if isinstance(evidence_hashes, Mapping):
-            candidates.append(evidence_hashes.get(filename))
-        references = evidence.get("references")
-        if isinstance(references, Mapping):
-            entry = references.get(filename)
-            if isinstance(entry, Mapping):
-                candidates.append(entry.get("expected_sha256"))
-        for value in candidates:
+            value = task_hashes.get(filename)
             if isinstance(value, str) and value.strip():
                 return value.strip().lower()
         return None
@@ -785,7 +786,7 @@ class OpenPhotoEditRgbEvaluator(BaseEvaluator):
             for name in explicit:
                 add(str(name))
         references = params.get("reference_images")
-        if isinstance(references, Mapping):
+        if not names and isinstance(references, Mapping):
             for name, entry in references.items():
                 candidate = entry.get("name") if isinstance(entry, Mapping) else None
                 add(str(candidate or name))

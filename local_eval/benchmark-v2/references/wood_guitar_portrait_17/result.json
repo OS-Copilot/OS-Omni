@@ -1,0 +1,137 @@
+{
+  "profile_id": "wood_guitar_portrait_17",
+  "group": "guitar",
+  "source": "portrait_17.jpg",
+  "recipe": [
+    [
+      "Edit",
+      "Exposure",
+      5
+    ],
+    [
+      "Edit",
+      "Contrast",
+      10
+    ],
+    [
+      "Edit",
+      "Temperature",
+      12
+    ],
+    [
+      "Edit",
+      "Brightness",
+      4
+    ],
+    [
+      "Landscape",
+      "Structure",
+      16
+    ],
+    [
+      "Landscape",
+      "Warm Sun",
+      10
+    ],
+    [
+      "HSL",
+      "Orange",
+      "Saturation",
+      12
+    ],
+    [
+      "HSL",
+      "Orange",
+      "Luminance",
+      4
+    ],
+    [
+      "HSL",
+      "Red",
+      "Hue",
+      3
+    ],
+    [
+      "HSL",
+      "Yellow",
+      "Hue",
+      -4
+    ],
+    [
+      "Filters",
+      "Film",
+      24
+    ]
+  ],
+  "expected_median_rgb": {
+    "red": [
+      225,
+      48,
+      40
+    ],
+    "green": [
+      51,
+      213,
+      39
+    ],
+    "blue": [
+      50,
+      44,
+      204
+    ]
+  },
+  "repeat_median_rgb": {
+    "red": [
+      225,
+      48,
+      40
+    ],
+    "green": [
+      51,
+      213,
+      39
+    ],
+    "blue": [
+      50,
+      44,
+      204
+    ]
+  },
+  "unedited_median_rgb": {
+    "red": [
+      190,
+      40,
+      41
+    ],
+    "green": [
+      40,
+      190,
+      39
+    ],
+    "blue": [
+      40,
+      40,
+      190
+    ]
+  },
+  "wrong_exposure_median_rgb": {
+    "red": [
+      255,
+      61,
+      52
+    ],
+    "green": [
+      64,
+      255,
+      51
+    ],
+    "blue": [
+      64,
+      58,
+      255
+    ]
+  },
+  "correct": ".\\local_eval\\benchmark-v2\\references\\wood_guitar_portrait_17\\correct.jpg",
+  "input": ".\\local_eval\\benchmark-v2\\references\\wood_guitar_portrait_17\\input.jpg",
+  "probe_only": true
+}

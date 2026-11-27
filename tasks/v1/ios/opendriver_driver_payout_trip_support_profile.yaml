@@ -4,19 +4,24 @@ platform: ios
 instruction: Sign in to the OpenDriver application using the Driver role with the email driver@example.com
   and the password Password123! to access the driver workspace for Maya Rodriguez. The Money section must
   contain a payout request for 95.00 with the note Moring payout. The Work section must reflect a driver
-  status set to online, with the first generated passenger request rejected and the second generated passenger
-  request accepted, leaving the trip panel open for that accepted trip. The Support section must include
+  status set to online before generating passenger requests. Reject the first generated request and accept the
+  second, then leave that accepted trip open while completing the remaining steps. The Support section must
+  include
   a new support ticket created in the Driver safety and support area with the message Pickup support help.
   The Account section must display an updated Driver onboarding profile with the license number NY-DL-100492,
   vehicle make Tesla, vehicle model Model Y, vehicle year 2023, plate 8XJR214, and color Pearl White,
   saved for review. The Driver documents area must contain a submitted Driver license document with the
   Document ID DL-2026-2048 and an expiration date of 2028-06-30. The application session must be terminated
-  so that no active session remains for the driver.
+  so that no active session remains for the driver. Logging out cancels this seeded account's active trip;
+  the accepted ride must retain its acceptedAt history and the final driver status must be online.
 init:
-  initializer_id: evaluators.cua_review.initializers.ios.opendriver:OpenDriverIOSInitializer
+  initializer_id: evaluators.cua_review.initializers.ios.opendriver_clean:OpenDriverCleanIOSInitializer
   params:
     bundle_id: com.killt.opendriver
-    wait_ms: 1500
+    wait_ms: 1800
+    reset_backend: true
+    backend_url: http://127.0.0.1:4320
+    return_home_after_init: false
 evaluation:
   evaluator_id: evaluators.ios.opendriver_driver_payout_trip_support_profile:OpenDriverIOSDriverWorkflowEvaluator
   params:
@@ -70,7 +75,7 @@ evaluation:
     logged_out_user:
       userId: usr_driver_primary
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   app: OpenDriver
@@ -86,22 +91,24 @@ metadata:
     page.
   - The OpenDriver iOS backend is healthy and contains schema v16 seed data.
   - driver@example.com exists with password Password123! and the Maya Rodriguez approved driver profile.
-  initializer_message: The initializer only launches OpenDriver and validates the signed-out login surface;
-    it does not log in, reset the backend, or create task records.
+  initializer_message: The task-scoped initializer restores backend seed data, clears the simulator's cached
+    OpenDriver token, and verifies the signed-out login surface; it does not create task records.
   verifier_rules:
     final_business_evidence:
-    - The primary driver is online with license NY-DL-100492 and Tesla Model Y 2023 plate 8XJR214 in Pearl
-      White.
+    - The primary driver is online after logout, with license NY-DL-100492 and Tesla Model Y 2023 plate
+      8XJR214 in Pearl White.
     - A submitted Driver license document exists with identifier DL-2026-2048 and normalized expiry 2028-06-30.
     - A requested USD 95.00 payout exists with exact note Moring payout.
     - An open rider issue support ticket exists with exact message Pickup support help.
     - At least one post-seed request contains usr_driver_primary in rejectedDriverIds.
-    - At least one post-seed trip assigned to usr_driver_primary contains durable acceptance evidence.
+    - The second generated post-seed trip was accepted by usr_driver_primary and retains acceptedAt history;
+      logout may cancel this active trip.
     - driverStatus is online and no backend session remains for usr_driver_primary after logout.
     instruction_mapping:
     - Steps 2-7 cover Driver login.
     - Steps 8-16 cover payout creation.
-    - Steps 17-24 cover online status, rejection, acceptance, and opening the accepted trip.
+    - Steps 17-24 cover setting online, rejecting the first request, accepting the second, and opening its
+      trip panel before the final logout.
     - Steps 25-30 cover support ticket creation.
     - Steps 31-60 cover profile and license document submission.
     - Steps 61-64 cover final navigation and logout.

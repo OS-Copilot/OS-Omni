@@ -21,7 +21,8 @@ init:
   params:
     bundle_id: com.killt.opentwitter
     require_logged_in: true
-    wait_ms: 1200
+    reset_to_seed: true
+    wait_ms: 6000
     bootstrap_wait_ms: 1200
     return_home_after_init: false
     login_if_missing: false
@@ -51,12 +52,12 @@ evaluation:
     bundle_id: com.killt.opentwitter
     author_handle: alex
     expected_instruction_sha256: 07b857ae5d66af8f0c708b0b445a26387c879bdfc15ab1a7995f228d477564d6
-    expected_ruleset_sha256: 36b69d5f09146824e9f3734c009afcb280bc34c6fc7e148f8aeda58facb55f9e
+    expected_ruleset_sha256: 90803ac6f3f5e1bb100e7f49dc72c4a3f22be2b603864ef1c10d1a787ab08ee8
     source_simulator_name: osomni-opendriver-ios-source-fixed-promax
     ios_device_profile: iphone17-1
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - ios
@@ -77,7 +78,9 @@ metadata:
     durable saves.
   - Steps 1-2 require every notification to be read and a notifications_marked_read causal event.
   - Steps 3-67 require exact seeded-post identities, exact authored post texts, exact alex replies, exact
-    engagement sets, and the exact durable event projection.
+    engagement sets (the Runbooks post saved, liked and reposted, as the brief says), and the required
+    durable events with no extra or duplicate one; the only order checked is the brief's "then replying"
+    for Devon Brooks' post.
   - Steps 68-78 require exactly one alex profile with displayName Alex Incident, bio incident owner, and
     an empty avatar plus the exact profile_updated event.
   - The evaluator must not reset, restore, initialize, launch, click, type, swipe, or create an Appium

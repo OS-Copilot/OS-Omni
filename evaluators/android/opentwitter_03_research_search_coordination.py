@@ -16,6 +16,7 @@ from evaluators.cua_review.platforms.android.openshop_support import (
     _devtools_runtime_evaluate,
     _free_tcp_port,
 )
+from evaluators.cua_review.platforms.android.opentwitter_support import stated_order_check
 
 
 
@@ -94,7 +95,12 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
                     baseline = loaded if isinstance(loaded, dict) else None
                 except Exception:
                     baseline = None
-            add_check("full_run_baseline_present", baseline is not None, self.BASELINE_FILENAME, str(baseline_path))
+            # The bound v1 initializer only launches OpenTwitter; it never writes this
+            # baseline file (only the unbound local_eval wrapper did, local_eval/baselines.py:102).
+            # Requiring it made every full v1 run fail, so it is opt-in for callers that
+            # do write it; a run that supplies the file still gets the baseline_* checks below.
+            if bool(params.get("require_full_run_baseline", False)):
+                add_check("full_run_baseline_present", baseline is not None, self.BASELINE_FILENAME, str(baseline_path))
         baseline_seq = event_sequence((baseline or {}).get("evaluation_event_seq"))
         all_events = state.get("evaluationEvents") if isinstance(state.get("evaluationEvents"), list) else []
         events = [
@@ -230,6 +236,8 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             )
 
         matched_object_ids: dict[str, Any] = {"target_post": target_post_id}
+        # Business objects the instruction orders, by label (see stated_order_check).
+        order_anchors: dict[str, dict[str, Any] | None] = {}
         if research_post_id:
             matched_object_ids["research_post"] = research_post_id
         for spec in params.get("messages") or []:
@@ -254,6 +262,9 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             )
             if len(matches) == 1:
                 matched_object_ids[f"message_{handle}"] = matches[0].get("id")
+            order_anchors[f"message:{handle}"] = (
+                {"at": matches[0].get("createdAt"), "id": matches[0].get("id")} if len(matches) == 1 else None
+            )
 
         created_posts: dict[str, Mapping[str, Any]] = {}
         for spec in params.get("created_posts") or []:
@@ -277,6 +288,9 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             if len(matches) == 1:
                 created_posts[text] = matches[0]
                 matched_object_ids[f"created_post_{text}"] = matches[0].get("id")
+            order_anchors[f"post:{text}"] = (
+                {"at": matches[0].get("createdAt"), "id": matches[0].get("id")} if len(matches) == 1 else None
+            )
 
         owner_text = str(params.get("owner_post_text") or "")
         owner_post = created_posts.get(owner_text)
@@ -295,6 +309,28 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             {"count": len(owner_reply_matches), "ids": [item.get("id") for item in owner_reply_matches]},
             matched_object_id=owner_reply_matches[0].get("id") if len(owner_reply_matches) == 1 else None,
         )
+        order_anchors[f"reply:{owner_text}"] = (
+            {"at": owner_reply_matches[0].get("createdAt"), "id": owner_reply_matches[0].get("id")}
+            if len(owner_reply_matches) == 1 else None
+        )
+        # A like / save / repost leaves only its event: the one that set the
+        # final active state is the latest activating toggle of the post.
+        for action, event_type in (
+            ("like", "post_like_toggled"),
+            ("bookmark", "post_bookmark_toggled"),
+            ("repost", "post_repost_toggled"),
+        ):
+            toggles = [
+                event for event in events
+                if owner_post_id
+                and str(event.get("type") or "") == event_type
+                and str(event.get("postId") or "") == owner_post_id
+                and event.get("active") is True
+            ]
+            latest = max(toggles, key=lambda event: event_sequence(event.get("seq"))) if toggles else None
+            order_anchors[f"{action}:{owner_text}"] = (
+                {"at": latest.get("timestamp"), "id": f"seq:{latest.get('seq')}"} if latest else None
+            )
 
         unread_ids = [
             str(item.get("id") or "") for item in notifications
@@ -302,14 +338,14 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
         ]
         add_check("all_notifications_read", len(notifications) > 0 and not unread_ids, 0, len(unread_ids), unread_ids=unread_ids)
 
-        # The order in which the application recorded its actions is reported for
-        # a reader but is not required: two agents can reach the same durable
-        # state by different routes, and the state is what the task asks for.
-        observed_event_types = [
-            str(event.get("type") or "")
-            for event in events
-            if isinstance(event, Mapping)
-        ]
+        # Only the orders the English instruction states are judged: the two
+        # posts "in this order: ... followed by ...", and the reply, like, save
+        # and repost of the first one "once both are published".  The rest of
+        # the run's order (trends visited, the order of the other actions) is
+        # free and browsing is not graded.
+        if params.get("stated_order"):
+            order_ok, order_expected, order_observed = stated_order_check(params.get("stated_order"), order_anchors)
+            add_check("instruction_stated_order", order_ok, order_expected, order_observed)
 
         foreground = str(getattr(context.get("final_observation"), "foreground_bundle_id", "") or "")
         foreground_source = "final_observation"
@@ -365,7 +401,7 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             )
         return EvalResult(
             status=EvalStatus.PASS,
-            message="OpenTwitter release/search exact final state and ordered event evidence match",
+            message="OpenTwitter release/search exact final state and the instruction's stated orders match",
             metadata=metadata,
         )
 
@@ -400,88 +436,6 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
             and str(item.get("text") or "") == text
             and cls._created_after(item.get("createdAt"), created_after)
         ]
-
-    @staticmethod
-    def _event_specs(params: Mapping[str, Any], owner_post_id: str) -> list[dict[str, Any]]:
-        research = dict(params.get("research_post") or {})
-        target = dict(params.get("target_post") or {})
-        messages = {
-            str(item.get("handle") or ""): str(item.get("text") or "")
-            for item in (params.get("messages") or [])
-            if isinstance(item, Mapping)
-        }
-        created = [
-            str(item.get("text") or "")
-            for item in (params.get("created_posts") or [])
-            if isinstance(item, Mapping)
-        ]
-        research_id = str(research.get("id") or "")
-        target_id = str(target.get("id") or "")
-        specs: list[dict[str, Any]] = []
-        profile = dict(params.get("profile") or {})
-        if profile:
-            specs.append(
-                {"type": "profile_updated", "displayName": str(profile.get("display_name") or ""), "bio": str(profile.get("bio") or "")}
-            )
-        if research:
-            specs.extend([
-                {"type": "timeline_view", "query": str(params.get("research_query") or "Research")},
-                {"type": "post_like_toggled", "postId": research_id, "active": True},
-                {"type": "post_bookmark_toggled", "postId": research_id, "active": True},
-                {"type": "reply_button_clicked", "postId": research_id},
-                {"type": "comment_created", "postId": research_id, "text": str(research.get("reply_text") or "")},
-            ])
-        specs.extend([
-            {"type": "timeline_view", "query": str(params.get("trend_query") or "")},
-            {"type": "timeline_view", "view": "profile", "handle": str(params.get("target_follow_handle") or "rachel")},
-            {"type": "user_follow_toggled", "handle": str(params.get("target_follow_handle") or "rachel"), "active": True},
-            {"type": "timeline_view", "query": str(params.get("trend_query") or "")},
-            {"type": "post_like_toggled", "postId": target_id, "active": True},
-            {"type": "post_bookmark_toggled", "postId": target_id, "active": True},
-            {"type": "reply_button_clicked", "postId": target_id},
-            {"type": "comment_created", "postId": target_id, "text": str(target.get("reply_text") or "")},
-            {"type": "message_sent", "handle": "zoe", "text": messages.get("zoe", "")},
-            {"type": "message_sent", "handle": "amina", "text": messages.get("amina", "")},
-            {"type": "message_sent", "handle": "maya", "text": messages.get("maya", "")},
-            {"type": "post_created", "text": created[0] if len(created) > 0 else ""},
-            {"type": "post_created", "text": created[1] if len(created) > 1 else ""},
-            {"type": "reply_button_clicked", "postId": owner_post_id},
-            {"type": "comment_created", "postId": owner_post_id, "text": str(params.get("owner_reply_text") or "")},
-            {"type": "post_like_toggled", "postId": owner_post_id, "active": True},
-            {"type": "post_bookmark_toggled", "postId": owner_post_id, "active": True},
-            {"type": "post_repost_toggled", "postId": owner_post_id, "active": True},
-            {"type": "notifications_marked_read"},
-            {"type": "message_sent", "handle": "nora", "text": messages.get("nora", "")},
-        ])
-        return specs
-
-    @staticmethod
-    def _match_event_subsequence(events: list[Any], specs: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], bool]:
-        matched: list[dict[str, Any]] = []
-        cursor = 0
-        for spec in specs:
-            found: Mapping[str, Any] | None = None
-            while cursor < len(events):
-                candidate = events[cursor]
-                cursor += 1
-                if isinstance(candidate, Mapping) and all(candidate.get(key) == value for key, value in spec.items()):
-                    found = candidate
-                    break
-            if found is None:
-                matched.append({"expected": spec, "matched": None})
-                return matched, False
-            matched.append(
-                {
-                    "expected": spec,
-                    "matched": {
-                        "seq": found.get("seq"),
-                        "type": found.get("type"),
-                        "timestamp": found.get("timestamp"),
-                        "object_id": found.get("postId") or found.get("commentId") or found.get("handle"),
-                    },
-                }
-            )
-        return matched, True
 
     @staticmethod
     def _read_dom_state(controller: Any, app_package: str) -> dict[str, Any]:

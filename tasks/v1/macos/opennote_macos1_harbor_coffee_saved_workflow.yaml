@@ -4,9 +4,10 @@ platform: macos
 instruction: Produce a completed OpenNote workflow that comments on and saves a specific coffee post,
   publishes three new Food posts with exact titles and bodies, and leaves the application on the Saved
   tab of My Profile. The workflow begins with the desktop file Harbor-Coffee-Plan.txt already present
-  and the OpenNote application logged in as Lina Park. The source post, titled "A small note on coastal
-  coffee stop and ticket screenshot", must be located within the Food category of the Explore feed using
-  the search term "coffee", and it must receive a comment containing exactly the text "Keep ticket offline."
+  and the OpenNote application showing its login page with the Lina Park account prefilled; OpenNote
+  must be signed in as Lina Park from that page and remain signed in. The source post, titled "A small
+  note on coastal coffee stop and ticket screenshot", must be located within the Food category of the Explore
+  feed using the search term "coffee", and it must receive a comment containing exactly the text "Keep ticket offline."
   before being saved to the user's collection. Three new posts must be created, each using the "Use text
   cover" option, the Food category, the location "Pier Cafe", and the tags "harbor,quiet". The first new
   post must have the title "Harbor Coffee Meetup" and the body "Meet at Pier Cafe at 09:30 for a quiet
@@ -68,8 +69,8 @@ evaluation:
     expected_final_ui_markers:
     - Saved
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   difficulty: hard
   app: OpenNote

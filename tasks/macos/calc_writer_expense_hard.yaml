@@ -1,0 +1,104 @@
+task_id: macos.cross_app.calc_writer_expense_hard
+platform: macos
+instruction: >
+  Open LibreOffice Calc. Create a new spreadsheet with the following expense
+  data:
+  - Row 1: Headers "Item" and "Cost"
+  - Row 2: Rent, 1200
+  - Row 3: Groceries, 350
+  - Row 4: Utilities, 180
+  - Row 5: Internet, 60
+  - Row 6: Insurance, 200
+  In cell A8, type "Total". In cell B8, enter a SUM formula to calculate the
+  total of B2:B6. The formula should be =SUM(B2:B6).
+  Save the spreadsheet as /Users/bench/Documents/expenses.ods.
+  Then switch to the already-open LibreOffice Writer window. Create a new
+  document. Type the heading "Monthly Expense Report" and below it include:
+  "Total expenses: [the calculated total from cell B8]
+  Most expensive item: [the item name with the highest cost]
+  Least expensive item: [the item name with the lowest cost]"
+  Save the Writer document as /Users/bench/Documents/expense_report.odt.
+  Finish after both files exist.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: |
+        set -e
+        killall soffice.bin >/dev/null 2>&1 || true
+        killall soffice >/dev/null 2>&1 || true
+        mkdir -p /Users/bench/Documents
+    - type: wait
+      ms: 1200
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --calc
+    - type: wait
+      ms: 5000
+    - type: run_bash
+      script: |
+        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+    - type: wait
+      ms: 5000
+evaluation:
+  evaluator_id: evaluators.macos.command_check:CommandCheckEvaluator
+  params:
+    timeout: 120
+    stdout_contains: "PASS"
+    command: |
+      set -euo pipefail
+      python3 - <<'PY'
+      import os
+      import zipfile
+
+      ods_path = os.path.expanduser("~/Documents/expenses.ods")
+      if not os.path.exists(ods_path):
+          raise SystemExit("CALC_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(ods_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      expected_values = ["Rent", "Groceries", "Utilities", "Internet", "Insurance"]
+      for val in expected_values:
+          if val not in content:
+              raise SystemExit(f"MISSING_VALUE_{val}")
+
+      if "SUM" not in content:
+          raise SystemExit("MISSING_SUM_FORMULA")
+
+      odt_path = os.path.expanduser("~/Documents/expense_report.odt")
+      if not os.path.exists(odt_path):
+          raise SystemExit("WRITER_FILE_NOT_FOUND")
+
+      with zipfile.ZipFile(odt_path, 'r') as z:
+          content = z.read('content.xml').decode('utf-8')
+
+      if "Monthly Expense Report" not in content:
+          raise SystemExit("MISSING_HEADING")
+      if "Total expenses" not in content:
+          raise SystemExit("MISSING_TOTAL")
+      if "Most expensive" not in content:
+          raise SystemExit("MISSING_MOST_EXPENSIVE")
+      if "Least expensive" not in content:
+          raise SystemExit("MISSING_LEAST_EXPENSIVE")
+
+      print("PASS")
+      PY
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags:
+  - macos
+  - cross_app
+  - calc
+  - writer
+  - spreadsheet
+  - formula
+  - hard
+  app_name: libreoffice_calc + libreoffice_writer
+  difficulty: hard
+  description: Create an expense spreadsheet in Calc with 5 items and a SUM formula,
+    then generate a monthly expense report in Writer with total, most expensive,
+    and least expensive items.

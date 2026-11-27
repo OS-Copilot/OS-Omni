@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
@@ -25,6 +26,7 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
                 "final macOS accessibility observation",
             ],
             "state_modified": False,
+            "diagnostics": [],
         }
 
         try:
@@ -58,6 +60,12 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
             metadata,
             list(api_state.get("events") or []),
             list(params.get("required_event_sequence") or []),
+            required=bool(params.get("require_event_sequence", False)),
+        )
+        self._check_login_precedes_business_events(
+            metadata,
+            list(api_state.get("events") or []),
+            list(params.get("required_event_sequence") or []),
         )
         self._check_text_file(metadata, file_state, params)
         self._check_final_ui(context, metadata, params)
@@ -70,7 +78,8 @@ class OpenBankJuneHomeTextEditEvaluator(BaseEvaluator):
             )
         return EvalResult(
             EvalStatus.PASS,
-            "Three bill payments, one transfer, ordered events, and June-Home.txt all match",
+            "Three bill payments, one transfer, and June-Home.txt all match "
+            "(event order is diagnostic unless required)",
             metadata,
         )
 
@@ -116,6 +125,7 @@ file_state = {{"path": str(path), "exists": path.is_file()}}
 if path.is_file():
     raw = path.read_bytes()
     file_state["byte_count"] = len(raw)
+    file_state["mtime"] = path.stat().st_mtime
     file_state["is_rtf"] = raw.lstrip().startswith(b"{{\\rtf")
     try:
         text = raw.decode("utf-8-sig")
@@ -220,7 +230,17 @@ print(json.dumps({{"api": api_state, "file": file_state}}, ensure_ascii=False, s
         metadata: dict[str, Any],
         events: list[Any],
         expected_sequence: list[Any],
+        *,
+        required: bool = False,
     ) -> None:
+        """Ordered-subsequence match of the app's business-event ledger.
+
+        The English brief lists the three bill payments and the transfer but not
+        the order they are created in, and the exact record/count checks already
+        grade every deliverable (scan.CSV MAC-014, step_gate).  The ledger is
+        therefore kept as a non-blocking diagnostic unless a task opts in with
+        ``params["require_event_sequence"]``.
+        """
         cursor = 0
         matched: list[Mapping[str, Any]] = []
         for raw_expected in expected_sequence:
@@ -238,6 +258,21 @@ print(json.dumps({{"api": api_state, "file": file_state}}, ensure_ascii=False, s
                 break
             matched.append(found)
         passed = len(matched) == len(expected_sequence)
+        if not required:
+            metadata.setdefault("diagnostics", []).append(
+                {
+                    "diagnostic_id": "events.ordered_business_sequence",
+                    "expected": expected_sequence,
+                    "observed": matched,
+                    "passed": passed,
+                    "blocking": False,
+                    "note": (
+                        "The event order is not stated in the brief; PASS/FAIL is "
+                        "determined by the durable records, session, file and final UI."
+                    ),
+                }
+            )
+            return
         self._record(
             metadata,
             "events.ordered_business_sequence",
@@ -245,6 +280,133 @@ print(json.dumps({{"api": api_state, "file": file_state}}, ensure_ascii=False, s
             expected_sequence,
             matched,
             "Required login, three bill-payment, and transfer events are missing or out of order",
+        )
+
+    LOGIN_EVENT_TYPE = "session_login_success"
+
+    def _split_login_and_business(
+        self, expected_sequence: list[Any]
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        logins: list[dict[str, Any]] = []
+        business: list[dict[str, Any]] = []
+        for raw_expected in expected_sequence:
+            if not isinstance(raw_expected, Mapping):
+                continue
+            expected = dict(raw_expected)
+            (logins if expected.get("type") == self.LOGIN_EVENT_TYPE else business).append(expected)
+        return logins, business
+
+    def _matching_indices(self, events: list[Any], expected: Mapping[str, Any]) -> list[int]:
+        return [
+            index
+            for index, event in enumerate(events)
+            if isinstance(event, Mapping) and self._matches(event, expected)
+        ]
+
+    def _check_login_precedes_business_events(
+        self,
+        metadata: dict[str, Any],
+        events: list[Any],
+        expected_sequence: list[Any],
+    ) -> None:
+        """Keep the one logically necessary order: sign in before account actions.
+
+        Each business event of the ledger (bill payment, transfer) must be
+        recorded after the first Jordan Lee sign-in; the order among the
+        business events themselves is not graded (it is not in the brief).
+        """
+        logins, business = self._split_login_and_business(expected_sequence)
+        if not logins or not business:
+            return
+        login_indices = sorted(
+            index for expected in logins for index in self._matching_indices(events, expected)
+        )
+        first_login = login_indices[0] if login_indices else None
+        observed: list[dict[str, Any]] = []
+        passed = first_login is not None
+        for expected in business:
+            after_login = [
+                index
+                for index in self._matching_indices(events, expected)
+                if first_login is not None and index > first_login
+            ]
+            observed.append({"expected": expected, "event_indices_after_login": after_login})
+            passed = passed and bool(after_login)
+        self._record(
+            metadata,
+            "events.login_before_business_actions",
+            passed,
+            {"login": logins, "then_each_of": business},
+            {"first_login_index": first_login, "business_events": observed},
+            "Required business events are missing or were not recorded after the Jordan Lee sign-in",
+        )
+
+    @staticmethod
+    def _event_epoch(event: Mapping[str, Any]) -> float | None:
+        raw = event.get("timestamp")
+        if not isinstance(raw, str) or not raw.strip():
+            return None
+        try:
+            return datetime.fromisoformat(raw.strip().replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return None
+
+    def _check_text_file_after_business_events(
+        self,
+        metadata: dict[str, Any],
+        events: list[Any],
+        expected_sequence: list[Any],
+        file_state: Mapping[str, Any],
+    ) -> None:
+        """Brief-stated order: the records are created, *followed by* the file.
+
+        The saved file's modification time must not precede the creation of
+        any required business record (its first matching event).  The app's
+        event timestamps and the file's mtime both come from the guest clock.
+        """
+        _logins, business = self._split_login_and_business(expected_sequence)
+        created_at: list[dict[str, Any]] = []
+        missing: list[dict[str, Any]] = []
+        for expected in business:
+            stamps = [
+                self._event_epoch(events[index]) for index in self._matching_indices(events, expected)
+            ]
+            stamps = [stamp for stamp in stamps if stamp is not None]
+            if not stamps:
+                missing.append(expected)
+                continue
+            created_at.append({"expected": expected, "created_epoch": min(stamps)})
+        mtime = file_state.get("mtime") if file_state.get("exists") else None
+        latest = max((item["created_epoch"] for item in created_at), default=None)
+        try:
+            mtime_value = float(mtime) if mtime is not None else None
+        except (TypeError, ValueError):
+            mtime_value = None
+        passed = bool(
+            business
+            and not missing
+            and mtime_value is not None
+            and latest is not None
+            and mtime_value >= latest
+        )
+        if missing:
+            reason = "Some required business records have no timestamped creation event"
+        elif mtime_value is None:
+            reason = "The saved text file is missing or its modification time is unknown"
+        else:
+            reason = "The text file was last saved before the required bill payments/transfers were created"
+        self._record(
+            metadata,
+            "guest_text_file.saved_after_business_records",
+            passed,
+            {"file_mtime_at_or_after": "latest required business record creation"},
+            {
+                "file_mtime": mtime_value,
+                "latest_business_record_epoch": latest,
+                "business_records": created_at,
+                "missing_timestamped_events": missing,
+            },
+            reason,
         )
 
     def _check_text_file(

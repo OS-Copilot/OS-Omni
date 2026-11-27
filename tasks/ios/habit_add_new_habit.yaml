@@ -1,0 +1,41 @@
+task_id: ios.habit.add_new_habit
+platform: ios
+instruction: "In Habit, add a new habit named Evening Stretch with the motivation Stretch for 10 minutes before bed."
+init:
+  initializer_id: initializers.ios.habit_seed_open_app:HabitSeedOpenAppInitializer
+  params:
+    bundle_id: co.nazariizomko.Habit
+    seed_spec:
+      habits:
+        - title: "Morning Walk"
+          motivation: "Get sunlight before the first meeting."
+          color: "blue"
+        - title: "Read 20 Pages"
+          motivation: "Finish one chapter each night."
+          color: "green"
+    wait_ms: 1200
+evaluation:
+  evaluator_id: evaluators.ios.habit_state:HabitStateEvaluator
+  params:
+    bundle_id: co.nazariizomko.Habit
+    assert_spec:
+      present_habits:
+        - title: "Morning Walk"
+          motivation: "Get sunlight before the first meeting."
+        - title: "Read 20 Pages"
+          motivation: "Finish one chapter each night."
+        - title: "Evening Stretch"
+          motivation: "Stretch for 10 minutes before bed."
+      habit_count: 3
+    timeout_seconds: 10
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  tags: [habit, ios, create, simple, benchmark]
+  app: Habit
+  app_bundle_id: co.nazariizomko.Habit
+  description: "Create one new habit in Habit without disturbing the two seeded habits."
+  prerequisites:
+    - "Habit is installed on the simulator."

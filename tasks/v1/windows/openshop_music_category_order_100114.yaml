@@ -20,9 +20,9 @@ evaluation:
   params:
     port: 4310
     timeout: 12
-    expected_ruleset_sha256: c8e0e98d54d9a8c07828d09f6d4e70ac3d1f53eb403eaa3fa3e2e76b5a1fc04b
+    expected_ruleset_sha256: 5830517c3837528462014989193718c52d708ed23f1de027534bfb6352ded1d0
 limits:
-  max_steps: 240
+  max_steps: 300
   step_timeout_seconds: 180
 metadata:
   tags:
@@ -50,7 +50,7 @@ metadata:
   verifier_rules:
     primary_source: OpenShop read-only local API durable order state and current benchmark events
     exact_step_coverage: 1-78
-    required_order: login, three ordered two-item checkouts, quantity changes, ordered reviews
+    required_order: login before the first checkout; each review after its own order; no order between the three orders
     final_ui: not an acceptance requirement
   task_version: '1.1'
   cua_tasks_review:

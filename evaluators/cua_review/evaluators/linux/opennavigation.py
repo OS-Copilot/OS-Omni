@@ -112,6 +112,8 @@ class OpenNavigationRecordsEvaluator(BaseEvaluator):
     application persisted, and each declared report likewise.  A machine where
     the task was not carried out holds no such records, which is a failure.
     """
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -293,6 +295,8 @@ class OpenNavigationRouteReviewEvaluator(BaseEvaluator):
     The required terms must be present in what the application persisted or in
     the final observation, and none of the forbidden terms may be.
     """
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})
@@ -344,6 +348,8 @@ class OpenNavigationRouteReviewEvaluator(BaseEvaluator):
 
 class OpenNavigationWorkflowEvaluator(BaseEvaluator):
     """Verify the map-layer state a navigation workflow is expected to leave."""
+    # Reads the live page over DevTools: keep the browser running for evaluation (no flush).
+    REQUIRES_LIVE_BROWSER = True
 
     def evaluate(self, context: Mapping[str, Any]) -> EvalResult:
         params = dict(context.get("params") or {})

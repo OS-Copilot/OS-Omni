@@ -34,7 +34,7 @@ init:
       ms: 5000
     - type: run_bash
       script: |
-        /Applications/LibreOffice.app/Contents/MacOS/soffice --writer
+        nohup /Applications/LibreOffice.app/Contents/MacOS/soffice --writer >/dev/null 2>&1 &
     - type: wait
       ms: 5000
 evaluation:
@@ -66,8 +66,8 @@ evaluation:
       print("PASS")
       PY
 limits:
-  max_steps: 100
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - macos

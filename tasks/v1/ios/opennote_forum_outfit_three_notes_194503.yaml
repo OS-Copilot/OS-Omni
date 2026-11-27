@@ -45,12 +45,12 @@ evaluation:
     manual_window_start: '2026-08-04T17:38:46+08:00'
     manual_window_end: '2026-08-04T17:52:18+08:00'
     expected_instruction_sha256: 7a65a5a83e342c62a68b4d1b6a65526d13c1745e053664c5745aa480582a167f
-    expected_ruleset_sha256: 2e6f9ec072065faf5dd0de44cc9240bb4476c5a5769885f9b1377d9fa9b036e5
+    expected_ruleset_sha256: 59653ff949c64939d39bff671996640395ed903550518492e9815abe2eac4c9b
     evaluation_session_id: opennote-human-forum-outfit-194503
     requires_ui_observation: false
 limits:
-  max_steps: 240
-  step_timeout_seconds: 120
+  max_steps: 300
+  step_timeout_seconds: 180
 metadata:
   tags:
   - opennote
@@ -72,9 +72,11 @@ metadata:
     recording_filename: 2026-08-04_17-38-46.mp4
   verifier_rules:
     instruction_sha256: 7a65a5a83e342c62a68b4d1b6a65526d13c1745e053664c5745aa480582a167f
-    ruleset_sha256: 2b1173ade2a33c5913a13a923d35da66c25928587715f0aed61097f23c24fac8
+    ruleset_sha256: 59653ff949c64939d39bff671996640395ed903550518492e9815abe2eac4c9b
     matching: case-sensitive exact values, ordered tags, LF-exact body text, exact cover and build hashes,
-      unique objects, exact Like/Save/Bio state, and the exact 11-event causal suffix
+      unique objects, exact Like/Save/Bio state, and each requested business event (three note_created,
+      the like, the save, the profile update) exactly once with no other business event; browsing (feed
+      views, note opens) is not counted and the brief states no order
     manual_causal_window:
       start: '2026-08-04T17:38:46+08:00'
       end: '2026-08-04T17:52:18+08:00'

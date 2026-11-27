@@ -14,6 +14,7 @@ end state it records.
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -28,6 +29,7 @@ DEFAULT_BUNDLE_ID = "com.killt.opendriver"
 
 #: Document name inside the application's shared backend data directory.
 DB_FILENAME = "opendriver-db.json"
+DB_PATH_ENV_KEYS = ("OSOMNI_OPENDRIVER_DB_PATH", "OPENDRIVER_DB_PATH")
 
 #: Directory suffixes holding the document, relative to a data container or to
 #: the current user's home directory.
@@ -106,6 +108,18 @@ def _conventional_documents(home: Path, container: Path | None) -> list[Path]:
             candidate = base / relative / DB_FILENAME
             if candidate not in documents:
                 documents.append(candidate)
+    # The iOS OpenDriver task bundle uses the checked-out shared backend as
+    # its authoritative host-side store.  Resolve it relative to this vendored
+    # evaluator so evaluation works from any checkout location and does not
+    # depend on a stale simulator container or a developer-specific home path.
+    source_root = Path(__file__).resolve().parents[4]
+    workspace_backend = (
+        source_root.parent
+        / "shared" / "upstream-apps" / "apps" / "opendriver"
+        / "shared" / "backend" / "data" / DB_FILENAME
+    )
+    if workspace_backend not in documents:
+        documents.append(workspace_backend)
     return documents
 
 
@@ -191,6 +205,10 @@ class OpenDriverStore:
             (context or {}).get("params") if isinstance(context, Mapping) else None,
             keys=DB_PATH_PARAM_KEYS,
         )
+        for key in DB_PATH_ENV_KEYS:
+            value = str(os.environ.get(key) or "").strip()
+            if value and value not in declared:
+                declared.append(value)
         udids = _parameter_chain(
             params,
             (context or {}).get("params") if isinstance(context, Mapping) else None,

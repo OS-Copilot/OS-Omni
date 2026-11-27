@@ -1,0 +1,24 @@
+{
+  "paths": [],
+  "reconstructed": true,
+  "calibration_input": "unclipped primary color patches RGB190/40/40,40/190/40,40/40/190",
+  "provenance": [
+    {
+      "source": "portrait_20.jpg",
+      "source_path": "local_eval\\benchmark-v2\\assets\\indoor-cooking-v2.jpg",
+      "target": "portrait_20.jpg",
+      "source_sha256": "64d99e6f89093caa99d16edf93bb965ebc0f23e8cdca9e7ad7a44e8df6de504d",
+      "fixture_sha256": "0a34d9283cc5e6146dc9348680fa3b4412dcbfd2bde41ae49dc2e81310e998b4"
+    },
+    {
+      "source": "portrait_16.jpg",
+      "source_path": "local_eval\\benchmark-v2\\assets\\outdoor-cooking-v2.jpg",
+      "target": "portrait_16.jpg",
+      "source_sha256": "1c73ef0e70326052e84f352ebe7af0f5e744fa05ffeb2139f750b49c34a9d60d",
+      "fixture_sha256": "46b3a976b4862a3169c734f07e1b80a0975ac459961113b5a0460da50639e2c7"
+    }
+  ],
+  "limitations": [],
+  "benchmark_version": "author-rebuilt-photo-v2",
+  "source_revision": "Author-authorized generated indoor and outdoor cooking photographs; original downloaded source retained separately."
+}

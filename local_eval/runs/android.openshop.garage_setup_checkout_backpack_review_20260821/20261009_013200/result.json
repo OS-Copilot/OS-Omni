@@ -1,0 +1,731 @@
+{
+  "task_id": "android.openshop.garage_setup_checkout_backpack_review_20260821",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-09T01:35:11.759003+08:00",
+  "ended_at": "2026-10-09T01:48:26.901691+08:00",
+  "steps_taken": 96,
+  "latency_ms": 795142.688,
+  "episode_result": {
+    "status": "FAIL",
+    "terminal_reason": "fail_llm",
+    "execution_message": "Model declared task infeasible",
+    "execution_valid": true,
+    "message": "OpenShop final state is incomplete or does not match the attributable task outcome"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.openshop",
+      "source_initializer": "evaluators.cua_review.initializers.android.openshop:OpenShopSnapshotBaselineInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenShop final state is incomplete or does not match the attributable task outcome",
+    "metadata": {
+      "attempts": 19,
+      "app_package": "com.killt.openshop",
+      "local_state_key": "openshop.localState.v3",
+      "read_only": true,
+      "checks": [
+        {
+          "name": "logged_in_account",
+          "passed": true,
+          "expected": {
+            "logged_in": true,
+            "phone": "13800138000"
+          },
+          "observed": {
+            "logged_in": true,
+            "phone": "13800138000"
+          },
+          "matched_object_ids": [
+            "13800138000"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "cart_empty_after_checkout",
+          "passed": false,
+          "expected": 0,
+          "observed": 1,
+          "matched_object_ids": [],
+          "failure_reason": "cart_empty_after_checkout did not match the exact expectation"
+        },
+        {
+          "name": "exact_order_count",
+          "passed": false,
+          "expected": 6,
+          "observed": 5,
+          "matched_object_ids": [
+            "TB1781113752081",
+            "TBH-LUCAS-20260518-001",
+            "TBH-LUCAS-20260429-002",
+            "TBH-LUCAS-20260410-003",
+            "TBH-LUCAS-20260321-004"
+          ],
+          "failure_reason": "exact_order_count did not match the exact expectation"
+        },
+        {
+          "name": "baseline_order_fingerprint_preserved",
+          "passed": true,
+          "expected": [
+            "TB1781113752081",
+            "TBH-LUCAS-20260518-001",
+            "TBH-LUCAS-20260429-002",
+            "TBH-LUCAS-20260410-003",
+            "TBH-LUCAS-20260321-004"
+          ],
+          "observed": [
+            "TB1781113752081",
+            "TBH-LUCAS-20260518-001",
+            "TBH-LUCAS-20260429-002",
+            "TBH-LUCAS-20260410-003",
+            "TBH-LUCAS-20260321-004"
+          ],
+          "matched_object_ids": [
+            "TB1781113752081",
+            "TBH-LUCAS-20260518-001",
+            "TBH-LUCAS-20260429-002",
+            "TBH-LUCAS-20260410-003",
+            "TBH-LUCAS-20260321-004"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exactly_one_attributable_new_order",
+          "passed": false,
+          "expected": {
+            "count": 1,
+            "latest_is_new": true
+          },
+          "observed": {
+            "new_order_ids": [],
+            "latest_order_id": "TB1781113752081"
+          },
+          "matched_object_ids": [],
+          "failure_reason": "exactly_one_attributable_new_order did not match the exact expectation"
+        },
+        {
+          "name": "new_order_identity",
+          "passed": true,
+          "expected": {
+            "id_prefix": "TB",
+            "created_at_present": true
+          },
+          "observed": {
+            "id": "TB1781113752081",
+            "created_at": "2026-06-10T16:29:12.081Z"
+          },
+          "matched_object_ids": [
+            "TB1781113752081"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "new_order_address",
+          "passed": true,
+          "expected": "addr-office",
+          "observed": "addr-office",
+          "matched_object_ids": [
+            "TB1781113752081",
+            "addr-office"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "new_order_payment",
+          "passed": true,
+          "expected": "cod",
+          "observed": "cod",
+          "matched_object_ids": [
+            "TB1781113752081",
+            "cod"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "new_order_note_exact",
+          "passed": false,
+          "expected": "Garage setup",
+          "observed": "Reconstructed prior baseline order; original snapshot unavailable.",
+          "matched_object_ids": [
+            "TB1781113752081"
+          ],
+          "failure_reason": "new_order_note_exact did not match the exact expectation"
+        },
+        {
+          "name": "new_order_status",
+          "passed": false,
+          "expected": "Awaiting Shipment",
+          "observed": "Delivered",
+          "matched_object_ids": [
+            "TB1781113752081"
+          ],
+          "failure_reason": "new_order_status did not match the exact expectation"
+        },
+        {
+          "name": "new_order_items_exact",
+          "passed": false,
+          "expected": {
+            "p2174": {
+              "quantity": 1,
+              "selected_spec": "Starter Kit"
+            },
+            "p2176": {
+              "quantity": 1,
+              "selected_spec": "Pro Kit"
+            },
+            "p2173": {
+              "quantity": 1,
+              "selected_spec": "Car Kit"
+            },
+            "p2171": {
+              "quantity": 1,
+              "selected_spec": "Garage Kit"
+            },
+            "p2177": {
+              "quantity": 1,
+              "selected_spec": "Replacement Set"
+            },
+            "p2175": {
+              "quantity": 1,
+              "selected_spec": "Starter Kit"
+            }
+          },
+          "observed": {
+            "p1004": {
+              "quantity": 1,
+              "selected_spec": "15.6-inch"
+            },
+            "p2010": {
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          },
+          "matched_object_ids": [
+            "TB1781113752081",
+            "p1004",
+            "p2010"
+          ],
+          "failure_reason": "new_order_items_exact did not match the exact expectation"
+        },
+        {
+          "name": "historical_review_target",
+          "passed": true,
+          "expected": {
+            "order_id": "TBH-LUCAS-20260321-004",
+            "item_id": "history-p1004-15-6-inch",
+            "product_id": "p1004"
+          },
+          "observed": {
+            "item_found": true
+          },
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch",
+            "p1004"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "historical_review_rating_exact",
+          "passed": false,
+          "expected": 5,
+          "observed": null,
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ],
+          "failure_reason": "historical_review_rating_exact did not match the exact expectation"
+        },
+        {
+          "name": "historical_review_text_exact",
+          "passed": false,
+          "expected": "Bright image",
+          "observed": "",
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ],
+          "failure_reason": "historical_review_text_exact did not match the exact expectation"
+        },
+        {
+          "name": "historical_review_timestamp_present",
+          "passed": false,
+          "expected": {
+            "reviewed_at_present": true
+          },
+          "observed": {
+            "reviewed_at": ""
+          },
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ],
+          "failure_reason": "historical_review_timestamp_present did not match the exact expectation"
+        }
+      ],
+      "matched_object_ids": {
+        "account_phone": "13800138000",
+        "order_ids": [
+          "TB1781113752081",
+          "TBH-LUCAS-20260518-001",
+          "TBH-LUCAS-20260429-002",
+          "TBH-LUCAS-20260410-003",
+          "TBH-LUCAS-20260321-004"
+        ],
+        "baseline_order_ids": [
+          "TB1781113752081",
+          "TBH-LUCAS-20260518-001",
+          "TBH-LUCAS-20260429-002",
+          "TBH-LUCAS-20260410-003",
+          "TBH-LUCAS-20260321-004"
+        ],
+        "new_order_ids": [],
+        "latest_order_id": "TB1781113752081",
+        "historical_order_id": "TBH-LUCAS-20260321-004",
+        "historical_item_id": "history-p1004-15-6-inch",
+        "historical_product_id": "p1004"
+      },
+      "failures": [
+        {
+          "check": "cart_empty_after_checkout",
+          "reason": "cart_empty_after_checkout did not match the exact expectation",
+          "expected": 0,
+          "observed": 1,
+          "matched_object_ids": []
+        },
+        {
+          "check": "exact_order_count",
+          "reason": "exact_order_count did not match the exact expectation",
+          "expected": 6,
+          "observed": 5,
+          "matched_object_ids": [
+            "TB1781113752081",
+            "TBH-LUCAS-20260518-001",
+            "TBH-LUCAS-20260429-002",
+            "TBH-LUCAS-20260410-003",
+            "TBH-LUCAS-20260321-004"
+          ]
+        },
+        {
+          "check": "exactly_one_attributable_new_order",
+          "reason": "exactly_one_attributable_new_order did not match the exact expectation",
+          "expected": {
+            "count": 1,
+            "latest_is_new": true
+          },
+          "observed": {
+            "new_order_ids": [],
+            "latest_order_id": "TB1781113752081"
+          },
+          "matched_object_ids": []
+        },
+        {
+          "check": "new_order_note_exact",
+          "reason": "new_order_note_exact did not match the exact expectation",
+          "expected": "Garage setup",
+          "observed": "Reconstructed prior baseline order; original snapshot unavailable.",
+          "matched_object_ids": [
+            "TB1781113752081"
+          ]
+        },
+        {
+          "check": "new_order_status",
+          "reason": "new_order_status did not match the exact expectation",
+          "expected": "Awaiting Shipment",
+          "observed": "Delivered",
+          "matched_object_ids": [
+            "TB1781113752081"
+          ]
+        },
+        {
+          "check": "new_order_items_exact",
+          "reason": "new_order_items_exact did not match the exact expectation",
+          "expected": {
+            "p2174": {
+              "quantity": 1,
+              "selected_spec": "Starter Kit"
+            },
+            "p2176": {
+              "quantity": 1,
+              "selected_spec": "Pro Kit"
+            },
+            "p2173": {
+              "quantity": 1,
+              "selected_spec": "Car Kit"
+            },
+            "p2171": {
+              "quantity": 1,
+              "selected_spec": "Garage Kit"
+            },
+            "p2177": {
+              "quantity": 1,
+              "selected_spec": "Replacement Set"
+            },
+            "p2175": {
+              "quantity": 1,
+              "selected_spec": "Starter Kit"
+            }
+          },
+          "observed": {
+            "p1004": {
+              "quantity": 1,
+              "selected_spec": "15.6-inch"
+            },
+            "p2010": {
+              "quantity": 1,
+              "selected_spec": "Black"
+            }
+          },
+          "matched_object_ids": [
+            "TB1781113752081",
+            "p1004",
+            "p2010"
+          ]
+        },
+        {
+          "check": "historical_review_rating_exact",
+          "reason": "historical_review_rating_exact did not match the exact expectation",
+          "expected": 5,
+          "observed": null,
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ]
+        },
+        {
+          "check": "historical_review_text_exact",
+          "reason": "historical_review_text_exact did not match the exact expectation",
+          "expected": "Bright image",
+          "observed": "",
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ]
+        },
+        {
+          "check": "historical_review_timestamp_present",
+          "reason": "historical_review_timestamp_present did not match the exact expectation",
+          "expected": {
+            "reviewed_at_present": true
+          },
+          "observed": {
+            "reviewed_at": ""
+          },
+          "matched_object_ids": [
+            "TBH-LUCAS-20260321-004",
+            "history-p1004-15-6-inch"
+          ]
+        }
+      ]
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openshop:id/action_bar_root",
+        "resource-id": "com.killt.openshop:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.openshop:id/webview",
+        "resource-id": "com.killt.openshop:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.openshop",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

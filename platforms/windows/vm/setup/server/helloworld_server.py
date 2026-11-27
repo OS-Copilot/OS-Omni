@@ -77,7 +77,7 @@ if pyautogui is not None:  # pragma: no branch
     pyautogui.PAUSE = 0
     pyautogui.FAILSAFE = False
 
-RUNTIME_TOKEN = "windowsbench-runtime-token"
+RUNTIME_TOKEN = os.getenv("HELLOWORLD_WINDOWS_RUNTIME_TOKEN", "")
 MAX_UI_NODES = 220
 MAX_DEPTH = 30
 
@@ -654,6 +654,24 @@ def _resolve_launch_target(app_name: str) -> str:
         raise ValueError("app_name is required")
 
     lowered = raw.lower()
+    # Rebuilt images install the benchmark apps outside PATH. Resolve only the
+    # known benchmark app family, and fail instead of reporting a missing launch
+    # as successful initialization.
+    benchmark_apps = {name.lower(): name for name in (
+        "OpenBank", "OpenDriver", "OpenFood", "OpenNavigation", "OpenNote",
+        "OpenPhotoEdit", "OpenShop", "OpenTwitter", "OpenTrip",
+    )}
+    if lowered in benchmark_apps:
+        name = benchmark_apps[lowered]
+        resolved = _first_existing_path([
+            rf"C:\OS-Omni\Apps\{name}\{name}.exe",
+            rf"%USERPROFILE%\Desktop\{name}.lnk",
+            rf"%USERPROFILE%\OneDrive\Desktop\{name}.lnk",
+            rf"%APPDATA%\Microsoft\Windows\Start Menu\Programs\{name}.lnk",
+        ])
+        if resolved:
+            return resolved
+        raise FileNotFoundError(f"Benchmark application is not installed: {name}")
     if (
         ":\\" in raw
         or raw.startswith("\\\\")
@@ -1623,9 +1641,22 @@ def run_python() -> Response:
     tmp_path = Path(os.environ.get("TEMP", "C:\\Temp")) / f"helloworld_windows_runtime_{int(time.time() * 1000)}.py"
     try:
         tmp_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path.write_text(code, encoding="utf-8")
+        # The reconstructed VMware guest drops rapid keyboard events in modern
+        # Notepad. Preserve requested text, but pace typing for reliable delivery.
+        # Keep the model's source unchanged in its trajectory and report the policy.
+        keyboard_preamble = """import pyautogui as _osomni_gui
+_osomni_original_write = _osomni_gui.write
+def _osomni_reliable_write(message, interval=0.0, logScreenshot=None, _pause=True):
+    return _osomni_original_write(message, interval=max(0.08, float(interval or 0.0)), logScreenshot=logScreenshot, _pause=_pause)
+_osomni_gui.write = _osomni_reliable_write
+_osomni_gui.typewrite = _osomni_reliable_write
+"""
+        tmp_path.write_text(
+            keyboard_preamble + "\nexec(compile(" + repr(code) + ", '<model_action>', 'exec'))\n",
+            encoding="utf-8",
+        )
         result = subprocess.run(
-            ["python", str(tmp_path)],
+            [sys.executable, str(tmp_path)],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -1638,6 +1669,7 @@ def run_python() -> Response:
                 "output": result.stdout,
                 "error": "",
                 "returncode": result.returncode,
+                "input_delivery_policy": {"typing_interval_floor_seconds": 0.08, "text_unchanged": True},
             }
         )
     except subprocess.TimeoutExpired:
@@ -1664,7 +1696,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="HelloWorld Windows guest runtime server")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=5000)
-    parser.add_argument("--token", default=os.getenv("HELLOWORLD_WINDOWS_RUNTIME_TOKEN", "windowsbench-runtime-token"))
+    parser.add_argument("--token", default=os.getenv("HELLOWORLD_WINDOWS_RUNTIME_TOKEN", ""))
     args = parser.parse_args(argv)
 
     global RUNTIME_TOKEN

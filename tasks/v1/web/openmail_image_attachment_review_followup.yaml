@@ -18,11 +18,11 @@ instruction: 'Configure the OpenMail account profile with the display name Anony
   to the end of the existing body text before being sent.
 
 
-  The sent Image attachment review email must be marked as unread, archived, and then moved back to the
-  Inbox, where the Follow up label is applied to it. The task is complete when the detail page for the
-  Image attachment review email is visible, displaying the Follow up label and the full message body containing
-  both required sentences. OpenMail is a web app: open it from the OpenMail icon in the webpage folder
-  on the desktop, which opens it in Chrome.'
+  The sent Image attachment review email must then be moved to the Trash and restored from the Trash to
+  the Inbox, where the Follow up label is applied to it and it is marked as unread. The task is complete
+  when the detail page for the Image attachment review email is visible, showing it as unread with the
+  Follow up label and the full message body containing both required sentences. OpenMail is a web app:
+  open it from the OpenMail icon in the webpage folder on the desktop, which opens it in Chrome.'
 init:
   initializer_id: initializers.linux.openmail:OpenMailDesktopInitializer
   params:
@@ -61,6 +61,7 @@ evaluation:
       - Please review the saved image evidence before the expense note is closed.
       - The signature settings were checked first.
       required_labels:
+      - Images
       - Follow up
       required_folder_terms:
       - Inbox
@@ -100,21 +101,26 @@ metadata:
   - The webpage folder must already contain an OpenMail launcher that opens the app in Chrome.
   - The OpenMail page must start from the snapshot-provided account and inbox state with Anonym Tester
     and the message Desk setup image for expense notes already available.
-  - Chrome must expose the OpenMail page through the configured DevTools endpoint http://127.0.0.1:1337
-    during evaluation.
+  - OpenMail must run in Chrome's Default profile, whose Local Storage holds the mailbox document
+    openmail.localState.v1 that the evaluator reads.
   initializer_note: Initializer assumes VM snapshot 快照 2 is already loaded or will be restored by the
     Linux runner. It verifies the Desktop webpage folder and OpenMail launcher only; it does not restore
     snapshots, open Chrome, change settings, label mail, send replies, create drafts, send mail, mark
     unread, archive, or move messages.
-  evaluator_note: Evaluator checks final durable OpenMail browser state by reading the live Chrome page's
-    localStorage, sessionStorage, and IndexedDB through Chrome DevTools Protocol, plus current document
-    text for the final detail page. Search text, filter dropdown state, Drafts/Sent/Archive navigation,
-    and temporary compose state are flow-only actions unless reflected in final mail records.
+  evaluator_note: Evaluator checks final durable OpenMail state by reading the mailbox document
+    openmail.localState.v1 from Chrome's Local Storage LevelDB files on disk (Default profile, decoded
+    with the shared Local Storage reader); it does not connect to Chrome DevTools and does not read
+    sessionStorage, IndexedDB, or the live page. Settings, message subjects, labels, star and unread
+    flags, priority, folder, and body texts are compared with the declared values, and the final detail
+    page texts must appear in that stored document. Search text, filter dropdown state,
+    Drafts/Sent/Archive navigation, and temporary compose state are flow-only actions unless reflected in
+    final mail records.
   verifier_rules:
     evidence_source_priority:
-    - Chrome DevTools read-only Runtime.evaluate of OpenMail localStorage, sessionStorage, and IndexedDB.
-    - Current OpenMail document text is used only to confirm the final visible Follow up message detail
-      page.
+    - The OpenMail document openmail.localState.v1 read from Chrome's Local Storage files (read-only, no
+      DevTools connection).
+    - The final detail page texts (Image attachment review, Follow up, the message body) are matched
+      against that stored document, not against the live page.
     - Screenshots and trajectory are auxiliary and are not required for eval-only PASS.
     checks:
     - step_goal: Steps 3-13 update profile display name, email, and signature settings.
@@ -126,11 +132,12 @@ metadata:
         evidence, plus the reply text The desk setup image is filed under Images.
     - step_goal: Steps 31-46 compose, save, reopen, complete, and send Image attachment review.
       evidence: Browser storage contains Image attachment review with recipient receipts@railne.example.test,
-        Low priority, and both required body sentences.
-    - step_goal: Steps 47-67 mark the sent message unread, archive it, move it back to Inbox, add Follow
-        up, and finish on the Follow up detail page.
-      evidence: Browser storage contains Image attachment review with Inbox, Follow up, and unread evidence;
-        the current page text contains Image attachment review, Follow up, and the message body.
+        Low priority, the Images label, and both required body sentences.
+    - step_goal: Move the sent message to Trash, restore it to Inbox, add Follow up, mark it unread, and
+        finish on its detail page. OpenMail cannot archive sent mail or move archived mail to Inbox, so the
+        source steps 47-67 (mark unread, Archive, Move to Inbox) were replaced by this path.
+      evidence: Browser storage contains Image attachment review with Inbox, Follow up, and unread evidence,
+        and the stored document contains Image attachment review, Follow up, and the message body.
     non_final_evidence:
     - Opening the Desktop folder, launching OpenMail, search text image, Has attachments filter, searches
       for Image attachment review, temporary Drafts/Sent/Archive navigation, and dropdown/menu interactions
@@ -152,7 +159,7 @@ metadata:
       unread: true
   description: Open OpenMail from the snapshot-provided desktop webpage launcher, verify account settings
     and signature, label and reply to an attachment message, compose and send a low-priority image review
-    email, move it through Sent/Archive back to Inbox, mark it unread, add Follow up, then finish on that
+    email, move it from Sent through Trash back to Inbox, add Follow up, mark it unread, then finish on that
     Follow up message detail.
   cua_tasks_review:
     source_repository: Hengyuhan/CUA-Tasks-Review

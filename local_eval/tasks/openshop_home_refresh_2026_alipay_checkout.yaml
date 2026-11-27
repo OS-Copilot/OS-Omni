@@ -1,0 +1,396 @@
+task_id: android.openshop.home_refresh_2026_alipay_checkout
+platform: android
+instruction: 'OpenShop 已处于 Lucas Lin（13800138000）登录状态。全程只使用 Android GUI，不要退出登录；完成下列操作，并在下单成功后的订单页面停留：
+
+  1. 打开 OpenShop 应用。
+
+  2. 点击首页 Categories 中的 Home。
+
+  3. 向上滑动到 Home 商品列表。
+
+  4. 点击 Garden White Cotton Bedding Set 1.8m 商品卡片。
+
+  5. 向上滑动到 Options 区域。
+
+  6. 点击 King 规格。
+
+  7. 点击页面底部的 Add to Cart 按钮。
+
+  8. 向下滑动回到商品详情顶部。
+
+  9. 点击商品页顶部的 Back to Home 按钮。
+
+  10. 点击首页顶部的搜索栏。
+
+  11. 输入“Storage Bin Set”。
+
+  12. 点击搜索栏右侧的 Search 按钮。
+
+  13. 向上滑动到搜索结果商品区。
+
+  14. 点击 CasaPure Bamboo Storage Bin Set 商品卡片。
+
+  15. 向上滑动到 Options 区域。
+
+  16. 点击 Natural 规格。
+
+  17. 点击页面底部的 Add to Cart 按钮。
+
+  18. 向下滑动回到商品详情顶部。
+
+  19. 点击商品页顶部的 Back to Home 按钮。
+
+  20. 点击首页顶部的搜索栏。
+
+  21. 输入“Bath Towel Bundle”。
+
+  22. 点击搜索栏右侧的 Search 按钮。
+
+  23. 向上滑动到搜索结果商品区。
+
+  24. 点击 BrightNest Soft Cotton Bath Towel Bundle 商品卡片。
+
+  25. 向上滑动到 Options 区域。
+
+  26. 点击 Large 规格。
+
+  27. 点击页面底部的 Add to Cart 按钮。
+
+  28. 向下滑动回到商品详情顶部。
+
+  29. 点击商品页顶部的 Back to Home 按钮。
+
+  30. 点击首页顶部的搜索栏。
+
+  31. 输入“Aroma Diffuser”。
+
+  32. 点击搜索栏右侧的 Search 按钮。
+
+  33. 向上滑动到搜索结果商品区。
+
+  34. 点击 SoftRoom Space-Saving Aroma Diffuser 商品卡片。
+
+  35. 向上滑动到 Options 区域。
+
+  36. 点击 Medium 规格。
+
+  37. 点击页面底部的 Add to Cart 按钮。
+
+  38. 向下滑动回到商品详情顶部。
+
+  39. 点击商品页顶部的 Back to Home 按钮。
+
+  40. 点击首页顶部的搜索栏。
+
+  41. 输入“Camping Table”。
+
+  42. 点击搜索栏右侧的 Search 按钮。
+
+  43. 向上滑动到搜索结果商品区。
+
+  44. 点击 Mukawa Folding Camping Table and Chair Set 商品卡片。
+
+  45. 向上滑动到 Options 区域。
+
+  46. 点击 Small 规格。
+
+  47. 点击页面底部的 Add to Cart 按钮。
+
+  48. 向下滑动回到商品详情顶部。
+
+  49. 点击商品页顶部的 Back to Home 按钮。
+
+  50. 点击首页顶部的搜索栏。
+
+  51. 输入“Magnetic Phone”。
+
+  52. 点击搜索栏右侧的 Search 按钮。
+
+  53. 向上滑动到搜索结果商品区。
+
+  54. 点击 Lumen Magnetic Phone Stand 商品卡片。
+
+  55. 向上滑动到 Options 区域。
+
+  56. 点击 White 规格。
+
+  57. 点击页面底部的 Add to Cart 按钮。
+
+  58. 点击底部购物栏中的 Checkout 按钮。
+
+  59. 向上滑动购物车找到 Garden White Cotton Bedding Set 1.8m。
+
+  60. 点击该商品数量栏右侧的加号一次。
+
+  61. 继续向上滑动购物车找到 CasaPure Bamboo Storage Bin Set。
+
+  62. 点击该商品数量栏右侧的加号一次。
+
+  63. 继续向上滑动购物车找到 BrightNest Soft Cotton Bath Towel Bundle。
+
+  64. 点击该商品数量栏右侧的加号一次。
+
+  65. 向上滑动到 Order Summary 区域。
+
+  66. 点击 Proceed to Checkout 按钮。
+
+  67. 点击 Select Shipping Address 中的 Home。
+
+  68. 点击 Payment Method 中的 Alipay。
+
+  69. 向上滑动到 Order Note 区域。
+
+  70. 点击 Order Note 文本框。
+
+  71. 输入“Home refresh 2026”。
+
+  72. 向上滑动到 Checkout Summary 区域。
+
+  73. 点击 Place Order 按钮，并停留在下单成功后的订单页面。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.openshop
+    app_activity: com.killt.openshop.MainActivity
+    local_state_key: openshop.localState.v3
+    wait_ms: 1800
+    expected_phone: '13800138000'
+    forbidden_order_note: Home refresh 2026
+    snapshot_name: snap_2026-06-26_16-31-13
+    source_initializer: evaluators.cua_review.initializers.android.openshop:OpenShopV3BaselineInitializer
+evaluation:
+  evaluator_id: evaluators.android.openshop_home_refresh_2026_alipay_checkout:OpenShopV3ExactOrderEvaluator
+  params:
+    app_package: com.killt.openshop
+    local_state_key: openshop.localState.v3
+    session_phone: '13800138000'
+    order_note: Home refresh 2026
+    created_after: '2026-06-26T08:31:13Z'
+    address_id: addr-home
+    payment_method_id: alipay
+    status: Awaiting Shipment
+    total: 1428.94
+    items:
+    - product_id: p1003
+      title: Garden White Cotton Bedding Set 1.8m
+      quantity: 2
+      selected_spec: King
+    - product_id: p2024
+      title: CasaPure Bamboo Storage Bin Set
+      quantity: 2
+      selected_spec: Natural
+    - product_id: p2025
+      title: BrightNest Soft Cotton Bath Towel Bundle
+      quantity: 2
+      selected_spec: Large
+    - product_id: p2026
+      title: SoftRoom Space-Saving Aroma Diffuser
+      quantity: 1
+      selected_spec: Medium
+    - product_id: p1002
+      title: Mukawa Folding Camping Table and Chair Set
+      quantity: 1
+      selected_spec: Small
+    - product_id: p1006
+      title: Lumen Magnetic Phone Stand
+      quantity: 1
+      selected_spec: White
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  version: 1
+  app: OpenShop
+  app_bundle_id: com.killt.openshop
+  snapshot_name: snap_2026-06-26_16-31-13
+  android_device_profile: ssk
+  logged_in_account: Lucas Lin (13800138000)
+  dependencies:
+  - OpenShop is installed in the supplied snapshot.
+  - Lucas Lin is already signed in; do not sign out.
+  verifier_rules:
+  - Match exactly one order by the full nonce note Home refresh 2026; substring matches
+    are forbidden.
+  - Require order creation on or after 2026-06-26T08:31:13Z and report the matched
+    order ID.
+  - Require the exact six product IDs, titles, quantities, and selected specs with
+    no extra item.
+  - Require Home address, Alipay, Awaiting Shipment status, total 1428.94, and an
+    empty final cart.
+  - Evaluator reads openshop.localState.v3 through WebView DevTools only and fails
+    closed without reset, initializer, agent, or GUI actions during eval-only.
+  weak_or_unverifiable_steps:
+  - Category selection, searches, swipes, Back to Home navigation, and the path used
+    to reach products are process-only and are not proven by final order state.
+  tags:
+  - android
+  - openshop
+  - checkout
+  - home
+  - exact_order
+  - manual_eval
+  - kimi_k3
+  difficulty: hard
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: openshop/Android/android.openshop.home_refresh_2026_alipay_checkout
+    extraction_method: task_snapshot
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: d4b962bcf6f669a1d0720ca05005419a3dd1b36a2b6edb60f3cca3541a2227a3
+    source_instruction: 'OpenShop 已处于 Lucas Lin（13800138000）登录状态。全程只使用 Android GUI，不要退出登录；完成下列操作，并在下单成功后的订单页面停留：
+
+      1. 打开 OpenShop 应用。
+
+      2. 点击首页 Categories 中的 Home。
+
+      3. 向上滑动到 Home 商品列表。
+
+      4. 点击 Garden White Cotton Bedding Set 1.8m 商品卡片。
+
+      5. 向上滑动到 Options 区域。
+
+      6. 点击 King 规格。
+
+      7. 点击页面底部的 Add to Cart 按钮。
+
+      8. 向下滑动回到商品详情顶部。
+
+      9. 点击商品页顶部的 Back to Home 按钮。
+
+      10. 点击首页顶部的搜索栏。
+
+      11. 输入“Storage Bin Set”。
+
+      12. 点击搜索栏右侧的 Search 按钮。
+
+      13. 向上滑动到搜索结果商品区。
+
+      14. 点击 CasaPure Bamboo Storage Bin Set 商品卡片。
+
+      15. 向上滑动到 Options 区域。
+
+      16. 点击 Natural 规格。
+
+      17. 点击页面底部的 Add to Cart 按钮。
+
+      18. 向下滑动回到商品详情顶部。
+
+      19. 点击商品页顶部的 Back to Home 按钮。
+
+      20. 点击首页顶部的搜索栏。
+
+      21. 输入“Bath Towel Bundle”。
+
+      22. 点击搜索栏右侧的 Search 按钮。
+
+      23. 向上滑动到搜索结果商品区。
+
+      24. 点击 BrightNest Soft Cotton Bath Towel Bundle 商品卡片。
+
+      25. 向上滑动到 Options 区域。
+
+      26. 点击 Large 规格。
+
+      27. 点击页面底部的 Add to Cart 按钮。
+
+      28. 向下滑动回到商品详情顶部。
+
+      29. 点击商品页顶部的 Back to Home 按钮。
+
+      30. 点击首页顶部的搜索栏。
+
+      31. 输入“Aroma Diffuser”。
+
+      32. 点击搜索栏右侧的 Search 按钮。
+
+      33. 向上滑动到搜索结果商品区。
+
+      34. 点击 SoftRoom Space-Saving Aroma Diffuser 商品卡片。
+
+      35. 向上滑动到 Options 区域。
+
+      36. 点击 Medium 规格。
+
+      37. 点击页面底部的 Add to Cart 按钮。
+
+      38. 向下滑动回到商品详情顶部。
+
+      39. 点击商品页顶部的 Back to Home 按钮。
+
+      40. 点击首页顶部的搜索栏。
+
+      41. 输入“Camping Table”。
+
+      42. 点击搜索栏右侧的 Search 按钮。
+
+      43. 向上滑动到搜索结果商品区。
+
+      44. 点击 Mukawa Folding Camping Table and Chair Set 商品卡片。
+
+      45. 向上滑动到 Options 区域。
+
+      46. 点击 Small 规格。
+
+      47. 点击页面底部的 Add to Cart 按钮。
+
+      48. 向下滑动回到商品详情顶部。
+
+      49. 点击商品页顶部的 Back to Home 按钮。
+
+      50. 点击首页顶部的搜索栏。
+
+      51. 输入“Magnetic Phone”。
+
+      52. 点击搜索栏右侧的 Search 按钮。
+
+      53. 向上滑动到搜索结果商品区。
+
+      54. 点击 Lumen Magnetic Phone Stand 商品卡片。
+
+      55. 向上滑动到 Options 区域。
+
+      56. 点击 White 规格。
+
+      57. 点击页面底部的 Add to Cart 按钮。
+
+      58. 点击底部购物栏中的 Checkout 按钮。
+
+      59. 向上滑动购物车找到 Garden White Cotton Bedding Set 1.8m。
+
+      60. 点击该商品数量栏右侧的加号一次。
+
+      61. 继续向上滑动购物车找到 CasaPure Bamboo Storage Bin Set。
+
+      62. 点击该商品数量栏右侧的加号一次。
+
+      63. 继续向上滑动购物车找到 BrightNest Soft Cotton Bath Towel Bundle。
+
+      64. 点击该商品数量栏右侧的加号一次。
+
+      65. 向上滑动到 Order Summary 区域。
+
+      66. 点击 Proceed to Checkout 按钮。
+
+      67. 点击 Select Shipping Address 中的 Home。
+
+      68. 点击 Payment Method 中的 Alipay。
+
+      69. 向上滑动到 Order Note 区域。
+
+      70. 点击 Order Note 文本框。
+
+      71. 输入“Home refresh 2026”。
+
+      72. 向上滑动到 Checkout Summary 区域。
+
+      73. 点击 Place Order 按钮，并停留在下单成功后的订单页面。'
+    release_path: benchmark/tasks/openshop/Android/android.openshop.home_refresh_2026_alipay_checkout
+    original_evaluator_id: evaluators.android.openshop:OpenShopV3ExactOrderEvaluator
+    evaluator_source: benchmark
+    original_initializer_id: initializers.android.openshop:OpenShopV3BaselineInitializer
+  local_repair:
+    source_task: tasks/v1/android/openshop_home_refresh_2026_alipay_checkout.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true

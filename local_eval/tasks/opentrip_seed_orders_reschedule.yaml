@@ -1,0 +1,395 @@
+task_id: android.opentrip.seed_orders_reschedule
+platform: android
+instruction: '1. 点击首页顶部 Profile。
+
+  2. 等待 Profile 页面打开。
+
+  3. 在 Profile 页面向上滑动到统计区下方。
+
+  4. 继续向上滑动到订单列表顶部。
+
+  5. 在订单列表中向上滑动到 OT-SEED-FLIGHT-1 航班订单。
+
+  6. 点击 OT-SEED-FLIGHT-1 航班订单卡片。
+
+  7. 等待订单详情展开。
+
+  8. 在航班订单详情中滑动到 Reschedule 区域。
+
+  9. 点击 New date 日期框。
+
+  10. 等待日期选择器打开。
+
+  11. 在日期选择器中移动到 2026 年 6 月。
+
+  12. 点击 2026-06-15。
+
+  13. 等待日期选择器关闭。
+
+  14. 点击 Cabin 下拉框。
+
+  15. 等待 Cabin 选项弹出。
+
+  16. 选择 Business。
+
+  17. 等待 Cabin 字段更新。
+
+  18. 点击 Reschedule。
+
+  19. 等待航班订单更新开始。
+
+  20. 等待航班订单更新完成。
+
+  21. 在更新后的航班详情页滑动浏览完整详情并停留在价格区域。
+
+  22. 向下滑动回航班详情顶部。
+
+  23. 向下滑动回订单列表。
+
+  24. 在订单列表中再次点击 OT-SEED-FLIGHT-1。
+
+  25. 等待航班订单详情展开。
+
+  26. 滑动浏览航班订单完整详情并停留在 Last rescheduled from 区域。
+
+  27. 向下滑动回订单列表。
+
+  28. 在订单列表中向上滑动到 OT-SEED-HOTEL-1 酒店订单。
+
+  29. 点击 OT-SEED-HOTEL-1 酒店订单卡片。
+
+  30. 等待酒店订单详情展开。
+
+  31. 在酒店订单详情中滑动到 Reschedule 区域。
+
+  32. 点击 Check-in 日期框。
+
+  33. 等待 Check-in 日期选择器打开。
+
+  34. 在日期选择器中移动到 2026 年 6 月。
+
+  35. 选择 2026-06-22。
+
+  36. 等待 Check-in 日期选择器关闭。
+
+  37. 点击 Check-out 日期框。
+
+  38. 等待 Check-out 日期选择器打开。
+
+  39. 在日期选择器中移动到 2026 年 6 月。
+
+  40. 选择 2026-06-25。
+
+  41. 等待 Check-out 日期选择器关闭。
+
+  42. 点击 Guests 输入框。
+
+  43. 全选现有人数。
+
+  44. 删除现有人数。
+
+  45. 输入 2。
+
+  46. 收起键盘。
+
+  47. 等待 Guests 字段更新。
+
+  48. 点击 Reschedule。
+
+  49. 等待酒店订单更新开始。
+
+  50. 等待酒店订单更新完成。
+
+  51. 在更新后的酒店详情页滑动浏览完整详情并停留在价格区域。
+
+  52. 向下滑动回酒店详情顶部。
+
+  53. 向下滑动回订单列表。
+
+  54. 再次点击 OT-SEED-HOTEL-1。
+
+  55. 等待酒店订单详情展开。
+
+  56. 滑动浏览酒店订单完整详情并停留在 Last rescheduled from 区域。
+
+  57. 向下滑动回订单列表。
+
+  58. 再次点击 OT-SEED-FLIGHT-1。
+
+  59. 等待航班订单详情展开。
+
+  60. 滑动浏览航班订单完整详情并停留在更新后的日期和 Cabin 区域。
+
+  61. 向下滑动回订单列表。
+
+  62. 第三次点击 OT-SEED-HOTEL-1。
+
+  63. 等待酒店订单详情展开。
+
+  64. 滑动浏览酒店订单完整详情并停留在 Total 区域。
+
+  65. 将 OT-SEED-HOTEL-1 详情保持展开。
+
+  66. 将最终页面停留在 OT-SEED-HOTEL-1 的更新后订单详情。
+
+  67. 保持 OpenTrip 在前台。
+
+  68. 保持 Lucas Lin 登录状态。
+
+  69. 不要 Sign Out / 不要退出登录。
+
+  70. 完成后停止操作。
+
+
+  最终可验证状态：OT-SEED-FLIGHT-1 必须仍为 Confirmed，路线 SHA 到 SYX，日期改为 2026-06-15，Cabin 改为 business，charges
+  为 baseFare 1643、serviceFee 50、total 1693，并保留原始 2026-06-18 / economy 的 reschedule
+  history。OT-SEED-HOTEL-1 必须仍为 Confirmed，酒店 Sanya Seabreeze Resort，Stay 改为 2026-06-22
+  到 2026-06-25，Guests 为 2，charges 为 baseFare 510、serviceFee 38、nights 3、total 548，并保留原始
+  2026-06-18 到 2026-06-21、Guests 2 的 reschedule history。'
+init:
+  initializer_id: local_eval.baselines:ReconstructedBaselineInitializer
+  params:
+    app_package: com.killt.opentrip
+    app_activity: com.killt.opentrip.MainActivity
+    clear_app_data: false
+    wait_ms: 1800
+    snapshot_name: snap_2026-08-19_14-32-00
+    seeded_account: Lucas Lin
+    source_initializer: initializers.android.opentrip:OpenTripSnapshotOpenInitializer
+evaluation:
+  evaluator_id: evaluators.cua_review.evaluators.android.opentrip:OpenTripSeedOrderRescheduleEvaluator
+  params:
+    app_package: com.killt.opentrip
+    flight_order:
+      id: OT-SEED-FLIGHT-1
+      type: flight
+      status: Confirmed
+      from: SHA
+      to: SYX
+      date: '2026-06-15'
+      cabin: business
+      charges:
+        baseFare: 1643
+        serviceFee: 50
+        nights: 0
+        total: 1693
+      reschedule_history:
+        date: '2026-06-18'
+        cabin: economy
+    hotel_order:
+      id: OT-SEED-HOTEL-1
+      type: hotel
+      status: Confirmed
+      hotel_name: Sanya Seabreeze Resort
+      check_in: '2026-06-22'
+      check_out: '2026-06-25'
+      guests: 2
+      charges:
+        baseFare: 510
+        serviceFee: 38
+        nights: 3
+        total: 548
+      reschedule_history:
+        checkIn: '2026-06-18'
+        checkOut: '2026-06-21'
+        guests: 2
+    timeout_seconds: 12
+    poll_interval_seconds: 0.5
+limits:
+  max_steps: 180
+  step_timeout_seconds: 240
+metadata:
+  tags:
+  - android
+  - opentrip
+  - travel
+  - seeded-orders
+  - reschedule
+  - flight
+  - hotel
+  - webview
+  - hard
+  app: OpenTrip
+  app_bundle_id: com.killt.opentrip
+  difficulty: hard
+  vm_snapshot_name: snap_2026-08-19_14-32-00
+  gui_model: kimi3
+  max_parse_errors: 5
+  snapshot_dependency: The VM must already be restored to snapshot snap_2026-08-19_14-32-00
+    before the run. That snapshot contains OpenTrip installed, already signed in as
+    Lucas Lin, and seeded confirmed orders OT-SEED-FLIGHT-1 and OT-SEED-HOTEL-1. The
+    initializer does not restore snapshots and does not clear app data.
+  initializer_boundary: The initializer only opens OpenTrip. It does not reschedule
+    orders, alter bookings, change prices, or create reschedule history.
+  evaluation_standard: The evaluator reads final OpenTrip WebView localStorage only.
+    It checks OT-SEED-FLIGHT-1 remains Confirmed, keeps route SHA to SYX, changes
+    date to 2026-06-15 and cabin to business, records a reschedule history entry for
+    the original 2026-06-18 economy configuration, and recalculates charges to baseFare
+    1643, serviceFee 50, total 1693. It also checks OT-SEED-HOTEL-1 remains Confirmed
+    for Sanya Seabreeze Resort, changes stay to 2026-06-22 through 2026-06-25 with
+    2 guests, records the original 2026-06-18 through 2026-06-21 history, and recalculates
+    charges to baseFare 510, serviceFee 38, nights 3, total 548. Final visible page
+    position is auxiliary human evidence.
+  snapshot_name: snap_2026-08-19_14-32-00
+  cua_tasks_review:
+    source_repository: Hengyuhan/CUA-Tasks-Review
+    artifact_path: opentrip/Android/android.opentrip.seed_orders_reschedule
+    extraction_method: reconstructed_flat_args
+    instruction_format: english_natural_language
+    instruction_summary_source: generated_english_natural_language
+    source_instruction_sha256: b0c6f018ffe376399e63f1975ca9429867233f72050cbfcf66b6cb6d0dc3159d
+    source_instruction: '1. 点击首页顶部 Profile。
+
+      2. 等待 Profile 页面打开。
+
+      3. 在 Profile 页面向上滑动到统计区下方。
+
+      4. 继续向上滑动到订单列表顶部。
+
+      5. 在订单列表中向上滑动到 OT-SEED-FLIGHT-1 航班订单。
+
+      6. 点击 OT-SEED-FLIGHT-1 航班订单卡片。
+
+      7. 等待订单详情展开。
+
+      8. 在航班订单详情中滑动到 Reschedule 区域。
+
+      9. 点击 New date 日期框。
+
+      10. 等待日期选择器打开。
+
+      11. 在日期选择器中移动到 2026 年 6 月。
+
+      12. 点击 2026-06-15。
+
+      13. 等待日期选择器关闭。
+
+      14. 点击 Cabin 下拉框。
+
+      15. 等待 Cabin 选项弹出。
+
+      16. 选择 Business。
+
+      17. 等待 Cabin 字段更新。
+
+      18. 点击 Reschedule。
+
+      19. 等待航班订单更新开始。
+
+      20. 等待航班订单更新完成。
+
+      21. 在更新后的航班详情页滑动浏览完整详情并停留在价格区域。
+
+      22. 向下滑动回航班详情顶部。
+
+      23. 向下滑动回订单列表。
+
+      24. 在订单列表中再次点击 OT-SEED-FLIGHT-1。
+
+      25. 等待航班订单详情展开。
+
+      26. 滑动浏览航班订单完整详情并停留在 Last rescheduled from 区域。
+
+      27. 向下滑动回订单列表。
+
+      28. 在订单列表中向上滑动到 OT-SEED-HOTEL-1 酒店订单。
+
+      29. 点击 OT-SEED-HOTEL-1 酒店订单卡片。
+
+      30. 等待酒店订单详情展开。
+
+      31. 在酒店订单详情中滑动到 Reschedule 区域。
+
+      32. 点击 Check-in 日期框。
+
+      33. 等待 Check-in 日期选择器打开。
+
+      34. 在日期选择器中移动到 2026 年 6 月。
+
+      35. 选择 2026-06-22。
+
+      36. 等待 Check-in 日期选择器关闭。
+
+      37. 点击 Check-out 日期框。
+
+      38. 等待 Check-out 日期选择器打开。
+
+      39. 在日期选择器中移动到 2026 年 6 月。
+
+      40. 选择 2026-06-25。
+
+      41. 等待 Check-out 日期选择器关闭。
+
+      42. 点击 Guests 输入框。
+
+      43. 全选现有人数。
+
+      44. 删除现有人数。
+
+      45. 输入 2。
+
+      46. 收起键盘。
+
+      47. 等待 Guests 字段更新。
+
+      48. 点击 Reschedule。
+
+      49. 等待酒店订单更新开始。
+
+      50. 等待酒店订单更新完成。
+
+      51. 在更新后的酒店详情页滑动浏览完整详情并停留在价格区域。
+
+      52. 向下滑动回酒店详情顶部。
+
+      53. 向下滑动回订单列表。
+
+      54. 再次点击 OT-SEED-HOTEL-1。
+
+      55. 等待酒店订单详情展开。
+
+      56. 滑动浏览酒店订单完整详情并停留在 Last rescheduled from 区域。
+
+      57. 向下滑动回订单列表。
+
+      58. 再次点击 OT-SEED-FLIGHT-1。
+
+      59. 等待航班订单详情展开。
+
+      60. 滑动浏览航班订单完整详情并停留在更新后的日期和 Cabin 区域。
+
+      61. 向下滑动回订单列表。
+
+      62. 第三次点击 OT-SEED-HOTEL-1。
+
+      63. 等待酒店订单详情展开。
+
+      64. 滑动浏览酒店订单完整详情并停留在 Total 区域。
+
+      65. 将 OT-SEED-HOTEL-1 详情保持展开。
+
+      66. 将最终页面停留在 OT-SEED-HOTEL-1 的更新后订单详情。
+
+      67. 保持 OpenTrip 在前台。
+
+      68. 保持 Lucas Lin 登录状态。
+
+      69. 不要 Sign Out / 不要退出登录。
+
+      70. 完成后停止操作。
+
+
+      最终可验证状态：OT-SEED-FLIGHT-1 必须仍为 Confirmed，路线 SHA 到 SYX，日期改为 2026-06-15，Cabin 改为
+      business，charges 为 baseFare 1643、serviceFee 50、total 1693，并保留原始 2026-06-18 /
+      economy 的 reschedule history。OT-SEED-HOTEL-1 必须仍为 Confirmed，酒店 Sanya Seabreeze
+      Resort，Stay 改为 2026-06-22 到 2026-06-25，Guests 为 2，charges 为 baseFare 510、serviceFee
+      38、nights 3、total 548，并保留原始 2026-06-18 到 2026-06-21、Guests 2 的 reschedule history。'
+    release_path: benchmark/tasks/opentrip/Android/android.opentrip.seed_orders_reschedule
+    original_evaluator_id: evaluators.android.opentrip:OpenTripSeedOrderRescheduleEvaluator
+    evaluator_source: benchmark_module
+  local_repair:
+    source_task: tasks/v1/android/opentrip_seed_orders_reschedule.yaml
+    baseline: Downloaded AVD os_omni_clean plus APK seed state
+    instruction: Full original source instruction when available
+    original_evaluator_preserved: true
+task_version: opentrip-3

@@ -9,6 +9,7 @@ import json
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 
 TASK_ID = "windows.openbank.task04_140186"
@@ -43,6 +44,7 @@ RULESET_SPEC: dict[str, Any] = {
         {"id": "pref-payment-due", "accountId": "credit-7712", "name": "Payment due", "daysBefore": 7, "enabled": True, "email": False, "sms": True, "push": True},
         {"id": "pref-direct-deposit", "accountId": "checking-2381", "name": "Direct deposit posted", "enabled": True, "email": True, "sms": True, "push": True},
     ],
+    "order_policy": {'rule': 'only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order', 'stated': [['transfer_amina', 'transfer_theo'], ['transfer_theo', 'transfer_avery'], ['transfer_avery', 'transfer_maya']], 'stated_by': 'Submit four transfers in the following order', 'necessary': [['recipient_amina', 'transfer_amina'], ['recipient_theo', 'transfer_theo']], 'necessary_reason': 'a transfer needs its recipient saved first'},
     "event_policy": {
         "match": "at_least_one_exact_current_session_event",
         "paperless_final_event": "last_same_target_event_must_be_exact_and_is_order_event",
@@ -73,6 +75,10 @@ STEP_GROUPS = {
     "setting_direct": list(range(73, 76)),
 }
 
+#: Business actions in the order this evaluator collects their events.
+ORDER_NAMES = list(STEP_GROUPS)
+ORDER_PAIRS = [*RULESET_SPEC["order_policy"]["stated"], *RULESET_SPEC["order_policy"]["necessary"]]
+
 
 def _spec(contract: str, group: str, mode: str, expected: Any) -> dict[str, Any]:
     return {"value_contract_id": contract, "steps": STEP_GROUPS[group], "match_mode": mode, "expected": expected}
@@ -86,7 +92,7 @@ CHECKPOINT_SPECS = [
     *[_spec(f"openbank.task04.alert.{i}", group, "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", expected) for i, (group, expected) in enumerate(zip(["alert_signin", "alert_bill"], RULESET_SPEC["alerts"]), 1)],
     _spec("openbank.task04.card.credit", "card_credit", "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", RULESET_SPEC["card"]),
     *[_spec(f"openbank.task04.alert_setting.{i}", group, "OBJECT_AND_CURRENT_SESSION_EVENT_EXACT", expected) for i, (group, expected) in enumerate(zip(["setting_low", "setting_large", "setting_payment", "setting_direct"], RULESET_SPEC["alert_settings"]), 1)],
-    {"value_contract_id": "openbank.task04.business_order", "steps": list(range(1, 76)), "match_mode": "ORDERED_EXACT", "expected": list(STEP_GROUPS)},
+    {"value_contract_id": "openbank.task04.business_order", "steps": list(range(1, 76)), "match_mode": "PAIRWISE_PRECEDENCE", "expected": ORDER_PAIRS},
 ]
 
 
@@ -197,9 +203,9 @@ class OpenBankTask04140186Evaluator(BaseEvaluator):
             order_event = event or (same[0] if same else None)
             checks.append(cls._check(CHECKPOINT_SPECS[index], len(objects) == 1 and event is not None, {"object_count": len(objects), "object": objects[0] if len(objects) == 1 else objects, "exact_event_count": len(matches), "idempotent_duplicate_count": max(0, len(matches) - 1), "nonmatching_same_target_events": [_summary(row) for row in same if row not in matches], "order_event": _summary(order_event or {})})); ordered.append(order_event); index += 1
 
-        order_actual = [_summary(row or {}) for row in ordered]
-        order_passed = all(ordered) and all(int(a.get("seq", -1)) < int(b.get("seq", -1)) for a, b in zip(ordered, ordered[1:]))
-        checks.append(cls._check(CHECKPOINT_SPECS[index], bool(order_passed), order_actual))
+        # Only the stated and logically necessary orders (RULESET_SPEC["order_policy"]).
+        order_passed, order_actual = check_precedence(dict(zip(ORDER_NAMES, ordered)), ORDER_PAIRS)
+        checks.append(cls._check(CHECKPOINT_SPECS[index], order_passed, order_actual))
         covered = {step for spec in CHECKPOINT_SPECS for step in spec["steps"]}
         if covered != set(range(1, 76)):
             return cls._error("checkpoint map does not cover exactly steps 1..75", checks)

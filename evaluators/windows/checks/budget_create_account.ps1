@@ -15,8 +15,8 @@ ACTUAL_DATA_PATHS = [
 
 
 def money_candidates(amount):
-    value = float(amount)
-    return sorted({int(round(abs(value) * scale)) for scale in (1, 10, 100, 1000, 10000)})
+    # Task params are dollars; Actual stores integer cents (tasks/windows/files/actual/blank-budget-template.zip).
+    return [int(round(abs(float(amount)) * 100))]
 
 
 def money_matches(observed, expected):

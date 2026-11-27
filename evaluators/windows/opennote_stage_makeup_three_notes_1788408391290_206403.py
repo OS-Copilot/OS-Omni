@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
+from evaluators.windows.openbank_events import check_precedence
 
 
 TASK_ID = "windows.opennote.stage_makeup_three_notes_1788408391290_206403"
@@ -93,8 +94,17 @@ RULESET_SPEC = {
     "profile": {"handle": "lina", "displayName": "Lina Park", "title": "City life editor Stage makeup editor"},
     "engagement": {"note_id": "n-3322", "authorHandle": "logan_53", "title": "long-wear base tests: small changes that lasts through a long day", "category": "Beauty", "liked": True, "saved": True},
     "notes": EXPECTED_NOTES,
-    "timeline": ["session_login_success", "white_note_created", "beauty_feed", "target_detail", "target_like", "target_save", "profile_update", "blue_note_created", "two_role_note_created"],
-    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, byte length, and content type", "business_order": "strict increasing event sequence"},
+    # The instruction is numbered steps with no "then"/"after"/"before"/"in this order": a
+    # demonstration, not an order.  Only the sign-in must precede the account's actions; each
+    # action happening exactly once is checked by its own checkpoint.
+    "order_policy": {
+        "rule": "only orders the brief states with temporal language, plus logically necessary precedence; every other business action may happen in any order",
+        "stated": [],
+        "necessary": [["session_login_success", action] for action in ("white_note_created", "target_like", "target_save", "profile_update", "blue_note_created", "two_role_note_created")],
+        "necessary_basis": "sign-in before account actions",
+        "not_required": "the demonstrated step order; feed, category and note-detail views",
+    },
+    "matching": {"strings": "case-sensitive exact", "lists": "ordered exact", "cardinality": "exactly one", "covers": "exact path, SHA-256, byte length, and content type", "business_order": "sign-in before each business action; no other order"},
     "checkpoint_specs": list(CHECKPOINT_SPECS),
 }
 
@@ -103,7 +113,7 @@ def _ruleset_sha256(spec: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(spec, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
-RULESET_SHA256 = "9b9bbb5aba4550610db860bb4902b3825a10451bc372f8d6a62ae7329ba88bb8"
+RULESET_SHA256 = "08a4eafeddfa5577c7ac25e6a7157bd788e57593c9e649115cd9636c88049aa5"
 
 
 def _source_sha256() -> str:
@@ -151,7 +161,7 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
         actual = {"candidate_count": len(candidates), "exact_count": len(exact), "note": {"id": note.get("id"), **_project_note(note)}, "cover_content": cover_actual, "create_event_count": len(create_events)}
         checks.append(_check(f"{group}_exact", STEP_GROUPS[group], expected | {"cardinality": 1}, actual, passed))
         matched[group] = note
-        note_event_by_group[group] = create_events[0] if len(create_events) == 1 else {}
+        note_event_by_group[group] = create_events[0] if create_events else {}
 
     engagement = RULESET_SPEC["engagement"]
     target_candidates = [row for row in notes if row.get("id") == engagement["note_id"] or row.get("title") == engagement["title"]]
@@ -169,23 +179,24 @@ def evaluate_state(raw: Mapping[str, Any], source_state_mode: str) -> dict[str, 
     profile_ok = profile_actual == {**RULESET_SPEC["profile"], "profile_update_count": 1}
     checks.append(_check("profile_role_exact", STEP_GROUPS["profile_role"], RULESET_SPEC["profile"] | {"profile_update_count": 1}, profile_actual, profile_ok))
 
-    beauty_feed = [row for row in events if row.get("type") == "feed_view" and row.get("view") == "home" and row.get("query") == "" and row.get("category") == "Beauty" and int(row.get("seq", -1)) < int((like_events[0] if like_events else {}).get("seq", -1))]
-    target_detail = [row for row in events if _event_payload(row) == {"type": "note_detail_opened", "noteId": engagement["note_id"]} and int(row.get("seq", -1)) < int((like_events[0] if like_events else {}).get("seq", -1))]
-    ordered = [login_events[0] if len(login_events) == 1 else {}, note_event_by_group["white_note"], beauty_feed[-1] if beauty_feed else {}, target_detail[-1] if target_detail else {}, like_events[0] if len(like_events) == 1 else {}, save_events[0] if len(save_events) == 1 else {}, profile_events[0] if len(profile_events) == 1 else {}, note_event_by_group["blue_note"], note_event_by_group["two_role_note"]]
-    seqs = [int(row.get("seq", -1)) for row in ordered]
-    expected_durable_events = [
-        {"type": "session_login_success", "handle": "lina"},
-        {"type": "note_created", "noteId": matched["white_note"].get("id"), "title": EXPECTED_NOTES["white_note"]["title"], "category": "Beauty", "tags": EXPECTED_NOTES["white_note"]["tags"]},
-        {"type": "note_like_toggled", "noteId": engagement["note_id"], "authorHandle": engagement["authorHandle"], "active": True},
-        {"type": "note_save_toggled", "noteId": engagement["note_id"], "authorHandle": engagement["authorHandle"], "active": True},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": RULESET_SPEC["profile"]["title"], "bio": current_user.get("bio")},
-        {"type": "note_created", "noteId": matched["blue_note"].get("id"), "title": EXPECTED_NOTES["blue_note"]["title"], "category": "Beauty", "tags": EXPECTED_NOTES["blue_note"]["tags"]},
-        {"type": "note_created", "noteId": matched["two_role_note"].get("id"), "title": EXPECTED_NOTES["two_role_note"]["title"], "category": "Beauty", "tags": EXPECTED_NOTES["two_role_note"]["tags"]},
-    ]
+    # Only the sign-in precedes the business actions (RULESET_SPEC["order_policy"]); feed and
+    # detail views are navigation and neither required nor counted.  The demonstrated order (white
+    # note, Beauty like/save, role, blue note, list) was a hard ordered projection before (scan.CSV
+    # WIN-058, PR #46 tolerance); a different order of the same actions now passes.
+    business = {
+        "session_login_success": login_events[0] if len(login_events) == 1 else None,
+        "white_note_created": note_event_by_group["white_note"] or None,
+        "target_like": like_events[0] if like_events else None,
+        "target_save": save_events[0] if save_events else None,
+        "profile_update": profile_events[0] if profile_events else None,
+        "blue_note_created": note_event_by_group["blue_note"] or None,
+        "two_role_note_created": note_event_by_group["two_role_note"] or None,
+    }
+    order_pairs = RULESET_SPEC["order_policy"]["necessary"]
+    timeline_ok, order_rows = check_precedence(business, order_pairs)
     durable_events = [_event_payload(row) for row in events if row.get("type") not in {"feed_view", "note_detail_opened"}]
-    timeline_actual = {"sequence": seqs, "types": [row.get("type") for row in ordered], "all_present": all(seq >= 0 for seq in seqs), "durable_events": durable_events}
-    timeline_ok = all(seq >= 0 for seq in seqs) and seqs == sorted(set(seqs)) and durable_events == expected_durable_events and all(check["passed"] for check in checks)
-    checks.append(_check("workflow_timeline_exact", STEP_GROUPS["workflow_timeline"], RULESET_SPEC["timeline"], timeline_actual, timeline_ok))
+    timeline_actual = {"pairs": order_rows, "durable_events": durable_events}
+    checks.append(_check("workflow_timeline_exact", STEP_GROUPS["workflow_timeline"], {"pairs": order_pairs}, timeline_actual, timeline_ok))
 
     build_ok = build == RULESET_SPEC["application_build"] and raw.get("task_id") == TASK_ID and raw.get("instruction_sha256") == INSTRUCTION_SHA256 and raw.get("ruleset_sha256") == RULESET_SHA256
     build_actual = {"task_id": raw.get("task_id"), "instruction_sha256": raw.get("instruction_sha256"), "ruleset_sha256": raw.get("ruleset_sha256"), "application_build": build}

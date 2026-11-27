@@ -6,7 +6,12 @@ import time
 from typing import Any, Mapping
 
 from core.init import BaseInitializer, InitResult, InitStatus
-from platforms.ios.openshop_store import DEFAULT_BUNDLE_ID, OpenShopStore, coerce_cart_item_specs
+from platforms.ios.openshop_store import (
+    DEFAULT_BUNDLE_ID,
+    LOCAL_STATE_KEY,
+    OpenShopStore,
+    coerce_cart_item_specs,
+)
 
 
 class OpenShopSeedOpenAppInitializer(BaseInitializer):
@@ -59,6 +64,35 @@ class OpenShopSeedOpenAppInitializer(BaseInitializer):
             controller.activate_app(bundle_id)
             if wait_ms > 0:
                 time.sleep(wait_ms / 1000.0)
+            observed_state = store.read_state()
+            session = observed_state.get("session") if isinstance(observed_state, Mapping) else None
+            observed_user = session.get("user") if isinstance(session, Mapping) else None
+            observed_logged_in = bool(
+                isinstance(session, Mapping) and session.get("loggedIn") is True
+            )
+            if observed_logged_in != login_session:
+                raise RuntimeError(
+                    "OpenShop session changed after launch: "
+                    f"expected loggedIn={login_session}, observed loggedIn={observed_logged_in}"
+                )
+            if login_session:
+                seed = store.load_seed_payload()
+                account = seed.get("benchmarkAccount") if isinstance(seed, Mapping) else None
+                expected_phone = (
+                    str(account.get("phone") or "").strip()
+                    if isinstance(account, Mapping)
+                    else ""
+                )
+                users = observed_state.get("users")
+                account_state = users.get(expected_phone) if isinstance(users, Mapping) else None
+                if (
+                    not isinstance(observed_user, Mapping)
+                    or str(observed_user.get("phone") or "").strip() != expected_phone
+                    or not isinstance(account_state, Mapping)
+                ):
+                    raise RuntimeError(
+                        "OpenShop account state changed or is incomplete after launch"
+                    )
         except Exception as exc:
             return InitResult(
                 status=InitStatus.ERROR,
@@ -67,6 +101,7 @@ class OpenShopSeedOpenAppInitializer(BaseInitializer):
                     "bundle_id": bundle_id,
                     "login_session": login_session,
                     "cart_item_count": len(cart_items),
+                    "post_launch_state_verified": False,
                 },
             )
 
@@ -78,6 +113,7 @@ class OpenShopSeedOpenAppInitializer(BaseInitializer):
                 "login_session": login_session,
                 "cart_item_count": len(cart_items),
                 "wait_ms": wait_ms,
+                "post_launch_state_verified": True,
             },
         )
 
@@ -101,4 +137,8 @@ class OpenShopSeedOpenAppInitializer(BaseInitializer):
         ).strip()
         if not udid:
             raise ValueError("OpenShop initializer needs params.db_path or a controller with runtime.udid")
-        return OpenShopStore.from_simulator(udid, bundle_id=bundle_id)
+        return OpenShopStore.from_simulator(
+            udid,
+            bundle_id=bundle_id,
+            local_state_key=str(params.get("local_state_key") or LOCAL_STATE_KEY),
+        )

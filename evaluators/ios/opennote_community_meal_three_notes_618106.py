@@ -14,6 +14,7 @@ from typing import Any, Mapping
 
 from evaluators.cua_review.core.evaluation import BaseEvaluator, EvalResult, EvalStatus
 from evaluators.cua_review.platforms.ios.opennote_store import DEFAULT_BUNDLE_ID, LOCAL_STATE_KEY, OpenNoteStore
+from evaluators.ios.brief_event_order import multiset_diff, order_violations
 
 
 TASK_ID = "ios.opennote.community_meal_three_notes_618106"
@@ -40,7 +41,7 @@ STEP_GROUPS = {
     "profile_bio": [35, 36, 37, 38, 39],
     "blue_note": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58],
     "meal_plan": [59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74],
-    "timeline": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74],
+    "durable_events": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74],
 }
 
 CHECKPOINTS = (
@@ -50,7 +51,7 @@ CHECKPOINTS = (
     "profile_bio_exact",
     "blue_note_exact",
     "meal_plan_exact",
-    "timeline_exact",
+    "durable_events_and_required_order",
 )
 
 CHECKPOINT_SPECS = (
@@ -97,11 +98,11 @@ CHECKPOINT_SPECS = (
         "match_mode": "ORDERED_EXACT",
     },
     {
-        "name": "timeline_exact",
+        "name": "durable_events_and_required_order",
         "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74],
-        "predicate": "timeline_exact_predicate",
-        "value_contract_id": "community-meal-causal-order-v1",
-        "match_mode": "ORDERED_EXACT",
+        "predicate": "durable_events_and_required_order_predicate",
+        "value_contract_id": "community-meal-business-events-v2",
+        "match_mode": "MULTISET_EXACT",
     },
 )
 
@@ -164,11 +165,11 @@ RULESET_SPEC = {
             "match_mode": "ORDERED_EXACT",
         },
         {
-            "name": "timeline_exact",
+            "name": "durable_events_and_required_order",
             "steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74],
-            "predicate": "timeline_exact_predicate",
-            "value_contract_id": "community-meal-causal-order-v1",
-            "match_mode": "ORDERED_EXACT",
+            "predicate": "durable_events_and_required_order_predicate",
+            "value_contract_id": "community-meal-business-events-v2",
+            "match_mode": "MULTISET_EXACT",
         },
     ],
     "matching": {
@@ -178,7 +179,13 @@ RULESET_SPEC = {
         "cardinality": "exactly one Lina-authored note per exact title",
         "covers": "exact MIME, decoded-byte SHA-256, and decoded-byte length",
         "dynamic_note_ids": "unique final note id equals its note_created event noteId",
-        "event_sequence": "exactly 23 consecutive ordered events with no extras",
+        "event_sequence": (
+            "task-window business events (note_created, note_save_toggled, note_like_toggled, "
+            "follow_toggled, profile_updated) equal the expected multiset; any other business "
+            "event fails; identical profile_updated re-saves count once; feed_view, "
+            "note_detail_opened and session events are browsing and are not counted"
+        ),
+        "required_event_order": "none: the brief enumerates the deliverables and states no order",
     },
     "application_build": {
         "binary_sha256": "2f85792b383f1646f1df7ef396929fcd2df9aa2b9f569dffb13d600ceb95d8ac",
@@ -188,7 +195,7 @@ RULESET_SPEC = {
     "final_ui": "not_required_after_durable_publish",
 }
 
-RULESET_SHA256 = "249a6434f9178a8a770c168ca3e5c85d5d5ee9ef5b056ef72d9c18663b311e2c"
+RULESET_SHA256 = "a2852c3df7abd3c863e6d10fa48ff95b15b77655684313213dae509f8e114b9d"
 
 _NOTE_EXPECTED = {
     "orange_note": {
@@ -292,37 +299,57 @@ def _failure(actual: Any, expected: Any) -> str | None:
     return None if actual == expected else "exact value, cardinality, or causal-order mismatch"
 
 
-def _expected_events(raw: Mapping[str, Any]) -> list[dict[str, Any]]:
+# Browsing is not a business action and is never counted (this also makes the
+# launch-time home feed_view irrelevant to where the baseline falls).
+_BROWSING_EVENT_TYPES = frozenset({"feed_view", "note_detail_opened"})
+# Saving an unchanged profile again leaves the same state; it counts once.
+_REPEATABLE_LABELS = frozenset({"profile_updated"})
+# The brief enumerates the deliverables and states no order; none is logically
+# required among them (the engaged notes and the followed user are seeded).
+REQUIRED_EVENT_ORDER: tuple[tuple[str, str], ...] = ()
+
+
+def _is_business_event(event_type: str) -> bool:
+    return event_type not in _BROWSING_EVENT_TYPES and not event_type.startswith("session_")
+
+
+def _expected_business_events(raw: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     groups = raw.get("groups") if isinstance(raw.get("groups"), Mapping) else {}
     ids = {
         name: ((groups.get(name) or {}).get("note") or {}).get("id")
         for name in ("orange_note", "blue_note", "meal_plan")
     }
-    return [
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 420},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 420},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Food", "tag": "", "handle": "", "total": 39},
-        {"type": "note_detail_opened", "noteId": "n-3002"},
-        {"type": "note_save_toggled", "noteId": "n-3002", "authorHandle": "theo_11", "active": True},
-        {"type": "note_created", "noteId": ids["orange_note"], "title": "Orange Crate Handoff", "category": "Food", "tags": ["Food", "handoff", "crates"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Recommended", "tag": "", "handle": "", "total": 421},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Food", "tag": "", "handle": "", "total": 40},
-        {"type": "note_detail_opened", "noteId": "n-3211"},
-        {"type": "note_like_toggled", "noteId": "n-3211", "authorHandle": "nora_02", "active": True},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Food", "tag": "", "handle": "", "total": 40},
-        {"type": "note_detail_opened", "noteId": "n-3211"},
-        {"type": "note_detail_opened", "noteId": "n-3024"},
-        {"type": "follow_toggled", "handle": "freya_60", "active": True},
-        {"type": "feed_view", "view": "home", "query": "", "category": "Food", "tag": "", "handle": "", "total": 40},
-        {"type": "note_detail_opened", "noteId": "n-3024"},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 32},
-        {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Community meal lead"},
-        {"type": "note_created", "noteId": ids["blue_note"], "title": "Blue Bowl Cook Log", "category": "Food", "tags": ["cook", "blue", "bowl"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 33},
-        {"type": "note_created", "noteId": ids["meal_plan"], "title": "Community Meal Plan", "category": "Food", "tags": ["community", "meal", "roles"]},
-        {"type": "feed_view", "view": "profile", "query": "", "category": "", "tag": "", "handle": "lina", "total": 34},
-    ]
+    return {
+        "lemon_cake_save": {"type": "note_save_toggled", "noteId": "n-3002", "authorHandle": "theo_11", "active": True},
+        "orange_note_created": {"type": "note_created", "noteId": ids["orange_note"], "title": "Orange Crate Handoff", "category": "Food", "tags": ["Food", "handoff", "crates"]},
+        "picnic_like": {"type": "note_like_toggled", "noteId": "n-3211", "authorHandle": "nora_02", "active": True},
+        "freya_follow": {"type": "follow_toggled", "handle": "freya_60", "active": True},
+        "profile_updated": {"type": "profile_updated", "displayName": "Lina Park", "title": "City life editor", "bio": "Collecting honest routes, useful details, and everyday ideas worth trying. Community meal lead"},
+        "blue_note_created": {"type": "note_created", "noteId": ids["blue_note"], "title": "Blue Bowl Cook Log", "category": "Food", "tags": ["cook", "blue", "bowl"]},
+        "meal_plan_created": {"type": "note_created", "noteId": ids["meal_plan"], "title": "Community Meal Plan", "category": "Food", "tags": ["community", "meal", "roles"]},
+    }
+
+
+def _business_projection(
+    events: Any, expected: Mapping[str, Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    projection: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for event in events if isinstance(events, list) else []:
+        if not isinstance(event, Mapping):
+            continue
+        event_type = str(event.get("type") or "")
+        if not _is_business_event(event_type):
+            continue
+        payload = _event_payload(event)
+        label = next((name for name, wanted in expected.items() if payload == wanted), None)
+        if label is None:
+            label = f"unexpected:{event_type}:{event.get('seq')}"
+        elif label in _REPEATABLE_LABELS and label in seen:
+            continue
+        seen.add(label)
+        projection.append({"label": label, "seq": event.get("seq"), "payload": payload})
+    return projection
 
 
 def _note_predicate(raw: Mapping[str, Any], name: str) -> tuple[bool, Any, Any, str | None]:
@@ -407,40 +434,37 @@ def meal_plan_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, s
     return _note_predicate(raw, "meal_plan")
 
 
-def timeline_exact_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
-    events = raw.get("event_suffix") if isinstance(raw.get("event_suffix"), list) else []
-    actual_payloads = [_event_payload(event) for event in events if isinstance(event, Mapping)]
-    expected_payloads = _expected_events(raw)
-    seqs = [event.get("seq") for event in events if isinstance(event, Mapping)]
-    boundary = raw.get("boundary") if isinstance(raw.get("boundary"), Mapping) else {}
-    expected_first = 33
-    if boundary.get("mode") == "automatic_baseline_seq":
-        expected_first = int(boundary.get("baseline_max_event_seq") or 0) + 1
-    seq_ok = seqs == list(range(expected_first, expected_first + 23))
-    try:
-        stamps = [_parse_datetime(event.get("timestamp")) for event in events]
-        timestamps_ok = len(stamps) == 23 and stamps == sorted(stamps)
-    except (TypeError, ValueError):
-        timestamps_ok = False
+def durable_events_and_required_order_predicate(raw: Mapping[str, Any]) -> tuple[bool, Any, Any, str | None]:
+    """Each requested business event exactly once, nothing else; no order is stated."""
+    expected_events = _expected_business_events(raw)
+    projection = _business_projection(raw.get("event_suffix"), expected_events)
+    labels = [row["label"] for row in projection]
+    missing, extra = multiset_diff(list(expected_events), labels)
+    violations = order_violations(labels, REQUIRED_EVENT_ORDER)
     expected = {
-        "count": 23,
-        "first_seq": expected_first,
-        "consecutive_seq": True,
-        "monotonic_timestamps": True,
-        "payloads": expected_payloads,
+        "business_events": expected_events,
+        "missing": [],
+        "extra": [],
+        "required_order": [list(pair) for pair in REQUIRED_EVENT_ORDER],
+        "order_violations": [],
     }
     actual = {
-        "count": len(events),
-        "first_seq": seqs[0] if seqs else None,
-        "consecutive_seq": seq_ok,
-        "monotonic_timestamps": timestamps_ok,
-        "payloads": actual_payloads,
+        "labels": labels,
+        "missing": missing,
+        "extra": extra,
+        "order_violations": violations,
+        "projection": projection,
     }
-    return actual == expected, expected, events, _failure(actual, expected)
+    passed = not missing and not extra and not violations
+    reason = None if passed else (
+        "a requested business event is missing, an unexpected or duplicate business "
+        "event was recorded, or a required order was broken"
+    )
+    return passed, expected, actual, reason
 
 
 class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
-    """Check exact durable values and the complete ordered causal suffix."""
+    """Check exact durable values and the requested business events (no order is stated)."""
 
     RULESET_SPEC = RULESET_SPEC
     RULESET_SHA256 = RULESET_SHA256
@@ -573,6 +597,7 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
         *,
         observed_at: str,
         session_id: str,
+        diagnostic: bool = False,
     ) -> dict[str, Any]:
         passed, expected, actual, reason = outcome
         return {
@@ -581,6 +606,7 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
             "predicate": spec["predicate"],
             "value_contract_id": spec["value_contract_id"],
             "match_mode": spec["match_mode"],
+            "diagnostic": bool(diagnostic),
             "passed": bool(passed),
             "expected": expected,
             "actual": actual,
@@ -605,12 +631,20 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
             profile_bio_exact_predicate(raw),
             blue_note_exact_predicate(raw),
             meal_plan_exact_predicate(raw),
-            timeline_exact_predicate(raw),
+            durable_events_and_required_order_predicate(raw),
         )
         checks = [
-            cls._checkpoint(spec, outcome, observed_at=observed_at, session_id=session_id)
+            cls._checkpoint(
+                spec,
+                outcome,
+                observed_at=observed_at,
+                session_id=session_id,
+            )
             for spec, outcome in zip(CHECKPOINT_SPECS, outcomes)
         ]
+        # The recorded event suffix (navigation, feed totals, step order) is not part
+        # of the brief; durable_events_and_required_order grades only the requested
+        # business events as a multiset, and the brief states no order among them.
         failures = [check["name"] for check in checks if not check["passed"]]
         raw_digest = hashlib.sha256(_canonical_bytes(raw)).hexdigest()
         metadata = {
@@ -638,7 +672,7 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
         }
         status = EvalStatus.PASS if not failures else EvalStatus.FAIL
         message = (
-            "All exact OpenNote durable-state, cover, build, and causal-order checks passed"
+            "All exact OpenNote durable-state, cover, build, and business-event checks passed"
             if not failures
             else "OpenNote exact verifier checks failed: " + ", ".join(failures)
         )
@@ -752,7 +786,8 @@ class OpenNoteCommunityMealThreeNotes618106Evaluator(BaseEvaluator):
         )
         if proc.returncode != 0:
             raise RuntimeError(f"simctl get_app_container app failed: {proc.stderr.strip()}")
-        app = Path(proc.stdout.strip()).expanduser().resolve()
+        from platforms.ios.runtime_env.simulator_manager import remap_simulator_container_path
+        app = remap_simulator_container_path(proc.stdout.strip(), udid)
         files = {
             "binary_sha256": app / "App",
             "app_js_sha256": app / "public" / "app.js",

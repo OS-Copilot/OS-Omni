@@ -1,0 +1,23 @@
+{
+  "paths": [],
+  "reconstructed": true,
+  "calibration_input": "unclipped primary color patches RGB190/40/40,40/190/40,40/40/190",
+  "provenance": [
+    {
+      "source": "portrait_21.jpg",
+      "source_path": "local_eval\\photo-originals\\portrait_21.jpg",
+      "target": "portrait_21.jpg",
+      "source_sha256": "3a3fda010a1c08174c0866c1135194eabcbdd38fc4278f451186af72f90043d1",
+      "fixture_sha256": "c83b54499e2d1d98ff2d07f3daa29e0eb3de46e8ddc226b8e25bc652c487d246"
+    },
+    {
+      "source": "portrait_17.jpg",
+      "source_path": "local_eval\\photo-originals\\portrait_17.jpg",
+      "target": "portrait_17.jpg",
+      "source_sha256": "d1da7952c2d4a1afe2d2c69c63db9ec226ea673943ba5564c368967349bdd597",
+      "fixture_sha256": "3b76e6acaf1a2239b9323f5c175d886dc98a5b7f24ec7d1368d5a18f837bb5a2"
+    }
+  ],
+  "limitations": [],
+  "benchmark_version": "author-rebuilt-photo-v2"
+}

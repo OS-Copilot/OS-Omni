@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import io
 import json
 import math
 import re
@@ -56,6 +55,16 @@ RULESET_SPEC = {'schema_version': '1.0',
                  'snapshot_readonly_audit': {'steps': ['4-22', '39-72'],
                                              'checks': ['declared_snapshot_seed_dependencies_only']}}}
 RULESET_SHA256 = 'e545445338337dced1283cf85fe503f6ec4addc0533c5f9d6be5b51a0cc0d963'
+# The installed build's immutable restaurants and menu (shared/seed-data.json inside the
+# archive), read by the initializer and by checks/openfood_local_state.ps1 as well.
+SHIPPED_SEED_ASAR = r"C:\OS-Omni\Apps\OpenFood\resources\app.asar"
+
+
+def _as_float(value: Any, default: float = -1.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
 
 class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
@@ -101,7 +110,7 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
             resolved = self._resolve_openfood_state(storage, params)
         except Exception as exc:
             return EvalResult(
-                status=EvalStatus.ERROR,
+                status=EvalStatus.FAIL if isinstance(exc, ValueError) and str(exc).startswith("selected restaurant ") and "does not resolve to" in str(exc) else EvalStatus.ERROR,
                 message=f"OpenFood state resolution failed: {type(exc).__name__}: {exc}",
                 metadata={"read_only": True, "checks": checks},
             )
@@ -127,8 +136,8 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
                 bool(actual_item)
                 and str(actual_item.get("restaurant_id") or "")
                 == str(resolved["restaurant"].get("id") or "")
-                and int(actual_item.get("quantity", -1)) == int(item["quantity"])
-                and math.isclose(float(actual_item.get("price", -1)), float(item["price"]), abs_tol=0.001)
+                and _as_float(actual_item.get("quantity")) == int(item["quantity"])
+                and math.isclose(_as_float(actual_item.get("price")), float(item["price"]), abs_tol=0.001)
             )
             check(
                 f"cart_{self._slug(str(item['name']))}",
@@ -172,12 +181,12 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
         )
 
         subtotal = sum(
-            float(item.get("price", 0)) * int(item.get("quantity", 0))
+            _as_float(item.get("price"), 0.0) * _as_float(item.get("quantity"), 0.0)
             for item in resolved["cart_items"]
         )
         expected_financials = dict(params["financials"])
         discount = float(expected_financials["discount"])
-        delivery = float(resolved["restaurant"].get("fee", 0))
+        delivery = _as_float(resolved["restaurant"].get("fee"), 0.0)
         service_fee = float(expected_financials["service_fee"])
         total = subtotal - discount + delivery + service_fee
         actual_financials = {
@@ -282,6 +291,7 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
             "read_only": True,
             "data_source_priority": [
                 "OpenFood user-state files / Electron Local Storage LevelDB",
+                "Seed records: cached window.OPENFOOD_DATA, else the shipped app.asar shared/seed-data.json",
                 "Windows foreground process, window, and accessibility tree",
             ],
             "coverage": {
@@ -417,10 +427,16 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
                         return found
             return None
 
+        shipped_seed = storage.get("shipped_seed")
+        if not isinstance(shipped_seed, Mapping):
+            shipped_seed = None
+        seed_sources: set[str] = set()
+
         def find_seed_object(target_id: str) -> Mapping[str, Any] | None:
             if static_data is not None:
                 found = find_by_id(static_data, target_id)
                 if found is not None:
+                    seed_sources.add("cached window.OPENFOOD_DATA")
                     return found
             id_pattern = re.compile(
                 r'"id"\s*:\s*"' + re.escape(target_id) + r'"'
@@ -437,12 +453,26 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
                 except json.JSONDecodeError:
                     continue
                 if isinstance(parsed, Mapping) and str(parsed.get("id") or "") == target_id:
+                    seed_sources.add("cached window.OPENFOOD_DATA")
                     return parsed
+            # WIN-039: the renderer's cached window.OPENFOOD_DATA copy is not always on
+            # disk; the shipped app.asar seed holds the same immutable records.
+            if shipped_seed is not None:
+                found = find_by_id(shipped_seed, target_id)
+                if found is not None:
+                    seed_sources.add("app.asar shared/seed-data.json")
+                    return found
             return None
 
         restaurant_id = str(state.get("selectedRestaurantId") or "")
         restaurant = find_seed_object(restaurant_id)
-        if restaurant is None or str(restaurant.get("name") or "") != str(params["cart"]["restaurant_name"]):
+        if restaurant is None:
+            detail = str(storage.get("shipped_seed_error") or "")
+            raise ValueError(
+                f"restaurant seed record could not be decoded for {restaurant_id!r}"
+                + (f" (shipped seed: {detail})" if detail else "")
+            )
+        if str(restaurant.get("name") or "") != str(params["cart"]["restaurant_name"]):
             raise ValueError(
                 f"selected restaurant {restaurant_id!r} does not resolve to {params['cart']['restaurant_name']!r}"
             )
@@ -475,6 +505,7 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
             },
             "cart_items": cart_items,
             "state_candidate_count": len(state_candidates),
+            "seed_sources": sorted(seed_sources),
         }
 
     @staticmethod
@@ -495,6 +526,11 @@ class OpenFoodCustomerAuditEvaluator(BaseEvaluator):
         query = {
             "path_hints": [str(item).lower() for item in params["state_path_hints"]],
             "tokens": tokens,
+            "seed_paths": [
+                str(item)
+                for item in params.get("seed_asar_paths") or [SHIPPED_SEED_ASAR]
+                if str(item).strip()
+            ],
         }
         query_json = json.dumps(query, ensure_ascii=True)
         code = f'''
@@ -503,6 +539,7 @@ import os
 import pathlib
 import re
 import sqlite3
+import struct
 
 query = json.loads({json.dumps(query_json)})
 roots = [os.environ.get("APPDATA", ""), os.environ.get("LOCALAPPDATA", "")]
@@ -641,11 +678,38 @@ for record in records:
     if marker not in seen:
         seen.add(marker)
         deduped.append(record)
+
+# The installed build keeps its immutable restaurants and menu in app.asar
+# (shared/seed-data.json), the file the initializer and openfood_local_state.ps1
+# read; the renderer's cached window.OPENFOOD_DATA copy may not be on disk.
+shipped_seed = None
+shipped_seed_error = ""
+for seed_path in query.get("seed_paths") or []:
+    try:
+        with open(seed_path, "rb") as archive:
+            prefix = archive.read(16)
+            header_size = struct.unpack_from("<I", prefix, 4)[0]
+            json_size = struct.unpack_from("<I", prefix, 12)[0]
+            header = json.loads(archive.read(json_size))
+            entry = header["files"]["shared"]["files"]["seed-data.json"]
+            archive.seek(8 + header_size + int(entry["offset"]))
+            seed = json.loads(archive.read(int(entry["size"])))
+        shipped_seed = {{
+            "path": seed_path,
+            "restaurants": seed.get("restaurants") or [],
+            "menu": seed.get("menu") or [],
+        }}
+        break
+    except Exception as exc:
+        shipped_seed_error = seed_path + ": " + type(exc).__name__ + ": " + str(exc)
+
 print(json.dumps({{
     "searched_roots": roots,
     "path_hints": query["path_hints"],
     "scanned_files": scanned[-200:],
     "evidence_records": deduped[-80:],
+    "shipped_seed": shipped_seed,
+    "shipped_seed_error": shipped_seed_error,
 }}, ensure_ascii=True))
 '''
         result = controller.run_python_script(code, timeout=60)
@@ -686,10 +750,12 @@ $windows = @(
         if int(result.get("returncode", -1)) != 0:
             raise RuntimeError(str(result.get("output") or result.get("error") or "guest PowerShell failed"))
         metadata: dict[str, Any] = {"process_check": json.loads(str(result.get("output") or "{}"))}
-        observation = final_observation or controller.observe(
-            include_ui_tree=True,
-            include_screenshot_data=True,
-        )
+        observation = final_observation
+        # screenshot_only agent observations intentionally omit the UI tree.
+        # That is not evidence that the final application has no visible text.
+        if (observation is None or not getattr(observation, "ui_nodes", None)
+                or not getattr(observation, "screenshot_data", None)):
+            observation = controller.observe(include_ui_tree=True, include_screenshot_data=True)
         ui_nodes = list(getattr(observation, "ui_nodes", []) or [])
 
         def collect_text(value: Any) -> list[str]:
@@ -709,13 +775,8 @@ $windows = @(
         screenshot_data = getattr(observation, "screenshot_data", None) or b""
         if screenshot_data:
             try:
-                import pytesseract
-                from PIL import Image, ImageEnhance, ImageOps
-
-                image = Image.open(io.BytesIO(screenshot_data)).convert("RGB")
-                prepared = ImageOps.grayscale(image)
-                prepared = ImageEnhance.Contrast(prepared).enhance(1.8)
-                ocr_text = pytesseract.image_to_string(prepared, config="--psm 6")
+                from evaluators.windows.ocr import read_screenshot_text
+                ocr_text = read_screenshot_text(screenshot_data)
             except Exception as exc:
                 ocr_error = f"{type(exc).__name__}: {exc}"
 

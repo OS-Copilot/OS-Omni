@@ -10,6 +10,13 @@ __all__ = [
 ]
 
 try:  # pragma: no cover - import depends on optional runtime deps
+    from .anthropic_adapter import AnthropicAdapter
+
+    __all__.append("AnthropicAdapter")
+except Exception:  # pragma: no cover - optional until runtime deps are installed
+    AnthropicAdapter = None  # type: ignore[assignment]
+
+try:  # pragma: no cover - import depends on optional runtime deps
     from .google_adapter import GoogleAdapter
 
     __all__.append("GoogleAdapter")

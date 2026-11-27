@@ -1,0 +1,26 @@
+task_id: macos.oracle.drawio.ops_plan_relabel
+platform: macos
+instruction: Oracle sanity task for macos.drawio.ops_plan_relabel. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.setup:DesktopSetupInitializer
+  params:
+    steps:
+    - type: run_bash
+      script: "set -e\nkillall \"draw.io\" >/dev/null 2>&1 || true\nsleep 1\nfind /Users/bench/Downloads -maxdepth 1 \\( -name '*.drawio' -o -name '.\\$*.drawio.dtmp' -o -name '.\\$*.drawio.bkp' \\) -delete\n"
+    - type: upload_file
+      local_path: ../files/drawio/ops_plan_relabel/start/ops_plan_relabel.drawio
+      path: /Users/bench/Downloads/ops_plan_relabel.drawio
+evaluation:
+  evaluator_id: evaluators.macos.drawio:DrawIODiagramEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/ops_plan_relabel.drawio
+    expected_path: ../files/drawio/ops_plan_relabel/expected/ops_plan_relabel.drawio
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.drawio.ops_plan_relabel
+  human_steps: 20
+  tags:
+    - oracle
+  difficulty: hard

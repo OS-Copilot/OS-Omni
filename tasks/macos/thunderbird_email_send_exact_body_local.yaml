@@ -1,0 +1,36 @@
+task_id: macos.thunderbird.email.send_exact_body_local
+platform: macos
+instruction: |
+  Open Thunderbird in Mail view. Compose and send an email to
+  qa-local@example.com with the subject "Weekly Meeting Plan" and the exact
+  body shown below. Keep the blank lines exactly as written:
+  Hi,
+
+  When do we meet this week?
+
+  Best,
+  Ben
+init:
+  initializer_id: initializers.macos.thunderbird_profile:ThunderbirdProfileInitializer
+  params:
+    launch_mail: true
+    start_fake_smtp: true
+    wait_ms: 7000
+evaluation:
+  evaluator_id: evaluators.macos.thunderbird_email:ThunderbirdEmailEvaluator
+  params:
+    mode: send_exact_body
+    expected_to: qa-local@example.com
+    expected_subject: Weekly Meeting Plan
+    expected_body: |
+      Hi,
+
+      When do we meet this week?
+
+      Best,
+      Ben
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy

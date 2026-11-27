@@ -1,0 +1,39 @@
+task_id: macos.oracle.vscodium.release_notes_cleanup
+platform: macos
+instruction: Oracle sanity task for macos.vscodium.release_notes_cleanup. Wait briefly and finish.
+init:
+  initializer_id: initializers.macos.vscodium:VSCodiumInitializer
+  params:
+    wait_ms: 6000
+    open_settings_file: false
+    open_workspace: true
+    workspace_root: /Users/bench/Documents/pilot_notes
+    fixture_root: ../files/vscodium/release_notes_cleanup/start
+    file_aliases:
+    - alias: settings.json
+      target: .vscode/settings.json
+    baseline_settings:
+      breadcrumbs.enabled: false
+      workbench.editor.showTabs: false
+      workbench.list.openMode: singleClick
+    starter_files:
+    - README.md
+    - settings.json
+    active_file: README.md
+evaluation:
+  evaluator_id: evaluators.macos.vscodium:VSCodiumWorkspaceEvaluator
+  params:
+    workspace_root: /Users/bench/Documents/pilot_notes
+    expected_root: ../files/vscodium/release_notes_cleanup/expected
+    compare_paths:
+    - README.md
+    - .vscode/settings.json
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  oracle_for: macos.vscodium.release_notes_cleanup
+  human_steps: 10
+  tags:
+    - oracle
+  difficulty: easy

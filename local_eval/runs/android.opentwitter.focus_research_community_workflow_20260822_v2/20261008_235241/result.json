@@ -1,0 +1,1130 @@
+{
+  "task_id": "android.opentwitter.focus_research_community_workflow_20260822_v2",
+  "platform": "android",
+  "model_id": "deepseek_flash",
+  "status": "FAIL",
+  "started_at": "2026-10-08T23:55:43.991915+08:00",
+  "ended_at": "2026-10-09T00:07:18.148479+08:00",
+  "steps_taken": 96,
+  "latency_ms": 694156.564,
+  "episode_result": {
+    "status": "PASS",
+    "terminal_reason": "success",
+    "execution_message": "Model declared task complete",
+    "execution_valid": true,
+    "message": "OpenTwitter final state is incomplete or lacks exact attributable event evidence"
+  },
+  "initializer": {
+    "status": "PASS",
+    "message": "Reconstructed and checked starting state from APK seed data",
+    "metadata": {
+      "app_package": "com.killt.opentwitter",
+      "source_initializer": "evaluators.cua_review.initializers.android.opentwitter:OpenTwitterSnapshotBaselineInitializer",
+      "reconstructed": true
+    }
+  },
+  "evaluation": {
+    "status": "FAIL",
+    "message": "OpenTwitter final state is incomplete or lacks exact attributable event evidence",
+    "metadata": {
+      "read_only": true,
+      "local_state_key": "opentwitter.localState.v7",
+      "baseline_loaded": true,
+      "baseline_event_seq": 0,
+      "observed_event_seq": 43,
+      "attributable_event_count": 43,
+      "checks": [
+        {
+          "name": "logged_in_account",
+          "passed": true,
+          "expected": {
+            "logged_in": true,
+            "handle": "alex"
+          },
+          "observed": {
+            "logged_in": true,
+            "handle": "alex"
+          },
+          "matched_object_ids": [
+            "alex"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "target_post_p-1001",
+          "passed": true,
+          "expected": {
+            "id": "p-1001",
+            "author_handle": "maya"
+          },
+          "observed": {
+            "id": "p-1001",
+            "author_handle": "maya"
+          },
+          "matched_object_ids": [
+            "p-1001"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "like_p-1001",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_like_toggled"
+          },
+          "observed": {
+            "active": true,
+            "event": {
+              "seq": 2,
+              "type": "post_like_toggled",
+              "timestamp": "2026-10-08T15:56:42.335Z",
+              "postId": "p-1001",
+              "authorHandle": "maya",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1001",
+            "2"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "repost_p-1001",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_repost_toggled"
+          },
+          "observed": {
+            "active": true,
+            "event": {
+              "seq": 4,
+              "type": "post_repost_toggled",
+              "timestamp": "2026-10-08T15:56:49.948Z",
+              "postId": "p-1001",
+              "authorHandle": "maya",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1001",
+            "4"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "target_post_p-1024",
+          "passed": true,
+          "expected": {
+            "id": "p-1024",
+            "author_handle": "zoe"
+          },
+          "observed": {
+            "id": "p-1024",
+            "author_handle": "zoe"
+          },
+          "matched_object_ids": [
+            "p-1024"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "like_p-1024",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_like_toggled"
+          },
+          "observed": {
+            "active": true,
+            "event": {
+              "seq": 9,
+              "type": "post_like_toggled",
+              "timestamp": "2026-10-08T15:58:26.985Z",
+              "postId": "p-1024",
+              "authorHandle": "zoe",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1024",
+            "9"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "bookmark_p-1024",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_bookmark_toggled"
+          },
+          "observed": {
+            "active": true,
+            "event": {
+              "seq": 11,
+              "type": "post_bookmark_toggled",
+              "timestamp": "2026-10-08T15:58:27.079Z",
+              "postId": "p-1024",
+              "authorHandle": "zoe",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1024",
+            "11"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "target_post_p-1020",
+          "passed": true,
+          "expected": {
+            "id": "p-1020",
+            "author_handle": "amina"
+          },
+          "observed": {
+            "id": "p-1020",
+            "author_handle": "amina"
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "like_p-1020",
+          "passed": false,
+          "expected": {
+            "active": true,
+            "event_type": "post_like_toggled"
+          },
+          "observed": {
+            "active": false,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ],
+          "failure_reason": "like_p-1020 did not match exact final-state and event requirements"
+        },
+        {
+          "name": "bookmark_p-1020",
+          "passed": false,
+          "expected": {
+            "active": true,
+            "event_type": "post_bookmark_toggled"
+          },
+          "observed": {
+            "active": false,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ],
+          "failure_reason": "bookmark_p-1020 did not match exact final-state and event requirements"
+        },
+        {
+          "name": "exact_comment_p-1001",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Focus lanes approved",
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "comment_id": "c-1791475048868",
+            "event": {
+              "seq": 7,
+              "type": "comment_created",
+              "timestamp": "2026-10-08T15:57:28.870Z",
+              "postId": "p-1001",
+              "commentId": "c-1791475048868",
+              "text": "Focus lanes approved"
+            }
+          },
+          "matched_object_ids": [
+            "p-1001",
+            "c-1791475048868"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_comment_p-1024",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Checklist is clear",
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "comment_id": "c-1791475128579",
+            "event": {
+              "seq": 14,
+              "type": "comment_created",
+              "timestamp": "2026-10-08T15:58:48.579Z",
+              "postId": "p-1024",
+              "commentId": "c-1791475128579",
+              "text": "Checklist is clear"
+            }
+          },
+          "matched_object_ids": [
+            "p-1024",
+            "c-1791475128579"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_comment_p-1020",
+          "passed": false,
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Escalation owner set",
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "comment_id": null,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ],
+          "failure_reason": "exact_comment_p-1020 did not match exact final-state and event requirements"
+        },
+        {
+          "name": "exact_own_post_focus_review_ready",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Focus review ready",
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "post_id": "p-1791475549738",
+            "event": {
+              "seq": 35,
+              "type": "post_created",
+              "timestamp": "2026-10-08T16:05:49.738Z",
+              "postId": "p-1791475549738",
+              "text": "Focus review ready",
+              "topic": "Updates"
+            }
+          },
+          "matched_object_ids": [
+            "p-1791475549738"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_own_post_research_plan_set",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Research plan set.",
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "post_id": "p-1791475560686",
+            "event": {
+              "seq": 36,
+              "type": "post_created",
+              "timestamp": "2026-10-08T16:06:00.686Z",
+              "postId": "p-1791475560686",
+              "text": "Research plan set.",
+              "topic": "Updates"
+            }
+          },
+          "matched_object_ids": [
+            "p-1791475560686"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "like_own_post_research_plan_set",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_like_toggled"
+          },
+          "observed": {
+            "post_id": "p-1791475560686",
+            "active": true,
+            "event": {
+              "seq": 39,
+              "type": "post_like_toggled",
+              "timestamp": "2026-10-08T16:06:18.626Z",
+              "postId": "p-1791475560686",
+              "authorHandle": "alex",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1791475560686",
+            "39"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "bookmark_own_post_research_plan_set",
+          "passed": true,
+          "expected": {
+            "active": true,
+            "event_type": "post_bookmark_toggled"
+          },
+          "observed": {
+            "post_id": "p-1791475560686",
+            "active": true,
+            "event": {
+              "seq": 42,
+              "type": "post_bookmark_toggled",
+              "timestamp": "2026-10-08T16:06:27.838Z",
+              "postId": "p-1791475560686",
+              "authorHandle": "alex",
+              "active": true
+            }
+          },
+          "matched_object_ids": [
+            "p-1791475560686",
+            "42"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_reply_to_research_plan",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "text": "Clips linked today",
+            "event": true
+          },
+          "observed": {
+            "post_id": "p-1791475560686",
+            "count": 1,
+            "comment_id": "c-1791475574341",
+            "event": {
+              "seq": 38,
+              "type": "comment_created",
+              "timestamp": "2026-10-08T16:06:14.341Z",
+              "postId": "p-1791475560686",
+              "commentId": "c-1791475574341",
+              "text": "Clips linked today"
+            }
+          },
+          "matched_object_ids": [
+            "p-1791475560686",
+            "c-1791475574341"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_message_maya",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "handle": "maya",
+            "text": "Focus review passed.",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "message_id": "m-1791475425615",
+            "event": {
+              "seq": 32,
+              "type": "message_sent",
+              "timestamp": "2026-10-08T16:03:45.615Z",
+              "handle": "maya",
+              "text": "Focus review passed."
+            }
+          },
+          "matched_object_ids": [
+            "m-1791475425615"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_message_zoe",
+          "passed": false,
+          "expected": {
+            "count": 1,
+            "handle": "zoe",
+            "text": "Research clips filed",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "message_id": null,
+            "event": null
+          },
+          "matched_object_ids": [],
+          "failure_reason": "exact_message_zoe did not match exact final-state and event requirements"
+        },
+        {
+          "name": "exact_message_amina",
+          "passed": true,
+          "expected": {
+            "count": 1,
+            "handle": "amina",
+            "text": "Reply owner assigned",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 1,
+            "message_id": "m-1791475531089",
+            "event": {
+              "seq": 34,
+              "type": "message_sent",
+              "timestamp": "2026-10-08T16:05:31.089Z",
+              "handle": "amina",
+              "text": "Reply owner assigned"
+            }
+          },
+          "matched_object_ids": [
+            "m-1791475531089"
+          ],
+          "failure_reason": null
+        },
+        {
+          "name": "exact_message_priya",
+          "passed": false,
+          "expected": {
+            "count": 1,
+            "handle": "priya",
+            "text": "Research audit done",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "message_id": null,
+            "event": null
+          },
+          "matched_object_ids": [],
+          "failure_reason": "exact_message_priya did not match exact final-state and event requirements"
+        },
+        {
+          "name": "all_notifications_read",
+          "passed": false,
+          "expected": {
+            "unread_count": 0,
+            "event": "notifications_marked_read",
+            "baseline_count_preserved": 140
+          },
+          "observed": {
+            "notification_count": 140,
+            "unread_ids": [
+              "n-1001",
+              "n-1002",
+              "n-1004",
+              "n-1007",
+              "n-1008",
+              "n-1011",
+              "n-1015",
+              "n-1017",
+              "n-1018",
+              "n-1020",
+              "n-1021",
+              "n-1023",
+              "n-1024",
+              "n-1026",
+              "n-1027",
+              "n-1029",
+              "n-1030",
+              "n-1032",
+              "n-1033",
+              "n-1035",
+              "n-1036",
+              "n-1038",
+              "n-1039",
+              "n-1041",
+              "n-1042",
+              "n-1044",
+              "n-1045",
+              "n-1047",
+              "n-1048",
+              "n-1050",
+              "n-1051",
+              "n-1053",
+              "n-1054",
+              "n-1056",
+              "n-1057",
+              "n-1059",
+              "n-1060",
+              "n-1062",
+              "n-1063",
+              "n-1065",
+              "n-1066",
+              "n-1068",
+              "n-1069",
+              "n-1071",
+              "n-1072",
+              "n-1074",
+              "n-1075",
+              "n-1077",
+              "n-1078",
+              "n-1080",
+              "n-1081",
+              "n-1083",
+              "n-1084",
+              "n-1086",
+              "n-1087",
+              "n-1089",
+              "n-1090",
+              "n-1092",
+              "n-1093",
+              "n-1095",
+              "n-1096",
+              "n-1098",
+              "n-1099",
+              "n-1101",
+              "n-1102",
+              "n-1104",
+              "n-1105",
+              "n-1107",
+              "n-1108",
+              "n-1110",
+              "n-1111",
+              "n-1113",
+              "n-1114",
+              "n-1116",
+              "n-1117",
+              "n-1119",
+              "n-1120",
+              "n-1122",
+              "n-1123",
+              "n-1125",
+              "n-1126",
+              "n-1128",
+              "n-1129",
+              "n-1131",
+              "n-1132",
+              "n-1134",
+              "n-1135",
+              "n-1137",
+              "n-1138",
+              "n-1140"
+            ],
+            "event": null
+          },
+          "matched_object_ids": [],
+          "failure_reason": "all_notifications_read did not match exact final-state and event requirements"
+        }
+      ],
+      "matched_object_ids": {
+        "comment:p-1001": "c-1791475048868",
+        "comment:p-1024": "c-1791475128579",
+        "post:Focus review ready": "p-1791475549738",
+        "post:Research plan set.": "p-1791475560686",
+        "comment:research_plan": "c-1791475574341",
+        "message:maya": "m-1791475425615",
+        "message:amina": "m-1791475531089"
+      },
+      "failures": [
+        {
+          "check": "like_p-1020",
+          "reason": "like_p-1020 did not match exact final-state and event requirements",
+          "expected": {
+            "active": true,
+            "event_type": "post_like_toggled"
+          },
+          "observed": {
+            "active": false,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ]
+        },
+        {
+          "check": "bookmark_p-1020",
+          "reason": "bookmark_p-1020 did not match exact final-state and event requirements",
+          "expected": {
+            "active": true,
+            "event_type": "post_bookmark_toggled"
+          },
+          "observed": {
+            "active": false,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ]
+        },
+        {
+          "check": "exact_comment_p-1020",
+          "reason": "exact_comment_p-1020 did not match exact final-state and event requirements",
+          "expected": {
+            "count": 1,
+            "author_handle": "alex",
+            "text": "Escalation owner set",
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "comment_id": null,
+            "event": null
+          },
+          "matched_object_ids": [
+            "p-1020"
+          ]
+        },
+        {
+          "check": "exact_message_zoe",
+          "reason": "exact_message_zoe did not match exact final-state and event requirements",
+          "expected": {
+            "count": 1,
+            "handle": "zoe",
+            "text": "Research clips filed",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "message_id": null,
+            "event": null
+          },
+          "matched_object_ids": []
+        },
+        {
+          "check": "exact_message_priya",
+          "reason": "exact_message_priya did not match exact final-state and event requirements",
+          "expected": {
+            "count": 1,
+            "handle": "priya",
+            "text": "Research audit done",
+            "outbound": true,
+            "event": true
+          },
+          "observed": {
+            "count": 0,
+            "message_id": null,
+            "event": null
+          },
+          "matched_object_ids": []
+        },
+        {
+          "check": "all_notifications_read",
+          "reason": "all_notifications_read did not match exact final-state and event requirements",
+          "expected": {
+            "unread_count": 0,
+            "event": "notifications_marked_read",
+            "baseline_count_preserved": 140
+          },
+          "observed": {
+            "notification_count": 140,
+            "unread_ids": [
+              "n-1001",
+              "n-1002",
+              "n-1004",
+              "n-1007",
+              "n-1008",
+              "n-1011",
+              "n-1015",
+              "n-1017",
+              "n-1018",
+              "n-1020",
+              "n-1021",
+              "n-1023",
+              "n-1024",
+              "n-1026",
+              "n-1027",
+              "n-1029",
+              "n-1030",
+              "n-1032",
+              "n-1033",
+              "n-1035",
+              "n-1036",
+              "n-1038",
+              "n-1039",
+              "n-1041",
+              "n-1042",
+              "n-1044",
+              "n-1045",
+              "n-1047",
+              "n-1048",
+              "n-1050",
+              "n-1051",
+              "n-1053",
+              "n-1054",
+              "n-1056",
+              "n-1057",
+              "n-1059",
+              "n-1060",
+              "n-1062",
+              "n-1063",
+              "n-1065",
+              "n-1066",
+              "n-1068",
+              "n-1069",
+              "n-1071",
+              "n-1072",
+              "n-1074",
+              "n-1075",
+              "n-1077",
+              "n-1078",
+              "n-1080",
+              "n-1081",
+              "n-1083",
+              "n-1084",
+              "n-1086",
+              "n-1087",
+              "n-1089",
+              "n-1090",
+              "n-1092",
+              "n-1093",
+              "n-1095",
+              "n-1096",
+              "n-1098",
+              "n-1099",
+              "n-1101",
+              "n-1102",
+              "n-1104",
+              "n-1105",
+              "n-1107",
+              "n-1108",
+              "n-1110",
+              "n-1111",
+              "n-1113",
+              "n-1114",
+              "n-1116",
+              "n-1117",
+              "n-1119",
+              "n-1120",
+              "n-1122",
+              "n-1123",
+              "n-1125",
+              "n-1126",
+              "n-1128",
+              "n-1129",
+              "n-1131",
+              "n-1132",
+              "n-1134",
+              "n-1135",
+              "n-1137",
+              "n-1138",
+              "n-1140"
+            ],
+            "event": null
+          },
+          "matched_object_ids": []
+        }
+      ]
+    }
+  },
+  "final_observation": {
+    "screenshot_path": "screenshots\\final.png",
+    "a11y_tree": [
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 1200
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2400
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1168
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 2337
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opentwitter:id/action_bar_root",
+        "resource-id": "com.killt.opentwitter:id/action_bar_root",
+        "class": "android.widget.LinearLayout",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "android:id/content",
+        "resource-id": "android:id/content",
+        "class": "android.widget.FrameLayout",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "0",
+        "text": "",
+        "resource_id": "",
+        "resource-id": "",
+        "class": "android.view.ViewGroup",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "not_accessibility_friendly": "true",
+        "NAF": "true",
+        "index": "0",
+        "text": "",
+        "resource_id": "com.killt.opentwitter:id/webview",
+        "resource-id": "com.killt.opentwitter:id/webview",
+        "class": "android.webkit.WebView",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,128][1080,2337]",
+        "tap": {
+          "x": 540,
+          "y": 1232
+        },
+        "rect": {
+          "x": 0,
+          "y": 128,
+          "w": 1080,
+          "h": 2209
+        }
+      },
+      {
+        "index": "1",
+        "text": "",
+        "resource_id": "android:id/statusBarBackground",
+        "resource-id": "android:id/statusBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,0][1080,128]",
+        "tap": {
+          "x": 540,
+          "y": 64
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 128
+        }
+      },
+      {
+        "index": "2",
+        "text": "",
+        "resource_id": "android:id/navigationBarBackground",
+        "resource-id": "android:id/navigationBarBackground",
+        "class": "android.view.View",
+        "package": "com.killt.opentwitter",
+        "content_description": "",
+        "content-desc": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "scrollable": "false",
+        "long_clickable": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "selected": "false",
+        "bounds": "[0,2337][1080,2400]",
+        "tap": {
+          "x": 540,
+          "y": 2368
+        },
+        "rect": {
+          "x": 0,
+          "y": 2337,
+          "w": 1080,
+          "h": 63
+        }
+      }
+    ],
+    "addition_info": {
+      "width": 1080,
+      "height": 2400,
+      "foreground_app": "",
+      "foreground_bundle_id": "",
+      "foreground_window": ""
+    }
+  }
+}

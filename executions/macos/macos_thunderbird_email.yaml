@@ -1,0 +1,11 @@
+tasks:
+  - tasks/macos/thunderbird_email_send_exact_body_local.yaml
+  - tasks/macos/thunderbird_email_filter_discount_to_promotions.yaml
+  - tasks/macos/thunderbird_email_collect_st_club_progress_local.yaml
+models:
+  - gpt5_4
+action_mode: code_adapter
+observation_mode: screenshot_only
+history_window: 3
+metadata:
+  description: macOS Thunderbird Email tasks (1 easy, 2 hard)

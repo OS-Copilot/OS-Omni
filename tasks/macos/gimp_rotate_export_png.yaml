@@ -1,0 +1,39 @@
+task_id: macos.gimp.rotate_export_png
+platform: macos
+instruction: 'GIMP is already open with `/Users/bench/Downloads/gimp_rotate_input.png`.
+
+
+  Rotate the image **90 degrees clockwise** using GIMP, then export the result
+
+  as a PNG file to:
+
+
+  `/Users/bench/Downloads/gimp_rotate_input.png`
+
+
+  If GIMP asks whether to replace the existing file, choose **Replace**. Use
+
+  **Export As** rather than Save. Stop as soon as the export succeeds.
+
+  '
+init:
+  initializer_id: initializers.macos.gimp:GimpInitializer
+  params:
+    wait_ms: 18000
+    upload_files:
+    - local_path: tasks/macos/files/gimp/rotate/start/gimp_rotate_input.png
+      path: /Users/bench/Downloads/gimp_rotate_input.png
+    open_file: /Users/bench/Downloads/gimp_rotate_input.png
+evaluation:
+  evaluator_id: evaluators.macos.gimp:GimpFileEvaluator
+  params:
+    actual_path: /Users/bench/Downloads/gimp_rotate_input.png
+    expected_width: 600
+    expected_height: 900
+    expected_format: PNG
+    expected_image_path: tasks/macos/files/gimp/rotate/expected/gimp_rotate_output.png
+limits:
+  max_steps: 100
+  step_timeout_seconds: 120
+metadata:
+  difficulty: easy
