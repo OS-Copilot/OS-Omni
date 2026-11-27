@@ -32,7 +32,7 @@ def save():
     temporary.write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding='utf-8')
     temporary.replace(status_path)
 
-tasks = list((ROOT / 'local_eval/tasks').glob('*.yaml'))
+tasks = list((ROOT / 'tasks/v1/android').glob('*.yaml'))
 # Start with apps whose bundled inputs have already been verified.
 priority = ['openbank','opennote','opentwitter','openshop','opentrip','openfood','opennavigation','opendriver','deltachat','openphoto']
 tasks.sort(key=lambda p: (next((i for i,g in enumerate(priority) if p.name.startswith(g)),99),p.name))

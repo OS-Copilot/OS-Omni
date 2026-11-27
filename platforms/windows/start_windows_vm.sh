@@ -2,7 +2,7 @@
 # HelloWorld Windows VM launcher
 # Usage:
 #   bash start_windows_vm.sh
-#   bash start_windows_vm.sh --execution executions/windows/json/openshop_login.yaml
+#   bash start_windows_vm.sh --execution executions/v1/windows.yaml
 # Optional env:
 #   HELLOWORLD_WINDOWS_IMAGE=yourlab/helloworld-winvm:latest
 

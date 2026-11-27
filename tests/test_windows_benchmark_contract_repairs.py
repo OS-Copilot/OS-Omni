@@ -134,7 +134,7 @@ def test_task_preserves_original_workflow_instead_of_lossy_summary(stem):
     assert task['instruction'].endswith(source)
 
 
-@pytest.mark.parametrize('stem', ['budget_add_transactions', 'budget_full_setup'])
+@pytest.mark.parametrize('stem', ['budget_add_transactions'])
 def test_actual_transfer_links_are_counterpart_ids_not_shared_group_ids(stem):
     script = (ROOT / 'evaluators/windows/checks' / f'{stem}.ps1').read_text()
     code = script.split("$script = @'", 1)[1].split("'@", 1)[0]

@@ -43,7 +43,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--execution",
-        default="executions/android/android_changed_28_oracle_agent.yaml",
+        default="executions/v1/android.yaml",
         help="Execution YAML containing Android task paths.",
     )
     parser.add_argument("--adb-device", default="emulator-5554")

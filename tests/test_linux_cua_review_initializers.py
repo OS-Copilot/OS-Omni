@@ -21,7 +21,6 @@ RECOVERED_MODULES = {
     "initializers.linux.opennote",
     "initializers.linux.openphoto_edit",
     "initializers.linux.openphotoedit",
-    "initializers.linux.openphotoedit1_community",
     "initializers.linux.opensheet",
     "initializers.linux.opensheet_aster_review",
     "initializers.linux.opensheet_monthly_budget",

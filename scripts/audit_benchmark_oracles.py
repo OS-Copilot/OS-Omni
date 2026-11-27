@@ -24,8 +24,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--tasks-root",
-        default=str(REPO_ROOT / "tasks"),
-        help="Root task directory to audit (default: repo tasks/).",
+        default=str(REPO_ROOT / "tasks" / "v1"),
+        help="Root task directory to audit (default: repo tasks/v1/).",
     )
     parser.add_argument(
         "--json",

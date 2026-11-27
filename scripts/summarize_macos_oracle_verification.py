@@ -36,7 +36,7 @@ class ResultRecord:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks" / "macos"))
+    parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks" / "v1" / "macos"))
     parser.add_argument("--results-root", default=str(REPO_ROOT / "results"))
     parser.add_argument(
         "--format",
@@ -169,7 +169,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
         "",
         f"Generated at: `{summary['generated_at']}`",
         "",
-        "This snapshot is generated from the current `tasks/macos` tree and the latest local `results/**/result.json` evidence.",
+        "This snapshot is generated from the current `tasks/v1/macos` tree and the latest local `results/**/result.json` evidence.",
         "Regenerate with:",
         "",
         "```bash",

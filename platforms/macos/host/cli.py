@@ -50,7 +50,7 @@ def _build_execution_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 -m platforms.macos.host.cli --execution executions/macos/macos_test_1.yaml
+  python3 -m platforms.macos.host.cli --execution executions/v1/macos.yaml
         """,
     )
     parser.add_argument(

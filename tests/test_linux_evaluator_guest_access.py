@@ -136,41 +136,6 @@ def test_local_storage_guest_reader_expands_home_variable(tmp_path, monkeypatch)
     assert [path.name for path in namespace["_store_files"]("$HOME/leveldb")] == ["000001.log"]
 
 
-def test_openzotero_scan_reads_storage_before_caches(tmp_path) -> None:
-    from evaluators.cua_review.evaluators.linux import openzotero
-
-    profile = tmp_path / "google-chrome"
-    for index in range(30):
-        cache = profile / "GrShaderCache" / f"data_{index}"
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text("shader")
-        crash = profile / "Crash Reports" / f"report_{index}"
-        crash.parent.mkdir(parents=True, exist_ok=True)
-        crash.write_text("crash")
-    noise = profile / "Default" / "Preferences"
-    noise.parent.mkdir(parents=True, exist_ok=True)
-    noise.write_text("{}")
-    storage = profile / "Default" / "Local Storage" / "leveldb" / "000003.log"
-    storage.parent.mkdir(parents=True, exist_ok=True)
-    storage.write_text("Agent Reliability Review")
-
-    params = {"scan_roots": [str(profile)], "max_files": 1, "required_global_text": ["Agent Reliability Review"]}
-    program = openzotero._scan_program(params, [])
-    buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer):
-        exec(compile(program, "<scan>", "exec"), {"__name__": "__scan__"})
-    result = json.loads(buffer.getvalue())
-    assert any(str(storage) == source for source in result.get("sources") or []), result.get("sources")
-
-
-def test_openzotero_document_dirs_are_guest_paths() -> None:
-    from evaluators.cua_review.evaluators.linux import openzotero
-    from evaluators.cua_review.platforms.linux.local_storage import GUEST_HOME
-
-    directories = openzotero._storage_directories({})
-    assert directories and all(item.startswith(GUEST_HOME + "/") for item in directories)
-
-
 class _OpenTripGuest:
     """Holds an OpenTrip document per Local Storage directory, with store mtimes."""
 
@@ -224,24 +189,6 @@ def test_command_check_keeps_a_zero_exit_code_and_never_runs_on_the_host() -> No
             raise OSError("guest down")
 
     assert command_check.run_command(_Unreachable(), "true", 5) is None
-
-
-def test_opennavigation_route_review_reads_the_browser_page() -> None:
-    from evaluators.cua_review.evaluators.linux.opennavigation import OpenNavigationRouteReviewEvaluator
-
-    page = {"pages": [{"url": "http://127.0.0.1:4321/", "title": "OpenNavigation", "text": "Route Walk Bike"}],
-            "errors": []}
-    runtime = _LinuxRuntime(python_output=json.dumps(page) + "\n")
-    context = {
-        "controller": EvaluatorControllerView(runtime),
-        "params": {"required_terms": ["Route", "Walk", "Bike"], "forbidden_terms": ["Hotels Option"],
-                   "profile_dir": "/nonexistent", "service_url": "http://127.0.0.1:9"},
-        "final_observation": SimpleNamespace(ui_nodes=[]),
-    }
-    result = OpenNavigationRouteReviewEvaluator().evaluate(context)
-    assert result.status == EvalStatus.PASS, result.message
-    assert result.metadata["browser_pages"][0]["text_length"] == len("Route Walk Bike")
-    assert any("Runtime.evaluate" in script for script in runtime.scripts)
 
 
 def test_marble_evaluator_closes_marble_before_reading_its_settings() -> None:

@@ -27,7 +27,7 @@ from platforms.android.runtime_config import load_android_runtime_config, load_e
 from platforms.android.runners.initialization import run_task_initialization
 
 
-DEFAULT_EXECUTION = "executions/android/android_main_screenshot_pyautogui_gpt5_4.yaml"
+DEFAULT_EXECUTION = "executions/v1/android.yaml"
 DEFAULT_MODEL_ID = "gpt5_4"
 
 
