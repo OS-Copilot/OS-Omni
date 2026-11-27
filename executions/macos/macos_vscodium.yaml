@@ -1,9 +1,0 @@
-tasks:
-  - tasks/v1/macos/vscodium_incident_handoff_refresh.yaml
-models:
-  - gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: macOS VSCodium multi-file workspace editing tasks (1 easy, 2 hard)

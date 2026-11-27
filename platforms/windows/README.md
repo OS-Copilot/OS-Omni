@@ -152,14 +152,25 @@ rsync -a --delete platforms/windows/vm/storage/ platforms/windows/vm/storage.gol
 ## 7. Run a Benchmark
 
 ```bash
-bash platforms/windows/scripts/run_windows_execution.sh executions/windows/json/openshop_login.yaml
+bash platforms/windows/scripts/run_windows_execution.sh executions/v1/windows.yaml
 ```
 
 Equivalent direct command:
 
 ```bash
-bash platforms/windows/start_windows_vm.sh --execution executions/windows/json/openshop_login.yaml
+bash platforms/windows/start_windows_vm.sh --execution executions/v1/windows.yaml
 ```
+
+On a QEMU Windows VM with the guest runtime already running, the batch runner restores a snapshot
+before each task:
+
+```bash
+python scripts/run_linux_qemu_batch.py --platform windows --execution executions/v1/windows.yaml ...
+```
+
+See [docs/windows_android_companion.md](../../docs/windows_android_companion.md) for the QEMU image
+setup and [docs/windows/qwen38-max-reproduction.md](../../docs/windows/qwen38-max-reproduction.md)
+for a full model configuration.
 
 Runtime gate behavior (important):
 
@@ -199,7 +210,7 @@ bash platforms/windows/scripts/reset_windows_storage.sh \
 3. `setup.iso` exists at `platforms/windows/vm/image/setup.iso`.
 4. Run bootstrap image script once.
 5. Run prepare golden storage once.
-6. Run `executions/windows/json/openshop_login.yaml`.
+6. Run `executions/v1/windows.yaml`.
 
 ## Troubleshooting
 

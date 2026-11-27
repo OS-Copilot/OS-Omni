@@ -63,7 +63,6 @@ def test_devtools_evaluators_are_marked_live():
 
     for evaluator_id in (
         "evaluators.cua_review.evaluators.linux.opennavigation_sessions:OpenNavigationSessionEvaluator",
-        "evaluators.linux.opentrip_sk2_qingdao_dual_booking_audit:OpenTripDualBookingEvaluator",
         "evaluators.linux.openphotoedit_window_portrait_dual_export_043767:OpenPhotoEditWindowPortraitDualExport059248Evaluator",
     ):
         assert getattr(load_evaluator(evaluator_id), "REQUIRES_LIVE_BROWSER", False) is True

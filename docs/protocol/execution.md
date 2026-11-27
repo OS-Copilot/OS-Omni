@@ -106,7 +106,7 @@ ExecutionSpec 进入 各平台的runner 后，应当按下面的逻辑展开：
 
 ```yaml
 tasks:
-  - tasks/ios/open_settings.yaml
+  - tasks/v1/ios/contacts_add_contact_card.yaml
 models:
   - gpt5_4
   - gemini_3_flash
@@ -120,9 +120,9 @@ metadata:
 
 ```yaml
 tasks:
-  - tasks/ios/open_settings.yaml
-  - tasks/ios/open_contacts.yaml
-  - tasks/ios/create_hello_world_note.yaml
+  - tasks/v1/ios/contacts_add_contact_card.yaml
+  - tasks/v1/ios/calendar_update_and_create_followup.yaml
+  - tasks/v1/ios/reminders_manage_seeded_list.yaml
 models:
   - gpt5_4
   - internvl3_5

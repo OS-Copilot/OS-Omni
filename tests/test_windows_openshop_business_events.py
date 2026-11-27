@@ -301,6 +301,6 @@ def test_ruleset_digest_and_task_pins_agree(module, stem):
     digest = hashlib.sha256(json.dumps(module.RULESET_SPEC, ensure_ascii=False, sort_keys=True,
                                        separators=(",", ":")).encode()).hexdigest()
     assert module.RULESET_SHA256 == digest
-    for folder in ("tasks/v1/windows", "tasks/windows"):
+    for folder in ("tasks/v1/windows",):
         task = yaml.safe_load((ROOT / folder / f"{stem}.yaml").read_text(encoding="utf8"))
         assert task["evaluation"]["params"]["expected_ruleset_sha256"] == digest

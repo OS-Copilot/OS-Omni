@@ -1,9 +1,0 @@
-tasks:
-- tasks/v1/ios/calendar_finalize_schedule_with_two_followups.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: Single-task rerun for ios.calendar.finalize_schedule_with_two_followups, to merge back into the May 2 FKCODEX execution.

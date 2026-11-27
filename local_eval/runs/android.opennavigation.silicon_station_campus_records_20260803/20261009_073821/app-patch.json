@@ -1,9 +1,0 @@
-{
-  "repair": "opennavigation-records-v1.1",
-  "source": "original APK plus locally reconstructed missing workflow controls",
-  "original_sha256": "96e65a9588c4befd6965c312b71d066b06fc6039ca57f7208b54f82949fcabd4",
-  "patched_sha256": "d3da4642125e3e78fcf9eb61504ab4fa1ac804da123c376595084db95a77f1f5",
-  "behavior": "Preferences apply to route request; actual selected route saves durable route/mode/destination; actual navigation report saves linked incident; no task target prepopulation; actual waypoint names included in Records card",
-  "limitations": "Original author workflow unavailable; controls reconstructed against released instructions. Underlying rebuilt route backend unchanged; preference flags are sent/recorded but original route behavior cannot be established.",
-  "validation": "Local device workflow and waypoint UI regression evidence stored in monitor-audits"
-}

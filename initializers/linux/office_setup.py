@@ -43,7 +43,7 @@ class LinuxOfficeSetupInitializer(BaseInitializer):
     - Per ``seed_downloads`` item (optional):
       - ``host_path``: copy this **host** file to ``path`` via ``upload_file`` (no HTTP fetch).
         Relative paths first try ``run_dir``, then **repository root** (so
-        ``tasks/linux/.../seeds/foo.docx`` works). If the file is missing but ``url`` is set,
+        ``tasks/v1/linux/.../seeds/foo.docx`` works). If the file is missing but ``url`` is set,
         falls back to downloading from ``url``.
       - ``skip_download_if_remote_exists``: if true, skip ``download_file`` when the guest
         file at ``path`` already exists (e.g. you copied it into ``/tmp/helloworld_office/``).

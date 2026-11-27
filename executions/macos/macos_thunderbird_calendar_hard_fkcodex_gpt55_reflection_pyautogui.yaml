@@ -1,9 +1,0 @@
-tasks:
-  - tasks/macos/thunderbird_calendar_manage_multiple_events.yaml
-models:
-  - FKCODEX_GPT55
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: macOS Thunderbird Calendar hard tasks for FKCODEX_GPT55

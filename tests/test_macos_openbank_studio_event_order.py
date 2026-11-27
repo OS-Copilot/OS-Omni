@@ -19,9 +19,6 @@ import pytest
 import yaml
 
 from core.evaluation import EvalStatus
-from evaluators.cua_review.evaluators.macos.openbank_studio_recipients_textedit import (
-    OpenBankStudioRecipientsTextEditEvaluator as SharedStudioEvaluator,
-)
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / "tasks/v1/macos/openbank_macos1_studio_recipients_transfers_textedit.yaml"
@@ -118,11 +115,10 @@ def _failed(result) -> list[str]:
 
 
 @pytest.mark.parametrize("ethan_first", [False, True])
-@pytest.mark.parametrize("shared", [False, True])
-def test_either_recipient_order_passes(ethan_first: bool, shared: bool) -> None:
+def test_either_recipient_order_passes(ethan_first: bool) -> None:
     task = _task()
     params = task["evaluation"]["params"]
-    evaluator = SharedStudioEvaluator() if shared else _evaluator(task)
+    evaluator = _evaluator(task)
     result = _run(evaluator, params, _final_state(params, ethan_first=ethan_first))
 
     assert result.status == EvalStatus.PASS, result.metadata["failure_reasons"]

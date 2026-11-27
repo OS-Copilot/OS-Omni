@@ -58,17 +58,17 @@ results/
 {
   "created_at": "2026-03-19T08:12:30.123456+00:00",
   "task": {
-    "path": "tasks/ios/open_settings.yaml",
+    "path": "tasks/v1/ios/contacts_add_contact_card.yaml",
     "snapshot": {
-      "task_id": "open_settings",
+      "task_id": "ios.contacts.add_contact_card",
       "platform": "ios",
-      "instruction": "Open Settings"
+      "instruction": "Add a contact card ..."
     }
   },
   "execution": {
-    "path": "executions/ios_smoke.yaml",
+    "path": "executions/v1/ios.yaml",
     "snapshot": {
-      "tasks": ["tasks/ios/open_settings.yaml"],
+      "tasks": ["tasks/v1/ios/contacts_add_contact_card.yaml"],
       "models": ["gpt_4o"]
     }
   },

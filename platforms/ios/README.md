@@ -72,23 +72,22 @@ appium --port 4723
 
 正式入口是一个 execution YAML，但它会通过 `tasks:` 字段引用一个或多个 task YAML，所以这两类文件都需要准备。
 
-仓库里已有 execution 示例：
+v1 的 execution 是 `executions/v1/ios.yaml`（48 个任务）；`executions/v1/ios_*.yaml` 是同一组任务换用不同模型的配置。
 
-- `executions/ios/ios_test_1.yaml`
+对应的 task 在 `tasks/v1/ios/` 下，例如：
 
-对应的 task 示例可以参考：
-
-- `tasks/ios/open_settings.yaml`
+- `tasks/v1/ios/contacts_add_contact_card.yaml`
 
 格式示例：
 
 ```yaml
 tasks:
-  - tasks/ios/open_settings.yaml
+  - tasks/v1/ios/contacts_add_contact_card.yaml
 models:
-  - intern_s1_pro
+  - gpt5_4
 action_mode: code_adapter
-observation_mode: a11y_tree_only
+observation_mode: screenshot_only
+max_steps: 300
 history_window: 3
 metadata:
   description: test
@@ -107,7 +106,7 @@ metadata:
 如果只想先检查 execution 是否能被正确解析，可以运行：
 
 ```bash
-python scripts/run_benchmark.py --execution executions/ios/ios_test_1.yaml
+python scripts/run_benchmark.py --execution executions/v1/ios.yaml
 ```
 
 这个命令只做 preflight 校验，不会真正执行实验。
@@ -115,7 +114,7 @@ python scripts/run_benchmark.py --execution executions/ios/ios_test_1.yaml
 ## 7. 运行实验
 
 ```bash
-python -m platforms.ios.cli --execution executions/ios/ios_test_1.yaml
+python -m platforms.ios.cli --execution executions/v1/ios.yaml
 ```
 
 如果要换成其他 execution，直接替换文件路径即可：

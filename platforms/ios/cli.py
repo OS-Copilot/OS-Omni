@@ -39,7 +39,7 @@ def _build_execution_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 -m platforms.ios.cli --execution executions/ios/ios_test_1.yaml
+  python3 -m platforms.ios.cli --execution executions/v1/ios.yaml
         """,
     )
     parser.add_argument(

@@ -1,9 +1,0 @@
-tasks:
-- tasks/v1/windows/cross_app_openshop_calendar_checkout_coffee_followup_hard.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: "Windows cross-app hard task: checkout coffee in OpenShop and create a Thunderbird Calendar follow-up."

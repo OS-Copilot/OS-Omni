@@ -1,18 +1,3 @@
-# OS-Omni consolidated primary repository
-
-Platform authority: **BaoZhuhan/os-omni for Windows, Android, iOS and macOS;
-Touchstone-AI-Lab/OS-Omni for Linux, Web and Cross-device**.
-
-Start with the [repository guide](docs/REPOSITORY.md),
-[evaluation records](records/README.md), and
-[source provenance](integrations/touchstone/README.md).
-The old Cross-VM workflows have been replaced by Touchstone's 12 single-screen
-Cross-device tasks within the 300-task release. Historical Cross-VM scores are
-not transferred to the replacement tasks.
-
-Android author rebuilt delivery: [complete handover](docs/android/HANDOVER.md).
-Existing Windows, macOS, iOS and Android sources and evidence remain available.
-
 # OS-Omni Live
 
 OS-Omni is a **live cross-platform GUI benchmark** and runtime stack for agent
@@ -58,8 +43,27 @@ installed applications, or model credentials. Every task's initializer and
 evaluator resolve locally; the reviewed import records its provenance in its
 [manifest](tasks/v1/cua_tasks_review_manifest.json).
 
-To run the Linux set on a server with a local vision model, see the
-[headless QEMU guide](docs/linux_headless.md).
+## Running v1
+
+Each platform has its own runner; see the [repository guide](docs/REPOSITORY.md)
+for setup documents.
+
+| Track | Entry point |
+| --- | --- |
+| Linux desktop, Web | `scripts/run_linux_qemu_batch.py --execution executions/v1/{linux,web}.yaml` ([headless QEMU guide](docs/linux_headless.md)) |
+| Cross-device | `scripts/run_linux_qemu_batch.py` with `executions/v1/cross_device_linux_android.yaml` or `--platform windows` and `executions/v1/cross_device_windows_android.yaml` ([Linux + Android](docs/linux_android_companion.md), [Windows + Android](docs/windows_android_companion.md)) |
+| Windows | `python -m platforms.windows.cli --execution executions/v1/windows.yaml`, or `scripts/run_linux_qemu_batch.py --platform windows` on QEMU ([platform notes](platforms/windows/README.md)) |
+| macOS | `python -m platforms.macos.host.cli --execution executions/v1/macos.yaml` ([platform notes](platforms/macos/README.md)) |
+| iOS | `python -m platforms.ios.cli --execution executions/v1/ios.yaml` ([platform notes](platforms/ios/README.md)) |
+| Android | `python -m platforms.android.cli --execution executions/v1/android.yaml`, or `local_eval/run_one.py` for a cold-reset single task ([Android setup](docs/android/HANDOVER.md)) |
+
+## Results
+
+* [`task_results.csv`](task_results.csv): per-task PASS/FAIL for every
+  evaluated model.
+* [`platform_summary.csv`](platform_summary.csv): per-platform totals.
+* [`scan.csv`](scan.csv): the evaluator/instruction alignment scan of the v1
+  tasks.
 
 ## Repository layout
 
@@ -71,8 +75,13 @@ definitions, evaluators, and runtime integrations:
 * `tasks/v1/`: the first 300-task release, supporting tasks, and task assets.
 * `evaluators/`: task-specific evaluation logic.
 * `initializers/`: task setup and environment seeding logic.
-* `executions/`: benchmark execution configs referencing retained tasks.
-* `scripts/`: project maintenance and benchmark helper scripts.
+* `executions/v1/`: benchmark execution configs for the v1 tasks.
+* `scripts/`, `tools/`: benchmark runners, environment setup, and maintenance
+  helpers for the v1 task maps and re-scoring.
+* `apps/`, `services/`, `assets/`: app sources, the OpenDriver backend, and
+  fixtures used by v1 tasks.
+* `local_eval/`: the Android host runner, cold reset, and local OpenDriver /
+  GreenMail services.
 * `workbench/`: local benchmark inspection UI.
 
 Install dependencies from `pyproject.toml` or use the platform-specific setup

@@ -1,8 +1,0 @@
-{
-  "repair": "openfood-events-v1",
-  "source": "bundled original APK assets/public/app.js",
-  "original_sha256": "adcdddcfdc7e94d4f569ec5958d411ebe4466b8cb89e235c85918de993f49a34",
-  "patched_sha256": "b4d003e0fe1e85a48ceaff99c30da1912bedc4297748b7b5c5e40f8ed54f93af",
-  "behavior": "Persist actual reorder source and checkout/status actions; no inferred historical events or changed task goals",
-  "signed": "local Android debug certificate; requires clean reinstall after VM restore"
-}

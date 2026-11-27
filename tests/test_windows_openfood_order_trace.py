@@ -68,8 +68,6 @@ def test_trace_requires_fresh_complete_order_evidence(tmp_path, monkeypatch, cap
     ]}), encoding='utf8')
     monkeypatch.setenv('OPENFOOD_SEED_FILE', str(seed))
     task = yaml.safe_load((ROOT / 'tasks/v1/windows/openfood_place_order_from_existing_restaurants.yaml').read_text(encoding='utf8'))
-    alias = yaml.safe_load((ROOT / 'tasks/windows/openfood_place_order_from_existing_restaurants.yaml').read_text(encoding='utf8'))
-    assert task['evaluation'] == alias['evaluation']
     code = task['evaluation']['params']['command'].split("$code = @'", 1)[1].split("'@", 1)[0]
     exec(code, {})
     output = capsys.readouterr().out

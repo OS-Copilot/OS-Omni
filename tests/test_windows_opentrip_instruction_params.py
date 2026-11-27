@@ -46,11 +46,3 @@ def test_required_bookings_follow_the_instruction(path):
         else:
             assert booking["hotel_name"] in segment
             assert booking["room_name"] in segment
-
-
-def test_alias_copies_grade_the_same_bookings():
-    for path in TASKS:
-        alias = ROOT / "tasks/windows" / path.name
-        if alias.exists():
-            live = yaml.safe_load(path.read_text(encoding="utf8"))["evaluation"]["params"]["required_bookings"]
-            assert yaml.safe_load(alias.read_text(encoding="utf8"))["evaluation"]["params"]["required_bookings"] == live

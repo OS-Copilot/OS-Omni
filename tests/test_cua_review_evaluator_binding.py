@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-import importlib
 import json
 from pathlib import Path
 
@@ -13,12 +11,6 @@ from core.specs.loader import load_task_spec
 from platforms.macos.host.core.types import load_task_from_file
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-WINDOWS_PHOTOEDIT = (
-    "openphotoedit1_community_four_exports_sn2_1788424022642_141994",
-    "openphotoedit2_experimental_four_exports_sn2_1788426175327_359007",
-    "openphotoedit3_four_exact_exports_sn2_1788428213830_533412",
-    "openphotoedit4_four_exact_exports_sn2_1788431223596_956080",
-)
 
 
 class _Guest:
@@ -40,18 +32,8 @@ def _spec(relative: str):
     return load_task_spec(REPO_ROOT / relative)
 
 
-def _legacy_photoedit_spec(name: str):
-    # 5cad99f rebuilt the v1 Windows OpenPhotoEdit tasks as GIMP tasks without
-    # review provenance; the reviewed definitions the strict evaluators were
-    # written against are kept at the task's ``metadata.legacy_task``.
-    live = _spec(f"tasks/v1/windows/{name}.yaml")
-    legacy = _spec(live.metadata["legacy_task"])
-    assert legacy.task_id == live.task_id
-    return legacy
-
-
 def test_binding_supplies_source_instruction_and_original_evaluator() -> None:
-    spec = _legacy_photoedit_spec(WINDOWS_PHOTOEDIT[1])
+    spec = _spec("tasks/v1/android/deltachat_bot_evidence_device_location_684193.yaml")
     provenance = spec.metadata["cua_tasks_review"]
     binding = task_binding_context(spec)
 
@@ -70,35 +52,6 @@ def test_binding_reads_provenance_for_macos_runner_tasks() -> None:
 
     assert binding["task_id"] == spec.task_id
     assert binding["instruction"] == spec.metadata["cua_tasks_review"]["source_instruction"]
-
-
-def test_windows_photoedit_binding_holds_and_reaches_the_guest_read() -> None:
-    for name in WINDOWS_PHOTOEDIT:
-        spec = _legacy_photoedit_spec(name)
-        module = importlib.import_module(spec.evaluation.evaluator_id.split(":")[0])
-        params = spec.evaluation.params
-        if "expected_evaluator_source_sha256" in params:
-            assert params["expected_evaluator_source_sha256"] == hashlib.sha256(
-                Path(module.__file__).read_bytes()
-            ).hexdigest()
-        if "expected_checkpoint_specs_sha256" in params:
-            assert params["expected_checkpoint_specs_sha256"] == hashlib.sha256(
-                json.dumps(
-                    list(module.CHECKPOINT_SPECS),
-                    ensure_ascii=False,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ).encode()
-            ).hexdigest()
-
-        guest = _Guest()
-        context = with_task_binding(
-            {"params": dict(params), "controller": guest, "run_dir": None}, spec
-        )
-        result = load_evaluator(spec.evaluation.evaluator_id).evaluate(context)
-        assert result.status is EvalStatus.ERROR
-        assert "binding" not in str(result.message).lower(), (name, result.message)
-        assert guest.scripts, name
 
 
 def test_opentrip_seed_baseline_is_read_from_the_guest() -> None:

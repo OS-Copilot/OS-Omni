@@ -1,9 +1,0 @@
-tasks:
-- tasks/windows/vscode_release_cleanup_workspace.yaml
-models:
-- gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: VS Code Windows workspace task - release cleanup

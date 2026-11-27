@@ -1,9 +1,0 @@
-tasks:
-  - tasks/v1/macos/textedit_config_rewrite.yaml
-models:
-  - FKCODEX_GPT55
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: macOS TextEdit hard tasks for FKCODEX_GPT55

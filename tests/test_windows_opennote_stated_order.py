@@ -178,7 +178,7 @@ def test_live_music_needs_no_explore_navigation():
     (music, "opennote_live_music_visuals_three_notes_1788411372670_327795"),
     (forum, "opennote_forum_arrival_three_notes_1788412586968_101704"),
 ])
-def test_ruleset_digest_matches_both_task_copies(module, stem):
+def test_ruleset_digest_matches_the_task(module, stem):
     import hashlib
     import json
     from pathlib import Path
@@ -188,6 +188,6 @@ def test_ruleset_digest_matches_both_task_copies(module, stem):
     digest = hashlib.sha256(json.dumps(module.RULESET_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
     assert module.RULESET_SHA256 == digest
     root = Path(__file__).resolve().parents[1]
-    for folder in ("tasks/v1/windows", "tasks/windows"):
+    for folder in ("tasks/v1/windows",):
         task = yaml.safe_load((root / folder / f"{stem}.yaml").read_text(encoding="utf8"))
         assert task["evaluation"]["params"]["expected_ruleset_sha256"] == digest

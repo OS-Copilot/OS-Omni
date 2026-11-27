@@ -413,7 +413,6 @@ class OpenShopCoffeeBabyDualCheckout958608Evaluator(BaseEvaluator):
         # The app persists the legacy session as {loggedIn, user: {name, phone}}
         # without user.id; accept an absent id but require the benchmark id when
         # one is present. Same tolerant pattern as the repaired trip-gear sibling.
-        # See docs/ios/OPENSHOP_TRIP_GEAR_AUDIT_20261011.md.
         session = state.get("session") if isinstance(state, Mapping) else None
         session_user = (
             session.get("user")
