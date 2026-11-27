@@ -54,8 +54,7 @@ for key in ("restaurants", "users", "courierTasks"):
 # 16th); the evaluators match the plural "courier_route_seeds" list by the
 # task's requested route id.  "courier_route_seed" is only the first shipped
 # entry for back-compat and does not select the requested route.  An empty seed
-# keeps both keys empty so the evaluators still fail the seed requirement.  See
-# docs/windows/final-score.json:274,298 for the recorded failures.
+# keeps both keys empty so the evaluators still fail the seed requirement.
 courier_tasks = [row for row in (state.get("courierTasks") or []) if isinstance(row, dict)]
 courier_route_seed = dict(courier_tasks[0]) if courier_tasks else {}
 

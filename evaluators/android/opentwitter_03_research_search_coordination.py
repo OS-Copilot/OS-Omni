@@ -96,7 +96,7 @@ class OpenTwitterReleaseSearchEvaluator(BaseEvaluator):
                 except Exception:
                     baseline = None
             # The bound v1 initializer only launches OpenTwitter; it never writes this
-            # baseline file (only the unbound local_eval wrapper did, local_eval/baselines.py:102).
+            # baseline file (only the retired step-by-step local_eval wrapper did).
             # Requiring it made every full v1 run fail, so it is opt-in for callers that
             # do write it; a run that supplies the file still gets the baseline_* checks below.
             if bool(params.get("require_full_run_baseline", False)):

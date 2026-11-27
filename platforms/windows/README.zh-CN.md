@@ -152,14 +152,22 @@ rsync -a --delete platforms/windows/vm/storage/ platforms/windows/vm/storage.gol
 ## 7. 运行基准测试
 
 ```bash
-bash platforms/windows/scripts/run_windows_execution.sh executions/windows/json/openshop_login.yaml
+bash platforms/windows/scripts/run_windows_execution.sh executions/v1/windows.yaml
 ```
 
 等价直接命令：
 
 ```bash
-bash platforms/windows/start_windows_vm.sh --execution executions/windows/json/openshop_login.yaml
+bash platforms/windows/start_windows_vm.sh --execution executions/v1/windows.yaml
 ```
+
+如果 Windows VM 运行在 QEMU 上并且 guest runtime 已启动，可以用批量 runner，每个任务前恢复快照：
+
+```bash
+python scripts/run_linux_qemu_batch.py --platform windows --execution executions/v1/windows.yaml ...
+```
+
+QEMU 镜像准备见 [docs/windows_android_companion.md](../../docs/windows_android_companion.md)，完整模型配置示例见 [docs/windows/qwen38-max-reproduction.md](../../docs/windows/qwen38-max-reproduction.md)。
 
 Runtime 启动判定（重要）：
 
@@ -199,7 +207,7 @@ bash platforms/windows/scripts/reset_windows_storage.sh \
 3. `setup.iso` 位于 `platforms/windows/vm/image/setup.iso`。
 4. 先跑一次镜像 bootstrap。
 5. 先跑一次 golden 存储制作。
-6. 再跑 `executions/windows/json/openshop_login.yaml`。
+6. 再跑 `executions/v1/windows.yaml`。
 
 ## 常见问题
 

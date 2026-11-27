@@ -60,8 +60,7 @@ recipient INBOXes verified empty) → SMTP seed of that task's inbound
 set → read-only REST verification (each seed subject + Message-ID
 exactly once) → foreground Maily on iOS.
 
-Provisioning contract (GreenMail 2.1.14 live OpenAPI
-`../records/greenmail-openapi.yml`): `GET /api/user` lists users,
+Provisioning contract (GreenMail 2.1.14 live OpenAPI): `GET /api/user` lists users,
 `POST /api/user` with JSON `{"email", "login", "password"}` creates one
 (`login == email`). The seeder provisions the sender plus
 `recipients_for(task_id)` from `TARGET_SPECS` — only the initially
@@ -116,12 +115,11 @@ yaml `expected_ruleset_sha256` together — never weakening the hash checks.
    checkpoint mailboxes (`TARGET_SPECS` `kind: "reply"`), while delivery stays
    in the agent mailbox; non-reply seeds remain self-addressed. No evaluator
    pins the seed `From` header directly, only the target reply's recipient.
-3. The recovered-photo manifest and copies (`../records/…`, `../ios/…`) are
-   root-provided and were not opened here; hash acceptance runs in
-   `prepare_maily_assets.py` at extraction time.
+3. The recovered-photo manifest and copies are root-provided and were not
+   opened here; hash acceptance runs in `prepare_maily_assets.py` at
+   extraction time.
 4. FSNotes attachments for the three live tasks are resolved: root's
-   exact-hash search of the official FSNotes container
-   (`../records/mail-official-note-hash-search.json`) confirms all three
+   exact-hash search of the official FSNotes container confirms all three
    live-task originals byte-exact (`Sprint Review Draft.md`, `Shipping
    Notes.md`, `Team Contacts.md`); no MD assets are missing for 3_1–3_3.
    Only the orphaned 3_4 row stays seek-only (no task wiring, no seeding).

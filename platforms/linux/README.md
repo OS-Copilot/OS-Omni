@@ -23,19 +23,14 @@ Run guest runtime example:
 python -m platforms.linux.guest.runtime_server --host 0.0.0.0 --port 5000 --token linuxbench-runtime-token
 ```
 
-Run host benchmark example:
+Run host benchmark example (Linux desktop track; use `executions/v1/web.yaml` for the Web track):
 
 ```bash
-python -m platforms.linux.cli --execution executions/linux/linux_office_writer_helloworld.yaml
+python -m platforms.linux.cli --execution executions/v1/linux.yaml
 ```
 
-Run the same Linux task through the shared Taobao OpenAI-compatible endpoint:
-
-```bash
-TAOBAO_API_KEY=... \
-TAOBAO_API_URL=... \
-python -m platforms.linux.cli --execution executions/linux/linux_openshop_taobao.yaml
-```
+For QEMU VMs with per-task snapshot restore, use `scripts/run_linux_qemu_batch.py` as described in
+[docs/linux_headless.md](../../docs/linux_headless.md).
 
 If `configs/linux.yaml` sets `vm_provider: vmware`, the Linux CLI will resolve a VMware Linux VM from `vm_path` or from `vm_storage_dir` / `vm_image_url`, then:
 - revert `vm_snapshot_name` before each task when `vm_reset_between_tasks: true`

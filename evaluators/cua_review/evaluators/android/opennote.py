@@ -156,10 +156,8 @@ def _installed_note_tags(values: Sequence[Any] | None) -> list[str]:
 
     ``local-api.js`` in the installed APK splits the typed tag text on
     ``/[,#\\s]+/`` and keeps the first five tokens, so a tag written as
-    ``"lunch route"`` is persisted as ``["lunch", "route"]``.  The same parser
-    is documented by the repository's compatibility wrapper at
-    ``local_eval/opennote_evaluator.py:10-11``.  Multiplicity and order are
-    preserved -- this is an ordered token list, not a set.
+    ``"lunch route"`` is persisted as ``["lunch", "route"]``.  Multiplicity and
+    order are preserved -- this is an ordered token list, not a set.
     """
     tags: list[str] = []
     for value in values or []:
@@ -407,7 +405,7 @@ class OpenNoteAndroidEvaluator(BaseEvaluator):
             # tag text on /[,#\s]+/ and stores at most five tokens, so
             # "lunch route" is persisted as ["lunch", "route"].  Strings,
             # order and multiplicity stay exact; only the token boundary is
-            # normalized.  See local_eval/opennote_evaluator.py:10-11.
+            # normalized.
             observed = {
                 "title": note.get("title"),
                 "text": note.get("text"),

@@ -256,21 +256,17 @@ python3 scripts/check_env.py --platform macos --check-runtime
 
 正式入口是一个 execution YAML，但它会通过 `tasks:` 字段引用一个或多个 task YAML，所以这两类文件都需要准备。
 
-仓库里已有 execution 示例：
+v1 的 execution 是 `executions/v1/macos.yaml`（48 个任务）；`executions/v1/macos_*.yaml` 是同一组任务换用不同模型的配置。
 
-- `executions/macos/macos_test_1.yaml`
-- `executions/macos/macos_test_2.yaml`
-- `executions/macos/macos_zotero.yaml`
+对应的 task 在 `tasks/v1/macos/` 下（oracle companion 在 `tasks/v1/macos/oracle/`），例如：
 
-对应的 task 示例可以参考：
-
-- `tasks/macos/textedit_append_ops_note.yaml`
+- `tasks/v1/macos/libreoffice_calc_add_formulas.yaml`
 
 格式示例：
 
 ```yaml
 tasks:
-  - tasks/macos/textedit_append_ops_note.yaml
+  - tasks/v1/macos/libreoffice_calc_add_formulas.yaml
 models:
   - gpt5_4
 action_mode: code_adapter
@@ -301,30 +297,22 @@ macOS task YAML 的 `limits` 现在统一约定为：
 如果只想先检查 execution 是否能被正确解析，可以运行：
 
 ```bash
-python3 scripts/run_benchmark.py --execution executions/macos/macos_test_1.yaml
+python3 scripts/run_benchmark.py --execution executions/v1/macos.yaml
 ```
 
 这个命令只做 preflight 校验，不会真正执行实验。
 
-如果要做不依赖模型 API key 的最小 VM/runtime smoke，可以跑 macOS OpenShop oracle execution：
-
-```bash
-python3 -m platforms.macos.host.cli --execution executions/macos/macos_openshop_oracle.yaml
-```
+如果要做不依赖模型 API key 的最小 VM/runtime smoke，可以写一个 execution，`tasks:` 列出 `tasks/v1/macos/oracle/` 下的 oracle companion，`models:` 选 `configs/models.yaml` 里对应的 oracle provider（例如 `macos_script_oracle`）。
 
 这条路径仍会走 macOS runner、Tart clone、guest runtime、动作执行和 evaluator，但模型侧使用本地 oracle provider，因此适合确认 VM 生命周期和 runtime 链路是否正常。
 
 ## 11. 运行实验
 
 ```bash
-python3 -m platforms.macos.host.cli --execution executions/macos/macos_test_1.yaml
+python3 -m platforms.macos.host.cli --execution executions/v1/macos.yaml
 ```
 
-如果要换成其他 execution，直接替换文件路径即可：
-
-```bash
-python3 -m platforms.macos.host.cli --execution executions/macos/macos_test_2.yaml
-```
+如果要换成其他 execution（例如 `executions/v1/macos_claude_opus_5_5_high.yaml`），直接替换文件路径即可。
 
 如果你要串行跑一组 macOS executions，可以自己维护一个 suite manifest，并传给 `scripts/run_macos_execution_suite.py`：
 

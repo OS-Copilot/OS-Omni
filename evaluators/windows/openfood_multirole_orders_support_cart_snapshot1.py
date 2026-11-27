@@ -606,7 +606,6 @@ class OpenFoodMultiRoleWorkflowEvaluator(BaseEvaluator):
         # asks for is not necessarily the first entry (D-346 is 16th).  Match the
         # collector's full route list by the task's requested label instead of by
         # array position; older collectors only emitted the singular dict.
-        # See docs/windows/final-score.json:274 for the recorded false failure.
         route_spec = dict(params.get("courier_route") or {})
         route_label = str(route_spec.get("label") or "D-346")
         if "courier_route_seeds" in payload:
