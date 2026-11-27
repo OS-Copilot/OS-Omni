@@ -1,9 +1,0 @@
-tasks:
-  - tasks/macos/libreoffice_impress_edit_title.yaml
-models:
-  - gpt5_4
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: macOS LibreOffice Impress edit title

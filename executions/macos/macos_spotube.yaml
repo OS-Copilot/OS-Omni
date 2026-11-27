@@ -1,9 +1,0 @@
-tasks:
-  - tasks/v1/macos/spotube_dark_profile_with_plugins.yaml
-models:
-  - macos_spotube_oracle
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 3
-metadata:
-  description: macOS Spotube tasks (1 easy, 2 hard)

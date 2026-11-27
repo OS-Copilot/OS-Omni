@@ -99,7 +99,7 @@ def test_community_meal_ruleset_binding_matches_task_yaml():
     import yaml
     from pathlib import Path
     root = Path(__file__).resolve().parents[1]
-    for folder in ("tasks/v1/windows", "tasks/windows"):
+    for folder in ("tasks/v1/windows",):
         for module, stem in ((meal, "opennote_community_meal_three_notes_1788409691786_981937"),
                              (music, "opennote_live_music_visuals_three_notes_1788411372670_327795")):
             task = yaml.safe_load((root / folder / f"{stem}.yaml").read_text(encoding="utf8"))

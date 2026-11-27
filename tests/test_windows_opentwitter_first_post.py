@@ -305,7 +305,7 @@ def test_ruleset_digest_is_the_spec_and_the_live_task_binds_it(module_name, stem
     module = importlib.import_module(module_name)
     digest = hashlib.sha256(json.dumps(module.RULESET_SPEC, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     assert module.RULESET_SHA256 == digest
-    for folder in ("tasks/v1/windows", "tasks/windows"):
+    for folder in ("tasks/v1/windows",):
         task = yaml.safe_load((Path(__file__).resolve().parents[1] / folder / f"{stem}.yaml").read_text(encoding="utf8"))
         assert task["evaluation"]["params"]["expected_ruleset_sha256"] == digest
         assert task["metadata"]["evaluator_ruleset_sha256"] == digest

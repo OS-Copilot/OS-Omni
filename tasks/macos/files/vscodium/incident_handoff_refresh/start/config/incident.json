@@ -1,8 +1,0 @@
-{
-  "pageBackupOnLag": false,
-  "queueLagThresholdMinutes": 20,
-  "bridgeLagThresholdMinutes": 30,
-  "handoffOwner": "Day Shift",
-  "severity": "SEV3",
-  "handoffState": "draft"
-}

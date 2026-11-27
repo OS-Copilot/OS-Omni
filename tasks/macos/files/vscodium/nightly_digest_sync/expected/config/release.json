@@ -1,6 +1,0 @@
-{
-  "pilotGroup": "support-canary",
-  "sendDigest": true,
-  "retryLimit": 4,
-  "retryWindowMinutes": 15
-}

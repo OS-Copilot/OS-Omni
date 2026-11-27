@@ -1,6 +1,0 @@
-Shift Summary
-Front desk status: waiting on badges
-Runner status: pending escort list
-Kitchen status: coffee restock requested
-Security status: badge desk closed
-Ops notes: awaiting facilities reply

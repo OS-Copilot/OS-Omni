@@ -9,7 +9,6 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXECUTIONS_DIR = REPO_ROOT / "executions"
-MACOS_EXECUTIONS_DIR = EXECUTIONS_DIR / "macos"
 MACOS_TASKS_DIR = REPO_ROOT / "tasks" / "v1" / "macos"
 
 
@@ -34,21 +33,24 @@ class ExecutionCorpusContractTests(unittest.TestCase):
         checked: list[Path] = []
         stale_overrides: list[str] = []
 
-        for root in (MACOS_EXECUTIONS_DIR, MACOS_TASKS_DIR):
-            for path in sorted(root.glob("*.yaml")):
-                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-                if not isinstance(raw, dict):
-                    continue
-                checked.append(path)
-                for label, payload in (
-                    ("top-level", raw),
-                    ("metadata", raw.get("metadata")),
-                    ("init.params", (raw.get("init") or {}).get("params") if isinstance(raw.get("init"), dict) else None),
-                ):
-                    if isinstance(payload, dict) and payload.get("base_vm_name") not in (None, "", "allapps-base"):
-                        stale_overrides.append(
-                            f"{path.relative_to(REPO_ROOT)} {label}: {payload['base_vm_name']!r}"
-                        )
+        macos_corpus = [
+            *sorted((EXECUTIONS_DIR / "v1").glob("macos*.yaml")),
+            *sorted(MACOS_TASKS_DIR.glob("*.yaml")),
+        ]
+        for path in macos_corpus:
+            raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                continue
+            checked.append(path)
+            for label, payload in (
+                ("top-level", raw),
+                ("metadata", raw.get("metadata")),
+                ("init.params", (raw.get("init") or {}).get("params") if isinstance(raw.get("init"), dict) else None),
+            ):
+                if isinstance(payload, dict) and payload.get("base_vm_name") not in (None, "", "allapps-base"):
+                    stale_overrides.append(
+                        f"{path.relative_to(REPO_ROOT)} {label}: {payload['base_vm_name']!r}"
+                    )
 
         self.assertGreater(len(checked), 0, "expected macOS corpus YAML files")
         self.assertEqual(stale_overrides, [])

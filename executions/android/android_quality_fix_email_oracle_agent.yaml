@@ -1,9 +1,0 @@
-tasks:
-  - tasks/android/cross_app_email_office_compile_brief_and_reply_hard.yaml
-models:
-  - android_oracle_agent
-action_mode: code_adapter
-observation_mode: screenshot_only
-history_window: 1
-metadata:
-  description: Targeted Android oracle validation for the Email+Office quality fix.
