@@ -1,5 +1,9 @@
 # OS-Omni Live
 
+**OS-Omni: Benchmarking Generalist Computer-Using Agents on Long-Horizon Workflows Across Platforms**
+
+[Project Page](https://os-copilot.github.io/OS-Omni-Home/) | [Paper (arXiv)](https://arxiv.org/pdf/2611.34232) | [Hugging Face Paper Page](https://huggingface.co/papers/2611.34232)
+
 OS-Omni is a **live cross-platform GUI benchmark** and runtime stack for agent
 evaluation. We release tasks in versioned waves of **300 tasks each**, starting
 with **v1**. Future waves will be published as v2, v3, and so on. Report the
@@ -22,7 +26,7 @@ The [v1 task inventory](tasks/v1/manifest.json) contains **300 benchmark tasks**
 
 Selection prioritizes the recently added Open-series applications, including
 OpenBank, OpenShop, OpenTrip, OpenNote, and OpenTwitter. Other reviewed tasks
-and earlier tasks fill the remaining slots. v1 includes 181 Open-series tasks.
+and earlier tasks fill the remaining slots. v1 includes 180 Open-series tasks.
 
 The 12 cross-device workflows each run on one screen: the Linux or Windows
 desktop shows a companion Android phone in a scrcpy window, and the agent works
