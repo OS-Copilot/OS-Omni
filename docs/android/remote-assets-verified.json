@@ -1,9 +1,0 @@
-{
-  "verified_at": 1791571117.0919013,
-  "parts": 180,
-  "bytes": 6035857040,
-  "digest_algorithm": "sha256",
-  "all_server_digests_match": true,
-  "release_manifest_sha256": "098aed6072c03f63b76af2e814ae41b22f53fd53d5bf9f7b3dc07d062aec060d",
-  "release_manifest_server_digest_matches": true
-}

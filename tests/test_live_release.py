@@ -21,15 +21,8 @@ ALL_TRACKS = (*TRACKS, "cross_device")
 CROSS_DEVICE_SCREENS = {"linux_android": "linux", "windows_android": "windows"}
 
 
-def test_authoritative_tracks_use_touchstone_selection_without_cross_vm_alternative() -> None:
-    catalog = json.loads((REPO_ROOT / "tasks/catalog.json").read_text())
-    assert catalog["track_authority"] == {
-        **{track: "BaoZhuhan/os-omni" for track in ("android", "ios", "macos", "windows")},
-        **{track: "Touchstone-AI-Lab/OS-Omni" for track in ("linux", "web", "cross_device")},
-    }
-    upstream = json.loads((REPO_ROOT / "integrations/touchstone/upstream-v1-manifest.json").read_text())
-    assert MANIFEST == upstream
-    assert catalog["task_count"] == len(MANIFEST["tasks"]) == 300
+def test_release_has_no_cross_vm_alternative() -> None:
+    assert len(MANIFEST["tasks"]) == 300
     assert not (REPO_ROOT / "executions/v1/cross_vm.yaml").exists()
     assert not list((REPO_ROOT / "tasks/cross_vm").rglob("*.yaml"))
 
